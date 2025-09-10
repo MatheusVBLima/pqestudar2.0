@@ -2,6 +2,7 @@ import { BookOpen, Users, DollarSign, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useNavigate } from "react-router-dom";
 
 const benefits = [
   {
@@ -22,6 +23,18 @@ const benefits = [
 ];
 
 export function FeaturesPreview() {
+  const navigate = useNavigate();
+
+  const handleButtonClick = (title: string) => {
+    if (title === "Acesso a Conteúdo Exclusivo") {
+      navigate('/conteudo-premium');
+    } else if (title === "Benefícios para Membros Ativos") {
+      navigate('/programas-beneficios');
+    } else if (title === "Recomende e Ganhe") {
+      navigate('/oportunidades-afiliados');
+    }
+  };
+
   return (
     <section className="py-16 bg-gradient-to-br from-primary/5 to-secondary/10">
       <div className="container mx-auto px-4 max-w-6xl">
@@ -61,6 +74,7 @@ export function FeaturesPreview() {
                 <Button 
                   variant="outline" 
                   className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-all"
+                  onClick={() => handleButtonClick(benefit.title)}
                 >
                   {benefit.title === "Acesso a Conteúdo Exclusivo" && "Saiba Mais"}
                   {benefit.title === "Benefícios para Membros Ativos" && "Conheça os Benefícios"}
