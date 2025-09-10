@@ -22,6 +22,8 @@ import FAQ from "./pages/FAQ";
 import Contato from "./pages/Contato";
 import ConfiguracoesCookies from "./pages/ConfiguracoesCookies";
 import Notificacoes from "./pages/Notificacoes";
+import PlataformasAfiliados from "./pages/PlataformasAfiliados";
+import ConteudoPremium from "./pages/ConteudoPremium";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -51,6 +53,8 @@ const App = () => (
           <Route path="/contato" element={<Contato />} />
           <Route path="/configuracoes-cookies" element={<ConfiguracoesCookies />} />
           <Route path="/notificacoes" element={<Notificacoes />} />
+          <Route path="/plataformas-afiliados" element={<PlataformasAfiliados />} />
+          <Route path="/conteudo-premium" element={<ConteudoPremium />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
