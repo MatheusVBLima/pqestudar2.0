@@ -24,6 +24,8 @@ import ConfiguracoesCookies from "./pages/ConfiguracoesCookies";
 import Notificacoes from "./pages/Notificacoes";
 import PlataformasAfiliados from "./pages/PlataformasAfiliados";
 import ConteudoPremium from "./pages/ConteudoPremium";
+import ProgramasBeneficios from "./pages/ProgramasBeneficios";
+import OportunidadesAfiliados from "./pages/OportunidadesAfiliados";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -55,6 +57,8 @@ const App = () => (
           <Route path="/notificacoes" element={<Notificacoes />} />
           <Route path="/plataformas-afiliados" element={<PlataformasAfiliados />} />
           <Route path="/conteudo-premium" element={<ConteudoPremium />} />
+          <Route path="/programas-beneficios" element={<ProgramasBeneficios />} />
+          <Route path="/oportunidades-afiliados" element={<OportunidadesAfiliados />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
