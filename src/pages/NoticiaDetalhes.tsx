@@ -1,0 +1,365 @@
+import { useParams, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Navbar } from "@/components/layout/navbar";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { ArrowLeft, Calendar, Clock, Share2, Bookmark, ExternalLink, Eye } from "lucide-react";
+import NewsStorageService from "@/services/news-storage";
+
+const NoticiaDetalhes = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const [noticia, setNoticia] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!id) {
+      setLoading(false);
+      return;
+    }
+
+    // Try to get news from storage first
+    let storedNews = NewsStorageService.getNews(id);
+    
+    if (!storedNews) {
+      // Fallback to static data for IDs "1" and "2"
+      storedNews = staticNoticias[id as keyof typeof staticNoticias];
+    }
+
+    if (storedNews) {
+      // If it's from AI service and doesn't have full content, generate it
+      if ('conteudoCompleto' in storedNews && !storedNews.conteudoCompleto) {
+        const enhancedNews = {
+          ...storedNews,
+          conteudoCompleto: generateFallbackContent(storedNews),
+          autor: storedNews.autor || "Portal de Educação",
+          visualizacoes: storedNews.visualizacoes || Math.floor(Math.random() * 50000) + 1000,
+          tags: storedNews.tags || [storedNews.categoria, "Educação"],
+          fontes: storedNews.fontes || [{ nome: "Portal de Educação", url: "#" }]
+        };
+        setNoticia(enhancedNews);
+      } else {
+        setNoticia(storedNews);
+      }
+    }
+    
+    setLoading(false);
+  }, [id]);
+
+  const generateFallbackContent = (news: any) => {
+    return `
+      <p class="mb-4">${news.descricao}</p>
+      <h3 class="text-xl font-semibold mb-3 text-foreground">Informações Detalhadas</h3>
+      <p class="mb-4">Esta notícia traz informações importantes sobre ${news.categoria.toLowerCase()} que podem impactar estudantes e profissionais da educação.</p>
+      <p class="mb-4">Fique atento aos prazos e procedimentos mencionados para não perder oportunidades importantes em sua jornada educacional.</p>
+      <h3 class="text-xl font-semibold mb-3 text-foreground">Próximos Passos</h3>
+      <p class="mb-4">Recomendamos que você:</p>
+      <ul class="list-disc ml-6 mb-4">
+        <li>Acompanhe os canais oficiais para atualizações</li>
+        <li>Organize sua documentação necessária</li>
+        <li>Marque as datas importantes em seu calendário</li>
+        <li>Busque orientação adicional se necessário</li>
+      </ul>
+    `;
+  };
+
+  // Static data for fallback (existing news)
+  const staticNoticias = {
+    "1": {
+      id: 1,
+      titulo: "Resultado do ENEM 2024 será divulgado em janeiro",
+      descricao: "O Instituto Nacional de Estudos e Pesquisas Educacionais Anísio Teixeira (Inep) confirmou que as notas individuais do ENEM 2024 serão disponibilizadas no final de janeiro.",
+      categoria: "ENEM",
+      data: "2025-01-15",
+      tempo: "há 2 dias",
+      urgente: true,
+      imagem: "/placeholder.svg",
+      autor: "Ministério da Educação",
+      visualizacoes: 15420,
+      conteudoCompleto: `
+        <p class="mb-4">O Instituto Nacional de Estudos e Pesquisas Educacionais Anísio Teixeira (Inep) confirmou que as notas individuais do Exame Nacional do Ensino Médio (ENEM) 2024 serão disponibilizadas na Página do Participante no final de janeiro de 2025.</p>
+        
+        <h3 class="text-xl font-semibold mb-3 text-foreground">Cronograma de Divulgação</h3>
+        
+        <p class="mb-4">Segundo o cronograma oficial, os resultados estarão disponíveis a partir do dia 27 de janeiro de 2025, às 10h (horário de Brasília). Os participantes poderão acessar suas notas através do portal oficial do Inep, utilizando CPF e senha cadastrada.</p>
+        
+        <h3 class="text-xl font-semibold mb-3 text-foreground">Como Acessar o Resultado</h3>
+        
+        <p class="mb-4">Para consultar o resultado, os candidatos devem:</p>
+        <ul class="list-disc ml-6 mb-4">
+          <li>Acessar o site oficial do Inep</li>
+          <li>Fazer login na Página do Participante</li>
+          <li>Inserir CPF e senha cadastrados</li>
+          <li>Clicar em "Resultado do ENEM 2024"</li>
+        </ul>
+        
+        <h3 class="text-xl font-semibold mb-3 text-foreground">Próximos Passos</h3>
+        
+        <p class="mb-4">Com o resultado em mãos, os estudantes poderão se inscrever em diversos programas de acesso ao ensino superior, como:</p>
+        <ul class="list-disc ml-6 mb-4">
+          <li><strong>SISU</strong> - Sistema de Seleção Unificada para universidades públicas</li>
+          <li><strong>ProUni</strong> - Programa Universidade para Todos para bolsas em instituições privadas</li>
+          <li><strong>FIES</strong> - Fundo de Financiamento Estudantil</li>
+        </ul>
+        
+        <p class="mb-4">As inscrições para o SISU 2025 começam em fevereiro, logo após a divulgação das notas. É importante que os candidatos fiquem atentos aos prazos e documentos necessários.</p>
+        
+        <h3 class="text-xl font-semibold mb-3 text-foreground">Dicas Importantes</h3>
+        
+        <p class="mb-4">O Inep recomenda que os participantes:</p>
+        <ul class="list-disc ml-6 mb-4">
+          <li>Mantenham seus dados atualizados na Página do Participante</li>
+          <li>Anotem suas notas para facilitar inscrições futuras</li>
+          <li>Pesquisem previamente os cursos e instituições de interesse</li>
+          <li>Fiquem atentos aos cronogramas dos programas de acesso ao ensino superior</li>
+        </ul>
+        
+        <p class="mb-4">Para mais informações, os candidatos podem acessar o site oficial do Inep ou entrar em contato com a Central de Atendimento através do telefone 0800 616 161.</p>
+      `,
+      tags: ["ENEM", "Resultado", "Educação", "Ensino Superior"],
+      fontes: [
+        { nome: "Portal do Inep", url: "https://www.gov.br/inep" },
+        { nome: "Ministério da Educação", url: "https://www.gov.br/mec" }
+      ]
+    },
+    "2": {
+      id: 2,
+      titulo: "Inscrições abertas para concurso da PRF 2025",
+      descricao: "A Polícia Rodoviária Federal oficializou a abertura das inscrições para o concurso público 2025, oferecendo 1.000 vagas.",
+      categoria: "Concursos",
+      data: "2025-01-10",
+      tempo: "há 1 semana",
+      urgente: false,
+      imagem: "/placeholder.svg",
+      autor: "Polícia Rodoviária Federal",
+      visualizacoes: 8932,
+      conteudoCompleto: `
+        <p class="mb-4">A Polícia Rodoviária Federal (PRF) oficializou a abertura das inscrições para o concurso público 2025, oferecendo 1.000 vagas para o cargo de Policial Rodoviário Federal, com salário inicial de R$ 9.899,88.</p>
+        
+        <h3 class="text-xl font-semibold mb-3 text-foreground">Detalhes do Concurso</h3>
+        
+        <p class="mb-4">O concurso oferece excelentes benefícios e oportunidades de crescimento na carreira policial. As vagas estão distribuídas em todas as regiões do país, priorizando a interiorização do serviço público federal.</p>
+        
+        <h3 class="text-xl font-semibold mb-3 text-foreground">Requisitos para Participação</h3>
+        
+        <ul class="list-disc ml-6 mb-4">
+          <li>Ensino superior completo em qualquer área</li>
+          <li>Idade mínima de 18 anos</li>
+          <li>Carteira Nacional de Habilitação categoria B</li>
+          <li>Altura mínima de 1,65m para homens e 1,60m para mulheres</li>
+          <li>Aptidão física e mental para o exercício do cargo</li>
+        </ul>
+        
+        <h3 class="text-xl font-semibold mb-3 text-foreground">Etapas do Concurso</h3>
+        
+        <p class="mb-4">O processo seletivo será composto por:</p>
+        <ol class="list-decimal ml-6 mb-4">
+          <li>Prova objetiva (eliminatória e classificatória)</li>
+          <li>Prova discursiva (eliminatória e classificatória)</li>
+          <li>Exame de aptidão física (eliminatório)</li>
+          <li>Avaliação psicológica (eliminatória)</li>
+          <li>Investigação social (eliminatória)</li>
+          <li>Exame médico (eliminatório)</li>
+        </ol>
+        
+        <p class="mb-4">As inscrições podem ser realizadas até o dia 28 de fevereiro de 2025, exclusivamente pelo site da organizadora do concurso. A taxa de inscrição é de R$ 180,00.</p>
+      `,
+      tags: ["PRF", "Concurso Público", "Policial", "Segurança Pública"],
+      fontes: [
+        { nome: "Portal da PRF", url: "https://www.gov.br/prf" },
+        { nome: "Edital Oficial", url: "#" }
+      ]
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <div className="container mx-auto px-4 py-8 text-center">
+          <div className="animate-pulse">
+            <div className="h-8 bg-muted rounded w-1/4 mx-auto mb-4"></div>
+            <div className="h-4 bg-muted rounded w-1/2 mx-auto"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!noticia) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <div className="container mx-auto px-4 py-8 text-center">
+          <h1 className="text-2xl font-bold mb-4">Notícia não encontrada</h1>
+          <Button onClick={() => navigate("/noticias")}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Voltar para Notícias
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  const getCategoriaColor = (categoria: string) => {
+    const cores = {
+      "ENEM": "bg-blue-500",
+      "Concursos": "bg-green-500",
+      "SISU": "bg-purple-500",
+      "ProUni": "bg-orange-500",
+      "FIES": "bg-pink-500"
+    };
+    return cores[categoria as keyof typeof cores] || "bg-gray-500";
+  };
+
+  return (
+    <div className="min-h-screen bg-background">
+      <Navbar />
+      
+      <main className="container mx-auto px-4 py-8 max-w-4xl">
+        {/* Botão Voltar */}
+        <div className="mb-6">
+          <Button 
+            variant="ghost" 
+            onClick={() => navigate("/noticias")}
+            className="hover:bg-accent"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Voltar para Notícias
+          </Button>
+        </div>
+
+        {/* Header da Notícia */}
+        <Card className="mb-8">
+          <CardContent className="p-8">
+            <div className="flex items-center gap-2 mb-4">
+              <Badge 
+                className={`${getCategoriaColor(noticia.categoria)} text-white`}
+              >
+                {noticia.categoria}
+              </Badge>
+              {noticia.urgente && (
+                <Badge variant="destructive">
+                  Urgente
+                </Badge>
+              )}
+            </div>
+
+            <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-6 leading-tight">
+              {noticia.titulo}
+            </h1>
+
+            <div className="flex flex-wrap items-center gap-6 text-sm text-muted-foreground mb-6">
+              <div className="flex items-center gap-2">
+                <Calendar className="h-4 w-4" />
+                {new Date(noticia.data).toLocaleDateString('pt-BR', {
+                  weekday: 'long',
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric'
+                })}
+              </div>
+              <div className="flex items-center gap-2">
+                <Clock className="h-4 w-4" />
+                {noticia.tempo}
+              </div>
+              {noticia.visualizacoes && (
+                <div className="flex items-center gap-2">
+                  <Eye className="h-4 w-4" />
+                  {noticia.visualizacoes.toLocaleString('pt-BR')} visualizações
+                </div>
+              )}
+              {noticia.autor && (
+                <div>
+                  Por {noticia.autor}
+                </div>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm">
+                <Share2 className="h-4 w-4 mr-2" />
+                Compartilhar
+              </Button>
+              <Button variant="outline" size="sm">
+                <Bookmark className="h-4 w-4 mr-2" />
+                Salvar
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Conteúdo da Notícia */}
+        <Card className="mb-8">
+          <CardContent className="p-8">
+            <div 
+              className="prose prose-lg max-w-none text-foreground"
+              dangerouslySetInnerHTML={{ 
+                __html: noticia.conteudoCompleto || noticia.conteudo || `<p>${noticia.descricao}</p>` 
+              }}
+            />
+          </CardContent>
+        </Card>
+
+        {/* Tags e Fontes */}
+        <Card className="mb-8">
+          <CardContent className="p-6">
+            <div className="space-y-4">
+              <div>
+                <h3 className="font-semibold mb-2">Tags:</h3>
+                <div className="flex flex-wrap gap-2">
+                  {(noticia.tags || []).map((tag: string, index: number) => (
+                    <Badge key={index} variant="secondary">
+                      {tag}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+              
+              <Separator />
+              
+              <div>
+                <h3 className="font-semibold mb-2">Fontes:</h3>
+                <div className="space-y-2">
+                  {(noticia.fontes || []).map((fonte: any, index: number) => (
+                    <div key={index}>
+                      <Button variant="link" className="p-0 h-auto text-left">
+                        <ExternalLink className="h-3 w-3 mr-1" />
+                        {fonte.nome}
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Notícias Relacionadas */}
+        <Card>
+          <CardContent className="p-6">
+            <h3 className="text-xl font-semibold mb-4">Notícias Relacionadas</h3>
+            <div className="space-y-3">
+              <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-accent cursor-pointer transition-colors">
+                <Badge className="bg-purple-500 text-white text-xs">SISU</Badge>
+                <span className="text-sm hover:text-primary">
+                  Novo cronograma do SISU 2025 é divulgado
+                </span>
+              </div>
+              <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-accent cursor-pointer transition-colors">
+                <Badge className="bg-orange-500 text-white text-xs">ProUni</Badge>
+                <span className="text-sm hover:text-primary">
+                  ProUni: Inscrições para bolsas começam na próxima semana
+                </span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </main>
+    </div>
+  );
+};
+
+export default NoticiaDetalhes;

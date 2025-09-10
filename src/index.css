@@ -1,0 +1,245 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    --background: 0 0% 98%;
+    --foreground: 0 0% 14%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 14%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 14%;
+
+    --primary: 300 100% 25%;
+    --primary-foreground: 0 0% 98%;
+
+    --secondary: 300 15% 95%;
+    --secondary-foreground: 0 0% 14%;
+
+    --muted: 300 10% 96%;
+    --muted-foreground: 0 0% 45%;
+
+    --accent: 300 50% 90%;
+    --accent-foreground: 300 100% 25%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 300 20% 90%;
+    --input: 300 15% 94%;
+    --ring: 300 100% 25%;
+
+    /* Custom brand colors */
+    --brand-purple: 300 100% 25%;
+    --brand-dark: 0 0% 14%;
+    --brand-light: 300 15% 98%;
+    
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(300 100% 25%), hsl(300 80% 35%));
+    --gradient-hero: linear-gradient(135deg, hsl(300 100% 25% / 0.95), hsl(300 80% 35% / 0.9));
+    
+    /* Shadows */
+    --shadow-purple: 0 10px 40px -15px hsl(300 100% 25% / 0.3);
+    --shadow-card: 0 4px 20px -8px hsl(300 20% 20% / 0.1);
+    
+    /* Animations */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    --radius: 0.5rem;
+
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
+    --sidebar-primary-foreground: 0 0% 98%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 0 0% 8%;
+    --foreground: 0 0% 98%;
+
+    --card: 0 0% 10%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 0 0% 10%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 300 80% 60%;
+    --primary-foreground: 0 0% 8%;
+
+    --secondary: 300 10% 15%;
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 300 5% 15%;
+    --muted-foreground: 0 0% 65%;
+
+    --accent: 300 20% 20%;
+    --accent-foreground: 300 80% 60%;
+
+    --destructive: 0 62% 50%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 300 15% 20%;
+    --input: 300 15% 20%;
+    --ring: 300 80% 60%;
+    
+    /* Custom brand colors for dark mode */
+    --brand-purple: 300 80% 60%;
+    --brand-dark: 0 0% 5%;
+    --brand-light: 300 15% 20%;
+    
+    /* Gradients for dark mode */
+    --gradient-primary: linear-gradient(135deg, hsl(300 80% 60%), hsl(300 70% 70%));
+    --gradient-hero: linear-gradient(135deg, hsl(300 80% 60% / 0.95), hsl(300 70% 70% / 0.9));
+    
+    /* Shadows for dark mode */
+    --shadow-purple: 0 10px 40px -15px hsl(300 80% 60% / 0.4);
+    --shadow-card: 0 4px 20px -8px hsl(300 50% 20% / 0.3);
+
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+    /* Custom cursor */
+    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath fill='%23800080' d='M0 0v12l4-3 2 5 2-1-2-5 4-1z'/%3E%3C/svg%3E"), auto;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+      'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+      sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden; /* Prevent horizontal scroll */
+  }
+
+  html {
+    scroll-behavior: smooth;
+    overflow-x: hidden; /* Prevent horizontal scroll */
+  }
+
+  /* Custom scrollbar styles */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: hsl(var(--muted));
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary) / 0.8));
+    border-radius: 4px;
+    transition: all 0.3s ease;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, hsl(var(--primary) / 0.9), hsl(var(--primary) / 0.7));
+    transform: scale(1.1);
+  }
+
+  ::-webkit-scrollbar-corner {
+    background: hsl(var(--muted));
+  }
+
+  /* Firefox scrollbar styles */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--primary)) hsl(var(--muted));
+  }
+
+  /* Custom cursor states */
+  button, a, [role="button"] {
+    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cpath fill='%23800080' d='M10 0a10 10 0 1 0 10 10A10 10 0 0 0 10 0zm3.5 7.5L10 11 6.5 7.5z'/%3E%3C/svg%3E"), pointer !important;
+  }
+
+  input, textarea, select {
+    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='20' viewBox='0 0 16 20'%3E%3Cpath fill='%23800080' d='M8 0h1v20H7V0zm-7 8h6v1H1V8zm9 0h6v1h-6V8z'/%3E%3C/svg%3E"), text !important;
+  }
+
+  /* Light cursor for purple/primary backgrounds */
+  .bg-primary, .bg-primary\/90, [class*="bg-primary"], 
+  .bg-gradient-primary, [style*="background"], 
+  button.bg-primary, .badge.bg-primary {
+    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath fill='%23ffffff' d='M0 0v12l4-3 2 5 2-1-2-5 4-1z'/%3E%3C/svg%3E"), auto !important;
+  }
+
+  .bg-primary button, .bg-primary a, .bg-primary [role="button"],
+  .bg-gradient-primary button, .bg-gradient-primary a, .bg-gradient-primary [role="button"] {
+    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cpath fill='%23ffffff' d='M10 0a10 10 0 1 0 10 10A10 10 0 0 0 10 0zm3.5 7.5L10 11 6.5 7.5z'/%3E%3C/svg%3E"), pointer !important;
+  }
+}
+
+@layer utilities {
+  .hover-scale {
+    @apply transition-transform duration-300 hover:scale-105;
+  }
+  
+  .gradient-text {
+    @apply bg-gradient-to-r from-primary to-primary bg-clip-text text-transparent;
+  }
+  
+  .shadow-glow {
+    box-shadow: var(--shadow-purple);
+  }
+
+  /* Prevent horizontal overflow */
+  .no-scrollbar-x {
+    overflow-x: hidden;
+  }
+
+  /* Responsive container utilities */
+  .container-responsive {
+    @apply w-full max-w-7xl mx-auto px-4;
+  }
+
+  /* Animation utilities */
+  @keyframes scroll-right {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-50%);
+    }
+  }
+
+  .animate-scroll-right {
+    animation: scroll-right 30s linear infinite;
+  }
+
+  /* Ensure elements stay within bounds */
+  .bounded {
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
+}
