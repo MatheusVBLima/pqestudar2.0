@@ -1,7 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Home, HelpCircle, Search, BookOpen, Bell, User, Menu, Heart, Newspaper, Trophy } from "lucide-react";
+import { Home, HelpCircle, Search, BookOpen, Bell, User, Menu, Heart, Newspaper, Trophy, LogOut } from "lucide-react";
 import { NotificationDropdown } from "@/components/ui/notification-dropdown";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,6 +16,13 @@ export function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
   const isHomePage = location.pathname === "/";
+  const { user, signOut, loading } = useAuth();
+
+  const handleSignOut = async () => {
+    await signOut();
+    toast.success('Logout realizado com sucesso!');
+    navigate('/');
+  };
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -72,45 +81,56 @@ export function Navbar() {
 
           {/* User Menu & Mobile Menu */}
           <div className="flex items-center space-x-2">
-            {/* User Dropdown */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="hover:bg-accent">
-                  <User className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuItem onClick={() => navigate("/meu-perfil")}>
-                  <User className="h-4 w-4 mr-2" />
-                  Meu Perfil
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate("/meus-materiais")}>
-                  <BookOpen className="h-4 w-4 mr-2" />
-                  Meus Materiais
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate("/favoritos")}>
-                  <Heart className="h-4 w-4 mr-2" />
-                  Minha atividade
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate("/ranking-comunidade")}>
-                  <Trophy className="h-4 w-4 mr-2" />
-                  Ranking da Comunidade
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate("/notificacoes")}>
-                  <Bell className="h-4 w-4 mr-2" />
-                  Notificações
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => navigate("/suporte")}>
-                  <HelpCircle className="h-4 w-4 mr-2" />
-                  Central de Ajuda
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-destructive">
-                  Sair
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="hover:bg-accent">
+                    <User className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuItem onClick={() => navigate("/meu-perfil")}>
+                    <User className="h-4 w-4 mr-2" />
+                    Meu Perfil
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/meus-materiais")}>
+                    <BookOpen className="h-4 w-4 mr-2" />
+                    Meus Materiais
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/favoritos")}>
+                    <Heart className="h-4 w-4 mr-2" />
+                    Minha atividade
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/ranking-comunidade")}>
+                    <Trophy className="h-4 w-4 mr-2" />
+                    Ranking da Comunidade
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/notificacoes")}>
+                    <Bell className="h-4 w-4 mr-2" />
+                    Notificações
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => navigate("/suporte")}>
+                    <HelpCircle className="h-4 w-4 mr-2" />
+                    Central de Ajuda
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem className="text-destructive" onClick={handleSignOut}>
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Sair
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Button 
+                variant="default" 
+                size="sm" 
+                onClick={() => navigate('/login')}
+                disabled={loading}
+              >
+                Entrar
+              </Button>
+            )}
 
             {/* Mobile Menu */}
             <div className="md:hidden">
