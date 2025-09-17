@@ -34,10 +34,17 @@ export function Navbar() {
               variant="ghost"
               size="sm"
               onClick={() => navigate("/")}
-              className="font-semibold text-lg"
+              className="group font-bold text-xl hover:bg-transparent p-2 transition-all duration-300"
             >
-              <BookOpen className="h-5 w-5 mr-2 text-primary" />
-              pqestudar
+              <div className="flex items-center space-x-2">
+                <div className="relative">
+                  <BookOpen className="h-6 w-6 text-primary group-hover:scale-110 transition-transform duration-300" />
+                  <div className="absolute inset-0 bg-primary/20 rounded-full blur-sm group-hover:blur-md transition-all duration-300 opacity-0 group-hover:opacity-100"></div>
+                </div>
+                <span className="bg-gradient-to-r from-primary via-primary/80 to-accent bg-clip-text text-transparent group-hover:from-primary group-hover:to-primary/60 transition-all duration-300">
+                  pqestudar
+                </span>
+              </div>
             </Button>
           </div>
 
