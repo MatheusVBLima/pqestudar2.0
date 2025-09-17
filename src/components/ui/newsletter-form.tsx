@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import { Mail, Gift, CheckCircle } from "lucide-react";
 
 interface NewsletterFormProps {
@@ -49,13 +50,31 @@ export function NewsletterForm({
     setIsLoading(true);
     
     try {
-      // Simulando API call - será implementada com Supabase
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Call the newsletter welcome edge function
+      const { data, error } = await supabase.functions.invoke('send-newsletter-welcome', {
+        body: { email }
+      });
+
+      if (error) {
+        console.error('Newsletter signup error:', error);
+        
+        // Handle specific error cases
+        if (error.message?.includes('já está cadastrado')) {
+          toast({
+            title: "Email já cadastrado",
+            description: "Este email já está em nossa lista. Verifique sua caixa de entrada!",
+            variant: "destructive",
+          });
+          return;
+        }
+        
+        throw error;
+      }
       
       setIsSuccess(true);
       toast({
         title: "Sucesso!",
-        description: "Você receberá nossa lista exclusiva de cursos em seu email!",
+        description: "Cadastro realizado! Verifique seu email para receber a lista de cursos gratuitos.",
       });
       
       // Reset form after success
@@ -63,9 +82,10 @@ export function NewsletterForm({
         setEmail("");
         setConsent(false);
         setIsSuccess(false);
-      }, 3000);
+      }, 5000);
       
     } catch (error) {
+      console.error('Newsletter signup error:', error);
       toast({
         title: "Erro no cadastro",
         description: "Tente novamente em alguns instantes.",
