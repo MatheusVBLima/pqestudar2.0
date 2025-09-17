@@ -37,7 +37,7 @@ export function Navbar() {
               className="font-semibold text-lg"
             >
               <BookOpen className="h-5 w-5 mr-2 text-primary" />
-              EduPlataforma
+              pqestudar
             </Button>
           </div>
 
