@@ -4,6 +4,7 @@ import { Home, HelpCircle, Search, BookOpen, Bell, User, Menu, Heart, Newspaper,
 import { NotificationDropdown } from "@/components/ui/notification-dropdown";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
+import { useState } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,6 +18,7 @@ export function Navbar() {
   const location = useLocation();
   const isHomePage = location.pathname === "/";
   const { user, signOut, loading } = useAuth();
+  const [isClicked, setIsClicked] = useState(false);
 
   const handleSignOut = async () => {
     await signOut();
@@ -44,6 +46,17 @@ export function Navbar() {
                 <span className="bg-gradient-to-r from-primary via-primary/80 to-accent bg-clip-text text-transparent group-hover:from-primary group-hover:to-primary/60 transition-all duration-300">
                   pqestudar
                 </span>
+                <div 
+                  className="relative ml-1 cursor-pointer transition-all duration-300 hover:scale-110"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsClicked(!isClicked);
+                  }}
+                >
+                  <span className="text-primary font-bold text-xl group-hover:text-accent transition-colors duration-300">
+                    {isClicked ? "!" : "?"}
+                  </span>
+                </div>
               </div>
             </Button>
           </div>

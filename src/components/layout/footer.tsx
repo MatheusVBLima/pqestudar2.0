@@ -12,7 +12,7 @@ export function Footer() {
           {/* Logo/Brand */}
           <div className="flex items-center space-x-2">
             <BookOpen className="h-5 w-5 text-primary" />
-            <span className="font-semibold text-lg">EduPlataforma</span>
+            <span className="font-semibold text-lg bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">pqestudar</span>
           </div>
 
           {/* Links */}
@@ -92,7 +92,7 @@ export function Footer() {
 
           {/* Copyright */}
           <div className="text-sm text-muted-foreground">
-            © 2024 EduPlataforma
+            © 2024 pqestudar
           </div>
         </div>
       </div>
