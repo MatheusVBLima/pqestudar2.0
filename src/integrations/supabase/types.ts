@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      course_suggestions: {
+        Row: {
+          created_at: string
+          id: string
+          status: string | null
+          suggestion: string
+          updated_at: string
+          user_email: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          status?: string | null
+          suggestion: string
+          updated_at?: string
+          user_email?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          status?: string | null
+          suggestion?: string
+          updated_at?: string
+          user_email?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       newsletter_subscribers: {
         Row: {
           confirmed: boolean

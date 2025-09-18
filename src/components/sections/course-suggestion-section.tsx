@@ -5,12 +5,15 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MessageSquare, Send, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 export function CourseSuggestionSection() {
   const [suggestion, setSuggestion] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,12 +29,22 @@ export function CourseSuggestionSection() {
 
     setIsLoading(true);
     
-    // Simular envio para o backend
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Simular sucesso
-      console.log("Sugestão enviada:", suggestion);
+      // Preparar dados para inserção
+      const suggestionData = {
+        suggestion: suggestion.trim(),
+        user_id: user?.id || null,
+        user_email: user?.email || null
+      };
+
+      // Inserir no banco de dados
+      const { error } = await supabase
+        .from('course_suggestions')
+        .insert([suggestionData]);
+
+      if (error) {
+        throw error;
+      }
       
       setIsSuccess(true);
       setSuggestion("");
@@ -47,6 +60,7 @@ export function CourseSuggestionSection() {
       }, 3000);
       
     } catch (error) {
+      console.error('Erro ao salvar sugestão:', error);
       toast({
         title: "Erro ao enviar sugestão",
         description: "Tente novamente em alguns instantes.",
