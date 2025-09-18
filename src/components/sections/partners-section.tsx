@@ -60,7 +60,7 @@ export function PartnersSection() {
   );
 
   return (
-    <section className="py-12 bg-background border-t border-border/50 w-full overflow-hidden">
+    <section className="py-12 bg-background border-t border-border/50 w-full">
       <div className="container mx-auto px-4 max-w-7xl w-full">
         <div className="text-center mb-8">
           <h2 className="text-2xl font-semibold text-foreground mb-2">
@@ -71,7 +71,7 @@ export function PartnersSection() {
           </p>
         </div>
         
-        <div className="relative overflow-hidden w-full">
+        <div className="relative w-full overflow-hidden py-4">
           {/* Gradient overlays para smooth fade */}
           <div className="absolute left-0 top-0 bottom-0 w-8 sm:w-20 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none" />
           <div className="absolute right-0 top-0 bottom-0 w-8 sm:w-20 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none" />
@@ -82,7 +82,7 @@ export function PartnersSection() {
             {[...partners, ...partners, ...partners, ...partners].map((partner, index) => (
               <div 
                 key={`${partner.name}-${index}`} 
-                className="flex-shrink-0 px-2 sm:px-4 group"
+                className="flex-shrink-0 px-2 sm:px-4 group relative z-0 hover:z-50"
                 onMouseEnter={(e) => {
                   const scrollElement = e.currentTarget.closest('.animate-scroll-right') as HTMLElement;
                   if (scrollElement) scrollElement.style.animationPlayState = 'paused';
@@ -96,9 +96,9 @@ export function PartnersSection() {
                   href={partner.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex flex-col items-center space-y-2 min-w-[80px] sm:min-w-[100px] group hover-scale"
+                  className="flex flex-col items-center space-y-2 min-w-[80px] sm:min-w-[100px] group transition-all duration-300"
                 >
-                  <Avatar className="h-12 w-12 sm:h-16 sm:w-16 ring-2 ring-border/50 group-hover:ring-primary/50 transition-all duration-300 shadow-lg">
+                  <Avatar className="h-12 w-12 sm:h-16 sm:w-16 ring-2 ring-border/50 group-hover:ring-primary/50 group-hover:scale-110 transition-all duration-300 shadow-lg group-hover:shadow-xl">
                     <AvatarImage 
                       src={partner.logo} 
                       alt={`${partner.name} logo`}
