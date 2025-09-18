@@ -30,6 +30,36 @@ export function CourseSuggestionSection() {
     setIsLoading(true);
     
     try {
+      // Verificar rate limiting - 1 sugestão por hora por usuário
+      const oneHourAgo = new Date();
+      oneHourAgo.setHours(oneHourAgo.getHours() - 1);
+      
+      let rateLimitQuery = supabase
+        .from('course_suggestions')
+        .select('id')
+        .gte('created_at', oneHourAgo.toISOString());
+      
+      // Se usuário logado, filtrar por user_id, senão não verificamos rate limit
+      if (user?.id) {
+        rateLimitQuery = rateLimitQuery.eq('user_id', user.id);
+      }
+      
+      const { data: recentSuggestions, error: rateLimitError } = await rateLimitQuery;
+      
+      if (rateLimitError) {
+        throw rateLimitError;
+      }
+      
+      // Se usuário logado e já enviou sugestão na última hora
+      if (user?.id && recentSuggestions && recentSuggestions.length > 0) {
+        toast({
+          title: "Limite atingido",
+          description: "Você pode enviar apenas 1 sugestão por hora. Tente novamente mais tarde.",
+          variant: "destructive"
+        });
+        setIsLoading(false);
+        return;
+      }
       // Preparar dados para inserção
       const suggestionData = {
         suggestion: suggestion.trim(),
