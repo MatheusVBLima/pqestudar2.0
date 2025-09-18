@@ -9,7 +9,7 @@ const Sobre = () => {
       <main className="flex-1">
         <div className="container mx-auto px-4 py-16 max-w-4xl">
           <div className="text-center mb-12">
-            <h1 className="text-4xl font-bold mb-4">Sobre a EduPlataforma</h1>
+            <h1 className="text-4xl font-bold mb-4">Sobre a pqestudar</h1>
             <p className="text-xl text-muted-foreground">
               Transformando vidas através da educação de qualidade
             </p>
@@ -48,8 +48,8 @@ const Sobre = () => {
             </h2>
             <div className="space-y-4 text-muted-foreground leading-relaxed">
               <p>
-                Fundada em 2020, a EduPlataforma nasceu da necessidade de tornar 
-                a educação mais acessível e flexível para todos. Com o mundo 
+                Fundada em 2020, a pqestudar nasceu da necessidade de tornar 
+                a educação mais acessível e flexível para todos. Com o mundo
                 passando por transformações aceleradas, identificamos que era 
                 essencial criar uma plataforma que conectasse conhecimento de 
                 qualidade com praticidade.

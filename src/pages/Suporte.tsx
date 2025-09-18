@@ -54,7 +54,7 @@ Enviado em: ${new Date().toLocaleString('pt-BR')}
     `.trim();
     
     const subject = `Feedback da Central de Suporte - ${type}`;
-    const mailtoLink = `mailto:suporte@eduplataforma.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(emailBody)}`;
+    const mailtoLink = `mailto:suporte@pqestudar.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(emailBody)}`;
     
     // Tentar múltiplas formas de abrir o cliente de email
     let emailOpened = false;
@@ -86,7 +86,7 @@ Enviado em: ${new Date().toLocaleString('pt-BR')}
     }
     
     // Sempre copiar para área de transferência como backup
-    navigator.clipboard.writeText(`Para: suporte@eduplataforma.com\nAssunto: ${subject}\n\n${emailBody}`).catch(() => {
+    navigator.clipboard.writeText(`Para: suporte@pqestudar.com\nAssunto: ${subject}\n\n${emailBody}`).catch(() => {
       console.log('Clipboard access denied');
     });
     
@@ -95,7 +95,7 @@ Enviado em: ${new Date().toLocaleString('pt-BR')}
       title: emailOpened ? "Cliente de email aberto!" : "Conteúdo copiado!",
       description: emailOpened 
         ? "Seu cliente de email foi aberto com o feedback preenchido."
-        : "O feedback foi copiado para área de transferência. Cole em seu email e envie para: suporte@eduplataforma.com",
+        : "O feedback foi copiado para área de transferência. Cole em seu email e envie para: suporte@pqestudar.com",
       duration: 6000,
     });
     
@@ -302,7 +302,7 @@ Enviado em: ${new Date().toLocaleString('pt-BR')}
                 <CardTitle>E-mail</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground mb-2">suporte@eduplataforma.com</p>
+                <p className="text-muted-foreground mb-2">suporte@pqestudar.com</p>
                 <Badge variant="secondary">Resposta em até 24h</Badge>
               </CardContent>
             </Card>

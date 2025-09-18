@@ -37,8 +37,8 @@ const Contato = () => {
                   </div>
                   <div>
                     <h3 className="font-medium mb-1">E-mail</h3>
-                    <p className="text-muted-foreground">contato@eduplataforma.com</p>
-                    <p className="text-muted-foreground">suporte@eduplataforma.com</p>
+                    <p className="text-muted-foreground">contato@pqestudar.com</p>
+                    <p className="text-muted-foreground">suporte@pqestudar.com</p>
                   </div>
                 </div>
 
@@ -86,7 +86,7 @@ const Contato = () => {
                 <h3 className="font-medium mb-3">Suporte Técnico</h3>
                 <p className="text-muted-foreground text-sm leading-relaxed">
                   Para questões técnicas relacionadas à plataforma, acesse nossa 
-                  página de suporte ou envie um e-mail para suporte@eduplataforma.com. 
+                  página de suporte ou envie um e-mail para suporte@pqestudar.com. 
                   Nossa equipe responde em até 24 horas.
                 </p>
               </div>

@@ -20,8 +20,8 @@ const Privacidade = () => {
             <section>
               <h2 className="text-2xl font-semibold mb-4">1. Compromisso com sua Privacidade</h2>
               <p className="text-muted-foreground leading-relaxed">
-                A EduPlataforma está comprometida em proteger sua privacidade e dados pessoais. 
-                Esta política descreve como coletamos, usamos, armazenamos e protegemos suas 
+                A pqestudar está comprometida em proteger sua privacidade e dados pessoais. 
+                Esta política descreve como coletamos, usamos, armazenamos e protegemos suas
                 informações quando você utiliza nossos serviços.
               </p>
             </section>
@@ -127,7 +127,7 @@ const Privacidade = () => {
                 entre em contato conosco:
               </p>
               <ul className="list-disc list-inside ml-4 space-y-1 text-muted-foreground mt-2">
-                <li>E-mail: privacidade@eduplataforma.com</li>
+                <li>E-mail: privacidade@pqestudar.com</li>
                 <li>Telefone: (11) 1234-5678</li>
                 <li>Endereço: Rua da Educação, 123 - São Paulo, SP</li>
               </ul>

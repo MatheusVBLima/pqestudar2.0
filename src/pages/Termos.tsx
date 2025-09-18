@@ -20,8 +20,8 @@ const Termos = () => {
             <section>
               <h2 className="text-2xl font-semibold mb-4">1. Aceitação dos Termos</h2>
               <p className="text-muted-foreground leading-relaxed">
-                Ao acessar e utilizar a EduPlataforma, você concorda em cumprir e estar 
-                vinculado a estes Termos de Uso. Se você não concorda com qualquer parte 
+                Ao acessar e utilizar a pqestudar, você concorda em cumprir e estar 
+                vinculado a estes Termos de Uso. Se você não concorda com qualquer parte
                 destes termos, não deve utilizar nossos serviços.
               </p>
             </section>
@@ -29,8 +29,8 @@ const Termos = () => {
             <section>
               <h2 className="text-2xl font-semibold mb-4">2. Descrição do Serviço</h2>
               <p className="text-muted-foreground leading-relaxed">
-                A EduPlataforma é uma plataforma de ensino online que oferece cursos, 
-                materiais educativos e recursos de aprendizagem. Reservamo-nos o direito 
+                A pqestudar é uma plataforma de ensino online que oferece cursos, 
+                materiais educativos e recursos de aprendizagem. Reservamo-nos o direito
                 de modificar, suspender ou descontinuar qualquer aspecto do serviço a 
                 qualquer momento.
               </p>
@@ -70,8 +70,8 @@ const Termos = () => {
             <section>
               <h2 className="text-2xl font-semibold mb-4">6. Limitação de Responsabilidade</h2>
               <p className="text-muted-foreground leading-relaxed">
-                A EduPlataforma não será responsável por quaisquer danos diretos, 
-                indiretos, incidentais, especiais ou consequenciais resultantes do uso 
+                A pqestudar não será responsável por quaisquer danos diretos, 
+                indiretos, incidentais, especiais ou consequenciais resultantes do uso
                 ou impossibilidade de uso de nossos serviços.
               </p>
             </section>
@@ -89,7 +89,7 @@ const Termos = () => {
               <h2 className="text-2xl font-semibold mb-4">8. Contato</h2>
               <p className="text-muted-foreground leading-relaxed">
                 Se você tiver dúvidas sobre estes Termos de Uso, entre em contato conosco 
-                através da página de contato ou pelo e-mail: legal@eduplataforma.com
+                através da página de contato ou pelo e-mail: legal@pqestudar.com
               </p>
             </section>
           </div>

@@ -53,7 +53,7 @@ const FAQ = () => {
     {
       id: "item-9",
       question: "Como entro em contato com o suporte?",
-      answer: "Você pode acessar nosso suporte através da página 'Suporte' no menu principal, ou enviar um e-mail para suporte@eduplataforma.com. Nossa equipe responde em até 24 horas."
+      answer: "Você pode acessar nosso suporte através da página 'Suporte' no menu principal, ou enviar um e-mail para suporte@pqestudar.com. Nossa equipe responde em até 24 horas."
     },
     {
       id: "item-10",
@@ -107,7 +107,7 @@ const FAQ = () => {
                 Entre em Contato
               </a>
               <a 
-                href="mailto:suporte@eduplataforma.com"
+                href="mailto:suporte@pqestudar.com"
                 className="inline-flex items-center justify-center rounded-md border border-input bg-background px-6 py-3 font-medium hover:bg-accent hover:text-accent-foreground transition-colors"
               >
                 Enviar E-mail
