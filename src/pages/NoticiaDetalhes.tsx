@@ -1,18 +1,24 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Navbar } from "@/components/layout/navbar";
+import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, Calendar, Clock, Share2, Bookmark, ExternalLink, Eye } from "lucide-react";
+import { ArrowLeft, Calendar, Clock, Share2, Bookmark, BookmarkCheck, ExternalLink, Eye } from "lucide-react";
 import NewsStorageService from "@/services/news-storage";
+import useFavoritos from "@/hooks/useFavoritos";
+import { useToast } from "@/hooks/use-toast";
 
 const NoticiaDetalhes = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [noticia, setNoticia] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const { adicionarFavorito, removerFavorito, isFavorito } = useFavoritos();
+  const { toast } = useToast();
 
   useEffect(() => {
     if (!id) {
@@ -214,6 +220,47 @@ const NoticiaDetalhes = () => {
     return cores[categoria as keyof typeof cores] || "bg-gray-500";
   };
 
+  const handleSalvarNoticia = (noticia: any) => {
+    // Check if user is logged in
+    if (!user) {
+      toast({
+        title: "Login necessário",
+        description: "Você precisa estar logado para salvar notícias.",
+        variant: "destructive",
+        duration: 4000,
+      });
+      
+      // Navigate to login after a short delay, with return path
+      setTimeout(() => {
+        navigate("/login?from=noticias");
+      }, 1500);
+      return;
+    }
+
+    const noticiaFavorito = {
+      id: noticia.id,
+      titulo: noticia.titulo,
+      descricao: noticia.descricao,
+      categoria: noticia.categoria,
+      data: noticia.data,
+      tipo: "noticia" as const
+    };
+
+    if (isFavorito(noticia.id, "noticia")) {
+      removerFavorito(noticia.id, "noticia");
+      toast({
+        title: "Removido dos favoritos",
+        description: "A notícia foi removida da sua lista de favoritos."
+      });
+    } else {
+      adicionarFavorito(noticiaFavorito);
+      toast({
+        title: "Salvo nos favoritos",
+        description: "A notícia foi adicionada à sua lista de favoritos."
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -283,9 +330,23 @@ const NoticiaDetalhes = () => {
                 <Share2 className="h-4 w-4 mr-2" />
                 Compartilhar
               </Button>
-              <Button variant="outline" size="sm">
-                <Bookmark className="h-4 w-4 mr-2" />
-                Salvar
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => handleSalvarNoticia(noticia)}
+                className={!user ? "opacity-70" : ""}
+              >
+                {isFavorito(noticia.id, "noticia") ? (
+                  <BookmarkCheck className="h-4 w-4 mr-2 text-primary" />
+                ) : (
+                  <Bookmark className="h-4 w-4 mr-2" />
+                )}
+                {!user 
+                  ? "Login p/ salvar" 
+                  : isFavorito(noticia.id, "noticia") 
+                    ? "Salvo" 
+                    : "Salvar"
+                }
               </Button>
             </div>
           </CardContent>

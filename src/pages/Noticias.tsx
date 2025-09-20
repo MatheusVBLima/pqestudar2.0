@@ -214,6 +214,22 @@ const Noticias = () => {
     : noticias.filter(noticia => noticia.categoria === filtroAtivo);
 
   const handleSalvarNoticia = (noticia: any) => {
+    // Check if user is logged in
+    if (!user) {
+      toast({
+        title: "Login necessário",
+        description: "Você precisa estar logado para salvar notícias.",
+        variant: "destructive",
+        duration: 4000,
+      });
+      
+      // Navigate to login after a short delay, with return path
+      setTimeout(() => {
+        navigate("/login?from=noticias");
+      }, 1500);
+      return;
+    }
+
     const noticiaFavorito = {
       id: noticia.id,
       titulo: noticia.titulo,
@@ -489,21 +505,28 @@ const Noticias = () => {
                     </div>
                   </div>
                   
-                  {/* Action Buttons */}
-                  <div className="flex gap-2">
-                    <Button 
-                      variant="ghost" 
-                      size="sm"
-                      onClick={() => handleSalvarNoticia(noticia)}
-                      className="flex-1 text-xs justify-center"
-                    >
-                      {isFavorito(noticia.id, "noticia") ? (
-                        <BookmarkCheck className="h-4 w-4 mr-1 text-primary" />
-                      ) : (
-                        <Bookmark className="h-4 w-4 mr-1" />
-                      )}
-                      {isFavorito(noticia.id, "noticia") ? "Salvo" : "Salvar"}
-                    </Button>
+                   {/* Action Buttons */}
+                   <div className="flex gap-2">
+                     <Button 
+                       variant="ghost" 
+                       size="sm"
+                       onClick={() => handleSalvarNoticia(noticia)}
+                       className={`flex-1 text-xs justify-center ${
+                         !user ? "opacity-70" : ""
+                       }`}
+                     >
+                       {isFavorito(noticia.id, "noticia") ? (
+                         <BookmarkCheck className="h-4 w-4 mr-1 text-primary" />
+                       ) : (
+                         <Bookmark className="h-4 w-4 mr-1" />
+                       )}
+                       {!user 
+                         ? "Login p/ salvar" 
+                         : isFavorito(noticia.id, "noticia") 
+                           ? "Salvo" 
+                           : "Salvar"
+                       }
+                     </Button>
                     
                     {/* Expandir/Contrair */}
                     {'conteudoCompleto' in noticia && noticia.conteudoCompleto && (
