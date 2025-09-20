@@ -7,7 +7,7 @@ import { CourseCard } from "@/components/ui/course-card";
 // Mock data - in a real app this would come from a database or context
 const courses = [
   {
-    id: 1,
+    id: "1",
     title: "Desenvolvimento Web Completo",
     description: "Aprenda HTML, CSS, JavaScript e React do zero ao avançado",
     category: "tech",
@@ -20,7 +20,7 @@ const courses = [
     level: "Iniciante"
   },
   {
-    id: 2,
+    id: "2",
     title: "Marketing Digital Avançado",
     description: "Estratégias completas de marketing digital para empresas",
     category: "marketing",
@@ -33,7 +33,7 @@ const courses = [
     level: "Intermediário"
   },
   {
-    id: 3,
+    id: "3",
     title: "UX/UI Design Fundamentals",
     description: "Princípios essenciais de design de experiência do usuário",
     category: "design",
@@ -46,7 +46,7 @@ const courses = [
     level: "Iniciante"
   },
   {
-    id: 5,
+    id: "5",
     title: "Python para Data Science",
     description: "Análise de dados e machine learning com Python",
     category: "tech",
@@ -61,11 +61,11 @@ const courses = [
 ];
 
 export default function Favoritos() {
-  const [favorites, setFavorites] = useState<number[]>([1, 3, 5]); // Mock favorited courses
+  const [favorites, setFavorites] = useState<string[]>(["1", "3", "5"]); // Mock favorited courses
 
   const favoriteCourses = courses.filter(course => favorites.includes(course.id));
 
-  const toggleFavorite = (courseId: number) => {
+  const toggleFavorite = (courseId: string) => {
     setFavorites(prev => 
       prev.includes(courseId) 
         ? prev.filter(id => id !== courseId)

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Clock, Users, Star, Heart } from "lucide-react";
 
 interface Course {
-  id: number;
+  id: string;
   title: string;
   description: string;
   category: string;
@@ -21,7 +21,7 @@ interface Course {
 interface CourseCardProps {
   course: Course;
   isFavorite: boolean;
-  onToggleFavorite: (courseId: number) => void;
+  onToggleFavorite: (courseId: string) => void;
 }
 
 export function CourseCard({ course, isFavorite, onToggleFavorite }: CourseCardProps) {

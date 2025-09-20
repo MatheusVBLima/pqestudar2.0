@@ -29,6 +29,7 @@ import ProgramasBeneficios from "./pages/ProgramasBeneficios";
 import OportunidadesAfiliados from "./pages/OportunidadesAfiliados";
 import Login from "./pages/Login";
 import { ResetPassword } from "./pages/ResetPassword";
+import AdminCourses from "./pages/AdminCourses";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -65,6 +66,7 @@ const App = () => (
           <Route path="/oportunidades-afiliados" element={<OportunidadesAfiliados />} />
           <Route path="/login" element={<Login />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/admin/cursos" element={<AdminCourses />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

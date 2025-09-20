@@ -59,6 +59,63 @@ export type Database = {
         }
         Relationships: []
       }
+      courses: {
+        Row: {
+          category: string
+          created_at: string
+          created_by: string | null
+          description: string
+          duration: string
+          id: string
+          image_url: string | null
+          instructor: string
+          is_active: boolean
+          level: string
+          price: string
+          rating: number
+          students: number
+          title: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          created_by?: string | null
+          description: string
+          duration: string
+          id?: string
+          image_url?: string | null
+          instructor: string
+          is_active?: boolean
+          level: string
+          price: string
+          rating?: number
+          students?: number
+          title: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          duration?: string
+          id?: string
+          image_url?: string | null
+          instructor?: string
+          is_active?: boolean
+          level?: string
+          price?: string
+          rating?: number
+          students?: number
+          title?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       newsletter_subscribers: {
         Row: {
           confirmed: boolean

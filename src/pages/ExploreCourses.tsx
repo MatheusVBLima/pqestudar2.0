@@ -3,9 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Filter, BookOpen, Clock, Users, Star, TrendingUp, Eye, MoreHorizontal, Bell, BellOff } from "lucide-react";
+import { Search, Filter, BookOpen, Clock, Users, Star, TrendingUp, Eye, MoreHorizontal, Bell, BellOff, Settings } from "lucide-react";
 import { Navbar } from "@/components/layout/navbar";
 import { CourseCard } from "@/components/ui/course-card";
+import { useCourses } from "@/hooks/useCourses";
+import { useAuth } from "@/hooks/useAuth";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,93 +24,15 @@ const categories = [
   { id: "marketing", name: "Marketing", icon: Users, count: 19 },
 ];
 
-const courses = [
-  {
-    id: 1,
-    title: "Desenvolvimento Web Completo",
-    description: "Aprenda HTML, CSS, JavaScript e React do zero ao avançado",
-    category: "tech",
-    duration: "40h",
-    students: 1250,
-    rating: 4.8,
-    price: "R$ 199,90",
-    image: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=250&fit=crop&crop=center",
-    instructor: "João Silva",
-    level: "Iniciante"
-  },
-  {
-    id: 2,
-    title: "Marketing Digital Avançado",
-    description: "Estratégias completas de marketing digital para empresas",
-    category: "marketing",
-    duration: "30h",
-    students: 890,
-    rating: 4.9,
-    price: "R$ 299,90",
-    image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&h=250&fit=crop&crop=center",
-    instructor: "Maria Santos",
-    level: "Intermediário"
-  },
-  {
-    id: 3,
-    title: "UX/UI Design Fundamentals",
-    description: "Princípios essenciais de design de experiência do usuário",
-    category: "design",
-    duration: "25h",
-    students: 650,
-    rating: 4.7,
-    price: "R$ 179,90",
-    image: "https://images.unsplash.com/photo-1561070791-2526d30994b5?w=400&h=250&fit=crop&crop=center",
-    instructor: "Pedro Costa",
-    level: "Iniciante"
-  },
-  {
-    id: 4,
-    title: "Gestão de Projetos Ágeis",
-    description: "Metodologias ágeis aplicadas na gestão de projetos",
-    category: "business",
-    duration: "20h",
-    students: 420,
-    rating: 4.6,
-    price: "R$ 149,90",
-    image: "https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=250&fit=crop&crop=center",
-    instructor: "Ana Lima",
-    level: "Intermediário"
-  },
-  {
-    id: 5,
-    title: "Python para Data Science",
-    description: "Análise de dados e machine learning com Python",
-    category: "tech",
-    duration: "50h",
-    students: 980,
-    rating: 4.9,
-    price: "R$ 349,90",
-    image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400&h=250&fit=crop&crop=center",
-    instructor: "Carlos Oliveira",
-    level: "Avançado"
-  },
-  {
-    id: 6,
-    title: "Estratégias de E-commerce",
-    description: "Como criar e otimizar sua loja virtual",
-    category: "business",
-    duration: "35h",
-    students: 730,
-    rating: 4.8,
-    price: "R$ 249,90",
-    image: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&h=250&fit=crop&crop=center",
-    instructor: "Lucia Ferreira",
-    level: "Intermediário"
-  }
-];
 
 export default function ExploreCourses() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { courses, loading } = useCourses();
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("trending"); // trending, popular, duration, rating, price
-  const [favorites, setFavorites] = useState<number[]>([]);
+  const [favorites, setFavorites] = useState<string[]>([]);
   const [notifications, setNotifications] = useState<{[key: string]: boolean}>({
     all: false,
     tech: false,
@@ -140,7 +64,7 @@ export default function ExploreCourses() {
     }
   });
 
-  const toggleFavorite = (courseId: number) => {
+  const toggleFavorite = (courseId: string) => {
     setFavorites(prev => 
       prev.includes(courseId) 
         ? prev.filter(id => id !== courseId)
@@ -163,12 +87,26 @@ export default function ExploreCourses() {
       <div className="bg-gradient-hero py-16">
         <div className="container mx-auto px-4">
           <div className="text-center">
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-              Explore Nossos Cursos
-            </h1>
-            <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
-              Descubra milhares de cursos online para acelerar sua carreira
-            </p>
+            <div className="flex items-center justify-between max-w-6xl mx-auto mb-6">
+              <div>
+                <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
+                  Explore Nossos Cursos
+                </h1>
+                <p className="text-xl text-white/90 mb-8 max-w-2xl">
+                  Descubra milhares de cursos online para acelerar sua carreira
+                </p>
+              </div>
+              {user && (
+                <Button 
+                  variant="secondary" 
+                  onClick={() => navigate('/admin/cursos')}
+                  className="flex items-center gap-2"
+                >
+                  <Settings className="h-4 w-4" />
+                  Gerenciar Cursos
+                </Button>
+              )}
+            </div>
             
             {/* Search Bar */}
             <div className="max-w-2xl mx-auto">
@@ -312,16 +250,27 @@ export default function ExploreCourses() {
             </div>
 
             {/* Courses Grid */}
-            <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
-              {filteredCourses.map((course) => (
-                <CourseCard
-                  key={course.id}
-                  course={course}
-                  isFavorite={favorites.includes(course.id)}
-                  onToggleFavorite={toggleFavorite}
-                />
-              ))}
-            </div>
+            {loading ? (
+              <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
+                {[...Array(6)].map((_, i) => (
+                  <div key={i} className="h-64 bg-muted animate-pulse rounded-lg"></div>
+                ))}
+              </div>
+            ) : (
+              <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
+                {filteredCourses.map((course) => (
+                  <CourseCard
+                    key={course.id}
+                    course={{
+                      ...course,
+                      image: course.image_url || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=250&fit=crop&crop=center'
+                    }}
+                    isFavorite={favorites.includes(course.id)}
+                    onToggleFavorite={toggleFavorite}
+                  />
+                ))}
+              </div>
+            )}
 
             {/* Load More */}
             {filteredCourses.length > 0 && (
