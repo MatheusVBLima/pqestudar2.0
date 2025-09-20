@@ -124,17 +124,18 @@ export function LoginForm({ onSwitchToSignUp }: LoginFormProps) {
               <p className="text-sm text-muted-foreground">
                 Digite seu email para receber instruções de recuperação:
               </p>
-              <form onSubmit={handleForgotPassword} className="space-y-2">
+              <div className="space-y-2">
                 <Button 
-                  type="submit" 
+                  type="button" 
                   variant="outline" 
                   size="sm" 
                   disabled={resetLoading || !email}
                   className="w-full"
+                  onClick={handleForgotPassword}
                 >
                   {resetLoading ? 'Enviando...' : 'Enviar email de recuperação'}
                 </Button>
-              </form>
+              </div>
             </div>
           )}
           

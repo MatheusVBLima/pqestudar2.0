@@ -49,7 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const signUp = async (email: string, password: string) => {
-    const redirectUrl = `https://pqestudar-prototipo.lovable.app/`
+    const redirectUrl = `${window.location.origin}/`
     
     const { data, error } = await supabase.auth.signUp({
       email,
@@ -77,10 +77,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `https://pqestudar-prototipo.lovable.app/`,
+          redirectTo: `${window.location.origin}/`,
           queryParams: {
             access_type: 'offline',
-            prompt: 'consent',
+            prompt: 'select_account',
           },
         }
       })
@@ -93,7 +93,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const resetPassword = async (email: string) => {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `https://pqestudar-prototipo.lovable.app/reset-password`
+      redirectTo: `${window.location.origin}/reset-password`
     })
     return { error }
   }
