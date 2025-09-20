@@ -58,7 +58,7 @@ export function FeaturesPreview() {
           {benefits.map((benefit, index) => (
             <Card 
               key={benefit.title}
-              className="group hover:shadow-lg transition-all duration-300 text-center bg-card/80 border-border/50"
+              className="group hover:shadow-lg transition-all duration-300 text-center bg-card/80 border-border/50 flex flex-col h-full"
               style={{ animationDelay: `${index * 0.15}s` }}
             >
               <CardHeader>
@@ -67,13 +67,13 @@ export function FeaturesPreview() {
                 </div>
                 <CardTitle className="text-xl mb-2">{benefit.title}</CardTitle>
               </CardHeader>
-              <CardContent>
-                <CardDescription className="text-sm leading-relaxed mb-6">
+              <CardContent className="flex flex-col flex-1">
+                <CardDescription className="text-sm leading-relaxed mb-6 flex-1">
                   {benefit.description}
                 </CardDescription>
                 <Button 
                   variant="outline" 
-                  className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-all"
+                  className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-all mt-auto"
                   onClick={() => handleButtonClick(benefit.title)}
                 >
                   {benefit.title === "Acesso a Conteúdo Exclusivo" && "Saiba Mais"}
