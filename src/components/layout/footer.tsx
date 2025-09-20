@@ -9,7 +9,7 @@ export function Footer() {
           {/* Logo/Brand */}
           <div className="flex items-center space-x-2">
             <BookOpen className="h-5 w-5 text-primary" />
-            <span className="font-semibold text-lg bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">pqestudar</span>
+            <span className="font-semibold text-lg bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">PqEstudar?</span>
           </div>
 
           {/* Links */}
@@ -48,7 +48,7 @@ export function Footer() {
           </div>
 
           {/* Copyright */}
-          <div className="text-sm text-muted-foreground">© 2025 pqestudar</div>
+          <div className="text-sm text-muted-foreground">© 2025 PqEstudar?</div>
         </div>
       </div>
     </footer>;

@@ -44,7 +44,7 @@ export function Navbar() {
                   <div className="absolute inset-0 bg-primary/20 rounded-full blur-sm group-hover:blur-md transition-all duration-300 opacity-0 group-hover:opacity-100"></div>
                 </div>
                 <span className="bg-gradient-to-r from-primary via-primary/80 to-accent bg-clip-text text-transparent group-hover:from-primary group-hover:to-primary/60 transition-all duration-300">
-                  pqestudar
+                  PqEstudar
                 </span>
                 <div 
                   className="relative ml-1 cursor-pointer transition-all duration-300 hover:scale-110"

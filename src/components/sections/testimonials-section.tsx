@@ -8,7 +8,7 @@ const testimonials = [
     name: "Maria Silva",
     role: "Desenvolvedora Frontend",
     avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&h=100&fit=crop&crop=face",
-    testimonial: "Graças aos cursos e certificados da EduCertifica, consegui minha primeira vaga na área de TI em apenas 3 meses! A curadoria é excelente.",
+    testimonial: "Graças aos cursos e certificados da PqEstudar?, consegui minha primeira vaga na área de TI em apenas 3 meses! A curadoria é excelente.",
     rating: 5,
     company: "Tech Solutions"
   },
@@ -60,7 +60,7 @@ export function TestimonialsSection() {
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
             Quem já transformou a carreira com a{" "}
             <span className="bg-gradient-primary bg-clip-text text-transparent">
-              EduCertifica?
+              PqEstudar?
             </span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">

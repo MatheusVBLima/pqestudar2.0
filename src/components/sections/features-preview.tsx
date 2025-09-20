@@ -49,7 +49,7 @@ export function FeaturesPreview() {
             </span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-            Para quem busca um diferencial ainda maior, a EduCertifica oferece recursos exclusivos 
+            Para quem busca um diferencial ainda maior, a PqEstudar? oferece recursos exclusivos 
             e parcerias estratégicas que impulsionarão sua carreira. Descubra como:
           </p>
         </div>
