@@ -8,6 +8,7 @@ import { Navbar } from "@/components/layout/navbar";
 import { CourseCard } from "@/components/ui/course-card";
 import { useCourses } from "@/hooks/useCourses";
 import { useAuth } from "@/hooks/useAuth";
+import { useUserRoles } from "@/hooks/useUserRoles";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -28,6 +29,7 @@ const categories = [
 export default function ExploreCourses() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { isAdmin } = useUserRoles();
   const { courses, loading } = useCourses();
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
@@ -96,14 +98,14 @@ export default function ExploreCourses() {
                   Descubra milhares de cursos online para acelerar sua carreira
                 </p>
               </div>
-              {user && (
+              {isAdmin && (
                 <Button 
                   variant="secondary" 
                   onClick={() => navigate('/admin/cursos')}
                   className="flex items-center gap-2"
                 >
                   <Settings className="h-4 w-4" />
-                  Gerenciar Cursos
+                  Administrar Cursos
                 </Button>
               )}
             </div>
