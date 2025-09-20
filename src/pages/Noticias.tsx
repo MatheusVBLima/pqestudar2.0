@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Navbar } from "@/components/layout/navbar";
+import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,7 @@ import NewsStorageService from "@/services/news-storage";
 
 const Noticias = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [filtroAtivo, setFiltroAtivo] = useState<string>("Todas");
   const [noticias, setNoticias] = useState<(NewsArticle | ValidatedNews)[]>([]);
   const [expandedNews, setExpandedNews] = useState<Set<number>>(new Set());
@@ -54,6 +56,22 @@ const Noticias = () => {
   }, []);
 
   const searchMoreNews = async () => {
+    // Check if user is logged in
+    if (!user) {
+      toast({
+        title: "Login necessário",
+        description: "Você precisa estar logado para buscar mais notícias.",
+        variant: "destructive",
+        duration: 4000,
+      });
+      
+      // Navigate to login after a short delay
+      setTimeout(() => {
+        navigate("/login");
+      }, 1000);
+      return;
+    }
+
     // Check user contribution limit first
     if (!canUserContribute) {
       toast({
@@ -293,41 +311,54 @@ const Noticias = () => {
                   <TooltipTrigger asChild>
                     <Button 
                       onClick={searchMoreNews}
-                      disabled={isSearchingReal || !canUserContribute || isOnCooldown}
+                      disabled={isSearchingReal || (!user || !canUserContribute) || isOnCooldown}
                       size="sm"
-                      className={`w-full sm:w-auto bg-gradient-to-r transition-all text-sm px-4 py-2 ${
-                        !canUserContribute 
-                          ? "from-gray-400 to-gray-500 cursor-not-allowed" 
-                          : "from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
-                      }`}
+                       className={`w-full sm:w-auto bg-gradient-to-r transition-all text-sm px-4 py-2 ${
+                         !user || !canUserContribute 
+                           ? "from-gray-400 to-gray-500 cursor-not-allowed" 
+                           : "from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
+                       }`}
                     >
                       {isSearchingReal ? (
                         <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
                       ) : (
                         <Sparkles className="h-4 w-4 mr-2" />
                       )}
-                      <span className="whitespace-nowrap">
-                        {!canUserContribute 
-                          ? "Já contribuiu hoje" 
-                          : isOnCooldown 
-                            ? `Aguarde ${Math.ceil((SEARCH_COOLDOWN - timeSinceLastSearch) / 1000)}s`
-                            : isSearchingReal 
-                              ? "Buscando..." 
-                              : "Mais notícias"
-                        }
-                      </span>
+                       <span className="whitespace-nowrap">
+                         {!user
+                           ? "Faça login"
+                           : !canUserContribute 
+                             ? "Já contribuiu hoje" 
+                             : isOnCooldown 
+                               ? `Aguarde ${Math.ceil((SEARCH_COOLDOWN - timeSinceLastSearch) / 1000)}s`
+                               : isSearchingReal 
+                                 ? "Buscando..." 
+                                 : "Mais notícias"
+                         }
+                       </span>
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent className="max-w-xs p-3">
-                    <div className="space-y-1">
-                      <p className="font-semibold text-sm">🤝 Contribua com a comunidade!</p>
-                      <p className="text-xs text-muted-foreground leading-relaxed">
-                        Ao buscar mais notícias, você ajuda a enriquecer nossa plataforma 
-                        com informações valiosas que beneficiam todos os usuários da 
-                        comunidade educacional.
-                      </p>
-                    </div>
-                  </TooltipContent>
+                   <TooltipContent className="max-w-xs p-3">
+                     <div className="space-y-1">
+                       {!user ? (
+                         <>
+                           <p className="font-semibold text-sm">🔒 Login necessário</p>
+                           <p className="text-xs text-muted-foreground leading-relaxed">
+                             Faça login para buscar mais notícias e contribuir com a comunidade educacional.
+                           </p>
+                         </>
+                       ) : (
+                         <>
+                           <p className="font-semibold text-sm">🤝 Contribua com a comunidade!</p>
+                           <p className="text-xs text-muted-foreground leading-relaxed">
+                             Ao buscar mais notícias, você ajuda a enriquecer nossa plataforma 
+                             com informações valiosas que beneficiam todos os usuários da 
+                             comunidade educacional.
+                           </p>
+                         </>
+                       )}
+                     </div>
+                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
             </div>
