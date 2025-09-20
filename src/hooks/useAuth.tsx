@@ -10,6 +10,7 @@ interface AuthContextType {
   signUp: (email: string, password: string) => Promise<{ error: any }>
   signInWithGoogle: () => Promise<{ error: any }>
   signOut: () => Promise<void>
+  resetPassword: (email: string) => Promise<{ error: any }>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -50,22 +51,49 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signUp = async (email: string, password: string) => {
     const redirectUrl = `https://pqestudar-prototipo.lovable.app/`
     
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         emailRedirectTo: redirectUrl
       }
     })
+    
+    // Verificar se é um signup repetido
+    if (data?.user && !data.session && data.user.identities?.length === 0) {
+      return { 
+        error: { 
+          message: "Este email já está cadastrado. Tente fazer login ou recuperar sua senha.",
+          isExistingUser: true
+        } 
+      }
+    }
+    
     return { error }
   }
 
   const signInWithGoogle = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `https://pqestudar-prototipo.lovable.app/`
-      }
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `https://pqestudar-prototipo.lovable.app/`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
+        }
+      })
+      return { error }
+    } catch (error) {
+      console.error('Erro no Google Auth:', error)
+      return { error }
+    }
+  }
+
+  const resetPassword = async (email: string) => {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `https://pqestudar-prototipo.lovable.app/reset-password`
     })
     return { error }
   }
@@ -82,6 +110,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     signUp,
     signInWithGoogle,
     signOut,
+    resetPassword,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

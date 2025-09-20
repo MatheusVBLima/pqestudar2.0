@@ -16,7 +16,9 @@ export function LoginForm({ onSwitchToSignUp }: LoginFormProps) {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
-  const { signIn, signInWithGoogle } = useAuth()
+  const [resetLoading, setResetLoading] = useState(false)
+  const [showForgotPassword, setShowForgotPassword] = useState(false)
+  const { signIn, signInWithGoogle, resetPassword } = useAuth()
   const navigate = useNavigate()
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -26,7 +28,13 @@ export function LoginForm({ onSwitchToSignUp }: LoginFormProps) {
     const { error } = await signIn(email, password)
     
     if (error) {
-      toast.error('Erro ao fazer login: ' + error.message)
+      let errorMessage = 'Erro ao fazer login'
+      if (error.message?.includes('Invalid login credentials')) {
+        errorMessage = 'Email ou senha incorretos. Verifique suas credenciais ou tente recuperar sua senha.'
+      } else {
+        errorMessage = error.message
+      }
+      toast.error(errorMessage)
     } else {
       toast.success('Login realizado com sucesso!')
       navigate('/')
@@ -44,6 +52,27 @@ export function LoginForm({ onSwitchToSignUp }: LoginFormProps) {
       setGoogleLoading(false)
     }
     // Não definimos loading como false aqui porque o usuário será redirecionado
+  }
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    if (!email) {
+      toast.error('Digite seu email para recuperar a senha')
+      return
+    }
+
+    setResetLoading(true)
+    const { error } = await resetPassword(email)
+    
+    if (error) {
+      toast.error('Erro ao enviar email de recuperação: ' + error.message)
+    } else {
+      toast.success('Email de recuperação enviado! Verifique sua caixa de entrada.')
+      setShowForgotPassword(false)
+    }
+    
+    setResetLoading(false)
   }
 
   return (
@@ -78,7 +107,38 @@ export function LoginForm({ onSwitchToSignUp }: LoginFormProps) {
               placeholder="••••••••"
             />
           </div>
-          <Button type="submit" className="w-full" disabled={loading || googleLoading}>
+          
+          <div className="flex items-center justify-between">
+            <Button
+              type="button"
+              variant="link"
+              className="p-0 h-auto text-sm"
+              onClick={() => setShowForgotPassword(!showForgotPassword)}
+            >
+              Esqueci minha senha
+            </Button>
+          </div>
+          
+          {showForgotPassword && (
+            <div className="p-4 bg-muted/50 rounded-lg space-y-2">
+              <p className="text-sm text-muted-foreground">
+                Digite seu email para receber instruções de recuperação:
+              </p>
+              <form onSubmit={handleForgotPassword} className="space-y-2">
+                <Button 
+                  type="submit" 
+                  variant="outline" 
+                  size="sm" 
+                  disabled={resetLoading || !email}
+                  className="w-full"
+                >
+                  {resetLoading ? 'Enviando...' : 'Enviar email de recuperação'}
+                </Button>
+              </form>
+            </div>
+          )}
+          
+          <Button type="submit" className="w-full" disabled={loading || googleLoading || resetLoading}>
             {loading ? 'Entrando...' : 'Entrar'}
           </Button>
         </form>
@@ -98,7 +158,7 @@ export function LoginForm({ onSwitchToSignUp }: LoginFormProps) {
             variant="outline"
             className="w-full mt-4"
             onClick={handleGoogleSignIn}
-            disabled={loading || googleLoading}
+            disabled={loading || googleLoading || resetLoading}
           >
             {googleLoading ? 'Entrando...' : (
               <>

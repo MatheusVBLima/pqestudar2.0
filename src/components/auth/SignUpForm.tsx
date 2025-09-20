@@ -36,7 +36,24 @@ export function SignUpForm({ onSwitchToLogin }: SignUpFormProps) {
     const { error } = await signUp(email, password)
     
     if (error) {
-      toast.error('Erro ao criar conta: ' + error.message)
+      if (error.isExistingUser) {
+        toast.error(error.message, {
+          action: {
+            label: "Fazer Login",
+            onClick: onSwitchToLogin,
+          },
+        })
+      } else {
+        let errorMessage = 'Erro ao criar conta'
+        if (error.message?.includes('User already registered')) {
+          errorMessage = 'Este email já está cadastrado. Tente fazer login.'
+        } else if (error.message?.includes('Password should be at least')) {
+          errorMessage = 'A senha deve ter pelo menos 6 caracteres'
+        } else {
+          errorMessage = error.message
+        }
+        toast.error(errorMessage)
+      }
     } else {
       toast.success('Conta criada! Verifique seu email para confirmar.')
       onSwitchToLogin()
