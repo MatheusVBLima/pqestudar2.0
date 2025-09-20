@@ -48,12 +48,24 @@ const Noticias = () => {
   const timeSinceLastSearch = now - lastSearchTime;
   const isOnCooldown = timeSinceLastSearch < SEARCH_COOLDOWN;
 
-  // Load initial AI-generated news on mount
+  // Load fresh 2025 news on mount
   useEffect(() => {
-    const initialNews = AINewsService.generateNews(8);
-    setNoticias(initialNews);
-    // Store news for detail page access
-    NewsStorageService.storeNews(initialNews);
+    const loadFreshNews = () => {
+      // Check if we have current year news cached
+      const cachedNews = NewsStorageService.getAllNews();
+      
+      if (cachedNews.length > 0) {
+        setNoticias(cachedNews);
+      } else {
+        // Generate fresh 2025 news content
+        console.log('Generating fresh 2025 news content...');
+        const freshNews = AINewsService.generateNews(12);
+        setNoticias(freshNews);
+        NewsStorageService.storeNews(freshNews);
+      }
+    };
+
+    loadFreshNews();
   }, []);
 
   const searchMoreNews = async () => {

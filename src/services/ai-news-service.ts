@@ -28,65 +28,65 @@ export class AINewsService {
 
   private static newsTemplates: Record<string, string[]> = {
     "ENEM": [
-      "Resultado do ENEM {year} será divulgado em {month}",
-      "Inscrições para o ENEM {year} começam na próxima semana",
-      "Datas do ENEM {year} são confirmadas pelo Inep",
-      "Novas regras do ENEM {year} são anunciadas",
-      "Gabarito do ENEM {year} já está disponível"
+      "ENEM 2025: Inep anuncia mudanças no formato das provas",
+      "Cronograma oficial do ENEM 2025 é divulgado pelo MEC",
+      "Inscrições do ENEM 2025 começam em maio com novidades",
+      "ENEM 2025 terá novo modelo de correção da redação",
+      "Resultado do ENEM 2024 já disponível para consulta"
     ],
     "Concursos": [
-      "Inscrições abertas para concurso da {org} {year}",
-      "Resultado do concurso {org} será divulgado",
-      "Edital de concurso público oferece {num} vagas",
-      "Provas do concurso {org} são adiadas",
-      "Novo concurso público com salário de R$ {salary}"
+      "Concurso {org} 2025: {num} vagas com salário de R$ {salary}",
+      "Edital do concurso {org} prevê provas para março de 2025",
+      "Inscrições abertas para concurso {org} até fevereiro",
+      "Resultado final do concurso {org} será divulgado em abril",
+      "Novo concurso federal oferece estabilidade e benefícios"
     ],
     "SISU": [
-      "Novo cronograma do SISU {year} é divulgado",
-      "Inscrições do SISU {year} começam em {date}",
-      "Lista de espera do SISU {year} é liberada",
-      "Notas de corte do SISU {year} surpreendem",
-      "SISU {year}: confira as universidades participantes"
+      "SISU 2025: MEC divulga novo calendário com mudanças importantes",
+      "Inscrições do SISU 2025 começam no dia {date} de fevereiro",
+      "SISU 2025: lista de espera terá novo formato de convocação",
+      "Notas de corte parciais do SISU 2025 já estão disponíveis",
+      "SISU 2025: universidades federais ampliam número de vagas"
     ],
     "ProUni": [
-      "ProUni: Inscrições para bolsas começam na próxima semana",
-      "Resultado do ProUni {year} será divulgado",
-      "ProUni oferece mais de {num} mil bolsas",
-      "Lista de espera do ProUni {year} é liberada",
-      "Novas regras do ProUni {year} são anunciadas"
+      "ProUni 2025: {num} mil bolsas disponíveis em todo o país",
+      "Cronograma do ProUni 2025 é confirmado pelo MEC",
+      "Lista de espera do ProUni 2025 será liberada em março",
+      "ProUni 2025: novas regras beneficiam estudantes de baixa renda",
+      "Inscrições do ProUni 2025 começam após resultado do SISU"
     ],
     "FIES": [
-      "Mudanças no Fies {year}: novas regras para financiamento",
-      "Inscrições do FIES {year} são prorrogadas",
-      "FIES {year}: confira os cursos disponíveis",
-      "Resultado da seleção do FIES será divulgado",
-      "Novas condições do FIES beneficiam estudantes"
+      "FIES 2025: novas condições facilitam acesso ao financiamento",
+      "Cronograma do FIES 2025 prevê inscrições para abril",
+      "FIES 2025: juros reduzidos para cursos prioritários",
+      "Renovação do FIES 2025 tem prazo estendido até março",
+      "FIES 2025: ampliação de vagas para cursos de saúde"
     ],
     "Vestibular": [
-      "Vestibular {univ} {year}: inscrições abertas",
-      "Datas do vestibular {univ} são confirmadas",
-      "Prova do vestibular {univ} será aplicada em {date}",
-      "Resultado do vestibular {univ} surpreende",
-      "Vestibular {univ} oferece {num} vagas"
+      "Vestibular {univ} 2025: {num} vagas em cursos de graduação",
+      "Calendário do vestibular {univ} 2025 é divulgado",
+      "Provas do vestibular {univ} 2025 serão aplicadas em {date}",
+      "Resultado do vestibular {univ} 2025 sai no final de março",
+      "{univ} oferece novo sistema de ingresso para 2025"
     ],
     "Educação": [
-      "MEC anuncia mudanças na educação básica",
-      "Novo programa de bolsas estudantis é lançado",
-      "Reforma do ensino médio entra em vigor",
-      "Investimento em educação aumenta em {percent}%",
-      "Nova base curricular é aprovada"
+      "MEC anuncia R$ 15 bilhões para educação básica em 2025",
+      "Novo Ensino Médio: implementação completa até dezembro de 2025",
+      "PNAE 2025: cardápio escolar ganha novos itens nutritivos",
+      "Programa Mais Alfabetização amplia atendimento para 2025",
+      "Base Nacional Comum Curricular: novas diretrizes para 2025"
     ]
   };
 
   private static descriptions = [
-    "O Ministério da Educação divulgou informações importantes sobre os próximos processos seletivos e programas educacionais.",
-    "As inscrições estão abertas por tempo limitado. Confira todos os detalhes e não perca os prazos.",
-    "Mudanças significativas foram anunciadas para beneficiar estudantes de todo o país.",
-    "O cronograma oficial foi confirmado com todas as datas importantes do processo.",
-    "Novas oportunidades de acesso ao ensino superior são disponibilizadas.",
-    "Programa oferece bolsas e financiamentos para democratizar o acesso à educação.",
-    "Estudantes devem ficar atentos aos prazos e documentação necessária.",
-    "Resultados serão divulgados na plataforma oficial do programa."
+    "O MEC divulgou mudanças importantes nos processos seletivos de 2025 que impactam milhões de estudantes brasileiros.",
+    "Cronograma atualizado traz novas datas e procedimentos para garantir maior transparência no processo seletivo.",
+    "Estudantes têm até o final do mês para se inscrever. Documentação deve estar completa e atualizada.",
+    "Novas diretrizes visam ampliar o acesso ao ensino superior e democratizar as oportunidades educacionais.",
+    "Programa governamental oferece milhares de vagas em universidades públicas e privadas de todo o país.",
+    "Alterações no edital beneficiam estudantes de escola pública e baixa renda com critérios mais inclusivos.",
+    "Plataforma digital facilita inscrições e acompanhamento dos processos seletivos em tempo real.",
+    "Resultados preliminares já estão disponíveis para consulta no portal oficial do programa."
   ];
 
   private static organizations = [
@@ -133,45 +133,111 @@ export class AINewsService {
   }
 
   private static generateFullContent(categoria: string, titulo: string): string {
+    const currentYear = new Date().getFullYear();
     const contentTemplates: Record<string, string[]> = {
       "ENEM": [
-        `<p class="mb-4">O Instituto Nacional de Estudos e Pesquisas Educacionais Anísio Teixeira (Inep) divulgou informações atualizadas sobre o Exame Nacional do Ensino Médio (ENEM).</p>
-         <h3 class="text-xl font-semibold mb-3 text-foreground">Detalhes Importantes</h3>
-         <p class="mb-4">Os estudantes devem ficar atentos aos prazos e procedimentos necessários para participar do processo seletivo.</p>
-         <ul class="list-disc ml-6 mb-4">
-           <li>Documentação necessária deve estar em ordem</li>
-           <li>Inscrições devem ser realizadas no prazo</li>
-           <li>Taxas de inscrição podem ter isenção para estudantes de baixa renda</li>
-         </ul>`,
-        `<p class="mb-4">O ENEM continua sendo a principal porta de entrada para o ensino superior no Brasil, oferecendo oportunidades em universidades públicas e privadas.</p>
-         <h3 class="text-xl font-semibold mb-3 text-foreground">Cronograma</h3>
-         <p class="mb-4">É fundamental que os candidatos acompanhem o cronograma oficial para não perder prazos importantes.</p>`
-      ],
-      "Concursos": [
-        `<p class="mb-4">Um novo concurso público foi anunciado com excelentes oportunidades de carreira no serviço público.</p>
-         <h3 class="text-xl font-semibold mb-3 text-foreground">Requisitos</h3>
-         <ul class="list-disc ml-6 mb-4">
-           <li>Ensino superior completo</li>
-           <li>Idade mínima de 18 anos</li>
-           <li>Estar em dia com as obrigações eleitorais</li>
-         </ul>`,
-        `<p class="mb-4">As oportunidades no serviço público oferecem estabilidade e benefícios atrativos para os aprovados.</p>
-         <h3 class="text-xl font-semibold mb-3 text-foreground">Etapas do Processo</h3>
-         <p class="mb-4">O processo seletivo será composto por múltiplas etapas eliminatórias e classificatórias.</p>`
+        `<div class="bg-muted/50 p-4 rounded-lg mb-6 italic">
+           <p class="text-lg font-medium">O Inep confirmou as principais mudanças no ENEM ${currentYear}, incluindo novo formato das questões e cronograma atualizado para beneficiar estudantes de todo o país.</p>
+         </div>
+         
+         <div class="bg-primary/10 border border-primary/20 rounded-lg p-6 mb-6">
+           <h3 class="text-lg font-semibold mb-4 flex items-center">📅 Datas Principais</h3>
+           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+             <div>📝 <strong>Inscrições:</strong> 15 a 22 de maio</div>
+             <div>💰 <strong>Pagamento:</strong> até 27 de maio</div>
+             <div>📚 <strong>Provas:</strong> 9 e 16 de novembro</div>
+             <div>📊 <strong>Resultado:</strong> 15 de janeiro de ${currentYear + 1}</div>
+           </div>
+         </div>
+         
+         <p class="mb-4">O Instituto Nacional de Estudos e Pesquisas Educacionais Anísio Teixeira (Inep) divulgou o cronograma completo do ENEM ${currentYear}, com importantes atualizações no processo de inscrição e aplicação das provas.</p>
+         
+         <h3 class="text-xl font-semibold mb-3 text-foreground">🎯 Dicas e Orientações Práticas</h3>
+         <ul class="list-disc ml-6 mb-6 space-y-2">
+           <li>Mantenha seus documentos pessoais atualizados antes da inscrição</li>
+           <li>Solicite isenção da taxa se você atender aos critérios</li>
+           <li>Escolha a cidade de prova mais próxima de sua residência</li>
+           <li>Prepare-se com antecedência usando os materiais oficiais</li>
+           <li>Acompanhe as atualizações pelo aplicativo oficial do ENEM</li>
+         </ul>
+         
+         <div class="bg-accent p-4 rounded-lg mb-6 text-center">
+           <button class="bg-primary text-primary-foreground px-6 py-3 rounded-lg font-semibold hover:bg-primary/90 transition-colors">
+             📱 Acessar Portal do ENEM
+           </button>
+         </div>`,
+         
+        `<div class="bg-muted/50 p-4 rounded-lg mb-6 italic">
+           <p class="text-lg font-medium">Novo sistema de correção da redação do ENEM ${currentYear} promete maior transparência e agilidade na divulgação dos resultados.</p>
+         </div>
+         
+         <div class="bg-primary/10 border border-primary/20 rounded-lg p-6 mb-6">
+           <h3 class="text-lg font-semibold mb-4 flex items-center">📅 Cronograma da Redação</h3>
+           <div class="space-y-2">
+             <div>✍️ <strong>Aplicação:</strong> 9 de novembro (domingo)</div>
+             <div>🔍 <strong>Correção:</strong> novembro a dezembro</div>
+             <div>📋 <strong>Divulgação:</strong> junto com as demais notas</div>
+             <div>📝 <strong>Recursos:</strong> 20 a 24 de janeiro de ${currentYear + 1}</div>
+           </div>
+         </div>
+         
+         <p class="mb-4">O ENEM ${currentYear} traz inovações importantes no processo de correção da redação, com foco na transparência e qualidade da avaliação dos textos dos candidatos.</p>`
       ],
       "SISU": [
-        `<p class="mb-4">O Sistema de Seleção Unificada (SISU) é a principal forma de acesso às universidades públicas brasileiras.</p>
-         <h3 class="text-xl font-semibold mb-3 text-foreground">Como Participar</h3>
-         <p class="mb-4">Para participar do SISU, é necessário ter participado do ENEM e não ter zerado a redação.</p>`,
-        `<p class="mb-4">As notas de corte do SISU variam conforme a concorrência de cada curso e universidade.</p>
-         <h3 class="text-xl font-semibold mb-3 text-foreground">Dicas Importantes</h3>
-         <p class="mb-4">Escolha suas opções de curso estrategicamente, considerando suas notas e a concorrência.</p>`
+        `<div class="bg-muted/50 p-4 rounded-lg mb-6 italic">
+           <p class="text-lg font-medium">O MEC divulgou o novo calendário do SISU ${currentYear} com mudanças importantes nas inscrições e chamadas para universidades públicas.</p>
+         </div>
+         
+         <div class="bg-primary/10 border border-primary/20 rounded-lg p-6 mb-6">
+           <h3 class="text-lg font-semibold mb-4 flex items-center">📅 Datas Principais</h3>
+           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+             <div>📝 <strong>Inscrições:</strong> 15 a 22 de fevereiro</div>
+             <div>📢 <strong>Resultado:</strong> 28 de fevereiro</div>
+             <div>📋 <strong>Matrícula:</strong> 3 a 7 de março</div>
+             <div>🔄 <strong>Lista de espera:</strong> 10 a 17 de março</div>
+           </div>
+         </div>
+         
+         <p class="mb-4">O Sistema de Seleção Unificada (SISU) ${currentYear} oferece mais de 250 mil vagas em universidades federais de todo o país, com novidades importantes no processo de seleção.</p>
+         
+         <h3 class="text-xl font-semibold mb-3 text-foreground">🎯 Dicas e Orientações Práticas</h3>
+         <ul class="list-disc ml-6 mb-6 space-y-2">
+           <li>Escolha opções com base na nota de corte parcial</li>
+           <li>Confira documentos exigidos pela universidade</li>
+           <li>Alterações podem ser feitas até o último dia</li>
+           <li>Monitore as notas de corte diariamente</li>
+           <li>Tenha um plano B com a lista de espera</li>
+         </ul>
+         
+         <div class="bg-accent p-4 rounded-lg mb-6 text-center">
+           <button class="bg-primary text-primary-foreground px-6 py-3 rounded-lg font-semibold hover:bg-primary/90 transition-colors">
+             🎓 Acessar Portal do SISU
+           </button>
+         </div>`
+      ],
+      "Concursos": [
+        `<div class="bg-muted/50 p-4 rounded-lg mb-6 italic">
+           <p class="text-lg font-medium">Novo concurso público oferece 1.500 vagas com salários de até R$ 12.000, com inscrições abertas até março de ${currentYear}.</p>
+         </div>
+         
+         <div class="bg-primary/10 border border-primary/20 rounded-lg p-6 mb-6">
+           <h3 class="text-lg font-semibold mb-4 flex items-center">📅 Cronograma do Concurso</h3>
+           <div class="space-y-2">
+             <div>📝 <strong>Inscrições:</strong> 1º a 28 de março</div>
+             <div>📚 <strong>Provas objetivas:</strong> 15 de maio</div>
+             <div>✍️ <strong>Prova discursiva:</strong> 16 de maio</div>
+             <div>📊 <strong>Resultado final:</strong> 30 de julho</div>
+           </div>
+         </div>
+         
+         <p class="mb-4">Este concurso representa uma excelente oportunidade para quem busca estabilidade e crescimento profissional no serviço público federal.</p>`
       ]
     };
 
-    const defaultContent = `<p class="mb-4">Informações importantes sobre educação que impactam estudantes de todo o país.</p>
-                           <h3 class="text-xl font-semibold mb-3 text-foreground">Saiba Mais</h3>
-                           <p class="mb-4">Acompanhe as atualizações e não perca prazos importantes para sua formação acadêmica.</p>`;
+    const defaultContent = `<div class="bg-muted/50 p-4 rounded-lg mb-6 italic">
+                           <p class="text-lg font-medium">Informações importantes sobre educação que impactam estudantes e profissionais de todo o país.</p>
+                         </div>
+                         <p class="mb-4">Acompanhe as atualizações e não perca prazos importantes para sua formação acadêmica e desenvolvimento profissional.</p>`;
 
     const templates = contentTemplates[categoria] || [defaultContent];
     return this.getRandomItem(templates);
