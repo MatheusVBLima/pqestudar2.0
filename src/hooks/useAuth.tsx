@@ -48,7 +48,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const signUp = async (email: string, password: string) => {
-    const redirectUrl = `${window.location.origin}/`
+    const redirectUrl = `https://pqestudar-prototipo.lovable.app/`
     
     const { error } = await supabase.auth.signUp({
       email,
@@ -64,7 +64,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/`
+        redirectTo: `https://pqestudar-prototipo.lovable.app/`
       }
     })
     return { error }
