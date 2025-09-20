@@ -14,6 +14,24 @@ export type Database = {
   }
   public: {
     Tables: {
+      anonymous_course_suggestions_rate_limit: {
+        Row: {
+          created_at: string | null
+          id: string
+          ip_address: unknown
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          ip_address: unknown
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          ip_address?: unknown
+        }
+        Relationships: []
+      }
       course_suggestions: {
         Row: {
           created_at: string
@@ -21,7 +39,6 @@ export type Database = {
           status: string | null
           suggestion: string
           updated_at: string
-          user_email: string | null
           user_id: string | null
         }
         Insert: {
@@ -30,7 +47,6 @@ export type Database = {
           status?: string | null
           suggestion: string
           updated_at?: string
-          user_email?: string | null
           user_id?: string | null
         }
         Update: {
@@ -39,7 +55,6 @@ export type Database = {
           status?: string | null
           suggestion?: string
           updated_at?: string
-          user_email?: string | null
           user_id?: string | null
         }
         Relationships: []
@@ -82,7 +97,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      cleanup_old_rate_limit_entries: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
