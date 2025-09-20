@@ -68,9 +68,9 @@ const Noticias = () => {
         duration: 4000,
       });
       
-      // Navigate to login after showing the prompt
+      // Navigate to login after showing the prompt, with return path
       setTimeout(() => {
-        navigate("/login");
+        navigate("/login?from=noticias");
       }, 1500);
       return;
     }
