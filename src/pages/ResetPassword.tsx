@@ -53,48 +53,57 @@ export function ResetPassword() {
       const email = searchParams.get('email')
       
       if (email) {
-        // Se temos email, fazer login primeiro com uma senha temporária
-        // e depois atualizar a senha
-        const { error: updateError } = await supabase.auth.updateUser({
-          password: password
+        // Fazer login temporário e depois atualizar senha
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email: decodeURIComponent(email),
+          password: 'temp123'  // senha temporária que não funcionará
         })
+        
+        // Como esperado, vai dar erro. Agora tentamos resetar a senha através do email
+        const { error: resetError } = await supabase.auth.resetPasswordForEmail(
+          decodeURIComponent(email),
+          {
+            redirectTo: `${window.location.origin}/reset-password?confirmed=${encodeURIComponent(email)}&new_password=${encodeURIComponent(password)}`,
+          }
+        )
+        
+        if (resetError) {
+          toast.error('Erro ao processar redefinição. Verifique se o email está correto.')
+        } else {
+          toast.success('Verifique seu email para um novo link de confirmação!')
+        }
+      } else {
+        // Verificar se é uma confirmação de reset
+        const confirmedEmail = searchParams.get('confirmed')
+        const newPassword = searchParams.get('new_password')
+        
+        if (confirmedEmail && newPassword) {
+          const { error } = await supabase.auth.updateUser({
+            password: decodeURIComponent(newPassword)
+          })
 
-        if (updateError) {
-          // Se falhar, tentar através do email
-          const { error: resetError } = await supabase.auth.resetPasswordForEmail(
-            decodeURIComponent(email),
-            {
-              redirectTo: `${window.location.origin}/login`,
-            }
-          )
-          
-          if (resetError) {
-            toast.error('Erro ao redefinir senha. Tente novamente mais tarde.')
+          if (error) {
+            toast.error('Erro ao redefinir senha: ' + error.message)
           } else {
-            toast.success('Um novo link de redefinição foi enviado para seu email!')
+            toast.success('Senha redefinida com sucesso! Você será redirecionado.')
             setTimeout(() => {
               navigate('/login')
             }, 2000)
           }
         } else {
-          toast.success('Senha redefinida com sucesso! Você será redirecionado.')
-          setTimeout(() => {
-            navigate('/login')
-          }, 2000)
-        }
-      } else {
-        // Se não temos email, usar o método tradicional
-        const { error } = await supabase.auth.updateUser({
-          password: password
-        })
+          // Método tradicional se tiver tokens
+          const { error } = await supabase.auth.updateUser({
+            password: password
+          })
 
-        if (error) {
-          toast.error('Erro ao redefinir senha: ' + error.message)
-        } else {
-          toast.success('Senha redefinida com sucesso! Você será redirecionado.')
-          setTimeout(() => {
-            navigate('/')
-          }, 2000)
+          if (error) {
+            toast.error('Erro ao redefinir senha: ' + error.message)
+          } else {
+            toast.success('Senha redefinida com sucesso! Você será redirecionado.')
+            setTimeout(() => {
+              navigate('/')
+            }, 2000)
+          }
         }
       }
     } catch (error) {

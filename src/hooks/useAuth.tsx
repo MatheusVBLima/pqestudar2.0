@@ -93,19 +93,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const resetPassword = async (email: string) => {
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
-      });
+      // Chamar nossa edge function para enviar o email customizado
+      const response = await fetch(`https://omkxiomwzbykmqttfozi.supabase.co/functions/v1/send-password-reset`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9ta3hpb213emJ5a21xdHRmb3ppIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc5MTc1OTIsImV4cCI6MjA3MzQ5MzU5Mn0.IzpMhFg4XJGNxPJlu8LTP_yDOGeHN4C8dESNKxq7bIc`,
+        },
+        body: JSON.stringify({
+          email,
+          resetUrl: `${window.location.origin}/reset-password?email=${encodeURIComponent(email)}`
+        })
+      })
 
-      if (error) {
-        return { error: { message: error.message } };
+      if (!response.ok) {
+        throw new Error('Erro ao enviar email de recuperação')
       }
 
-      return { error: null };
+      return { error: null }
     } catch (error: any) {
-      return { error: { message: error.message } };
+      return { error: { message: error.message } }
     }
-  };
+  }
 
   const signOut = async () => {
     await supabase.auth.signOut()
