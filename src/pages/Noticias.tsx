@@ -24,6 +24,7 @@ const Noticias = () => {
   const [expandedNews, setExpandedNews] = useState<Set<number>>(new Set());
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSearchingReal, setIsSearchingReal] = useState(false);
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const [lastSearchTime, setLastSearchTime] = useState<number>(0);
   const [newBadge, setNewBadge] = useState<BadgeType | null>(null);
   const { adicionarFavorito, removerFavorito, isFavorito } = useFavoritos();
@@ -58,6 +59,8 @@ const Noticias = () => {
   const searchMoreNews = async () => {
     // Check if user is logged in
     if (!user) {
+      setShowLoginPrompt(true);
+      
       toast({
         title: "Login necessário",
         description: "Você precisa estar logado para buscar mais notícias.",
@@ -65,10 +68,10 @@ const Noticias = () => {
         duration: 4000,
       });
       
-      // Navigate to login after a short delay
+      // Navigate to login after showing the prompt
       setTimeout(() => {
         navigate("/login");
-      }, 1000);
+      }, 1500);
       return;
     }
 
@@ -311,10 +314,10 @@ const Noticias = () => {
                   <TooltipTrigger asChild>
                     <Button 
                       onClick={searchMoreNews}
-                      disabled={isSearchingReal || (!user || !canUserContribute) || isOnCooldown}
+                      disabled={isSearchingReal || (user && !canUserContribute) || isOnCooldown}
                       size="sm"
                        className={`w-full sm:w-auto bg-gradient-to-r transition-all text-sm px-4 py-2 ${
-                         !user || !canUserContribute 
+                         (user && !canUserContribute) || showLoginPrompt
                            ? "from-gray-400 to-gray-500 cursor-not-allowed" 
                            : "from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
                        }`}
@@ -325,9 +328,9 @@ const Noticias = () => {
                         <Sparkles className="h-4 w-4 mr-2" />
                       )}
                        <span className="whitespace-nowrap">
-                         {!user
+                         {showLoginPrompt
                            ? "Faça login"
-                           : !canUserContribute 
+                           : user && !canUserContribute 
                              ? "Já contribuiu hoje" 
                              : isOnCooldown 
                                ? `Aguarde ${Math.ceil((SEARCH_COOLDOWN - timeSinceLastSearch) / 1000)}s`
@@ -340,11 +343,19 @@ const Noticias = () => {
                   </TooltipTrigger>
                    <TooltipContent className="max-w-xs p-3">
                      <div className="space-y-1">
-                       {!user ? (
+                       {showLoginPrompt ? (
                          <>
-                           <p className="font-semibold text-sm">🔒 Login necessário</p>
+                           <p className="font-semibold text-sm">🔒 Redirecionando...</p>
                            <p className="text-xs text-muted-foreground leading-relaxed">
-                             Faça login para buscar mais notícias e contribuir com a comunidade educacional.
+                             Você será redirecionado para a página de login.
+                           </p>
+                         </>
+                       ) : !user ? (
+                         <>
+                           <p className="font-semibold text-sm">🤝 Contribua com a comunidade!</p>
+                           <p className="text-xs text-muted-foreground leading-relaxed">
+                             Clique para buscar mais notícias e contribuir com informações valiosas 
+                             para a comunidade educacional.
                            </p>
                          </>
                        ) : (
