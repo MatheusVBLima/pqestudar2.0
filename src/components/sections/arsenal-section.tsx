@@ -1,6 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { BookOpen, FileText, Headphones, FileStack, Users, Presentation, Shield } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { BookOpen, FileText, Headphones, FileStack, Users, Presentation, Shield, Check, Lock, Zap } from "lucide-react";
 
 const components = [
   {
@@ -123,7 +124,7 @@ export function ArsenalSection() {
         </div>
 
         {/* Garantia */}
-        <Card className="p-8 md:p-12 bg-gradient-to-br from-accent/20 to-accent/5 border-2 border-primary/30 animate-fade-in" style={{ animationDelay: "0.6s" }}>
+        <Card className="p-8 md:p-12 bg-gradient-to-br from-accent/20 to-accent/5 border-2 border-primary/30 animate-fade-in mb-16" style={{ animationDelay: "0.6s" }}>
           <div className="flex flex-col md:flex-row items-start gap-6">
             <div className="flex-shrink-0 w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
               <Shield className="h-8 w-8 text-primary" />
@@ -143,6 +144,138 @@ export function ArsenalSection() {
             </div>
           </div>
         </Card>
+
+        {/* Resumo Visual do Valor */}
+        <div className="mb-16 animate-fade-in" style={{ animationDelay: "0.7s" }}>
+          <div className="text-center mb-8">
+            <h3 className="text-3xl font-bold mb-4">
+              Vamos recapitular tudo que você leva para casa hoje:
+            </h3>
+          </div>
+
+          <Card className="p-8 md:p-10 bg-card/80 backdrop-blur-sm border-2 border-border">
+            <div className="space-y-4 mb-6">
+              <div className="flex items-center justify-between py-3 border-b border-border/50">
+                <div className="flex items-center gap-3">
+                  <Check className="h-5 w-5 text-primary flex-shrink-0" />
+                  <span className="font-medium">A Trilha de Aprendizagem Acelerada</span>
+                </div>
+                <span className="font-semibold text-muted-foreground">R$ 997</span>
+              </div>
+              <div className="flex items-center justify-between py-3 border-b border-border/50">
+                <div className="flex items-center gap-3">
+                  <Check className="h-5 w-5 text-primary flex-shrink-0" />
+                  <span className="font-medium">A Biblioteca de Templates "Produtividade Imediata"</span>
+                </div>
+                <span className="font-semibold text-muted-foreground">R$ 697</span>
+              </div>
+              <div className="flex items-center justify-between py-3 border-b border-border/50">
+                <div className="flex items-center gap-3">
+                  <Check className="h-5 w-5 text-primary flex-shrink-0" />
+                  <span className="font-medium">O Kit de Foco (Áudios e Mapas Mentais)</span>
+                </div>
+                <span className="font-semibold text-muted-foreground">R$ 397</span>
+              </div>
+              <div className="flex items-center justify-between py-3 border-b border-border/50">
+                <div className="flex items-center gap-3">
+                  <Check className="h-5 w-5 text-primary flex-shrink-0" />
+                  <span className="font-medium">O Cofre de Estudos de Caso</span>
+                </div>
+                <span className="font-semibold text-muted-foreground">R$ 497</span>
+              </div>
+              <div className="flex items-center justify-between py-3 border-b border-border/50">
+                <div className="flex items-center gap-3">
+                  <Check className="h-5 w-5 text-primary flex-shrink-0" />
+                  <span className="font-medium">BÔNUS #1: Comunidade de Executores</span>
+                </div>
+                <span className="font-semibold text-muted-foreground">R$ 597</span>
+              </div>
+              <div className="flex items-center justify-between py-3 border-b border-border/50">
+                <div className="flex items-center gap-3">
+                  <Check className="h-5 w-5 text-primary flex-shrink-0" />
+                  <span className="font-medium">BÔNUS #2: Workshop Gravado "Destravando o Notion"</span>
+                </div>
+                <span className="font-semibold text-muted-foreground">R$ 297</span>
+              </div>
+              <div className="flex items-center justify-between py-3">
+                <div className="flex items-center gap-3">
+                  <Check className="h-5 w-5 text-primary flex-shrink-0" />
+                  <span className="font-medium">GARANTIA INCONDICIONAL DE PRODUTIVIDADE</span>
+                </div>
+                <span className="font-semibold text-muted-foreground">Incalculável</span>
+              </div>
+            </div>
+            
+            <div className="pt-6 border-t-2 border-primary/30">
+              <div className="flex items-center justify-between">
+                <span className="text-2xl font-bold">VALOR TOTAL:</span>
+                <span className="text-3xl font-bold text-primary">R$ 3.482</span>
+              </div>
+            </div>
+          </Card>
+        </div>
+
+        {/* Ancoragem de Preço */}
+        <div className="mb-12 animate-fade-in" style={{ animationDelay: "0.8s" }}>
+          <Card className="p-8 md:p-10 bg-gradient-to-br from-accent/10 to-background">
+            <div className="space-y-4 text-lg leading-relaxed text-center">
+              <p>
+                Para ter acesso a um sistema como este, com acompanhamento individual, você facilmente investiria mais de <strong>R$ 5.000</strong> em consultorias. Uma única promoção na sua carreira pode significar um aumento de <strong>R$ 10.000, R$ 20.000 ou mais por ano</strong>.
+              </p>
+              
+              <p className="font-semibold">
+                Mas nosso objetivo não é cobrar o valor de uma consultoria. É entregar as mesmas ferramentas de alta performance por uma fração do preço.
+              </p>
+              
+              <p className="text-xl">
+                Por isso, você não vai investir R$ 3.482.
+              </p>
+              
+              <p className="text-xl line-through text-muted-foreground">
+                Nem mesmo a metade disso, R$ 1.741.
+              </p>
+            </div>
+          </Card>
+        </div>
+
+        {/* Oferta Final */}
+        <div className="text-center mb-12 animate-fade-in" style={{ animationDelay: "0.9s" }}>
+          <h3 className="text-3xl md:text-4xl font-bold mb-8">
+            Garanta seu acesso <span className="bg-gradient-primary bg-clip-text text-transparent">vitalício</span> ao Kit de Ferramentas: Produtividade Exponencial por apenas:
+          </h3>
+          
+          <Card className="p-10 md:p-12 bg-gradient-to-br from-primary/10 to-primary/5 border-2 border-primary/30 max-w-2xl mx-auto">
+            <div className="space-y-6">
+              <div>
+                <div className="text-5xl md:text-6xl font-bold text-primary mb-2">
+                  12x de R$ 49,86
+                </div>
+                <div className="text-2xl text-muted-foreground">
+                  ou R$ 497 à vista
+                </div>
+              </div>
+
+              <Button 
+                size="lg"
+                className="w-full bg-gradient-primary hover:opacity-90 shadow-purple text-lg py-8 px-8 h-auto"
+              >
+                <Zap className="h-6 w-6 mr-2" />
+                SIM, QUERO ACESSO IMEDIATO E TRANSFORMAR MINHA PRODUTIVIDADE
+              </Button>
+
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 text-sm text-muted-foreground">
+                <div className="flex items-center gap-2">
+                  <Lock className="h-4 w-4" />
+                  <span>Compra 100% Segura</span>
+                </div>
+                <div className="hidden sm:block">•</div>
+                <span>Acesso Vitalício</span>
+                <div className="hidden sm:block">•</div>
+                <span>Garantia de 30 Dias</span>
+              </div>
+            </div>
+          </Card>
+        </div>
       </div>
     </section>
   );
