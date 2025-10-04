@@ -1,4 +1,5 @@
 import { HeroSection } from "@/components/sections/hero-section";
+import { PainPointsSection } from "@/components/sections/pain-points-section";
 import { CurationSection } from "@/components/sections/curation-section";
 import { TestimonialsSection } from "@/components/sections/testimonials-section";
 import { CourseSuggestionSection } from "@/components/sections/course-suggestion-section";
@@ -13,6 +14,7 @@ const Index = () => {
       <Navbar />
       <main className="flex-1">
         <HeroSection />
+        <PainPointsSection />
         <CurationSection />
         <TestimonialsSection />
         <CourseSuggestionSection />
