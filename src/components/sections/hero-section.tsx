@@ -59,17 +59,14 @@ export function HeroSection() {
               
               <h1 className="text-4xl md:text-6xl font-bold leading-tight">
                 <span className="bg-gradient-primary bg-clip-text text-transparent">
-                  Transforme
+                  Menos Esforço,
                 </span>
-                <br />
-                sua carreira com
-                <br />
-                <span className="text-foreground">cursos gratuitos</span>
+                {" "}
+                <span className="text-foreground">Mais Resultados.</span>
               </h1>
               
               <p className="text-xl text-muted-foreground leading-relaxed max-w-lg">
-                Acesse milhares de cursos online gratuitos com certificado válido. 
-                Desenvolvemos sua carreira com curadoria especializada e atualizações constantes.
+                O primeiro Kit de Ferramentas para profissionais que querem acelerar a carreira. Receba os templates e processos para executar ideias, otimizar seu tempo e gerar valor real.
               </p>
             </div>
 
@@ -110,8 +107,7 @@ export function HeroSection() {
                 className="bg-gradient-primary hover:opacity-90 shadow-purple text-base px-8"
                 onClick={() => navigate('/explorar-cursos')}
               >
-                <BookOpen className="h-5 w-5 mr-2" />
-                Explorar Cursos
+                COMEÇAR A GERAR RESULTADOS
               </Button>
               <Button 
                 variant="outline" 
