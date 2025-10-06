@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Filter, BookOpen, Clock, Users, Star, TrendingUp, Eye, MoreHorizontal, Bell, BellOff, Settings } from "lucide-react";
+import { Search, Filter, BookOpen, Clock, Users, Star, TrendingUp, Eye, MoreHorizontal, Bell, BellOff, Settings, Gift, Presentation } from "lucide-react";
+import { Card } from "@/components/ui/card";
 import { Navbar } from "@/components/layout/navbar";
 import { CourseCard } from "@/components/ui/course-card";
 import { useCourses } from "@/hooks/useCourses";
@@ -42,6 +43,16 @@ export default function ExploreCourses() {
     design: false,
     marketing: false
   });
+  const [showBonus, setShowBonus] = useState(false);
+
+  // Mostrar bônus após 18 segundos
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowBonus(true);
+    }, 18000);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   const filteredCourses = courses.filter(course => {
     const matchesCategory = selectedCategory === "all" || course.category === selectedCategory;
@@ -296,6 +307,41 @@ export default function ExploreCourses() {
           </div>
         </div>
       </div>
+
+      {/* Bônus Flutuante - Aparece após 18 segundos */}
+      {showBonus && (
+        <div className="fixed bottom-8 right-8 z-50 animate-fade-in">
+          <Card className="p-6 bg-gradient-to-br from-primary/10 to-primary/5 border-2 border-primary/30 max-w-md shadow-2xl animate-pulse">
+            <button
+              onClick={() => setShowBonus(false)}
+              className="absolute top-2 right-2 text-muted-foreground hover:text-foreground"
+            >
+              ✕
+            </button>
+            
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0 w-16 h-16 bg-gradient-to-br from-primary to-primary/70 rounded-full flex items-center justify-center shadow-lg animate-bounce">
+                <Gift className="h-8 w-8 text-primary-foreground" />
+              </div>
+              <div className="flex-1">
+                <Badge className="bg-primary text-primary-foreground text-xs font-semibold mb-2">
+                  🎁 BÔNUS GRATUITO
+                </Badge>
+                <h3 className="font-bold text-lg mb-2">Workshop Gravado "Destravando o Notion"</h3>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Um treinamento prático de 90 minutos que te ensinará a usar o Notion para construir seu "segundo cérebro"!
+                </p>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-semibold text-primary">Valor: R$ 297</span>
+                  <Button size="sm" className="bg-gradient-primary">
+                    Resgatar Agora
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }

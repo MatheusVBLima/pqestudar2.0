@@ -8,13 +8,13 @@ const components = [
     icon: BookOpen,
     title: "A Trilha de Aprendizagem Acelerada",
     value: "R$ 997",
-    description: "Nós analisamos mais de 200 horas de conteúdo e condensamos o conhecimento essencial em uma trilha de 4 semanas. Aulas curtas e diretas ao ponto para você dominar o sistema em 30 minutos por dia, sem enrolação."
+    description: "Nós analisamos mais de 200 horas de conteúdo e condensamos o conhecimento essencial em uma trilha de 4 semanas. Economize dezenas de horas com aulas curtas e diretas ao ponto para você dominar o sistema em 30 minutos por dia, sem enrolação."
   },
   {
     icon: FileText,
     title: "A Biblioteca de Templates \"Produtividade Imediata\"",
     value: "R$ 697",
-    description: "Chega de começar do zero. Você recebe acesso a templates \"copie e cole\" para planejamento semanal, gestão de projetos, resumo de conteúdo e relatórios de impacto. É só preencher e usar."
+    description: "Chega de começar do zero. Você recebe acesso a templates \"copie e cole\" para planejamento semanal, gestão de projetos, resumo de conteúdo e relatórios de impacto. Comece a executar em minutos, não em semanas. É só preencher e usar."
   },
   {
     icon: Headphones,
@@ -44,6 +44,8 @@ const bonuses = [
     description: "Um treinamento prático de 90 minutos que te ensinará a usar o Notion para construir seu \"segundo cérebro\" e personalizar seus templates, mesmo que você nunca tenha usado a ferramenta antes."
   }
 ];
+
+// Bônus será movido para a página de explorar cursos
 
 export function ArsenalSection() {
   return (
@@ -84,58 +86,30 @@ export function ArsenalSection() {
           ))}
         </div>
 
-        {/* Bônus */}
-        <div className="mb-16 animate-fade-in" style={{ animationDelay: "0.4s" }}>
-          <div className="text-center mb-8">
-            <Badge className="bg-primary/10 text-primary border-primary/20 hover:bg-primary/20 text-lg px-6 py-2 mb-4">
-              BÔNUS EXCLUSIVOS
-            </Badge>
-            <h3 className="text-2xl font-bold">
-              E se você agir agora, também receberá acesso a estes bônus exclusivos:
-            </h3>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-6">
-            {bonuses.map((bonus, index) => (
-              <Card 
-                key={index}
-                className="p-6 bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20 hover:shadow-card-custom transition-all duration-300"
-              >
-                <div className="flex items-start gap-4 mb-4">
-                  <div className="flex-shrink-0 w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center">
-                    <bonus.icon className="h-6 w-6 text-primary" />
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-start justify-between gap-2 mb-2">
-                      <h3 className="font-bold text-lg">BÔNUS #{index + 1}</h3>
-                      <Badge className="bg-primary text-primary-foreground text-sm font-semibold">
-                        {bonus.value}
-                      </Badge>
-                    </div>
-                    <h4 className="font-semibold text-base mb-2">{bonus.title}</h4>
-                  </div>
-                </div>
-                <p className="text-muted-foreground leading-relaxed">
-                  {bonus.description}
-                </p>
-              </Card>
-            ))}
-          </div>
-        </div>
 
         {/* Garantia */}
-        <Card className="p-8 md:p-12 bg-gradient-to-br from-accent/20 to-accent/5 border-2 border-primary/30 animate-fade-in mb-16" style={{ animationDelay: "0.6s" }}>
-          <div className="flex flex-col md:flex-row items-start gap-6">
-            <div className="flex-shrink-0 w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
-              <Shield className="h-8 w-8 text-primary" />
+        <Card className="p-8 md:p-12 bg-gradient-to-br from-accent/20 to-accent/5 border-2 border-primary/30 animate-fade-in mb-16 relative overflow-hidden" style={{ animationDelay: "0.6s" }}>
+          {/* Selo de Garantia */}
+          <div className="absolute -right-12 -top-12 w-40 h-40 bg-primary/10 rounded-full flex items-center justify-center opacity-20">
+            <Shield className="h-24 w-24 text-primary" />
+          </div>
+          
+          <div className="flex flex-col md:flex-row items-start gap-6 relative z-10">
+            <div className="flex-shrink-0">
+              <div className="w-24 h-24 bg-gradient-to-br from-primary to-primary/70 rounded-full flex items-center justify-center shadow-lg relative">
+                <Shield className="h-12 w-12 text-primary-foreground" />
+                <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-bold px-3 py-1 rounded-full whitespace-nowrap shadow-md">
+                  30 DIAS
+                </div>
+              </div>
             </div>
             <div className="flex-1">
               <div className="mb-4">
                 <h3 className="text-2xl font-bold mb-2">
                   SUA GARANTIA INCONDICIONAL DE PRODUTIVIDADE
                 </h3>
-                <Badge variant="secondary" className="text-sm font-semibold">
-                  Valor: Incalculável
+                <Badge className="bg-primary text-primary-foreground text-sm font-semibold border-0">
+                  RISCO ZERO - Valor: Incalculável
                 </Badge>
               </div>
               <p className="text-lg leading-relaxed">
@@ -183,20 +157,6 @@ export function ArsenalSection() {
                 </div>
                 <span className="font-semibold text-muted-foreground">R$ 497</span>
               </div>
-              <div className="flex items-center justify-between py-3 border-b border-border/50">
-                <div className="flex items-center gap-3">
-                  <Check className="h-5 w-5 text-primary flex-shrink-0" />
-                  <span className="font-medium">BÔNUS #1: Comunidade de Executores</span>
-                </div>
-                <span className="font-semibold text-muted-foreground">R$ 597</span>
-              </div>
-              <div className="flex items-center justify-between py-3 border-b border-border/50">
-                <div className="flex items-center gap-3">
-                  <Check className="h-5 w-5 text-primary flex-shrink-0" />
-                  <span className="font-medium">BÔNUS #2: Workshop Gravado "Destravando o Notion"</span>
-                </div>
-                <span className="font-semibold text-muted-foreground">R$ 297</span>
-              </div>
               <div className="flex items-center justify-between py-3">
                 <div className="flex items-center gap-3">
                   <Check className="h-5 w-5 text-primary flex-shrink-0" />
@@ -209,7 +169,7 @@ export function ArsenalSection() {
             <div className="pt-6 border-t-2 border-primary/30">
               <div className="flex items-center justify-between">
                 <span className="text-2xl font-bold">VALOR TOTAL:</span>
-                <span className="text-3xl font-bold text-primary">R$ 3.482</span>
+                <span className="text-3xl font-bold text-primary">R$ 2.588</span>
               </div>
             </div>
           </Card>
@@ -228,11 +188,11 @@ export function ArsenalSection() {
               </p>
               
               <p className="text-xl">
-                Por isso, você não vai investir R$ 3.482.
+                Por isso, você não vai investir R$ 2.588.
               </p>
               
               <p className="text-xl line-through text-muted-foreground">
-                Nem mesmo a metade disso, R$ 1.741.
+                Nem mesmo a metade disso, R$ 1.294.
               </p>
             </div>
           </Card>
