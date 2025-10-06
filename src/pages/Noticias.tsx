@@ -469,10 +469,24 @@ const Noticias = () => {
                   {/* Description */}
                   <CardDescription className="text-sm leading-relaxed break-words">
                     {isNewsExpanded(noticia.id) && 'conteudoCompleto' in noticia && noticia.conteudoCompleto ? (
-                      <div 
-                        className="prose prose-sm max-w-none text-muted-foreground"
-                        dangerouslySetInnerHTML={{ __html: noticia.conteudoCompleto }}
-                      />
+                      <div className="space-y-3">
+                        <div 
+                          className="prose prose-sm max-w-none text-muted-foreground"
+                          dangerouslySetInnerHTML={{ 
+                            __html: noticia.conteudoCompleto.substring(0, 400) + (noticia.conteudoCompleto.length > 400 ? '...' : '') 
+                          }}
+                        />
+                        {noticia.conteudoCompleto.length > 400 && (
+                          <Button
+                            variant="link"
+                            size="sm"
+                            onClick={() => navigate(`/noticia/${noticia.id}`)}
+                            className="p-0 h-auto text-primary hover:underline"
+                          >
+                            Continuar lendo na página completa →
+                          </Button>
+                        )}
+                      </div>
                     ) : (
                       noticia.descricao
                     )}
@@ -502,12 +516,12 @@ const Noticias = () => {
                   </div>
                   
                    {/* Action Buttons */}
-                   <div className="flex gap-2">
+                   <div className="flex flex-wrap gap-2">
                      <Button 
                        variant="ghost" 
                        size="sm"
                        onClick={() => handleSalvarNoticia(noticia)}
-                       className={`flex-1 text-xs justify-center ${
+                       className={`flex-1 min-w-[100px] text-xs justify-center ${
                          !user ? "opacity-70" : ""
                        }`}
                      >
@@ -524,28 +538,37 @@ const Noticias = () => {
                        }
                      </Button>
                     
-                    {/* Expandir/Contrair */}
+                    {/* Preview rápido inline */}
                     {'conteudoCompleto' in noticia && noticia.conteudoCompleto && (
                       <Button 
                         variant="outline" 
                         size="sm"
                         onClick={() => toggleNewsExpansion(noticia.id)}
-                        className="flex-1 text-xs justify-center"
+                        className="flex-1 min-w-[100px] text-xs justify-center"
                       >
-                        <ExternalLink className="h-4 w-4 mr-1" />
-                        {isNewsExpanded(noticia.id) ? "Ler menos" : "Ler mais"}
+                        {isNewsExpanded(noticia.id) ? (
+                          <>
+                            <span className="mr-1">↑</span>
+                            Recolher
+                          </>
+                        ) : (
+                          <>
+                            <span className="mr-1">↓</span>
+                            Ler mais
+                          </>
+                        )}
                       </Button>
                     )}
                     
-                    {/* Ver Detalhes - sempre disponível */}
+                    {/* Link para página completa */}
                     <Button 
                       variant="outline" 
                       size="sm"
                       onClick={() => navigate(`/noticia/${noticia.id}`)}
-                      className="flex-1 text-xs justify-center"
+                      className="flex-1 min-w-[100px] text-xs justify-center"
                     >
                       <ExternalLink className="h-4 w-4 mr-1" />
-                      Ver detalhes
+                      Ver página completa
                     </Button>
                   </div>
                 </div>
