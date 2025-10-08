@@ -121,23 +121,45 @@ export function NewsletterForm({
 
   return (
     <div className={`space-y-6 ${className}`}>
-      <div className="text-center space-y-2">
-        <div className="flex items-center justify-center gap-2 mb-4">
-          <Gift className="h-6 w-6 text-primary" />
-          <span className="bg-gradient-primary bg-clip-text text-transparent font-semibold">
-            BÔNUS GRATUITO
-          </span>
+      {variant !== "modal" && (
+        <div className="text-center space-y-2">
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <Gift className="h-6 w-6 text-primary" />
+            <span className="bg-gradient-primary bg-clip-text text-transparent font-semibold">
+              BÔNUS GRATUITO
+            </span>
+          </div>
+          <h2 className="text-2xl font-bold text-foreground">
+            {title}
+          </h2>
+          <p className="text-muted-foreground mb-3">
+            {description}
+          </p>
+          <p className="text-sm text-muted-foreground/80">
+            Nossa equipe de especialistas selecionou a dedo os melhores recursos para você economizar tempo e ir direto ao ponto.
+          </p>
         </div>
-        <h2 className="text-2xl font-bold text-foreground">
-          {title}
-        </h2>
-        <p className="text-muted-foreground mb-3">
-          {description}
-        </p>
-        <p className="text-sm text-muted-foreground/80">
-          Nossa equipe de especialistas selecionou a dedo os melhores recursos para você economizar tempo e ir direto ao ponto.
-        </p>
-      </div>
+      )}
+
+      {variant === "modal" && (
+        <div className="text-center space-y-3">
+          <div className="flex items-center justify-center gap-2 mb-2">
+            <span className="text-2xl">🎁</span>
+            <span className="text-primary font-bold text-lg">
+              BÔNUS GRATUITO
+            </span>
+          </div>
+          <h2 className="text-2xl font-bold text-foreground">
+            Receba Cursos Gratuitos
+          </h2>
+          <p className="text-muted-foreground text-sm">
+            Lista exclusiva e curada com os melhores sites de cursos online com certificado gratuito
+          </p>
+          <p className="text-sm text-muted-foreground">
+            Nossa equipe de especialistas selecionou a dedo os melhores recursos para você economizar tempo e ir direto ao ponto.
+          </p>
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">

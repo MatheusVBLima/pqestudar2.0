@@ -106,7 +106,7 @@ export default function ExploreCourses() {
       <Navbar />
       
       {/* Header */}
-      <div className="bg-gradient-hero py-16">
+      <div className="bg-gradient-hero py-20">
         <div className="container mx-auto px-4">
           <div className="text-center">
             <div className="flex items-center justify-between max-w-6xl mx-auto mb-6">
@@ -359,17 +359,9 @@ export default function ExploreCourses() {
       {/* Modal Newsletter */}
       <Dialog open={showNewsletterModal} onOpenChange={setShowNewsletterModal}>
         <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-bold text-center">
-              🎁 Resgatar Bônus Gratuito
-            </DialogTitle>
-            <DialogDescription className="text-center">
-              Preencha seus dados para receber acesso ao Workshop Gravado "Destravando o Notion"
-            </DialogDescription>
-          </DialogHeader>
           <div className="mt-4">
             <NewsletterForm 
-              variant="default"
+              variant="modal"
               onSuccess={() => {
                 setShowNewsletterModal(false);
                 setShowBonus(false);
