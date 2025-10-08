@@ -1,6 +1,4 @@
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { NewsletterForm } from "@/components/ui/newsletter-form";
 import { Badge } from "@/components/ui/badge";
 import heroImage from "@/assets/hero-education.jpg";
 import { BookOpen, Award, Users, Zap, Star, TrendingUp } from "lucide-react";
@@ -47,9 +45,9 @@ export function HeroSection() {
       </div>
       
       <div className="container mx-auto px-4 py-16 relative z-10 w-full max-w-7xl">
-        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center w-full">
+        <div className="max-w-6xl mx-auto">
           
-          {/* Left Column - Content */}
+          {/* Content */}
           <div className="space-y-8 animate-fade-in">
             <div className="space-y-4">
               <Badge className="bg-primary/10 text-primary border-primary/20 hover:bg-primary/20">
@@ -119,16 +117,6 @@ export function HeroSection() {
                 Ver Categorias
               </Button>
             </div>
-          </div>
-
-          {/* Right Column - Newsletter Form */}
-          <div className="animate-fade-in" style={{ animationDelay: "0.3s" }}>
-            <Card className="p-8 bg-card/80 backdrop-blur-sm border-border/50 shadow-card-custom">
-              <NewsletterForm 
-                variant="hero"
-                className="max-w-md mx-auto"
-              />
-            </Card>
           </div>
         </div>
       </div>
