@@ -4,6 +4,7 @@ import { SystemSection } from "@/components/sections/system-section";
 import { ArsenalSection } from "@/components/sections/arsenal-section";
 import { CourseSuggestionSection } from "@/components/sections/course-suggestion-section";
 import { PartnersSection } from "@/components/sections/partners-section";
+import { CheckoutSection } from "@/components/sections/checkout-section";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 
@@ -18,6 +19,7 @@ const Index = () => {
         <ArsenalSection />
         <CourseSuggestionSection />
         <PartnersSection />
+        <CheckoutSection />
       </main>
       <Footer />
     </div>

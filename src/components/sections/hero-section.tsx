@@ -1,29 +1,29 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import heroImage from "@/assets/hero-education.jpg";
-import { BookOpen, Award, Users, Zap, Star, TrendingUp } from "lucide-react";
+import { Lightbulb, Briefcase, Rocket, Brain, Star, TrendingUp } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const features = [
   {
-    icon: BookOpen,
-    title: "Cursos Gratuitos",
-    description: "Centenas de cursos online com certificado válido"
+    icon: Lightbulb,
+    title: "Sistema Acionável",
+    description: "Receba um método passo a passo, não apenas aulas soltas. Foco total na execução."
   },
   {
-    icon: Award,
-    title: "Certificados Reconhecidos",
-    description: "Certificações aceitas pelo mercado de trabalho"
+    icon: Briefcase,
+    title: "Templates Prontos",
+    description: "Economize horas de trabalho com nossa biblioteca de planilhas e documentos 'copie e cole'."
   },
   {
-    icon: Users,
-    title: "Comunidade Ativa",
-    description: "Acesso a grupos exclusivos e networking"
+    icon: Rocket,
+    title: "Resultados Acelerados",
+    description: "Ferramentas desenhadas para gerar valor e impacto na sua carreira desde a primeira semana."
   },
   {
-    icon: Zap,
-    title: "Atualizações Automáticas",
-    description: "Alertas sobre novos cursos e oportunidades"
+    icon: Brain,
+    title: "Aprendizado Contínuo",
+    description: "Acesso vitalício a todas as atualizações do sistema, garantindo que você esteja sempre à frente."
   }
 ];
 
@@ -36,6 +36,13 @@ const stats = [
 
 export function HeroSection() {
   const navigate = useNavigate();
+  
+  const scrollToCheckout = () => {
+    const checkoutSection = document.getElementById('checkout-section');
+    if (checkoutSection) {
+      checkoutSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
   
   return (
     <section className="relative min-h-screen flex items-center bg-gradient-to-br from-background to-accent/20 overflow-hidden w-full">
@@ -103,7 +110,7 @@ export function HeroSection() {
               <Button 
                 size="lg" 
                 className="bg-gradient-primary hover:opacity-90 shadow-purple text-base px-8"
-                onClick={() => navigate('/explorar-cursos')}
+                onClick={scrollToCheckout}
               >
                 COMEÇAR A GERAR RESULTADOS
               </Button>
