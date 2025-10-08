@@ -10,6 +10,7 @@ import { CourseCard } from "@/components/ui/course-card";
 import { useCourses } from "@/hooks/useCourses";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRoles } from "@/hooks/useUserRoles";
+import { NewsletterForm } from "@/components/ui/newsletter-form";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,6 +18,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const categories = [
   { id: "all", name: "Todos os Cursos", icon: BookOpen, count: 124 },
@@ -44,6 +52,7 @@ export default function ExploreCourses() {
     marketing: false
   });
   const [showBonus, setShowBonus] = useState(false);
+  const [showNewsletterModal, setShowNewsletterModal] = useState(false);
 
   // Mostrar bônus após 18 segundos
   useEffect(() => {
@@ -333,7 +342,11 @@ export default function ExploreCourses() {
                 </p>
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-semibold text-primary">Valor: R$ 297</span>
-                  <Button size="sm" className="bg-gradient-primary">
+                  <Button 
+                    size="sm" 
+                    className="bg-gradient-primary"
+                    onClick={() => setShowNewsletterModal(true)}
+                  >
                     Resgatar Agora
                   </Button>
                 </div>
@@ -342,6 +355,29 @@ export default function ExploreCourses() {
           </Card>
         </div>
       )}
+
+      {/* Modal Newsletter */}
+      <Dialog open={showNewsletterModal} onOpenChange={setShowNewsletterModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold text-center">
+              🎁 Resgatar Bônus Gratuito
+            </DialogTitle>
+            <DialogDescription className="text-center">
+              Preencha seus dados para receber acesso ao Workshop Gravado "Destravando o Notion"
+            </DialogDescription>
+          </DialogHeader>
+          <div className="mt-4">
+            <NewsletterForm 
+              variant="default"
+              onSuccess={() => {
+                setShowNewsletterModal(false);
+                setShowBonus(false);
+              }}
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

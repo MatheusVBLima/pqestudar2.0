@@ -10,15 +10,17 @@ import { Mail, Gift, CheckCircle } from "lucide-react";
 interface NewsletterFormProps {
   title?: string;
   description?: string;
-  variant?: "hero" | "sidebar" | "modal";
+  variant?: "hero" | "sidebar" | "modal" | "default";
   className?: string;
+  onSuccess?: () => void;
 }
 
 export function NewsletterForm({ 
   title = "Receba Cursos Gratuitos", 
   description = "Lista exclusiva e curada com os melhores sites de cursos online com certificado gratuito",
   variant = "hero",
-  className = ""
+  className = "",
+  onSuccess
 }: NewsletterFormProps) {
   const [email, setEmail] = useState("");
   const [consent, setConsent] = useState(false);
@@ -76,6 +78,11 @@ export function NewsletterForm({
         title: "Sucesso!",
         description: "Cadastro realizado! Verifique seu email para receber a lista de cursos gratuitos.",
       });
+      
+      // Call onSuccess callback if provided
+      if (onSuccess) {
+        onSuccess();
+      }
       
       // Reset form after success
       setTimeout(() => {
