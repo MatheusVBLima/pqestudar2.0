@@ -49,7 +49,7 @@ const bonuses = [
 
 export function ArsenalSection() {
   return (
-    <section className="py-20 px-4 bg-gradient-to-b from-background to-accent/20">
+    <section id="checkout-section" className="py-20 px-4 bg-gradient-to-b from-background to-accent/20">
       <div className="container mx-auto max-w-6xl">
         <div className="text-center mb-16 animate-fade-in">
           <h2 className="text-3xl md:text-5xl font-bold mb-4">
