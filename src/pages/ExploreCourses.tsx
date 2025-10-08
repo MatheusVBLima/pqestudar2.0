@@ -108,17 +108,16 @@ export default function ExploreCourses() {
       {/* Header */}
       <div className="bg-gradient-hero py-20">
         <div className="container mx-auto px-4">
-          <div className="text-center">
-            <div className="flex items-center justify-between max-w-6xl mx-auto mb-6">
-              <div>
-                <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-                  Explore Nossos Cursos
-                </h1>
-                <p className="text-xl text-white/90 mb-8 max-w-2xl">
-                  Descubra milhares de cursos online para acelerar sua carreira
-                </p>
-              </div>
-              {isAdmin && (
+          <div className="text-center mx-auto max-w-4xl">
+            <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
+              Explore Nossos Cursos
+            </h1>
+            <p className="text-xl text-white/90 mb-8">
+              Descubra milhares de cursos online para acelerar sua carreira
+            </p>
+            
+            {isAdmin && (
+              <div className="flex justify-center mb-6">
                 <Button 
                   variant="secondary" 
                   onClick={() => navigate('/admin/cursos')}
@@ -127,8 +126,8 @@ export default function ExploreCourses() {
                   <Settings className="h-4 w-4" />
                   Administrar Cursos
                 </Button>
-              )}
-            </div>
+              </div>
+            )}
             
             {/* Search Bar */}
             <div className="max-w-2xl mx-auto">
