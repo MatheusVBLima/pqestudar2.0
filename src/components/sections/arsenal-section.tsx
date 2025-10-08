@@ -212,10 +212,10 @@ export function ArsenalSection() {
 
               <Button 
                 size="lg"
-                className="w-full bg-gradient-primary hover:opacity-90 shadow-purple text-lg py-8 px-8 h-auto"
+                className="w-full bg-gradient-primary hover:opacity-90 shadow-purple text-base md:text-lg py-6 md:py-8 px-6 md:px-8 h-auto"
               >
-                <Zap className="h-6 w-6 mr-2" />
-                SIM, QUERO ACESSO IMEDIATO E TRANSFORMAR MINHA PRODUTIVIDADE
+                <Zap className="h-5 w-5 md:h-6 md:w-6 mr-2 flex-shrink-0" />
+                <span className="leading-tight">SIM, QUERO ACESSO IMEDIATO E TRANSFORMAR MINHA PRODUTIVIDADE</span>
               </Button>
 
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4 text-sm text-muted-foreground">
