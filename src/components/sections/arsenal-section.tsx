@@ -199,7 +199,7 @@ export function ArsenalSection() {
             Garanta seu acesso <span className="bg-gradient-primary bg-clip-text text-transparent">vitalício</span> ao Kit de Ferramentas: Produtividade Exponencial por apenas:
           </h3>
           
-          <Card className="p-10 md:p-12 bg-gradient-to-br from-primary/10 to-primary/5 border-2 border-primary/30 max-w-2xl mx-auto">
+          <Card className="p-10 md:p-12 bg-gradient-to-br from-primary/10 to-primary/5 border-2 border-primary/30 max-w-4xl mx-auto">
             <div className="space-y-6">
               <div>
                 <div className="text-5xl md:text-6xl font-bold text-primary mb-2">
