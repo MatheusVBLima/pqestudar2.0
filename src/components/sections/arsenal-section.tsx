@@ -88,13 +88,8 @@ export function ArsenalSection() {
 
 
         {/* Garantia */}
-        <Card className="p-8 md:p-12 bg-gradient-to-br from-accent/20 to-accent/5 border-2 border-primary/30 animate-fade-in mb-16 relative overflow-hidden" style={{ animationDelay: "0.6s" }}>
-          {/* Selo de Garantia */}
-          <div className="absolute -right-12 -top-12 w-40 h-40 bg-primary/10 rounded-full flex items-center justify-center opacity-20">
-            <Shield className="h-24 w-24 text-primary" />
-          </div>
-          
-          <div className="flex flex-col md:flex-row items-start gap-6 relative z-10">
+        <Card className="p-8 md:p-12 bg-gradient-to-br from-accent/20 to-accent/5 border-2 border-primary/30 animate-fade-in mb-16" style={{ animationDelay: "0.6s" }}>
+          <div className="flex flex-col md:flex-row items-start gap-6">
             <div className="flex-shrink-0">
               <div className="w-24 h-24 bg-gradient-to-br from-primary to-primary/70 rounded-full flex items-center justify-center shadow-lg relative">
                 <Shield className="h-12 w-12 text-primary-foreground" />
