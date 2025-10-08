@@ -3,7 +3,6 @@ import { PainPointsSection } from "@/components/sections/pain-points-section";
 import { SystemSection } from "@/components/sections/system-section";
 import { ArsenalSection } from "@/components/sections/arsenal-section";
 
-import { PartnersSection } from "@/components/sections/partners-section";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 
@@ -16,9 +15,8 @@ const Index = () => {
         <PainPointsSection />
         <SystemSection />
         <ArsenalSection />
-        <PartnersSection />
       </main>
-      <Footer />
+      <Footer isHomePage />
     </div>
   );
 };

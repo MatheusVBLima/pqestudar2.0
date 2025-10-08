@@ -1,5 +1,6 @@
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
+import { PartnersSection } from "@/components/sections/partners-section";
 import { BookOpen, Users, Target, Award } from "lucide-react";
 
 const Sobre = () => {
@@ -88,6 +89,8 @@ const Sobre = () => {
             </div>
           </div>
         </div>
+        
+        <PartnersSection />
       </main>
       <Footer />
     </div>

@@ -6,25 +6,25 @@ import { BookOpen, FileText, Headphones, FileStack, Users, Presentation, Shield,
 const components = [
   {
     icon: BookOpen,
-    title: "A Trilha de Aprendizagem Acelerada",
+    title: "🚀 A Trilha de Aprendizagem Acelerada",
     value: "R$ 997",
     description: "Nós analisamos mais de 200 horas de conteúdo e condensamos o conhecimento essencial em uma trilha de 4 semanas. Economize dezenas de horas com aulas curtas e diretas ao ponto para você dominar o sistema em 30 minutos por dia, sem enrolação."
   },
   {
     icon: FileText,
-    title: "A Biblioteca de Templates \"Produtividade Imediata\"",
+    title: "🧰 A Biblioteca de Templates \"Produtividade Imediata\"",
     value: "R$ 697",
     description: "Chega de começar do zero. Você recebe acesso a templates \"copie e cole\" para planejamento semanal, gestão de projetos, resumo de conteúdo e relatórios de impacto. Comece a executar em minutos, não em semanas. É só preencher e usar."
   },
   {
     icon: Headphones,
-    title: "O Kit de Foco (Áudios e Mapas Mentais)",
+    title: "🎧 O Kit de Foco (Áudios e Mapas Mentais)",
     value: "R$ 397",
     description: "Transformamos os conceitos-chave em resumos em áudio de 10 minutos para você ouvir no trânsito e mapas mentais para revisar em 60 segundos. Aprenda e reforce o sistema em qualquer lugar."
   },
   {
     icon: FileStack,
-    title: "O Cofre de Estudos de Caso",
+    title: "💼 O Cofre de Estudos de Caso",
     value: "R$ 497",
     description: "Veja na prática como profissionais como você aplicaram este sistema para organizar projetos complexos, ganhar visibilidade e acelerar suas carreiras. É a prova de que o método funciona no mundo real."
   }
