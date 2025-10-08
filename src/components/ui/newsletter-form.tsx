@@ -150,13 +150,13 @@ export function NewsletterForm({
             </span>
           </div>
           <h2 className="text-2xl font-bold text-foreground">
-            Workshop Gravado "Destravando o Notion"
+            Receba Cursos Gratuitos
           </h2>
           <p className="text-muted-foreground text-sm">
-            Um treinamento prático de 90 minutos que te ensinará a usar o Notion para construir seu "segundo cérebro"!
+            Lista exclusiva e curada com os melhores sites de cursos online com certificado gratuito
           </p>
-          <p className="text-sm font-semibold text-primary">
-            Valor: R$ 297 - Totalmente Gratuito
+          <p className="text-sm text-muted-foreground">
+            Nossa equipe de especialistas selecionou a dedo os melhores recursos para você economizar tempo e ir direto ao ponto.
           </p>
         </div>
       )}
