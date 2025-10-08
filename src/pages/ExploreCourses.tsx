@@ -336,12 +336,12 @@ export default function ExploreCourses() {
                 <Badge className="bg-primary text-primary-foreground text-xs font-semibold mb-2">
                   🎁 BÔNUS GRATUITO
                 </Badge>
-                <h3 className="font-bold text-lg mb-2">Workshop Gravado "Destravando o Notion"</h3>
+                <h3 className="font-bold text-lg mb-2">Receba Cursos Gratuitos</h3>
                 <p className="text-sm text-muted-foreground mb-3">
-                  Um treinamento prático de 90 minutos que te ensinará a usar o Notion para construir seu "segundo cérebro"!
+                  Lista exclusiva e curada com os melhores sites de cursos online com certificado gratuito
                 </p>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-semibold text-primary">Valor: R$ 297</span>
+                  <span className="text-sm font-semibold text-primary">100% Grátis</span>
                   <Button 
                     size="sm" 
                     className="bg-gradient-primary"
