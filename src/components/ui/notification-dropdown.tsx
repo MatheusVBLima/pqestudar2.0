@@ -118,8 +118,7 @@ export const NotificationDropdown = () => {
     markAsRead,
     markAllAsRead,
     removeNotification,
-    clearAllNotifications,
-    simulateAccountDeletion
+    clearAllNotifications
   } = useNotifications();
 
   return (
@@ -179,14 +178,6 @@ export const NotificationDropdown = () => {
           <div className="p-6 text-center">
             <Bell className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
             <p className="text-sm text-muted-foreground">Nenhuma notificação</p>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => simulateAccountDeletion('João Silva', 'Violação dos termos de uso')}
-              className="mt-3 text-xs"
-            >
-              Simular exclusão de conta
-            </Button>
           </div>
         ) : (
           <ScrollArea className="max-h-96">
