@@ -73,12 +73,18 @@ const BADGES_CATALOG: Omit<Badge, 'dateEarned'>[] = [
   }
 ];
 
-export const useGamification = () => {
+export const useGamification = (isAdmin: boolean = false) => {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [communityRanking, setCommunityRanking] = useState<CommunityRanking[]>([]);
 
-  // Initialize user profile if doesn't exist
+  // Initialize user profile if doesn't exist (skip for admins)
   useEffect(() => {
+    // Admins don't participate in gamification
+    if (isAdmin) {
+      setUserProfile(null);
+      return;
+    }
+
     const stored = localStorage.getItem('user-profile');
     if (!stored) {
       const newProfile: UserProfile = {
@@ -103,7 +109,7 @@ export const useGamification = () => {
     if (rankingStored) {
       setCommunityRanking(JSON.parse(rankingStored));
     }
-  }, []);
+  }, [isAdmin]);
 
   const updateProfile = (updates: Partial<UserProfile>) => {
     if (!userProfile) return;
@@ -169,7 +175,8 @@ export const useGamification = () => {
   };
 
   const recordHelpAction = (): Badge | null => {
-    if (!userProfile) return null;
+    // Admins don't participate in gamification
+    if (!userProfile || isAdmin) return null;
     
     const newHelpCount = userProfile.helpActions + 1;
     updateProfile({ helpActions: newHelpCount });

@@ -32,7 +32,7 @@ const Noticias = () => {
   const [newBadge, setNewBadge] = useState<BadgeType | null>(null);
   const { adicionarFavorito, removerFavorito, isFavorito } = useFavoritos();
   const { toast } = useToast();
-  const { recordHelpAction, userProfile } = useGamification();
+  const { recordHelpAction, userProfile } = useGamification(isAdmin);
 
   // Daily global and user limits
   const dailyData = DailyNewsLimitService.getDailyData();
@@ -261,7 +261,7 @@ const Noticias = () => {
           return;
         }
         
-        // Admins don't update counters
+        // Admins don't update counters and don't participate in gamification
         if (isAdmin) {
           setNoticias(prev => [...uniqueNews, ...prev]);
           NewsStorageService.storeNews(uniqueNews);
@@ -610,7 +610,7 @@ const Noticias = () => {
           <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
             Notícias validadas por múltiplas fontes sobre educação: ENEM, SISU, concursos públicos e muito mais.
           </p>
-          {!canUserContribute && (
+          {!isAdmin && !canUserContribute && (
             <div className="mt-4 p-3 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg">
               <p className="text-sm text-orange-800 dark:text-orange-200">
                 <strong>Limite atingido:</strong> Você já fez sua contribuição diária. 
