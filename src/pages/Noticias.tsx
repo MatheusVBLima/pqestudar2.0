@@ -190,27 +190,30 @@ const Noticias = () => {
       return;
     }
 
-    // Check user contribution limit first
-    if (!canUserContribute) {
-      toast({
-        title: "Você já contribuiu hoje",
-        description: `Você já adicionou sua ${userMaxContributions} notícia diária. Tente novamente amanhã.`,
-        variant: "destructive",
-        duration: 5000,
-      });
-      return;
-    }
+    // Admins have unlimited access - skip all limits
+    if (!isAdmin) {
+      // Check user contribution limit first
+      if (!canUserContribute) {
+        toast({
+          title: "Você já contribuiu hoje",
+          description: `Você já adicionou sua ${userMaxContributions} notícia diária. Tente novamente amanhã.`,
+          variant: "destructive",
+          duration: 5000,
+        });
+        return;
+      }
 
-    // Check daily global limit
-    if (!canAddDaily) {
-      const resetTime = DailyNewsLimitService.getTimeUntilReset();
-      toast({
-        title: "Limite diário atingido",
-        description: `Limite de ${maxDaily} notícias/dia atingido para toda a plataforma. Redefine em ${resetTime.hours}h ${resetTime.minutes}min.`,
-        variant: "destructive",
-        duration: 5000,
-      });
-      return;
+      // Check daily global limit
+      if (!canAddDaily) {
+        const resetTime = DailyNewsLimitService.getTimeUntilReset();
+        toast({
+          title: "Limite diário atingido",
+          description: `Limite de ${maxDaily} notícias/dia atingido para toda a plataforma. Redefine em ${resetTime.hours}h ${resetTime.minutes}min.`,
+          variant: "destructive",
+          duration: 5000,
+        });
+        return;
+      }
     }
 
     if (isOnCooldown) {
@@ -258,34 +261,46 @@ const Noticias = () => {
           return;
         }
         
-        // Update global counter and user status
-        const success = DailyNewsLimitService.addNewsCount(uniqueNews.length, user?.id);
-        
-        if (success) {
+        // Admins don't update counters
+        if (isAdmin) {
           setNoticias(prev => [...uniqueNews, ...prev]);
-          // Store new news for detail page access
           NewsStorageService.storeNews(uniqueNews);
-          const newGlobalCount = DailyNewsLimitService.getCurrentCount();
-          const newRemainingUsers = DailyNewsLimitService.getRemainingUsersNeeded();
-          
-          // Record help action for gamification
-          const earnedBadge = recordHelpAction();
-          if (earnedBadge) {
-            setNewBadge(earnedBadge);
-          }
           
           toast({
-            title: "Nova notícia encontrada!",
-            description: `1 notícia validada adicionada. Global: ${newGlobalCount}/${maxDaily} (falta ${newRemainingUsers > 0 ? `+${newRemainingUsers} usuário${newRemainingUsers > 1 ? 's' : ''}` : '0 usuários'} para fechar as notícias diárias)`,
+            title: "Nova notícia encontrada! (Admin)",
+            description: "1 notícia validada adicionada sem limite.",
             duration: 4000,
           });
         } else {
-          toast({
-            title: "Erro no limite diário",
-            description: "Não foi possível adicionar as notícias devido ao limite diário.",
-            variant: "destructive",
-            duration: 3000,
-          });
+          // Update global counter and user status for non-admins
+          const success = DailyNewsLimitService.addNewsCount(uniqueNews.length, user?.id);
+          
+          if (success) {
+            setNoticias(prev => [...uniqueNews, ...prev]);
+            // Store new news for detail page access
+            NewsStorageService.storeNews(uniqueNews);
+            const newGlobalCount = DailyNewsLimitService.getCurrentCount();
+            const newRemainingUsers = DailyNewsLimitService.getRemainingUsersNeeded();
+            
+            // Record help action for gamification
+            const earnedBadge = recordHelpAction();
+            if (earnedBadge) {
+              setNewBadge(earnedBadge);
+            }
+            
+            toast({
+              title: "Nova notícia encontrada!",
+              description: `1 notícia validada adicionada. Global: ${newGlobalCount}/${maxDaily} (falta ${newRemainingUsers > 0 ? `+${newRemainingUsers} usuário${newRemainingUsers > 1 ? 's' : ''}` : '0 usuários'} para fechar as notícias diárias)`,
+              duration: 4000,
+            });
+          } else {
+            toast({
+              title: "Erro no limite diário",
+              description: "Não foi possível adicionar as notícias devido ao limite diário.",
+              variant: "destructive",
+              duration: 3000,
+            });
+          }
         }
       } else {
         toast({
