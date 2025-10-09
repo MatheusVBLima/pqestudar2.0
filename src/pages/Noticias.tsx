@@ -48,20 +48,15 @@ const Noticias = () => {
   const timeSinceLastSearch = now - lastSearchTime;
   const isOnCooldown = timeSinceLastSearch < SEARCH_COOLDOWN;
 
-  // Load fresh 2025 news on mount with improved structure
+  // Load news from storage on mount
   useEffect(() => {
-    const loadOptimizedNews = () => {
-      // Clear old news to force fresh generation with new structure
-      NewsStorageService.clearNews();
-      
-      // Generate fresh 2025 news content with SEO optimization
-      console.log('Generating SEO-optimized 2025 news content...');
-      const freshNews = AINewsService.generateNews(12);
-      setNoticias(freshNews);
-      NewsStorageService.storeNews(freshNews);
+    const loadStoredNews = () => {
+      const storedNews = NewsStorageService.getAllNews();
+      setNoticias(storedNews);
+      console.log('Loaded news from storage:', storedNews.length, 'items');
     };
 
-    loadOptimizedNews();
+    loadStoredNews();
   }, []);
 
   const searchMoreNews = async () => {
