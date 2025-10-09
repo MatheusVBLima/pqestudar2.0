@@ -382,53 +382,52 @@ const NoticiaDetalhes = () => {
         <Card className="mb-8">
           <CardContent className="p-6">
             <div className="space-y-4">
-              {noticia.tags && noticia.tags.length > 0 && (
-                <>
-                  <div>
-                    <h3 className="font-semibold mb-2">Tags:</h3>
-                    <div className="flex flex-wrap gap-2">
-                      {noticia.tags.map((tag: string, index: number) => (
-                        <Badge key={index} variant="secondary">
-                          {tag}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                  <Separator />
-                </>
-              )}
+              {/* Tags - sempre exibe */}
+              <div>
+                <h3 className="font-semibold mb-2">Tags:</h3>
+                <div className="flex flex-wrap gap-2">
+                  {(noticia.tags && noticia.tags.length > 0 ? noticia.tags : [noticia.categoria, "Educação"]).map((tag: string, index: number) => (
+                    <Badge key={index} variant="secondary">
+                      {tag}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
               
               {noticia.fontes && noticia.fontes.length > 0 && (
-                <div>
-                  <h3 className="font-semibold mb-2">Fontes:</h3>
-                  <div className="space-y-2">
-                    {noticia.fontes.map((fonte: any, index: number) => {
-                      const fonteName = typeof fonte === 'string' ? fonte : fonte.nome;
-                      const fonteUrl = typeof fonte === 'string' ? '#' : fonte.url;
-                      
-                      return (
-                        <div key={index}>
-                          <a 
-                            href={fonteUrl} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center text-primary hover:underline"
-                          >
-                            <ExternalLink className="h-3 w-3 mr-1" />
-                            {fonteName}
-                          </a>
-                        </div>
-                      );
-                    })}
+                <>
+                  <Separator />
+                  <div>
+                    <h3 className="font-semibold mb-2">Fontes:</h3>
+                    <div className="space-y-2">
+                      {noticia.fontes.map((fonte: any, index: number) => {
+                        const fonteName = typeof fonte === 'string' ? fonte : fonte.nome;
+                        const fonteUrl = typeof fonte === 'string' ? '#' : fonte.url;
+                        
+                        return (
+                          <div key={index}>
+                            <a 
+                              href={fonteUrl} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center text-primary hover:underline"
+                            >
+                              <ExternalLink className="h-3 w-3 mr-1" />
+                              {fonteName}
+                            </a>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
+                </>
               )}
             </div>
           </CardContent>
         </Card>
 
-        {/* Notícias Relacionadas */}
-        {noticiasRelacionadas.length >= 4 && (
+        {/* Notícias Relacionadas - mostra se tiver pelo menos 1 */}
+        {noticiasRelacionadas.length > 0 && (
           <Card>
             <CardContent className="p-6">
               <h3 className="text-xl font-semibold mb-4">Notícias Relacionadas</h3>
