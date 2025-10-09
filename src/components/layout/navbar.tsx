@@ -20,10 +20,22 @@ export function Navbar() {
   const { user, signOut, loading } = useAuth();
   const [isClicked, setIsClicked] = useState(false);
 
+  // Detecta se está no subdomínio kit
+  const isOnKitSubdomain = window.location.hostname.startsWith("kit.");
+  const mainDomain = isOnKitSubdomain ? "https://pqestudar.com.br" : "";
+
+  const handleNavigation = (path: string) => {
+    if (isOnKitSubdomain) {
+      window.location.href = `${mainDomain}${path}`;
+    } else {
+      navigate(path);
+    }
+  };
+
   const handleSignOut = async () => {
     await signOut();
     toast.success('Logout realizado com sucesso!');
-    navigate('/');
+    handleNavigation('/');
   };
 
   return (
@@ -35,7 +47,7 @@ export function Navbar() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => navigate("/")}
+              onClick={() => handleNavigation("/")}
               className="group font-bold text-xl hover:bg-transparent p-2 transition-all duration-300"
             >
               <div className="flex items-center space-x-2">
@@ -67,7 +79,7 @@ export function Navbar() {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => navigate("/")}
+                onClick={() => handleNavigation("/")}
                 className="hover:bg-accent"
               >
                 <Home className="h-4 w-4 mr-2" />
@@ -78,7 +90,7 @@ export function Navbar() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => navigate("/explorar-cursos")}
+              onClick={() => handleNavigation("/explorar-cursos")}
               className={`hover:bg-accent ${location.pathname === "/explorar-cursos" ? "bg-accent text-accent-foreground" : ""}`}
             >
               <Search className="h-4 w-4 mr-2" />
@@ -88,7 +100,7 @@ export function Navbar() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => navigate("/noticias")}
+              onClick={() => handleNavigation("/noticias")}
               className={`hover:bg-accent ${location.pathname === "/noticias" ? "bg-accent text-accent-foreground" : ""}`}
             >
               <Newspaper className="h-4 w-4 mr-2" />
@@ -116,28 +128,28 @@ export function Navbar() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuItem onClick={() => navigate("/meu-perfil")}>
+                  <DropdownMenuItem onClick={() => handleNavigation("/meu-perfil")}>
                     <User className="h-4 w-4 mr-2" />
                     Meu Perfil
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate("/meus-materiais")}>
+                  <DropdownMenuItem onClick={() => handleNavigation("/meus-materiais")}>
                     <BookOpen className="h-4 w-4 mr-2" />
                     Meus Materiais
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate("/favoritos")}>
+                  <DropdownMenuItem onClick={() => handleNavigation("/favoritos")}>
                     <Heart className="h-4 w-4 mr-2" />
                     Minha atividade
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate("/ranking-comunidade")}>
+                  <DropdownMenuItem onClick={() => handleNavigation("/ranking-comunidade")}>
                     <Trophy className="h-4 w-4 mr-2" />
                     Ranking da Comunidade
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate("/notificacoes")}>
+                  <DropdownMenuItem onClick={() => handleNavigation("/notificacoes")}>
                     <Bell className="h-4 w-4 mr-2" />
                     Notificações
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => navigate("/suporte")}>
+                  <DropdownMenuItem onClick={() => handleNavigation("/suporte")}>
                     <HelpCircle className="h-4 w-4 mr-2" />
                     Central de Ajuda
                   </DropdownMenuItem>
@@ -152,7 +164,7 @@ export function Navbar() {
               <Button 
                 variant="default" 
                 size="sm" 
-                onClick={() => navigate('/login')}
+                onClick={() => handleNavigation('/login')}
                 disabled={loading}
               >
                 Entrar
@@ -169,16 +181,16 @@ export function Navbar() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
                   {!isHomePage && (
-                    <DropdownMenuItem onClick={() => navigate("/")}>
+                    <DropdownMenuItem onClick={() => handleNavigation("/")}>
                       <Home className="h-4 w-4 mr-2" />
                       Início
                     </DropdownMenuItem>
                   )}
-                  <DropdownMenuItem onClick={() => navigate("/explorar-cursos")}>
+                  <DropdownMenuItem onClick={() => handleNavigation("/explorar-cursos")}>
                     <Search className="h-4 w-4 mr-2" />
                     Explorar Cursos
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate("/noticias")}>
+                  <DropdownMenuItem onClick={() => handleNavigation("/noticias")}>
                     <Newspaper className="h-4 w-4 mr-2" />
                     Notícias
                   </DropdownMenuItem>
@@ -186,15 +198,15 @@ export function Navbar() {
                     <BookOpen className="h-4 w-4 mr-2" />
                     Kit de Aceleração
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate("/favoritos")}>
+                  <DropdownMenuItem onClick={() => handleNavigation("/favoritos")}>
                     <Heart className="h-4 w-4 mr-2" />
                     Minha atividade
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate("/ranking-comunidade")}>
+                  <DropdownMenuItem onClick={() => handleNavigation("/ranking-comunidade")}>
                     <Trophy className="h-4 w-4 mr-2" />
                     Ranking da Comunidade
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate("/notificacoes")}>
+                  <DropdownMenuItem onClick={() => handleNavigation("/notificacoes")}>
                     <Bell className="h-4 w-4 mr-2" />
                     Notificações
                   </DropdownMenuItem>
