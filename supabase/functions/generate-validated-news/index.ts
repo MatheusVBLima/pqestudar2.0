@@ -69,7 +69,14 @@ IMPORTANTE:
 - Confirme que a notícia é de ${new Date().getFullYear()}
 - Para eventos de curto prazo: foque em inscrições, prazos, resultados, editais recentes
 - Para mudanças estruturais: foque em novas leis, análises de impacto, tendências
-- Não invente informações - apenas notícias verificáveis`;
+- Não invente informações - apenas notícias verificáveis
+
+TAGS OBRIGATÓRIAS:
+- Gere 4-6 tags relevantes e específicas
+- Se a notícia menciona SISU, ENEM, ProUni, FIES, inclua essas tags
+- Adicione tags sobre o tema principal (ex: "Inscrições", "Notas de Corte", "Bolsas", "Vestibular")
+- Adicione tags geográficas se relevante (ex: "São Paulo", "Universidades Federais")
+- Exemplo de boas tags para SISU: ["SISU", "SISU 2025", "Universidades Federais", "Ensino Superior", "Inscrições", "MEC"]`;
 
       const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
         method: "POST",
@@ -112,7 +119,9 @@ IMPORTANTE:
                     tags: {
                       type: "array",
                       items: { type: "string" },
-                      description: "Lista de 3-5 tags relevantes para a notícia (ex: ENEM, SISU, Educação Superior, etc.)"
+                      minItems: 4,
+                      maxItems: 6,
+                      description: "Lista de 4-6 tags relevantes e específicas. SEMPRE incluir tags de programas mencionados (SISU, ENEM, ProUni, FIES) + tags temáticas (Inscrições, Bolsas, etc.) + tags contextuais"
                     }
                   },
                   required: ["titulo", "descricao", "categoria", "fontes", "dataPublicacao", "conteudo", "tags"],
@@ -184,7 +193,9 @@ IMPORTANTE:
           conteudo: newsData.conteudo || newsData.descricao,
           conteudoCompleto: newsData.conteudo || newsData.descricao,
           fontes: processedFontes,
-          tags: newsData.tags || [newsData.categoria, "Educação"],
+          tags: newsData.tags && newsData.tags.length > 0 
+            ? newsData.tags 
+            : [newsData.categoria, "Educação", "Brasil", keywordObj.term.split(' ')[0]],
           validationScore,
           isValidated: validationScore >= 66,
           keywords: [keywordObj.term],
