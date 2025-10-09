@@ -110,7 +110,7 @@ export function Navbar() {
             <Button
               variant="hero"
               size="sm"
-              onClick={() => window.open("https://kit.pqestudar.com.br", "_blank")}
+              onClick={() => window.location.href = "https://kit.pqestudar.com.br"}
             >
               Kit de Aceleração
             </Button>
@@ -194,7 +194,7 @@ export function Navbar() {
                     <Newspaper className="h-4 w-4 mr-2" />
                     Notícias
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => window.open("https://kit.pqestudar.com.br", "_blank")}>
+                  <DropdownMenuItem onClick={() => window.location.href = "https://kit.pqestudar.com.br"}>
                     <BookOpen className="h-4 w-4 mr-2" />
                     Kit de Aceleração
                   </DropdownMenuItem>
