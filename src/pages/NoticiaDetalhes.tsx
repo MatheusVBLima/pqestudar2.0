@@ -16,6 +16,7 @@ const NoticiaDetalhes = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [noticia, setNoticia] = useState<any>(null);
+  const [noticiasRelacionadas, setNoticiasRelacionadas] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const { adicionarFavorito, removerFavorito, isFavorito } = useFavoritos();
   const { toast } = useToast();
@@ -49,6 +50,13 @@ const NoticiaDetalhes = () => {
       } else {
         setNoticia(storedNews);
       }
+
+      // Buscar notícias relacionadas
+      const allNews = NewsStorageService.getAllNews();
+      const related = allNews
+        .filter((n: any) => n.id !== id && n.categoria === storedNews.categoria)
+        .slice(0, 6); // Pegar até 6 relacionadas
+      setNoticiasRelacionadas(related);
     }
     
     setLoading(false);
@@ -374,81 +382,76 @@ const NoticiaDetalhes = () => {
         <Card className="mb-8">
           <CardContent className="p-6">
             <div className="space-y-4">
-              <div>
-                <h3 className="font-semibold mb-2">Tags:</h3>
-                <div className="flex flex-wrap gap-2">
-                  {(noticia.tags || []).map((tag: string, index: number) => (
-                    <Badge key={index} variant="secondary">
-                      {tag}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
+              {noticia.tags && noticia.tags.length > 0 && (
+                <>
+                  <div>
+                    <h3 className="font-semibold mb-2">Tags:</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {noticia.tags.map((tag: string, index: number) => (
+                        <Badge key={index} variant="secondary">
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                  <Separator />
+                </>
+              )}
               
-              <Separator />
-              
-              <div>
-                <h3 className="font-semibold mb-2">Fontes:</h3>
-                <div className="space-y-2">
-                  {(noticia.fontes || []).map((fonte: any, index: number) => {
-                    const fonteName = typeof fonte === 'string' ? fonte : fonte.nome;
-                    const fonteUrl = typeof fonte === 'string' ? '#' : fonte.url;
-                    
-                    return (
-                      <div key={index}>
-                        <a 
-                          href={fonteUrl} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center text-primary hover:underline"
-                        >
-                          <ExternalLink className="h-3 w-3 mr-1" />
-                          {fonteName}
-                        </a>
-                      </div>
-                    );
-                  })}
+              {noticia.fontes && noticia.fontes.length > 0 && (
+                <div>
+                  <h3 className="font-semibold mb-2">Fontes:</h3>
+                  <div className="space-y-2">
+                    {noticia.fontes.map((fonte: any, index: number) => {
+                      const fonteName = typeof fonte === 'string' ? fonte : fonte.nome;
+                      const fonteUrl = typeof fonte === 'string' ? '#' : fonte.url;
+                      
+                      return (
+                        <div key={index}>
+                          <a 
+                            href={fonteUrl} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center text-primary hover:underline"
+                          >
+                            <ExternalLink className="h-3 w-3 mr-1" />
+                            {fonteName}
+                          </a>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </CardContent>
         </Card>
 
-        {/* Notícias Relacionadas - Links para fontes reais */}
-        {noticia.fontes && noticia.fontes.length > 0 && (
+        {/* Notícias Relacionadas */}
+        {noticiasRelacionadas.length >= 4 && (
           <Card>
             <CardContent className="p-6">
               <h3 className="text-xl font-semibold mb-4">Notícias Relacionadas</h3>
-              <p className="text-sm text-muted-foreground mb-4">
-                Acesse as fontes originais desta notícia para mais informações:
-              </p>
-              <div className="grid grid-cols-1 gap-3">
-                {noticia.fontes.map((fonte: any, index: number) => {
-                  const fonteName = typeof fonte === 'string' ? fonte : fonte.nome;
-                  const fonteUrl = typeof fonte === 'string' ? '#' : fonte.url;
-                  
-                  return (
-                    <a
-                      key={index}
-                      href={fonteUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-start gap-3 p-4 rounded-lg hover:bg-accent cursor-pointer transition-colors border border-border group"
-                    >
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <ExternalLink className="h-4 w-4 text-primary" />
-                          <h4 className="text-sm font-medium group-hover:text-primary line-clamp-2">
-                            {fonteName}
-                          </h4>
-                        </div>
-                        <p className="text-xs text-muted-foreground">
-                          Fonte verificada • Clique para acessar
-                        </p>
-                      </div>
-                    </a>
-                  );
-                })}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {noticiasRelacionadas.slice(0, 6).map((relatedNews: any) => (
+                  <div 
+                    key={relatedNews.id}
+                    onClick={() => navigate(`/noticia/${relatedNews.id}`)}
+                    className="flex items-start gap-3 p-4 rounded-lg hover:bg-accent cursor-pointer transition-colors border border-border group"
+                  >
+                    <div className="flex-1">
+                      <Badge 
+                        className={`${getCategoriaColor(relatedNews.categoria)} text-white text-xs mb-2`}
+                      >
+                        {relatedNews.categoria}
+                      </Badge>
+                      <h4 className="text-sm font-medium group-hover:text-primary line-clamp-2">
+                        {relatedNews.titulo}
+                      </h4>
+                      <p className="text-xs text-muted-foreground mt-1">{relatedNews.tempo}</p>
+                    </div>
+                  </div>
+                ))}
               </div>
             </CardContent>
           </Card>
