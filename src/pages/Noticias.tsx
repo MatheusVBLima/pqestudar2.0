@@ -59,6 +59,40 @@ const Noticias = () => {
     }
   }, []);
 
+  const checkForDuplicates = (newNews: any[], existingNews: any[]): any[] => {
+    return newNews.filter(newsItem => {
+      // Verificar se já existe notícia com título muito similar
+      const isDuplicate = existingNews.some(existing => {
+        // Comparar títulos normalizados (remover pontuação, lowercase)
+        const normalizeTitle = (title: string) => 
+          title.toLowerCase()
+            .replace(/[^\w\s]/g, '')
+            .replace(/\s+/g, ' ')
+            .trim();
+        
+        const newTitle = normalizeTitle(newsItem.titulo);
+        const existingTitle = normalizeTitle(existing.titulo);
+        
+        // Calcular similaridade (palavras em comum)
+        const newWords = new Set(newTitle.split(' ').filter(w => w.length > 3));
+        const existingWords = new Set(existingTitle.split(' ').filter(w => w.length > 3));
+        
+        const commonWords = [...newWords].filter(word => existingWords.has(word));
+        const similarity = commonWords.length / Math.max(newWords.size, existingWords.size);
+        
+        // Se mais de 60% das palavras são iguais, considerar duplicata
+        if (similarity > 0.6) {
+          console.log(`Duplicate detected: "${newsItem.titulo}" is similar to "${existing.titulo}" (${Math.round(similarity * 100)}% similar)`);
+          return true;
+        }
+        
+        return false;
+      });
+      
+      return !isDuplicate;
+    });
+  };
+
   const searchMoreNews = async () => {
     // Check if user is logged in
     if (!user) {
@@ -132,13 +166,27 @@ const Noticias = () => {
       const validatedNews = data.news;
       
       if (validatedNews.length > 0) {
+        // Verificar duplicatas antes de adicionar
+        const uniqueNews = checkForDuplicates(validatedNews, noticias);
+        
+        if (uniqueNews.length === 0) {
+          toast({
+            title: "Notícia duplicada detectada",
+            description: "Esta notícia já existe ou é muito similar a uma existente. Tente novamente.",
+            variant: "destructive",
+            duration: 4000,
+          });
+          setIsSearchingReal(false);
+          return;
+        }
+        
         // Update global counter and user status
-        const success = DailyNewsLimitService.addNewsCount(validatedNews.length, user?.id);
+        const success = DailyNewsLimitService.addNewsCount(uniqueNews.length, user?.id);
         
         if (success) {
-          setNoticias(prev => [...validatedNews, ...prev]);
+          setNoticias(prev => [...uniqueNews, ...prev]);
           // Store new news for detail page access
-          NewsStorageService.storeNews(validatedNews);
+          NewsStorageService.storeNews(uniqueNews);
           const newGlobalCount = DailyNewsLimitService.getCurrentCount();
           const newRemainingUsers = DailyNewsLimitService.getRemainingUsersNeeded();
           
