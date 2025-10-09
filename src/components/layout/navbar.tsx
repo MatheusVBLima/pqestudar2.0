@@ -115,7 +115,7 @@ export function Navbar() {
               Kit de Aceleração
             </Button>
 
-            <NotificationDropdown />
+            {user && <NotificationDropdown />}
           </div>
 
           {/* User Menu & Mobile Menu */}
