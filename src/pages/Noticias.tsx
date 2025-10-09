@@ -59,6 +59,40 @@ const Noticias = () => {
     }
   }, []);
 
+  // Admin functions
+  const resetLimitsAndClearNews = () => {
+    // Reset daily limits
+    DailyNewsLimitService.resetDailyCount(user?.id);
+    // Clear all news
+    NewsStorageService.clearNews();
+    setNoticias([]);
+    
+    toast({
+      title: "Sistema resetado!",
+      description: "Limites diários resetados e notícias limpas. Você pode testar novamente.",
+      duration: 3000,
+    });
+    
+    // Refresh page to update counters
+    window.location.reload();
+  };
+
+  const removeNewsByTitle = (titleToRemove: string) => {
+    const allNews = NewsStorageService.getAllNews();
+    const filtered = allNews.filter(n => n.titulo !== titleToRemove);
+    
+    // Clear and re-store
+    NewsStorageService.clearNews();
+    NewsStorageService.storeNews(filtered);
+    setNoticias(filtered);
+    
+    toast({
+      title: "Notícia removida",
+      description: `"${titleToRemove}" foi removida.`,
+      duration: 3000,
+    });
+  };
+
   const checkForDuplicates = (newNews: any[], existingNews: any[]): any[] => {
     return newNews.filter(newsItem => {
       // Verificar se já existe notícia com título muito similar
@@ -332,6 +366,31 @@ const Noticias = () => {
       <Navbar />
       
       <main className="container mx-auto px-4 py-8 max-w-7xl w-full">
+        {/* Admin Controls - Only for testing */}
+        {user && (
+          <div className="mb-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+            <p className="text-sm font-semibold mb-2">🔧 Controles de Admin (para testes)</p>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                onClick={resetLimitsAndClearNews}
+                variant="outline"
+                size="sm"
+                className="text-xs"
+              >
+                Resetar Sistema (Limpar tudo + Reset limites)
+              </Button>
+              <Button
+                onClick={() => removeNewsByTitle("Inscrições para o SISU 2025: entenda o calendário e como se preparar")}
+                variant="outline"
+                size="sm"
+                className="text-xs"
+              >
+                Remover notícia SISU duplicada
+              </Button>
+            </div>
+          </div>
+        )}
+        
         {/* Header */}
         <div className="mb-6 w-full">
           <div className="space-y-4">
