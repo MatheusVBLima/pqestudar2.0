@@ -20,28 +20,56 @@ serve(async (req) => {
 
     console.log(`Starting news generation for ${maxResults} articles...`);
 
-    // Palavras-chave para busca de notícias sobre educação no Brasil
-    const keywords = [
-      "educação Brasil reforma ensino",
-      "MEC ministério educação novas diretrizes",
-      "ENEM vestibular mudanças 2025",
-      "tecnologia educação ensino híbrido",
-      "professores salário valorização Brasil"
+    // Palavras-chave categorizadas por tipo de conteúdo e janela de tempo
+    const shortTermKeywords = [
+      { term: "SISU inscrições abertura prazo", days: 15, category: "Eventos de Curto Prazo" },
+      { term: "ENEM resultado gabarito divulgação", days: 15, category: "Eventos de Curto Prazo" },
+      { term: "FIES inscrições edital cronograma", days: 15, category: "Eventos de Curto Prazo" },
+      { term: "ProUni inscrições seleção resultado", days: 15, category: "Eventos de Curto Prazo" },
+      { term: "concursos públicos edital abertura educação", days: 15, category: "Eventos de Curto Prazo" },
     ];
+
+    const mediumTermKeywords = [
+      { term: "nova lei educação Brasil reforma MEC", days: 60, category: "Mudanças Estruturais" },
+      { term: "notas de corte SISU universidades análise", days: 45, category: "Análises e Tendências" },
+      { term: "políticas públicas educação investimento governo", days: 60, category: "Mudanças Estruturais" },
+      { term: "tecnologia educação ensino híbrido inovação", days: 45, category: "Análises e Tendências" },
+      { term: "vestibular mudanças provas formato", days: 45, category: "Análises e Tendências" },
+    ];
+
+    // Selecionar keywords baseado no que queremos priorizar
+    // 70% curto prazo (mais urgente), 30% médio prazo (contexto)
+    const allKeywords = [...shortTermKeywords, ...mediumTermKeywords];
+    const selectedKeywords = [];
+    
+    const shortTermCount = Math.ceil(maxResults * 0.7);
+    const mediumTermCount = maxResults - shortTermCount;
+    
+    for (let i = 0; i < shortTermCount && i < shortTermKeywords.length; i++) {
+      selectedKeywords.push(shortTermKeywords[i]);
+    }
+    
+    for (let i = 0; i < mediumTermCount && i < mediumTermKeywords.length; i++) {
+      selectedKeywords.push(mediumTermKeywords[i]);
+    }
 
     const allNews = [];
 
     // Buscar notícias para cada palavra-chave
-    for (const keyword of keywords.slice(0, maxResults)) {
-      console.log(`Searching news for: ${keyword}`);
+    for (const keywordObj of selectedKeywords) {
+      console.log(`Searching news for: ${keywordObj.term} (${keywordObj.days} days, ${keywordObj.category})`);
       
-      const searchPrompt = `Busque notícias REAIS e RECENTES (últimos 7 dias) sobre "${keyword}" especificamente no contexto da educação brasileira. 
+      const searchPrompt = `Busque notícias REAIS e RECENTES (últimos ${keywordObj.days} dias) sobre "${keywordObj.term}" especificamente no contexto da educação brasileira. 
 
 IMPORTANTE: 
-- Cite SEMPRE as fontes reais (G1, Folha, Estadão, UOL, etc.)
-- Inclua a data exata da publicação
-- Verifique se a notícia é de 2025
-- Não invente informações`;
+- Categoria: ${keywordObj.category}
+- Janela de tempo: ${keywordObj.days} dias atrás até hoje
+- Cite SEMPRE as fontes reais (G1, Folha, Estadão, UOL, MEC, portais universitários, etc.)
+- Inclua a data EXATA da publicação (verificar que está dentro dos últimos ${keywordObj.days} dias)
+- Confirme que a notícia é de ${new Date().getFullYear()}
+- Para eventos de curto prazo: foque em inscrições, prazos, resultados, editais recentes
+- Para mudanças estruturais: foque em novas leis, análises de impacto, tendências
+- Não invente informações - apenas notícias verificáveis`;
 
       const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
         method: "POST",
@@ -140,13 +168,15 @@ IMPORTANTE:
           fontes: newsData.fontes,
           validationScore,
           isValidated: validationScore >= 66,
-          keywords: [keyword]
+          keywords: [keywordObj.term],
+          searchWindow: `${keywordObj.days} dias`,
+          contentType: keywordObj.category
         });
 
-        console.log(`Successfully generated news: ${newsData.titulo.substring(0, 50)}...`);
+        console.log(`Successfully generated news: ${newsData.titulo.substring(0, 50)}... (${keywordObj.category})`);
         
       } catch (parseError) {
-        console.error(`Failed to parse tool call arguments for ${keyword}:`, parseError);
+        console.error(`Failed to parse tool call arguments for ${keywordObj.term}:`, parseError);
         continue;
       }
     }
