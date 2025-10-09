@@ -374,7 +374,7 @@ const NoticiaDetalhes = () => {
               implement HTML sanitization using DOMPurify to prevent XSS attacks.
             */}
             <div 
-              className="prose prose-lg max-w-none text-foreground"
+              className="prose prose-lg max-w-none text-foreground prose-headings:font-bold prose-headings:text-foreground prose-h3:text-2xl prose-h3:mt-8 prose-h3:mb-4 prose-p:mb-4 prose-p:leading-relaxed prose-p:text-base prose-ul:my-6 prose-ul:space-y-2 prose-li:leading-relaxed prose-strong:text-foreground prose-strong:font-semibold"
               dangerouslySetInnerHTML={{ 
                 __html: noticia.conteudoCompleto || noticia.conteudo || `<p>${noticia.descricao}</p>` 
               }}
