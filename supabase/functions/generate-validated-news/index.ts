@@ -115,7 +115,27 @@ TAGS OBRIGATÓRIAS:
                       description: "Lista de fontes no formato 'Nome do Portal - URL completo'. IMPORTANTE: URLs devem ser completos e funcionais (começar com https://)"
                     },
                     dataPublicacao: { type: "string", description: "Data no formato YYYY-MM-DD" },
-                    conteudo: { type: "string", description: "Conteúdo expandido da notícia" },
+                    conteudo: { 
+                      type: "string", 
+                      description: `Conteúdo expandido e bem formatado da notícia em HTML. ESTRUTURA OBRIGATÓRIA:
+                      
+- Comece com um parágrafo de introdução <p class="mb-4">...</p>
+- Divida em seções com subtítulos <h3 class="text-xl font-semibold mb-3 mt-6 text-foreground">Título da Seção</h3>
+- Use parágrafos curtos de 2-3 frases <p class="mb-4">...</p>
+- Use listas quando apropriado <ul class="list-disc ml-6 mb-4"><li>item</li></ul>
+- Destaque termos importantes com <strong>termo</strong>
+- Mínimo 4 parágrafos e 2 seções com subtítulos
+- Máximo 8 parágrafos para manter legibilidade
+- Inclua chamadas para ação quando relevante (ex: "Fique atento aos prazos")
+
+Exemplo de estrutura:
+<p class="mb-4">Parágrafo introdutório...</p>
+<h3 class="text-xl font-semibold mb-3 mt-6 text-foreground">O que isso significa?</h3>
+<p class="mb-4">Explicação...</p>
+<h3 class="text-xl font-semibold mb-3 mt-6 text-foreground">Como se preparar</h3>
+<ul class="list-disc ml-6 mb-4"><li>Primeiro passo</li><li>Segundo passo</li></ul>
+<p class="mb-4">Conclusão...</p>`
+                    },
                     tags: {
                       type: "array",
                       items: { type: "string" },
