@@ -48,15 +48,11 @@ const Noticias = () => {
   const timeSinceLastSearch = now - lastSearchTime;
   const isOnCooldown = timeSinceLastSearch < SEARCH_COOLDOWN;
 
-  // Load news from storage on mount
+  // Clear all stored news on mount - fresh start
   useEffect(() => {
-    const loadStoredNews = () => {
-      const storedNews = NewsStorageService.getAllNews();
-      setNoticias(storedNews);
-      console.log('Loaded news from storage:', storedNews.length, 'items');
-    };
-
-    loadStoredNews();
+    console.log('Clearing all stored news...');
+    NewsStorageService.clearNews();
+    setNoticias([]);
   }, []);
 
   const searchMoreNews = async () => {
