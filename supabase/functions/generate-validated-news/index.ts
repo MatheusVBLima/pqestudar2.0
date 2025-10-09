@@ -41,17 +41,7 @@ IMPORTANTE:
 - Cite SEMPRE as fontes reais (G1, Folha, Estadão, UOL, etc.)
 - Inclua a data exata da publicação
 - Verifique se a notícia é de 2025
-- Não invente informações
-
-Retorne no formato JSON:
-{
-  "titulo": "título completo da notícia",
-  "descricao": "resumo detalhado de 2-3 parágrafos",
-  "categoria": "uma de: Políticas Públicas, Tecnologia, Vestibular, Carreira, Inovação",
-  "fontes": ["Nome do Portal - URL completo", "Outro Portal - URL"],
-  "dataPublicacao": "YYYY-MM-DD",
-  "conteudo": "conteúdo expandido da notícia com mais detalhes"
-}`;
+- Não invente informações`;
 
       const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
         method: "POST",
@@ -60,7 +50,7 @@ Retorne no formato JSON:
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "google/gemini-2.5-flash-lite",
+          model: "google/gemini-2.5-flash",
           messages: [
             { 
               role: "system", 
@@ -68,6 +58,37 @@ Retorne no formato JSON:
             },
             { role: "user", content: searchPrompt }
           ],
+          tools: [
+            {
+              type: "function",
+              function: {
+                name: "create_news_article",
+                description: "Cria um artigo de notícia validado sobre educação",
+                parameters: {
+                  type: "object",
+                  properties: {
+                    titulo: { type: "string", description: "Título completo da notícia" },
+                    descricao: { type: "string", description: "Resumo detalhado de 2-3 parágrafos" },
+                    categoria: { 
+                      type: "string", 
+                      enum: ["Políticas Públicas", "Tecnologia", "Vestibular", "Carreira", "Inovação"],
+                      description: "Categoria da notícia"
+                    },
+                    fontes: { 
+                      type: "array", 
+                      items: { type: "string" },
+                      description: "Lista de fontes no formato 'Nome do Portal - URL completo'"
+                    },
+                    dataPublicacao: { type: "string", description: "Data no formato YYYY-MM-DD" },
+                    conteudo: { type: "string", description: "Conteúdo expandido da notícia" }
+                  },
+                  required: ["titulo", "descricao", "categoria", "fontes", "dataPublicacao", "conteudo"],
+                  additionalProperties: false
+                }
+              }
+            }
+          ],
+          tool_choice: { type: "function", function: { name: "create_news_article" } }
         }),
       });
 
@@ -85,31 +106,15 @@ Retorne no formato JSON:
       }
 
       const data = await response.json();
-      const content = data.choices?.[0]?.message?.content;
+      const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
       
-      if (!content) {
-        console.warn(`No content generated for keyword: ${keyword}`);
+      if (!toolCall || toolCall.function?.name !== 'create_news_article') {
+        console.warn(`No tool call generated for keyword: ${keyword}`);
         continue;
       }
 
       try {
-        // Limpar o conteúdo e extrair apenas o JSON válido
-        let cleanContent = content.trim();
-        
-        // Remover blocos de código markdown se existirem
-        cleanContent = cleanContent.replace(/```json\s*/g, '').replace(/```\s*/g, '');
-        
-        // Encontrar o primeiro { e o último } correspondente
-        const firstBrace = cleanContent.indexOf('{');
-        const lastBrace = cleanContent.lastIndexOf('}');
-        
-        if (firstBrace === -1 || lastBrace === -1) {
-          console.warn(`No JSON found in response for: ${keyword}`);
-          continue;
-        }
-        
-        const jsonStr = cleanContent.substring(firstBrace, lastBrace + 1);
-        const newsData = JSON.parse(jsonStr);
+        const newsData = JSON.parse(toolCall.function.arguments);
         
         // Validar campos obrigatórios
         if (!newsData.titulo || !newsData.descricao || !newsData.fontes || newsData.fontes.length === 0) {
@@ -141,7 +146,7 @@ Retorne no formato JSON:
         console.log(`Successfully generated news: ${newsData.titulo.substring(0, 50)}...`);
         
       } catch (parseError) {
-        console.error(`Failed to parse news data for ${keyword}:`, parseError);
+        console.error(`Failed to parse tool call arguments for ${keyword}:`, parseError);
         continue;
       }
     }
