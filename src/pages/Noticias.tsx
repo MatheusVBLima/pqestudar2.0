@@ -34,14 +34,14 @@ const Noticias = () => {
 
   // Daily global and user limits
   const dailyData = DailyNewsLimitService.getDailyData();
-  const userData = DailyNewsLimitService.getUserDailyData();
+  const userData = DailyNewsLimitService.getUserDailyData(user?.id);
   const globalCount = dailyData.count;
   const maxDaily = DailyNewsLimitService.getMaxDaily();
-  const userCount = DailyNewsLimitService.getUserContributionCount();
+  const userCount = DailyNewsLimitService.getUserContributionCount(user?.id);
   const userMaxContributions = DailyNewsLimitService.getUserMaxContributions();
   const remainingUsers = DailyNewsLimitService.getRemainingUsersNeeded();
-  const canUserContribute = DailyNewsLimitService.canUserContribute();
-  const canAddDaily = DailyNewsLimitService.canAddNews();
+  const canUserContribute = DailyNewsLimitService.canUserContribute(user?.id);
+  const canAddDaily = DailyNewsLimitService.canAddNews(1, user?.id);
   
   // Cooldown settings
   const SEARCH_COOLDOWN = 30000; // 30 seconds
@@ -133,7 +133,7 @@ const Noticias = () => {
       
       if (validatedNews.length > 0) {
         // Update global counter and user status
-        const success = DailyNewsLimitService.addNewsCount(validatedNews.length);
+        const success = DailyNewsLimitService.addNewsCount(validatedNews.length, user?.id);
         
         if (success) {
           setNoticias(prev => [...validatedNews, ...prev]);

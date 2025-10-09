@@ -13,12 +13,20 @@ export interface UserDailyData {
 
 export class DailyNewsLimitService {
   private static readonly STORAGE_KEY = 'daily_news_limit_global';
-  private static readonly USER_STORAGE_KEY = 'daily_news_limit_user';
+  private static readonly USER_STORAGE_PREFIX = 'daily_news_limit_user_';
   private static readonly MAX_DAILY_NEWS = 3;
   private static readonly USER_MAX_CONTRIBUTIONS = 1;
 
   static getTodayString(): string {
     return new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+  }
+
+  static getUserStorageKey(userId?: string): string {
+    if (!userId) {
+      // Fallback to generic key for non-authenticated users
+      return this.USER_STORAGE_PREFIX + 'anonymous';
+    }
+    return this.USER_STORAGE_PREFIX + userId;
   }
 
   static getDailyData(): DailyLimitData {
@@ -63,9 +71,10 @@ export class DailyNewsLimitService {
     }
   }
 
-  static getUserDailyData(): UserDailyData {
+  static getUserDailyData(userId?: string): UserDailyData {
     const today = this.getTodayString();
-    const stored = localStorage.getItem(this.USER_STORAGE_KEY);
+    const userKey = this.getUserStorageKey(userId);
+    const stored = localStorage.getItem(userKey);
     
     if (!stored) {
       const newData: UserDailyData = {
@@ -73,7 +82,7 @@ export class DailyNewsLimitService {
         hasContributed: false,
         lastReset: new Date().toISOString()
       };
-      this.saveUserDailyData(newData);
+      this.saveUserDailyData(newData, userId);
       return newData;
     }
     
@@ -87,7 +96,7 @@ export class DailyNewsLimitService {
           hasContributed: false,
           lastReset: new Date().toISOString()
         };
-        this.saveUserDailyData(resetData);
+        this.saveUserDailyData(resetData, userId);
         return resetData;
       }
       
@@ -100,7 +109,7 @@ export class DailyNewsLimitService {
         hasContributed: false,
         lastReset: new Date().toISOString()
       };
-      this.saveUserDailyData(newData);
+      this.saveUserDailyData(newData, userId);
       return newData;
     }
   }
@@ -109,18 +118,19 @@ export class DailyNewsLimitService {
     localStorage.setItem(this.STORAGE_KEY, JSON.stringify(data));
   }
 
-  static saveUserDailyData(data: UserDailyData): void {
-    localStorage.setItem(this.USER_STORAGE_KEY, JSON.stringify(data));
+  static saveUserDailyData(data: UserDailyData, userId?: string): void {
+    const userKey = this.getUserStorageKey(userId);
+    localStorage.setItem(userKey, JSON.stringify(data));
   }
 
-  static canUserContribute(): boolean {
-    const userData = this.getUserDailyData();
+  static canUserContribute(userId?: string): boolean {
+    const userData = this.getUserDailyData(userId);
     return !userData.hasContributed;
   }
 
-  static canAddNews(quantity: number = 1): boolean {
+  static canAddNews(quantity: number = 1, userId?: string): boolean {
     const globalData = this.getDailyData();
-    const userData = this.getUserDailyData();
+    const userData = this.getUserDailyData(userId);
     
     return !userData.hasContributed && (globalData.count + quantity) <= this.MAX_DAILY_NEWS;
   }
@@ -135,16 +145,16 @@ export class DailyNewsLimitService {
     return data.count;
   }
 
-  static getUserContributionCount(): number {
-    const userData = this.getUserDailyData();
+  static getUserContributionCount(userId?: string): number {
+    const userData = this.getUserDailyData(userId);
     return userData.hasContributed ? 1 : 0;
   }
 
-  static addNewsCount(quantity: number): boolean {
+  static addNewsCount(quantity: number, userId?: string): boolean {
     const globalData = this.getDailyData();
-    const userData = this.getUserDailyData();
+    const userData = this.getUserDailyData(userId);
     
-    if (!this.canAddNews(quantity)) {
+    if (!this.canAddNews(quantity, userId)) {
       return false;
     }
     
@@ -154,7 +164,7 @@ export class DailyNewsLimitService {
     
     // Mark user as contributed
     userData.hasContributed = true;
-    this.saveUserDailyData(userData);
+    this.saveUserDailyData(userData, userId);
     
     return true;
   }
@@ -192,7 +202,7 @@ export class DailyNewsLimitService {
   }
 
   // For debugging/admin purposes
-  static resetDailyCount(): void {
+  static resetDailyCount(userId?: string): void {
     const today = this.getTodayString();
     const resetData: DailyLimitData = {
       date: today,
@@ -206,6 +216,6 @@ export class DailyNewsLimitService {
       hasContributed: false,
       lastReset: new Date().toISOString()
     };
-    this.saveUserDailyData(userResetData);
+    this.saveUserDailyData(userResetData, userId);
   }
 }
