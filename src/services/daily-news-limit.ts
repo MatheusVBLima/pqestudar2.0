@@ -14,7 +14,7 @@ export interface UserDailyData {
 export class DailyNewsLimitService {
   private static readonly STORAGE_KEY = 'daily_news_limit_global';
   private static readonly USER_STORAGE_KEY = 'daily_news_limit_user';
-  private static readonly MAX_DAILY_NEWS = 18;
+  private static readonly MAX_DAILY_NEWS = 3;
   private static readonly USER_MAX_CONTRIBUTIONS = 1;
 
   static getTodayString(): string {

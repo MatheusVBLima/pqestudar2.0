@@ -15,6 +15,7 @@ import { AINewsService, type NewsArticle } from "@/services/ai-news-service";
 import { RealNewsService, type ValidatedNews } from "@/services/real-news-service";
 import { DailyNewsLimitService } from "@/services/daily-news-limit";
 import NewsStorageService from "@/services/news-storage";
+import { supabase } from "@/integrations/supabase/client";
 
 const Noticias = () => {
   const navigate = useNavigate();
@@ -112,17 +113,29 @@ const Noticias = () => {
     setLastSearchTime(now);
     
     try {
-      // Each user contributes only 1 news article
-      const realNews = await RealNewsService.searchAndValidateNews(1);
+      const { data, error } = await supabase.functions.invoke('generate-validated-news', {
+        body: { maxResults: 1 }
+      });
+
+      if (error) {
+        console.error('Edge function error:', error);
+        throw error;
+      }
+
+      if (!data?.success || !data?.news) {
+        throw new Error('Resposta inválida do servidor');
+      }
+
+      const validatedNews = data.news;
       
-      if (realNews.length > 0) {
+      if (validatedNews.length > 0) {
         // Update global counter and user status
-        const success = DailyNewsLimitService.addNewsCount(realNews.length);
+        const success = DailyNewsLimitService.addNewsCount(validatedNews.length);
         
         if (success) {
-          setNoticias(prev => [...realNews, ...prev]);
+          setNoticias(prev => [...validatedNews, ...prev]);
           // Store new news for detail page access
-          NewsStorageService.storeNews(realNews);
+          NewsStorageService.storeNews(validatedNews);
           const newGlobalCount = DailyNewsLimitService.getCurrentCount();
           const newRemainingUsers = DailyNewsLimitService.getRemainingUsersNeeded();
           
@@ -148,14 +161,22 @@ const Noticias = () => {
       } else {
         toast({
           title: "Nenhuma notícia nova encontrada",
-          description: "Não foram encontradas notícias recentes validadas por múltiplas fontes.",
+          description: "Não foram encontradas notícias recentes validadas.",
           duration: 3000,
         });
       }
     } catch (error) {
+      console.error('Error fetching news:', error);
+      
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+      
       toast({
         title: "Erro ao buscar notícias",
-        description: "Não foi possível buscar novas notícias no momento.",
+        description: errorMessage.includes('Rate limit') 
+          ? "Limite de requisições atingido. Tente novamente em alguns minutos."
+          : errorMessage.includes('Payment required')
+          ? "Créditos insuficientes no Lovable AI. Adicione créditos para continuar."
+          : "Não foi possível buscar novas notícias no momento.",
         variant: "destructive",
         duration: 3000,
       });
