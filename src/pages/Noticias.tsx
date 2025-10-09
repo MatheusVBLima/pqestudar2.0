@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Navbar } from "@/components/layout/navbar";
 import { useAuth } from "@/hooks/useAuth";
+import { useUserRoles } from "@/hooks/useUserRoles";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -20,6 +21,7 @@ import { supabase } from "@/integrations/supabase/client";
 const Noticias = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { isAdmin } = useUserRoles();
   const [filtroAtivo, setFiltroAtivo] = useState<string>("Todas");
   const [noticias, setNoticias] = useState<(NewsArticle | ValidatedNews)[]>([]);
   const [expandedNews, setExpandedNews] = useState<Set<number>>(new Set());
@@ -59,6 +61,40 @@ const Noticias = () => {
     }
   }, []);
 
+  const checkForDuplicates = (newNews: any[], existingNews: any[]): any[] => {
+    return newNews.filter(newsItem => {
+      // Verificar se já existe notícia com título muito similar
+      const isDuplicate = existingNews.some(existing => {
+        // Comparar títulos normalizados (remover pontuação, lowercase)
+        const normalizeTitle = (title: string) => 
+          title.toLowerCase()
+            .replace(/[^\w\s]/g, '')
+            .replace(/\s+/g, ' ')
+            .trim();
+        
+        const newTitle = normalizeTitle(newsItem.titulo);
+        const existingTitle = normalizeTitle(existing.titulo);
+        
+        // Calcular similaridade (palavras em comum)
+        const newWords = new Set(newTitle.split(' ').filter(w => w.length > 3));
+        const existingWords = new Set(existingTitle.split(' ').filter(w => w.length > 3));
+        
+        const commonWords = [...newWords].filter(word => existingWords.has(word));
+        const similarity = commonWords.length / Math.max(newWords.size, existingWords.size);
+        
+        // Se mais de 60% das palavras são iguais, considerar duplicata
+        if (similarity > 0.6) {
+          console.log(`Duplicate detected: "${newsItem.titulo}" is similar to "${existing.titulo}" (${Math.round(similarity * 100)}% similar)`);
+          return true;
+        }
+        
+        return false;
+      });
+      
+      return !isDuplicate;
+    });
+  };
+
   // Admin functions
   const resetLimitsAndClearNews = () => {
     // Reset daily limits
@@ -93,38 +129,46 @@ const Noticias = () => {
     });
   };
 
-  const checkForDuplicates = (newNews: any[], existingNews: any[]): any[] => {
-    return newNews.filter(newsItem => {
-      // Verificar se já existe notícia com título muito similar
-      const isDuplicate = existingNews.some(existing => {
-        // Comparar títulos normalizados (remover pontuação, lowercase)
-        const normalizeTitle = (title: string) => 
-          title.toLowerCase()
-            .replace(/[^\w\s]/g, '')
-            .replace(/\s+/g, ' ')
-            .trim();
-        
-        const newTitle = normalizeTitle(newsItem.titulo);
-        const existingTitle = normalizeTitle(existing.titulo);
-        
-        // Calcular similaridade (palavras em comum)
-        const newWords = new Set(newTitle.split(' ').filter(w => w.length > 3));
-        const existingWords = new Set(existingTitle.split(' ').filter(w => w.length > 3));
-        
-        const commonWords = [...newWords].filter(word => existingWords.has(word));
-        const similarity = commonWords.length / Math.max(newWords.size, existingWords.size);
-        
-        // Se mais de 60% das palavras são iguais, considerar duplicata
-        if (similarity > 0.6) {
-          console.log(`Duplicate detected: "${newsItem.titulo}" is similar to "${existing.titulo}" (${Math.round(similarity * 100)}% similar)`);
-          return true;
-        }
-        
-        return false;
-      });
+  const removeDuplicates = () => {
+    const allNews = NewsStorageService.getAllNews();
+    const seen = new Map();
+    
+    const unique = allNews.filter(news => {
+      const normalizeTitle = (title: string) => 
+        title.toLowerCase()
+          .replace(/[^\w\s]/g, '')
+          .replace(/\s+/g, ' ')
+          .trim();
       
-      return !isDuplicate;
+      const normalized = normalizeTitle(news.titulo);
+      
+      if (seen.has(normalized)) {
+        return false;
+      }
+      
+      seen.set(normalized, true);
+      return true;
     });
+    
+    const removedCount = allNews.length - unique.length;
+    
+    if (removedCount > 0) {
+      NewsStorageService.clearNews();
+      NewsStorageService.storeNews(unique);
+      setNoticias(unique);
+      
+      toast({
+        title: "Duplicados removidos",
+        description: `${removedCount} notícia${removedCount > 1 ? 's' : ''} duplicada${removedCount > 1 ? 's' : ''} removida${removedCount > 1 ? 's' : ''}.`,
+        duration: 3000,
+      });
+    } else {
+      toast({
+        title: "Nenhuma duplicata encontrada",
+        description: "Todas as notícias são únicas.",
+        duration: 3000,
+      });
+    }
   };
 
   const searchMoreNews = async () => {
@@ -366,26 +410,48 @@ const Noticias = () => {
       <Navbar />
       
       <main className="container mx-auto px-4 py-8 max-w-7xl w-full">
-        {/* Admin Controls - Only for testing */}
-        {user && (
-          <div className="mb-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
-            <p className="text-sm font-semibold mb-2">🔧 Controles de Admin (para testes)</p>
-            <div className="flex flex-wrap gap-2">
+        {/* Admin Controls - Only visible to admins */}
+        {isAdmin && (
+          <div className="mb-6 p-4 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 border-2 border-purple-200 dark:border-purple-800 rounded-lg shadow-sm">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-xl">🛡️</span>
+              <h3 className="font-bold text-lg text-foreground">Painel de Administração</h3>
+            </div>
+            <p className="text-sm text-muted-foreground mb-4">
+              Controles administrativos para gerenciar o sistema de notícias
+            </p>
+            <div className="flex flex-wrap gap-3">
               <Button
                 onClick={resetLimitsAndClearNews}
-                variant="outline"
+                variant="destructive"
                 size="sm"
-                className="text-xs"
+                className="gap-2"
               >
-                Resetar Sistema (Limpar tudo + Reset limites)
+                🗑️ Limpar Tudo
               </Button>
               <Button
-                onClick={() => removeNewsByTitle("Inscrições para o SISU 2025: entenda o calendário e como se preparar")}
+                onClick={() => {
+                  DailyNewsLimitService.resetDailyCount(user?.id);
+                  toast({
+                    title: "Limites resetados",
+                    description: "Contadores diários foram zerados.",
+                    duration: 3000,
+                  });
+                  window.location.reload();
+                }}
                 variant="outline"
                 size="sm"
-                className="text-xs"
+                className="gap-2"
               >
-                Remover notícia SISU duplicada
+                🔄 Resetar Limites
+              </Button>
+              <Button
+                onClick={removeDuplicates}
+                variant="outline"
+                size="sm"
+                className="gap-2"
+              >
+                🔍 Remover Duplicados
               </Button>
             </div>
           </div>
