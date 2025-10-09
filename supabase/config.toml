@@ -2,3 +2,6 @@ project_id = "omkxiomwzbykmqttfozi"
 
 [functions.submit-course-suggestion]
 verify_jwt = false
+
+[functions.send-confirmation-email]
+verify_jwt = false

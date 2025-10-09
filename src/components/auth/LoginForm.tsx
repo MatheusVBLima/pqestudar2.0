@@ -31,6 +31,8 @@ export function LoginForm({ onSwitchToSignUp }: LoginFormProps) {
       let errorMessage = 'Erro ao fazer login'
       if (error.message?.includes('Invalid login credentials')) {
         errorMessage = 'Email ou senha incorretos. Verifique suas credenciais ou tente recuperar sua senha.'
+      } else if (error.message?.includes('Email not confirmed')) {
+        errorMessage = 'Email não confirmado. Verifique sua caixa de entrada e confirme seu email antes de fazer login.'
       } else {
         errorMessage = error.message
       }
