@@ -431,13 +431,19 @@ const Noticias = () => {
               </Button>
               <Button
                 onClick={() => {
+                  // Reset both global and user limits
                   DailyNewsLimitService.resetDailyCount(user?.id);
+                  
                   toast({
                     title: "Limites resetados",
-                    description: "Contadores diários foram zerados.",
-                    duration: 3000,
+                    description: "Contadores diários foram zerados. Atualizando página...",
+                    duration: 2000,
                   });
-                  window.location.reload();
+                  
+                  // Force reload after a short delay to ensure storage is updated
+                  setTimeout(() => {
+                    window.location.reload();
+                  }, 500);
                 }}
                 variant="outline"
                 size="sm"
