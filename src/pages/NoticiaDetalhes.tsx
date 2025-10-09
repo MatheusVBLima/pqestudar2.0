@@ -93,44 +93,48 @@ const NoticiaDetalhes = () => {
       autor: "Ministério da Educação",
       visualizacoes: 15420,
       conteudoCompleto: `
-        <p class="mb-4">O Instituto Nacional de Estudos e Pesquisas Educacionais Anísio Teixeira (Inep) confirmou que as notas individuais do Exame Nacional do Ensino Médio (ENEM) 2024 serão disponibilizadas na Página do Participante no final de janeiro de 2025.</p>
+        <p class="mb-4 text-lg leading-relaxed">O Instituto Nacional de Estudos e Pesquisas Educacionais Anísio Teixeira (Inep) confirmou que as notas individuais do Exame Nacional do Ensino Médio (ENEM) 2024 serão disponibilizadas na Página do Participante no final de janeiro de 2025.</p>
         
-        <h3 class="text-xl font-semibold mb-3 text-foreground">Cronograma de Divulgação</h3>
+        <h3 class="text-2xl font-bold mb-4 mt-8 text-foreground">📅 Cronograma de Divulgação</h3>
         
-        <p class="mb-4">Segundo o cronograma oficial, os resultados estarão disponíveis a partir do dia 27 de janeiro de 2025, às 10h (horário de Brasília). Os participantes poderão acessar suas notas através do portal oficial do Inep, utilizando CPF e senha cadastrada.</p>
+        <p class="mb-4 leading-relaxed">Segundo o cronograma oficial, os resultados estarão disponíveis a partir do dia <strong>27 de janeiro de 2025, às 10h</strong> (horário de Brasília). Os participantes poderão acessar suas notas através do portal oficial do Inep, utilizando CPF e senha cadastrada.</p>
         
-        <h3 class="text-xl font-semibold mb-3 text-foreground">Como Acessar o Resultado</h3>
+        <h3 class="text-2xl font-bold mb-4 mt-8 text-foreground">🔐 Como Acessar o Resultado</h3>
         
-        <p class="mb-4">Para consultar o resultado, os candidatos devem:</p>
-        <ul class="list-disc ml-6 mb-4">
-          <li>Acessar o site oficial do Inep</li>
-          <li>Fazer login na Página do Participante</li>
-          <li>Inserir CPF e senha cadastrados</li>
-          <li>Clicar em "Resultado do ENEM 2024"</li>
+        <p class="mb-3 leading-relaxed">Para consultar o resultado, siga os seguintes passos:</p>
+        <ul class="list-disc ml-6 mb-6 space-y-2">
+          <li class="leading-relaxed">Acesse o <strong>site oficial do Inep</strong></li>
+          <li class="leading-relaxed">Faça login na <strong>Página do Participante</strong></li>
+          <li class="leading-relaxed">Insira seu <strong>CPF e senha</strong> cadastrados</li>
+          <li class="leading-relaxed">Clique em <strong>"Resultado do ENEM 2024"</strong></li>
         </ul>
         
-        <h3 class="text-xl font-semibold mb-3 text-foreground">Próximos Passos</h3>
+        <h3 class="text-2xl font-bold mb-4 mt-8 text-foreground">🎓 Próximos Passos: Use sua Nota</h3>
         
-        <p class="mb-4">Com o resultado em mãos, os estudantes poderão se inscrever em diversos programas de acesso ao ensino superior, como:</p>
-        <ul class="list-disc ml-6 mb-4">
-          <li><strong>SISU</strong> - Sistema de Seleção Unificada para universidades públicas</li>
-          <li><strong>ProUni</strong> - Programa Universidade para Todos para bolsas em instituições privadas</li>
-          <li><strong>FIES</strong> - Fundo de Financiamento Estudantil</li>
+        <p class="mb-3 leading-relaxed">Com o resultado em mãos, os estudantes poderão se inscrever em diversos programas de acesso ao ensino superior:</p>
+        <ul class="list-disc ml-6 mb-6 space-y-2">
+          <li class="leading-relaxed"><strong>SISU</strong> - Sistema de Seleção Unificada para universidades públicas</li>
+          <li class="leading-relaxed"><strong>ProUni</strong> - Programa Universidade para Todos para bolsas em instituições privadas</li>
+          <li class="leading-relaxed"><strong>FIES</strong> - Fundo de Financiamento Estudantil</li>
         </ul>
         
-        <p class="mb-4">As inscrições para o SISU 2025 começam em fevereiro, logo após a divulgação das notas. É importante que os candidatos fiquem atentos aos prazos e documentos necessários.</p>
+        <p class="mb-6 leading-relaxed bg-blue-50 dark:bg-blue-950 border-l-4 border-blue-500 p-4 rounded">
+          <strong>⚠️ Fique Atento:</strong> As inscrições para o SISU 2025 começam em fevereiro, logo após a divulgação das notas. É importante que os candidatos fiquem atentos aos prazos e documentos necessários.
+        </p>
         
-        <h3 class="text-xl font-semibold mb-3 text-foreground">Dicas Importantes</h3>
+        <h3 class="text-2xl font-bold mb-4 mt-8 text-foreground">💡 Dicas Importantes</h3>
         
-        <p class="mb-4">O Inep recomenda que os participantes:</p>
-        <ul class="list-disc ml-6 mb-4">
-          <li>Mantenham seus dados atualizados na Página do Participante</li>
-          <li>Anotem suas notas para facilitar inscrições futuras</li>
-          <li>Pesquisem previamente os cursos e instituições de interesse</li>
-          <li>Fiquem atentos aos cronogramas dos programas de acesso ao ensino superior</li>
+        <p class="mb-3 leading-relaxed">O Inep recomenda que os participantes:</p>
+        <ul class="list-disc ml-6 mb-6 space-y-2">
+          <li class="leading-relaxed">Mantenham seus <strong>dados atualizados</strong> na Página do Participante</li>
+          <li class="leading-relaxed">Anotem suas notas para facilitar <strong>inscrições futuras</strong></li>
+          <li class="leading-relaxed">Pesquisem previamente os <strong>cursos e instituições</strong> de interesse</li>
+          <li class="leading-relaxed">Fiquem atentos aos <strong>cronogramas dos programas</strong> de acesso ao ensino superior</li>
         </ul>
         
-        <p class="mb-4">Para mais informações, os candidatos podem acessar o site oficial do Inep ou entrar em contato com a Central de Atendimento através do telefone 0800 616 161.</p>
+        <p class="mt-6 p-4 bg-muted rounded-lg leading-relaxed">
+          <strong>📞 Precisa de Ajuda?</strong> Para mais informações, os candidatos podem acessar o site oficial do Inep ou entrar em contato com a Central de Atendimento através do telefone <strong>0800 616 161</strong>.
+        </p>
       `,
       tags: ["ENEM", "Resultado", "Educação", "Ensino Superior"],
       fontes: [
