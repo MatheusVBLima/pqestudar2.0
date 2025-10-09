@@ -355,6 +355,12 @@ const NoticiaDetalhes = () => {
         {/* Conteúdo da Notícia */}
         <Card className="mb-8">
           <CardContent className="p-8">
+            {/* 
+              SECURITY NOTE: Using dangerouslySetInnerHTML with trusted content only.
+              Content is generated internally by AINewsService or validated static data.
+              ⚠️ WARNING: If external or user-generated content is added in the future,
+              implement HTML sanitization using DOMPurify to prevent XSS attacks.
+            */}
             <div 
               className="prose prose-lg max-w-none text-foreground"
               dangerouslySetInnerHTML={{ 

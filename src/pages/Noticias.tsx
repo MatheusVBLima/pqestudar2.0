@@ -470,6 +470,12 @@ const Noticias = () => {
                   <CardDescription className="text-sm leading-relaxed break-words">
                     {isNewsExpanded(noticia.id) && 'conteudoCompleto' in noticia && noticia.conteudoCompleto ? (
                       <div className="space-y-3">
+                        {/* 
+                          SECURITY NOTE: Using dangerouslySetInnerHTML with trusted content only.
+                          Content is generated internally by AINewsService or RealNewsService.
+                          ⚠️ WARNING: If external or user-generated content is added in the future,
+                          implement HTML sanitization using DOMPurify to prevent XSS attacks.
+                        */}
                         <div 
                           className="prose prose-sm max-w-none text-muted-foreground"
                           dangerouslySetInnerHTML={{ 
