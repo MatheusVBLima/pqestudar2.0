@@ -26,10 +26,9 @@ export function HeroSection() {
 
           {/* Newsletter Form */}
           <div className="max-w-2xl mx-auto pt-8">
-            <p className="text-lg font-medium mb-4 text-foreground">
-              Receba nossas melhores ferramentas e análises direto no seu e-mail.
-            </p>
             <NewsletterForm 
+              title="Receba Ferramentas de Resultado"
+              description="Uma curadoria semanal das melhores ferramentas e métodos de produtividade, direto no seu e-mail."
               variant="hero"
               className="max-w-md mx-auto"
             />
