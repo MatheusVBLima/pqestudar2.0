@@ -95,6 +95,14 @@ export function Navbar() {
               Notícias
             </Button>
 
+            <Button
+              variant="hero"
+              size="sm"
+              onClick={() => navigate("/kit-aceleracao")}
+              className={`${location.pathname === "/kit-aceleracao" ? "opacity-90" : ""}`}
+            >
+              Kit de Aceleração
+            </Button>
 
             <NotificationDropdown />
           </div>
@@ -174,6 +182,10 @@ export function Navbar() {
                   <DropdownMenuItem onClick={() => navigate("/noticias")}>
                     <Newspaper className="h-4 w-4 mr-2" />
                     Notícias
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/kit-aceleracao")}>
+                    <BookOpen className="h-4 w-4 mr-2" />
+                    Kit de Aceleração
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate("/favoritos")}>
                     <Heart className="h-4 w-4 mr-2" />
