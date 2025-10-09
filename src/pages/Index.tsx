@@ -1,7 +1,7 @@
 import { HeroSection } from "@/components/sections/hero-section";
-import { PainPointsSection } from "@/components/sections/pain-points-section";
-import { SystemSection } from "@/components/sections/system-section";
-import { ArsenalSection } from "@/components/sections/arsenal-section";
+import { ManifestoSection } from "@/components/sections/manifesto-section";
+import { EcosystemSection } from "@/components/sections/ecosystem-section";
+import { PremiumCTASection } from "@/components/sections/premium-cta-section";
 
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
@@ -12,9 +12,9 @@ const Index = () => {
       <Navbar />
       <main className="flex-1">
         <HeroSection />
-        <PainPointsSection />
-        <SystemSection />
-        <ArsenalSection />
+        <ManifestoSection />
+        <EcosystemSection />
+        <PremiumCTASection />
       </main>
       <Footer isHomePage />
     </div>
