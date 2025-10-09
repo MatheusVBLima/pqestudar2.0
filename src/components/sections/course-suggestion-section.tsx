@@ -27,72 +27,47 @@ export function CourseSuggestionSection() {
       return;
     }
 
+    if (suggestion.trim().length > 500) {
+      toast({
+        title: "Sugestão muito longa",
+        description: "Por favor, limite sua sugestão a 500 caracteres.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setIsLoading(true);
     
     try {
-      const oneHourAgo = new Date();
-      oneHourAgo.setHours(oneHourAgo.getHours() - 1);
-      
-      if (user?.id) {
-        // Rate limiting for authenticated users - check their previous suggestions
-        const { data: recentSuggestions, error: rateLimitError } = await supabase
-          .from('course_suggestions')
-          .select('id')
-          .eq('user_id', user.id)
-          .gte('created_at', oneHourAgo.toISOString());
-        
-        if (rateLimitError) {
-          throw rateLimitError;
+      // Call the secure Edge Function for rate limiting and submission
+      const { data, error } = await supabase.functions.invoke('submit-course-suggestion', {
+        body: {
+          suggestion: suggestion.trim(),
+          userId: user?.id || null
         }
-        
-        if (recentSuggestions && recentSuggestions.length > 0) {
+      });
+
+      if (error) {
+        // Check if it's a rate limit error
+        if (error.message?.includes('rate_limit') || error.context?.status === 429) {
           toast({
             title: "Limite atingido",
             description: "Você pode enviar apenas 1 sugestão por hora. Tente novamente mais tarde.",
             variant: "destructive"
           });
-          setIsLoading(false);
           return;
         }
-      } else {
-        // Rate limiting for anonymous users - check by IP (simplified client-side check)
-        // Note: This is a basic client-side check. For production, implement server-side IP tracking
-        const lastSubmission = localStorage.getItem('lastSuggestionTime');
-        if (lastSubmission) {
-          const timeDiff = Date.now() - parseInt(lastSubmission);
-          const oneHour = 60 * 60 * 1000; // 1 hour in milliseconds
-          
-          if (timeDiff < oneHour) {
-            const remainingTime = Math.ceil((oneHour - timeDiff) / (60 * 1000)); // minutes
-            toast({
-              title: "Limite atingido",
-              description: `Aguarde ${remainingTime} minutos antes de enviar outra sugestão.`,
-              variant: "destructive"
-            });
-            setIsLoading(false);
-            return;
-          }
-        }
-      }
-
-      // Preparar dados para inserção - removido user_email por segurança
-      const suggestionData = {
-        suggestion: suggestion.trim(),
-        user_id: user?.id || null
-      };
-
-      // Inserir no banco de dados
-      const { error } = await supabase
-        .from('course_suggestions')
-        .insert([suggestionData]);
-
-      if (error) {
         throw error;
       }
-      
-      // Track submission time for anonymous users
-      if (!user?.id) {
-        localStorage.setItem('lastSuggestionTime', Date.now().toString());
+
+      // Check for rate limit in response
+      if (data?.error === 'rate_limit') {
+        toast({
+          title: "Limite atingido",
+          description: data.message || "Você pode enviar apenas 1 sugestão por hora. Tente novamente mais tarde.",
+          variant: "destructive"
+        });
+        return;
       }
       
       setIsSuccess(true);
