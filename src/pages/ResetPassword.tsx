@@ -12,10 +12,25 @@ export function ResetPassword() {
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
 
   useEffect(() => {
+    // Verificar se há erro na URL (token expirado, etc)
+    const errorParam = searchParams.get('error')
+    const errorDescription = searchParams.get('error_description')
+    
+    if (errorParam) {
+      if (errorParam === 'access_denied' || errorDescription?.includes('expired')) {
+        setError('Link de recuperação expirado ou inválido. Solicite um novo link de recuperação.')
+        toast.error('Link de recuperação expirado. Por favor, solicite um novo.')
+      } else {
+        setError('Erro ao processar link de recuperação.')
+      }
+      return
+    }
+
     // Verificar se há um token de reset na URL
     const access_token = searchParams.get('access_token')
     const refresh_token = searchParams.get('refresh_token')
@@ -25,7 +40,14 @@ export function ResetPassword() {
       supabase.auth.setSession({
         access_token,
         refresh_token
+      }).then(({ error }) => {
+        if (error) {
+          setError('Erro ao validar link de recuperação.')
+          toast.error('Link de recuperação inválido.')
+        }
       })
+    } else if (!errorParam) {
+      setError('Link de recuperação inválido. Solicite um novo link.')
     }
   }, [searchParams, navigate])
 
@@ -65,7 +87,7 @@ export function ResetPassword() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 to-secondary/10 p-4">
       <div className="w-full max-w-md space-y-4">
         <div className="flex items-center">
           <Button
@@ -83,11 +105,24 @@ export function ResetPassword() {
           <CardHeader>
             <CardTitle>Redefinir Senha</CardTitle>
             <CardDescription>
-              Digite sua nova senha abaixo
+              {error ? 'Erro na recuperação de senha' : 'Digite sua nova senha abaixo'}
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            {error ? (
+              <div className="space-y-4">
+                <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
+                  <p className="text-sm text-destructive">{error}</p>
+                </div>
+                <Button 
+                  onClick={() => navigate('/login')} 
+                  className="w-full"
+                >
+                  Voltar ao login
+                </Button>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="password">Nova Senha</Label>
                 <Input
@@ -115,6 +150,7 @@ export function ResetPassword() {
                 {loading ? 'Redefinindo...' : 'Redefinir Senha'}
               </Button>
             </form>
+            )}
           </CardContent>
         </Card>
       </div>
