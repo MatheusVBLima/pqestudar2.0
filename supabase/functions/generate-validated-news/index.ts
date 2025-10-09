@@ -93,14 +93,23 @@ Retorne no formato JSON:
       }
 
       try {
-        // Tentar extrair JSON do conteúdo
-        const jsonMatch = content.match(/\{[\s\S]*\}/);
-        if (!jsonMatch) {
+        // Limpar o conteúdo e extrair apenas o JSON válido
+        let cleanContent = content.trim();
+        
+        // Remover blocos de código markdown se existirem
+        cleanContent = cleanContent.replace(/```json\s*/g, '').replace(/```\s*/g, '');
+        
+        // Encontrar o primeiro { e o último } correspondente
+        const firstBrace = cleanContent.indexOf('{');
+        const lastBrace = cleanContent.lastIndexOf('}');
+        
+        if (firstBrace === -1 || lastBrace === -1) {
           console.warn(`No JSON found in response for: ${keyword}`);
           continue;
         }
-
-        const newsData = JSON.parse(jsonMatch[0]);
+        
+        const jsonStr = cleanContent.substring(firstBrace, lastBrace + 1);
+        const newsData = JSON.parse(jsonStr);
         
         // Validar campos obrigatórios
         if (!newsData.titulo || !newsData.descricao || !newsData.fontes || newsData.fontes.length === 0) {
