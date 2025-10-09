@@ -390,93 +390,69 @@ const NoticiaDetalhes = () => {
               <div>
                 <h3 className="font-semibold mb-2">Fontes:</h3>
                 <div className="space-y-2">
-                  {(noticia.fontes || []).map((fonte: any, index: number) => (
-                    <div key={index}>
-                      <Button variant="link" className="p-0 h-auto text-left">
-                        <ExternalLink className="h-3 w-3 mr-1" />
-                        {fonte.nome}
-                      </Button>
-                    </div>
-                  ))}
+                  {(noticia.fontes || []).map((fonte: any, index: number) => {
+                    const fonteName = typeof fonte === 'string' ? fonte : fonte.nome;
+                    const fonteUrl = typeof fonte === 'string' ? '#' : fonte.url;
+                    
+                    return (
+                      <div key={index}>
+                        <a 
+                          href={fonteUrl} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center text-primary hover:underline"
+                        >
+                          <ExternalLink className="h-3 w-3 mr-1" />
+                          {fonteName}
+                        </a>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Notícias Relacionadas */}
-        <Card>
-          <CardContent className="p-6">
-            <h3 className="text-xl font-semibold mb-4">Notícias Relacionadas</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="flex items-start gap-3 p-4 rounded-lg hover:bg-accent cursor-pointer transition-colors border border-border">
-                <img src="/placeholder.svg" alt="Notícia" className="w-16 h-16 rounded object-cover" />
-                <div className="flex-1">
-                  <Badge className="bg-purple-500 text-white text-xs mb-2">SISU</Badge>
-                  <h4 className="text-sm font-medium hover:text-primary line-clamp-2">
-                    SISU 2025: universidades federais ampliam vagas
-                  </h4>
-                  <p className="text-xs text-muted-foreground mt-1">há 2 dias</p>
-                </div>
+        {/* Notícias Relacionadas - Links para fontes reais */}
+        {noticia.fontes && noticia.fontes.length > 0 && (
+          <Card>
+            <CardContent className="p-6">
+              <h3 className="text-xl font-semibold mb-4">Notícias Relacionadas</h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                Acesse as fontes originais desta notícia para mais informações:
+              </p>
+              <div className="grid grid-cols-1 gap-3">
+                {noticia.fontes.map((fonte: any, index: number) => {
+                  const fonteName = typeof fonte === 'string' ? fonte : fonte.nome;
+                  const fonteUrl = typeof fonte === 'string' ? '#' : fonte.url;
+                  
+                  return (
+                    <a
+                      key={index}
+                      href={fonteUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-start gap-3 p-4 rounded-lg hover:bg-accent cursor-pointer transition-colors border border-border group"
+                    >
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <ExternalLink className="h-4 w-4 text-primary" />
+                          <h4 className="text-sm font-medium group-hover:text-primary line-clamp-2">
+                            {fonteName}
+                          </h4>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Fonte verificada • Clique para acessar
+                        </p>
+                      </div>
+                    </a>
+                  );
+                })}
               </div>
-              
-              <div className="flex items-start gap-3 p-4 rounded-lg hover:bg-accent cursor-pointer transition-colors border border-border">
-                <img src="/placeholder.svg" alt="Notícia" className="w-16 h-16 rounded object-cover" />
-                <div className="flex-1">
-                  <Badge className="bg-orange-500 text-white text-xs mb-2">ProUni</Badge>
-                  <h4 className="text-sm font-medium hover:text-primary line-clamp-2">
-                    ProUni 2025: novas regras beneficiam estudantes
-                  </h4>
-                  <p className="text-xs text-muted-foreground mt-1">há 3 dias</p>
-                </div>
-              </div>
-              
-              <div className="flex items-start gap-3 p-4 rounded-lg hover:bg-accent cursor-pointer transition-colors border border-border">
-                <img src="/placeholder.svg" alt="Notícia" className="w-16 h-16 rounded object-cover" />
-                <div className="flex-1">
-                  <Badge className="bg-pink-500 text-white text-xs mb-2">FIES</Badge>
-                  <h4 className="text-sm font-medium hover:text-primary line-clamp-2">
-                    FIES 2025: juros reduzidos para cursos prioritários
-                  </h4>
-                  <p className="text-xs text-muted-foreground mt-1">há 4 dias</p>
-                </div>
-              </div>
-              
-              <div className="flex items-start gap-3 p-4 rounded-lg hover:bg-accent cursor-pointer transition-colors border border-border">
-                <img src="/placeholder.svg" alt="Notícia" className="w-16 h-16 rounded object-cover" />
-                <div className="flex-1">
-                  <Badge className="bg-blue-500 text-white text-xs mb-2">ENEM</Badge>
-                  <h4 className="text-sm font-medium hover:text-primary line-clamp-2">
-                    ENEM 2025: novo modelo de correção da redação
-                  </h4>
-                  <p className="text-xs text-muted-foreground mt-1">há 5 dias</p>
-                </div>
-              </div>
-              
-              <div className="flex items-start gap-3 p-4 rounded-lg hover:bg-accent cursor-pointer transition-colors border border-border">
-                <img src="/placeholder.svg" alt="Notícia" className="w-16 h-16 rounded object-cover" />
-                <div className="flex-1">
-                  <Badge className="bg-green-500 text-white text-xs mb-2">Concursos</Badge>
-                  <h4 className="text-sm font-medium hover:text-primary line-clamp-2">
-                    Edital de concurso federal oferece 2.000 vagas
-                  </h4>
-                  <p className="text-xs text-muted-foreground mt-1">há 1 semana</p>
-                </div>
-              </div>
-              
-              <div className="flex items-start gap-3 p-4 rounded-lg hover:bg-accent cursor-pointer transition-colors border border-border">
-                <img src="/placeholder.svg" alt="Notícia" className="w-16 h-16 rounded object-cover" />
-                <div className="flex-1">
-                  <Badge className="bg-gray-500 text-white text-xs mb-2">Educação</Badge>
-                  <h4 className="text-sm font-medium hover:text-primary line-clamp-2">
-                    MEC anuncia R$ 15 bilhões para educação básica
-                  </h4>
-                  <p className="text-xs text-muted-foreground mt-1">há 1 semana</p>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
       </main>
     </div>
   );

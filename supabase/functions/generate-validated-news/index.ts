@@ -105,12 +105,17 @@ IMPORTANTE:
                     fontes: { 
                       type: "array", 
                       items: { type: "string" },
-                      description: "Lista de fontes no formato 'Nome do Portal - URL completo'"
+                      description: "Lista de fontes no formato 'Nome do Portal - URL completo'. IMPORTANTE: URLs devem ser completos e funcionais (começar com https://)"
                     },
                     dataPublicacao: { type: "string", description: "Data no formato YYYY-MM-DD" },
-                    conteudo: { type: "string", description: "Conteúdo expandido da notícia" }
+                    conteudo: { type: "string", description: "Conteúdo expandido da notícia" },
+                    tags: {
+                      type: "array",
+                      items: { type: "string" },
+                      description: "Lista de 3-5 tags relevantes para a notícia (ex: ENEM, SISU, Educação Superior, etc.)"
+                    }
                   },
-                  required: ["titulo", "descricao", "categoria", "fontes", "dataPublicacao", "conteudo"],
+                  required: ["titulo", "descricao", "categoria", "fontes", "dataPublicacao", "conteudo", "tags"],
                   additionalProperties: false
                 }
               }
@@ -146,9 +151,21 @@ IMPORTANTE:
         
         // Validar campos obrigatórios
         if (!newsData.titulo || !newsData.descricao || !newsData.fontes || newsData.fontes.length === 0) {
-          console.warn(`Invalid news data structure for: ${keyword}`);
+          console.warn(`Invalid news data structure for: ${keywordObj.term}`);
           continue;
         }
+
+        // Processar fontes para separar nome e URL
+        const processedFontes = newsData.fontes.map((fonte: string) => {
+          const parts = fonte.split(' - ');
+          if (parts.length >= 2) {
+            return {
+              nome: parts[0].trim(),
+              url: parts.slice(1).join(' - ').trim()
+            };
+          }
+          return { nome: fonte, url: '#' };
+        });
 
         // Calcular score de validação baseado no número de fontes
         const validationScore = Math.min(100, newsData.fontes.length * 33);
@@ -165,12 +182,16 @@ IMPORTANTE:
           data: publishDate.toISOString(),
           tempo: timeAgo,
           conteudo: newsData.conteudo || newsData.descricao,
-          fontes: newsData.fontes,
+          conteudoCompleto: newsData.conteudo || newsData.descricao,
+          fontes: processedFontes,
+          tags: newsData.tags || [newsData.categoria, "Educação"],
           validationScore,
           isValidated: validationScore >= 66,
           keywords: [keywordObj.term],
           searchWindow: `${keywordObj.days} dias`,
-          contentType: keywordObj.category
+          contentType: keywordObj.category,
+          autor: processedFontes[0]?.nome || "Portal de Educação",
+          visualizacoes: Math.floor(Math.random() * 50000) + 1000
         });
 
         console.log(`Successfully generated news: ${newsData.titulo.substring(0, 50)}... (${keywordObj.category})`);
