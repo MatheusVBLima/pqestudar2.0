@@ -35,8 +35,9 @@ const courseSchema = z.object({
   duration: z.string().min(1, 'Duração é obrigatória'),
   price: z.string().min(1, 'Preço é obrigatório'),
   image_url: z.string().url('URL inválida').optional().or(z.literal('')),
-  instructor: z.string().min(1, 'Instrutor é obrigatório'),
+  institution: z.string().min(1, 'Instituição é obrigatória'),
   level: z.enum(['Iniciante', 'Intermediário', 'Avançado']),
+  badge: z.enum(['trending', 'popular', 'community']).nullable().optional(),
 });
 
 type CourseFormData = z.infer<typeof courseSchema>;
@@ -58,8 +59,9 @@ export const CourseForm = ({ course, isOpen, onClose, onSubmit }: CourseFormProp
       duration: '',
       price: '',
       image_url: '',
-      instructor: '',
+      institution: '',
       level: 'Iniciante',
+      badge: null,
     },
   });
 
@@ -72,8 +74,9 @@ export const CourseForm = ({ course, isOpen, onClose, onSubmit }: CourseFormProp
         duration: course.duration,
         price: course.price,
         image_url: course.image_url || '',
-        instructor: course.instructor,
+        institution: course.institution,
         level: course.level,
+        badge: course.badge || null,
       });
     } else {
       form.reset({
@@ -83,8 +86,9 @@ export const CourseForm = ({ course, isOpen, onClose, onSubmit }: CourseFormProp
         duration: '',
         price: '',
         image_url: '',
-        instructor: '',
+        institution: '',
         level: 'Iniciante',
+        badge: null,
       });
     }
   }, [course, form]);
@@ -122,12 +126,12 @@ export const CourseForm = ({ course, isOpen, onClose, onSubmit }: CourseFormProp
 
               <FormField
                 control={form.control}
-                name="instructor"
+                name="institution"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Instrutor</FormLabel>
+                    <FormLabel>Instituição</FormLabel>
                     <FormControl>
-                      <Input placeholder="Nome do instrutor" {...field} />
+                      <Input placeholder="Nome da instituição" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -222,9 +226,9 @@ export const CourseForm = ({ course, isOpen, onClose, onSubmit }: CourseFormProp
                 name="price"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Preço</FormLabel>
+                    <FormLabel>Preço (Use "0" para gratuito)</FormLabel>
                     <FormControl>
-                      <Input placeholder="Ex: R$ 199,90" {...field} />
+                      <Input placeholder="Ex: R$ 199,90 ou 0" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -245,6 +249,30 @@ export const CourseForm = ({ course, isOpen, onClose, onSubmit }: CourseFormProp
                 )}
               />
             </div>
+
+            <FormField
+              control={form.control}
+              name="badge"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Selo de Tendência (opcional)</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value || ''}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Nenhum" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="">Nenhum</SelectItem>
+                      <SelectItem value="trending">🔥 Em Alta</SelectItem>
+                      <SelectItem value="popular">🚀 Mais Procurado</SelectItem>
+                      <SelectItem value="community">⭐ Escolha da Comunidade</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <div className="flex justify-end gap-2 pt-4">
               <Button type="button" variant="outline" onClick={onClose}>

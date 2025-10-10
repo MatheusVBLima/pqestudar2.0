@@ -11,9 +11,13 @@ export interface Course {
   rating: number;
   price: string;
   image_url?: string;
-  instructor: string;
+  institution: string;
   level: 'Iniciante' | 'Intermediário' | 'Avançado';
   is_active: boolean;
+  badge?: 'trending' | 'popular' | 'community' | null;
+  upvotes: number;
+  downvotes: number;
+  vote_score: number;
   created_at: string;
   updated_at: string;
   created_by?: string;
@@ -27,8 +31,9 @@ export interface CreateCourseData {
   duration: string;
   price: string;
   image_url?: string;
-  instructor: string;
+  institution: string;
   level: 'Iniciante' | 'Intermediário' | 'Avançado';
+  badge?: 'trending' | 'popular' | 'community' | null;
 }
 
 export interface UpdateCourseData extends CreateCourseData {

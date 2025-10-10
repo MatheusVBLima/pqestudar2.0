@@ -175,8 +175,8 @@ export const CourseManagement = () => {
               </p>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span>Instrutor:</span>
-                  <span className="font-medium">{course.instructor}</span>
+                  <span>Instituição:</span>
+                  <span className="font-medium">{course.institution}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Duração:</span>

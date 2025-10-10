@@ -59,16 +59,53 @@ export type Database = {
         }
         Relationships: []
       }
+      course_votes: {
+        Row: {
+          course_id: string
+          created_at: string | null
+          id: string
+          updated_at: string | null
+          user_id: string
+          vote_type: string
+        }
+        Insert: {
+          course_id: string
+          created_at?: string | null
+          id?: string
+          updated_at?: string | null
+          user_id: string
+          vote_type: string
+        }
+        Update: {
+          course_id?: string
+          created_at?: string | null
+          id?: string
+          updated_at?: string | null
+          user_id?: string
+          vote_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_votes_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       courses: {
         Row: {
+          badge: Database["public"]["Enums"]["course_badge"] | null
           category: string
           created_at: string
           created_by: string | null
           description: string
+          downvotes: number | null
           duration: string
           id: string
           image_url: string | null
-          instructor: string
+          institution: string
           is_active: boolean
           level: string
           price: string
@@ -77,16 +114,20 @@ export type Database = {
           title: string
           updated_at: string
           updated_by: string | null
+          upvotes: number | null
+          vote_score: number | null
         }
         Insert: {
+          badge?: Database["public"]["Enums"]["course_badge"] | null
           category: string
           created_at?: string
           created_by?: string | null
           description: string
+          downvotes?: number | null
           duration: string
           id?: string
           image_url?: string | null
-          instructor: string
+          institution: string
           is_active?: boolean
           level: string
           price: string
@@ -95,16 +136,20 @@ export type Database = {
           title: string
           updated_at?: string
           updated_by?: string | null
+          upvotes?: number | null
+          vote_score?: number | null
         }
         Update: {
+          badge?: Database["public"]["Enums"]["course_badge"] | null
           category?: string
           created_at?: string
           created_by?: string | null
           description?: string
+          downvotes?: number | null
           duration?: string
           id?: string
           image_url?: string | null
-          instructor?: string
+          institution?: string
           is_active?: boolean
           level?: string
           price?: string
@@ -113,6 +158,8 @@ export type Database = {
           title?: string
           updated_at?: string
           updated_by?: string | null
+          upvotes?: number | null
+          vote_score?: number | null
         }
         Relationships: []
       }
@@ -196,6 +243,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
+      course_badge: "trending" | "popular" | "community"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -324,6 +372,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "moderator", "user"],
+      course_badge: ["trending", "popular", "community"],
     },
   },
 } as const
