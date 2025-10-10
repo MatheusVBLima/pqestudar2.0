@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Filter, BookOpen, Clock, Users, Star, TrendingUp, Eye, MoreHorizontal, Bell, BellOff, Settings, Gift, Presentation } from "lucide-react";
+import { Search, Filter, BookOpen, Clock, Users, Star, TrendingUp, Eye, MoreHorizontal, Bell, BellOff, Settings, Gift, Presentation, ChevronDown, ChevronUp } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Navbar } from "@/components/layout/navbar";
 import { CourseCard } from "@/components/ui/course-card";
@@ -11,6 +11,7 @@ import { useCourses } from "@/hooks/useCourses";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { NewsletterForm } from "@/components/ui/newsletter-form";
+import { CourseManagement } from "@/components/admin/CourseManagement";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -53,6 +54,7 @@ export default function ExploreCourses() {
   });
   const [showBonus, setShowBonus] = useState(false);
   const [showNewsletterModal, setShowNewsletterModal] = useState(false);
+  const [showAdminPanel, setShowAdminPanel] = useState(false);
 
   // Mostrar bônus após 18 segundos
   useEffect(() => {
@@ -120,11 +122,12 @@ export default function ExploreCourses() {
               <div className="flex justify-center mb-6">
                 <Button 
                   variant="secondary" 
-                  onClick={() => navigate('/admin/cursos')}
+                  onClick={() => setShowAdminPanel(!showAdminPanel)}
                   className="flex items-center gap-2"
                 >
                   <Settings className="h-4 w-4" />
-                  Administrar Cursos
+                  {showAdminPanel ? 'Ocultar' : 'Mostrar'} Painel Admin
+                  {showAdminPanel ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                 </Button>
               </div>
             )}
@@ -144,6 +147,15 @@ export default function ExploreCourses() {
           </div>
         </div>
       </div>
+
+      {/* Admin Panel */}
+      {isAdmin && showAdminPanel && (
+        <div className="container mx-auto px-4 py-8">
+          <Card className="p-6 bg-gradient-to-br from-primary/5 to-primary/10 border-2 border-primary/20">
+            <CourseManagement />
+          </Card>
+        </div>
+      )}
 
       <div className="container mx-auto px-4 py-12">
         <div className="flex flex-col lg:flex-row gap-8">
