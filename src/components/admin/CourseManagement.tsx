@@ -23,8 +23,6 @@ export const CourseManagement = () => {
   const { toast } = useToast();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingCourse, setEditingCourse] = useState<Course | null>(null);
-  
-  console.log('CourseManagement state:', { isFormOpen, editingCourse });
 
   const handleCreateCourse = async (courseData: any) => {
     const { error } = await createCourse(courseData);
@@ -108,10 +106,7 @@ export const CourseManagement = () => {
           <h1 className="text-3xl font-bold">Gerenciar Cursos</h1>
           <p className="text-muted-foreground">Adicione, edite ou remova cursos da plataforma</p>
         </div>
-        <Button onClick={() => {
-          console.log('Botão Adicionar Curso clicado');
-          setIsFormOpen(true);
-        }}>
+        <Button onClick={() => setIsFormOpen(true)}>
           <Plus className="h-4 w-4 mr-2" />
           Adicionar Curso
         </Button>
@@ -210,7 +205,6 @@ export const CourseManagement = () => {
         course={editingCourse}
         isOpen={isFormOpen || !!editingCourse}
         onClose={() => {
-          console.log('Fechando formulário');
           setIsFormOpen(false);
           setEditingCourse(null);
         }}
