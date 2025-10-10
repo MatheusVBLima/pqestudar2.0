@@ -34,7 +34,7 @@ const courseSchema = z.object({
   category: z.string().min(1, 'Categoria é obrigatória'),
   duration: z.string().min(1, 'Duração é obrigatória'),
   price: z.string().min(1, 'Preço é obrigatório'),
-  image_url: z.string().url('URL inválida').optional().or(z.literal('')),
+  image_url: z.string().optional(),
   institution: z.string().min(1, 'Instituição é obrigatória'),
   level: z.enum(['Iniciante', 'Intermediário', 'Avançado']),
   badge: z.string().optional(),
@@ -42,27 +42,15 @@ const courseSchema = z.object({
 
 type CourseFormData = z.infer<typeof courseSchema>;
 
-type CourseFormValues = {
-  title: string;
-  description: string;
-  category: string;
-  duration: string;
-  price: string;
-  image_url?: string;
-  institution: string;
-  level: 'Iniciante' | 'Intermediário' | 'Avançado';
-  badge?: string;
-};
-
 interface CourseFormProps {
   course?: Course | null;
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: CourseFormData) => void;
+  onSubmit: (data: any) => void;
 }
 
 export const CourseForm = ({ course, isOpen, onClose, onSubmit }: CourseFormProps) => {
-  const form = useForm<CourseFormValues>({
+  const form = useForm<CourseFormData>({
     resolver: zodResolver(courseSchema),
     defaultValues: {
       title: '',
@@ -105,18 +93,19 @@ export const CourseForm = ({ course, isOpen, onClose, onSubmit }: CourseFormProp
     }
   }, [course, form]);
 
-  const handleSubmit = (data: CourseFormValues) => {
+  const handleSubmit = (data: CourseFormData) => {
     const transformedData = {
       ...data,
-      badge: (!data.badge || data.badge === '') ? null : data.badge as 'trending' | 'popular' | 'community'
+      image_url: data.image_url || undefined,
+      badge: (!data.badge || data.badge === '') ? null : data.badge,
     };
-    onSubmit(transformedData as any);
+    onSubmit(transformedData);
     form.reset();
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {course ? 'Editar Curso' : 'Adicionar Novo Curso'}
@@ -272,7 +261,7 @@ export const CourseForm = ({ course, isOpen, onClose, onSubmit }: CourseFormProp
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Selo de Tendência (opcional)</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value || ''}>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Nenhum" />
