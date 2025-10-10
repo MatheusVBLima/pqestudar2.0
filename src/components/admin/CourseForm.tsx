@@ -37,10 +37,7 @@ const courseSchema = z.object({
   image_url: z.string().url('URL inválida').optional().or(z.literal('')),
   institution: z.string().min(1, 'Instituição é obrigatória'),
   level: z.enum(['Iniciante', 'Intermediário', 'Avançado']),
-  badge: z.union([
-    z.enum(['trending', 'popular', 'community']),
-    z.literal('')
-  ]).optional().transform(val => val === '' || !val ? null : val),
+  badge: z.string().optional(),
 });
 
 type CourseFormData = z.infer<typeof courseSchema>;
@@ -54,7 +51,7 @@ type CourseFormValues = {
   image_url?: string;
   institution: string;
   level: 'Iniciante' | 'Intermediário' | 'Avançado';
-  badge?: 'trending' | 'popular' | 'community' | '';
+  badge?: string;
 };
 
 interface CourseFormProps {
@@ -65,6 +62,8 @@ interface CourseFormProps {
 }
 
 export const CourseForm = ({ course, isOpen, onClose, onSubmit }: CourseFormProps) => {
+  console.log('CourseForm rendered:', { course, isOpen });
+  
   const form = useForm<CourseFormValues>({
     resolver: zodResolver(courseSchema),
     defaultValues: {
@@ -109,11 +108,13 @@ export const CourseForm = ({ course, isOpen, onClose, onSubmit }: CourseFormProp
   }, [course, form]);
 
   const handleSubmit = (data: CourseFormValues) => {
+    console.log('Form data before transform:', data);
     // Transform before submitting
     const transformedData = {
       ...data,
-      badge: data.badge === '' ? null : data.badge
+      badge: (!data.badge || data.badge === '') ? null : data.badge as 'trending' | 'popular' | 'community'
     };
+    console.log('Form data after transform:', transformedData);
     onSubmit(transformedData as any);
     form.reset();
   };
