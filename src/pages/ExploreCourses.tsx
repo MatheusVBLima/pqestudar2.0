@@ -27,12 +27,12 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-const categories = [
-  { id: "all", name: "Todos os Cursos", icon: BookOpen, count: 124 },
-  { id: "tech", name: "Tecnologia", icon: BookOpen, count: 45 },
-  { id: "business", name: "Negócios", icon: Users, count: 32 },
-  { id: "design", name: "Design", icon: Star, count: 28 },
-  { id: "marketing", name: "Marketing", icon: Users, count: 19 },
+const categoryConfig = [
+  { id: "all", name: "Todos os Cursos", icon: BookOpen },
+  { id: "tech", name: "Tecnologia", icon: BookOpen },
+  { id: "business", name: "Negócios", icon: Users },
+  { id: "design", name: "Design", icon: Star },
+  { id: "marketing", name: "Marketing", icon: Users },
 ];
 
 
@@ -55,6 +55,27 @@ export default function ExploreCourses() {
   const [showBonus, setShowBonus] = useState(false);
   const [showNewsletterModal, setShowNewsletterModal] = useState(false);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
+
+  // Calcular contagens reais de cursos por categoria
+  const getCategoryCounts = () => {
+    const counts: { [key: string]: number } = {
+      all: courses.length
+    };
+    
+    categoryConfig.forEach(cat => {
+      if (cat.id !== 'all') {
+        counts[cat.id] = courses.filter(c => c.category === cat.id).length;
+      }
+    });
+    
+    return counts;
+  };
+
+  const categoryCounts = getCategoryCounts();
+  const categories = categoryConfig.map(cat => ({
+    ...cat,
+    count: categoryCounts[cat.id] || 0
+  }));
 
   // Mostrar bônus após 18 segundos
   useEffect(() => {
