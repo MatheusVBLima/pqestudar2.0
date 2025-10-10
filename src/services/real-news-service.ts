@@ -470,26 +470,118 @@ export class RealNewsService {
    * Returns true if duplicate, false if unique
    */
   private static isThemeDuplicate(newArticle: ValidatedNews, existingNews: ValidatedNews[]): boolean {
+    const newTitle = newArticle.titulo.toLowerCase();
     const newTheme = this.extractCoreTheme(newArticle.titulo);
-    const newThemeWords = new Set(newTheme.split(' '));
+    const newThemeWords = new Set(newTheme.split(' ').filter(w => w.length > 0));
     
     for (const existing of existingNews) {
-      const existingTheme = this.extractCoreTheme(existing.titulo);
-      const existingThemeWords = new Set(existingTheme.split(' '));
+      const existingTitle = existing.titulo.toLowerCase();
       
-      // Calculate similarity: how many words are shared
-      const intersection = new Set([...newThemeWords].filter(w => existingThemeWords.has(w)));
-      const union = new Set([...newThemeWords, ...existingThemeWords]);
+      // Check 1: Exact title match (case insensitive)
+      if (newTitle === existingTitle) {
+        console.log(`❌ DUPLICATA EXATA: "${newArticle.titulo}"`);
+        return true;
+      }
       
-      // If more than 60% of words match, consider it duplicate
-      const similarity = intersection.size / union.size;
+      // Check 2: Very similar titles (Levenshtein-style check)
+      const titleSimilarity = this.calculateStringSimilarity(newTitle, existingTitle);
+      if (titleSimilarity > 0.85) {
+        console.log(`❌ DUPLICATA POR TÍTULO SIMILAR (${(titleSimilarity * 100).toFixed(0)}%): "${newArticle.titulo}" vs "${existing.titulo}"`);
+        return true;
+      }
       
-      if (similarity > 0.6) {
+      // Check 3: Same category with high word overlap
+      if (newArticle.categoria === existing.categoria) {
+        const existingTheme = this.extractCoreTheme(existing.titulo);
+        const existingThemeWords = new Set(existingTheme.split(' ').filter(w => w.length > 0));
+        
+        // Calculate word overlap
+        const intersection = new Set([...newThemeWords].filter(w => existingThemeWords.has(w)));
+        const smallerSet = Math.min(newThemeWords.size, existingThemeWords.size);
+        
+        // If 70% or more of the smaller set's words match, it's duplicate
+        const overlapRatio = intersection.size / smallerSet;
+        
+        if (overlapRatio >= 0.7) {
+          console.log(`❌ DUPLICATA POR TEMA (${(overlapRatio * 100).toFixed(0)}% overlap, categoria: ${newArticle.categoria}): "${newArticle.titulo}" vs "${existing.titulo}"`);
+          return true;
+        }
+      }
+      
+      // Check 4: Key concepts overlap (regardless of category)
+      const newKeywords = this.extractKeyKeywords(newTitle);
+      const existingKeywords = this.extractKeyKeywords(existingTitle);
+      
+      // If 2+ key keywords match, likely duplicate
+      const matchingKeywords = newKeywords.filter(k => existingKeywords.includes(k));
+      if (matchingKeywords.length >= 2) {
+        console.log(`❌ DUPLICATA POR KEYWORDS (${matchingKeywords.join(', ')}): "${newArticle.titulo}" vs "${existing.titulo}"`);
         return true;
       }
     }
     
+    console.log(`✅ NOTÍCIA ÚNICA: "${newArticle.titulo}"`);
     return false;
+  }
+
+  /**
+   * Calculates string similarity using a simplified Levenshtein approach
+   */
+  private static calculateStringSimilarity(str1: string, str2: string): number {
+    const longer = str1.length > str2.length ? str1 : str2;
+    const shorter = str1.length > str2.length ? str2 : str1;
+    
+    if (longer.length === 0) return 1.0;
+    
+    const editDistance = this.levenshteinDistance(longer, shorter);
+    return (longer.length - editDistance) / longer.length;
+  }
+
+  /**
+   * Calculates Levenshtein distance between two strings
+   */
+  private static levenshteinDistance(str1: string, str2: string): number {
+    const matrix: number[][] = [];
+    
+    for (let i = 0; i <= str2.length; i++) {
+      matrix[i] = [i];
+    }
+    
+    for (let j = 0; j <= str1.length; j++) {
+      matrix[0][j] = j;
+    }
+    
+    for (let i = 1; i <= str2.length; i++) {
+      for (let j = 1; j <= str1.length; j++) {
+        if (str2.charAt(i - 1) === str1.charAt(j - 1)) {
+          matrix[i][j] = matrix[i - 1][j - 1];
+        } else {
+          matrix[i][j] = Math.min(
+            matrix[i - 1][j - 1] + 1,
+            matrix[i][j - 1] + 1,
+            matrix[i - 1][j] + 1
+          );
+        }
+      }
+    }
+    
+    return matrix[str2.length][str1.length];
+  }
+
+  /**
+   * Extracts key keywords that define the news topic
+   */
+  private static extractKeyKeywords(title: string): string[] {
+    const normalized = title.toLowerCase();
+    const keyKeywords = [
+      'enem', 'sisu', 'prouni', 'fies', 'fuvest', 'unicamp', 'uerj',
+      'vestibular', 'inscrições', 'inscricoes', 'resultado', 'notas de corte',
+      'lista de espera', 'bolsas', 'medicina', 'engenharia', 'concurso',
+      'mec', 'cronograma', 'redação', 'redacao', 'gabarito', 'prova',
+      'matrícula', 'matricula', 'vagas', 'chamada', 'edital'
+    ];
+    
+    return keyKeywords.filter(keyword => normalized.includes(keyword));
   }
 
   static getTimeAgo(date: Date): string {
