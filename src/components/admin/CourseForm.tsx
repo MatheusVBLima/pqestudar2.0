@@ -37,10 +37,25 @@ const courseSchema = z.object({
   image_url: z.string().url('URL inválida').optional().or(z.literal('')),
   institution: z.string().min(1, 'Instituição é obrigatória'),
   level: z.enum(['Iniciante', 'Intermediário', 'Avançado']),
-  badge: z.enum(['trending', 'popular', 'community', '']).optional().transform(val => val === '' ? null : val),
+  badge: z.union([
+    z.enum(['trending', 'popular', 'community']),
+    z.literal('')
+  ]).optional().transform(val => val === '' || !val ? null : val),
 });
 
 type CourseFormData = z.infer<typeof courseSchema>;
+
+type CourseFormValues = {
+  title: string;
+  description: string;
+  category: string;
+  duration: string;
+  price: string;
+  image_url?: string;
+  institution: string;
+  level: 'Iniciante' | 'Intermediário' | 'Avançado';
+  badge?: 'trending' | 'popular' | 'community' | '';
+};
 
 interface CourseFormProps {
   course?: Course | null;
@@ -50,7 +65,7 @@ interface CourseFormProps {
 }
 
 export const CourseForm = ({ course, isOpen, onClose, onSubmit }: CourseFormProps) => {
-  const form = useForm<CourseFormData>({
+  const form = useForm<CourseFormValues>({
     resolver: zodResolver(courseSchema),
     defaultValues: {
       title: '',
@@ -61,7 +76,7 @@ export const CourseForm = ({ course, isOpen, onClose, onSubmit }: CourseFormProp
       image_url: '',
       institution: '',
       level: 'Iniciante',
-      badge: null,
+      badge: '',
     },
   });
 
@@ -76,7 +91,7 @@ export const CourseForm = ({ course, isOpen, onClose, onSubmit }: CourseFormProp
         image_url: course.image_url || '',
         institution: course.institution,
         level: course.level,
-        badge: course.badge || null,
+        badge: course.badge || '',
       });
     } else {
       form.reset({
@@ -88,13 +103,18 @@ export const CourseForm = ({ course, isOpen, onClose, onSubmit }: CourseFormProp
         image_url: '',
         institution: '',
         level: 'Iniciante',
-        badge: null,
+        badge: '',
       });
     }
   }, [course, form]);
 
-  const handleSubmit = (data: CourseFormData) => {
-    onSubmit(data);
+  const handleSubmit = (data: CourseFormValues) => {
+    // Transform before submitting
+    const transformedData = {
+      ...data,
+      badge: data.badge === '' ? null : data.badge
+    };
+    onSubmit(transformedData as any);
     form.reset();
   };
 
