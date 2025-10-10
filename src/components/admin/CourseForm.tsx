@@ -91,16 +91,20 @@ export const CourseForm = ({ course, isOpen, onClose, onSubmit }: CourseFormProp
         badge: '',
       });
     }
-  }, [course, form]);
+  }, [course]);
 
   const handleSubmit = (data: CourseFormData) => {
-    const transformedData = {
-      ...data,
-      image_url: data.image_url || undefined,
-      badge: (!data.badge || data.badge === '') ? null : data.badge,
-    };
-    onSubmit(transformedData);
-    form.reset();
+    try {
+      const transformedData = {
+        ...data,
+        image_url: data.image_url || undefined,
+        badge: (!data.badge || data.badge === '') ? null : data.badge,
+      };
+      onSubmit(transformedData);
+      form.reset();
+    } catch (error) {
+      console.error('Erro ao enviar formulário:', error);
+    }
   };
 
   return (
