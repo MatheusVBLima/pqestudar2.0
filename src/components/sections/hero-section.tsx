@@ -11,7 +11,7 @@ export function HeroSection() {
       <div className="container mx-auto px-4 py-12 md:py-20 relative z-10 w-full">
         <div className="grid lg:grid-cols-2 gap-12 items-center animate-fade-in max-w-7xl mx-auto">
           {/* Left Column - Content */}
-          <div className="space-y-6 text-left lg:text-left text-center">
+          <div className="space-y-6 text-left">
             {/* Headline */}
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold leading-tight">
               <span className="bg-gradient-primary bg-clip-text text-transparent">
