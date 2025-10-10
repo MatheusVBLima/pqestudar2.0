@@ -40,7 +40,7 @@ export class RealNewsService {
     'terra.com.br'
   ];
 
-  static async searchAndValidateNews(maxResults: number = 5): Promise<ValidatedNews[]> {
+  static async searchAndValidateNews(maxResults: number = 5, existingNews: ValidatedNews[] = []): Promise<ValidatedNews[]> {
     const validatedNews: ValidatedNews[] = [];
     
     try {
@@ -55,12 +55,18 @@ export class RealNewsService {
       // Group similar news by content similarity
       const newsGroups = this.groupSimilarNews(allFoundNews);
       
-      // Validate each group - keep only those with 3+ sources
+      // Validate each group - keep only those with 3+ sources and unique themes
       for (const group of newsGroups) {
         if (group.sources.length >= this.MIN_SOURCES) {
           const validatedArticle = this.createValidatedArticle(group.sources);
           if (validatedArticle) {
-            validatedNews.push(validatedArticle);
+            // Check if theme is already covered in existing news
+            const isDuplicate = this.isThemeDuplicate(validatedArticle, [...existingNews, ...validatedNews]);
+            if (!isDuplicate) {
+              validatedNews.push(validatedArticle);
+            } else {
+              console.log(`Tema duplicado ignorado: "${validatedArticle.titulo}"`);
+            }
           }
         }
         
@@ -211,6 +217,58 @@ export class RealNewsService {
     if (contentLower.includes('vestibular')) return 'Vestibular';
     
     return 'Educação';
+  }
+
+  /**
+   * Extracts the core theme from a news title by removing filler words and focusing on key concepts
+   */
+  private static extractCoreTheme(title: string): string {
+    const normalized = title.toLowerCase()
+      .replace(/[^\w\sáàâãéèêíïóôõöúçñ]/g, ' ') // Remove punctuation
+      .replace(/\s+/g, ' ')
+      .trim();
+    
+    // Remove common filler words that don't define the theme
+    const fillerWords = [
+      'o', 'a', 'os', 'as', 'um', 'uma', 'de', 'do', 'da', 'dos', 'das',
+      'em', 'no', 'na', 'nos', 'nas', 'para', 'por', 'com', 'sem',
+      'são', 'é', 'será', 'foi', 'serão', 'foram', 'anuncia', 'confirma',
+      'divulga', 'libera', 'novo', 'nova', 'novos', 'novas'
+    ];
+    
+    const words = normalized.split(' ').filter(word => 
+      word.length > 2 && !fillerWords.includes(word)
+    );
+    
+    // Keep important keywords together (e.g., "redação enem 2026")
+    return words.join(' ');
+  }
+
+  /**
+   * Checks if a news theme is already covered in existing news
+   * Returns true if duplicate, false if unique
+   */
+  private static isThemeDuplicate(newArticle: ValidatedNews, existingNews: ValidatedNews[]): boolean {
+    const newTheme = this.extractCoreTheme(newArticle.titulo);
+    const newThemeWords = new Set(newTheme.split(' '));
+    
+    for (const existing of existingNews) {
+      const existingTheme = this.extractCoreTheme(existing.titulo);
+      const existingThemeWords = new Set(existingTheme.split(' '));
+      
+      // Calculate similarity: how many words are shared
+      const intersection = new Set([...newThemeWords].filter(w => existingThemeWords.has(w)));
+      const union = new Set([...newThemeWords, ...existingThemeWords]);
+      
+      // If more than 60% of words match, consider it duplicate
+      const similarity = intersection.size / union.size;
+      
+      if (similarity > 0.6) {
+        return true;
+      }
+    }
+    
+    return false;
   }
 
   static getTimeAgo(date: Date): string {
