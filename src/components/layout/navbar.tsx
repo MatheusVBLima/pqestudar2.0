@@ -110,7 +110,7 @@ export function Navbar() {
             <Button
               variant="hero"
               size="sm"
-              onClick={() => window.location.href = "https://kit.pqestudar.com.br"}
+              onClick={() => window.location.href = "http://kit.pqestudar.com.br"}
             >
               Kit de Aceleração
             </Button>
@@ -194,22 +194,22 @@ export function Navbar() {
                     <Newspaper className="h-4 w-4 mr-2" />
                     Notícias
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => window.location.href = "https://kit.pqestudar.com.br"}>
+                  <DropdownMenuItem onClick={() => window.location.href = "http://kit.pqestudar.com.br"}>
                     <BookOpen className="h-4 w-4 mr-2" />
                     Kit de Aceleração
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleNavigation("/favoritos")}>
-                    <Heart className="h-4 w-4 mr-2" />
-                    Minha atividade
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleNavigation("/ranking-comunidade")}>
-                    <Trophy className="h-4 w-4 mr-2" />
-                    Ranking da Comunidade
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleNavigation("/notificacoes")}>
-                    <Bell className="h-4 w-4 mr-2" />
-                    Notificações
-                  </DropdownMenuItem>
+                  {user && (
+                    <>
+                      <DropdownMenuItem onClick={() => handleNavigation("/favoritos")}>
+                        <Heart className="h-4 w-4 mr-2" />
+                        Minha atividade
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleNavigation("/notificacoes")}>
+                        <Bell className="h-4 w-4 mr-2" />
+                        Notificações
+                      </DropdownMenuItem>
+                    </>
+                  )}
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
