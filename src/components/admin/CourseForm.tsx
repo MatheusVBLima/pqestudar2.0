@@ -37,7 +37,7 @@ const courseSchema = z.object({
   image_url: z.string().url('URL inválida').optional().or(z.literal('')),
   institution: z.string().min(1, 'Instituição é obrigatória'),
   level: z.enum(['Iniciante', 'Intermediário', 'Avançado']),
-  badge: z.enum(['trending', 'popular', 'community']).nullable().optional(),
+  badge: z.enum(['trending', 'popular', 'community', '']).optional().transform(val => val === '' ? null : val),
 });
 
 type CourseFormData = z.infer<typeof courseSchema>;
