@@ -26,8 +26,12 @@ export class RealNewsService {
   private static readonly EDUCATION_KEYWORDS = [
     'ENEM', 'SISU', 'ProUni', 'FIES', 'vestibular', 'concurso público',
     'educação', 'MEC', 'ensino superior', 'universidade', 'faculdade',
-    'bolsa de estudos', 'educação básica', 'ensino médio'
+    'bolsa de estudos', 'educação básica', 'ensino médio', 'Fuvest',
+    'Unicamp', 'UERJ', 'bolsas estaduais', 'CNPq', 'CAPES'
   ];
+
+  // Track recently used keywords to ensure diversity
+  private static usedKeywords: Map<string, number> = new Map();
 
   private static readonly NEWS_SITES = [
     'g1.globo.com',
@@ -44,8 +48,24 @@ export class RealNewsService {
     const validatedNews: ValidatedNews[] = [];
     
     try {
-      // Search for education-related news across multiple topics
-      const searchPromises = this.EDUCATION_KEYWORDS.slice(0, 6).map(keyword => 
+      // Clean old keyword usage data (older than 1 hour)
+      const now = Date.now();
+      for (const [key, timestamp] of this.usedKeywords.entries()) {
+        if (now - timestamp > 3600000) {
+          this.usedKeywords.delete(key);
+        }
+      }
+
+      // Select diverse keywords - prioritize less recently used ones
+      const sortedKeywords = [...this.EDUCATION_KEYWORDS].sort((a, b) => {
+        const timeA = this.usedKeywords.get(a) || 0;
+        const timeB = this.usedKeywords.get(b) || 0;
+        return timeA - timeB;
+      });
+
+      // Search using 8 keywords for more variety
+      const selectedKeywords = sortedKeywords.slice(0, 8);
+      const searchPromises = selectedKeywords.map(keyword => 
         this.searchNewsForKeyword(keyword)
       );
       
@@ -55,17 +75,32 @@ export class RealNewsService {
       // Group similar news by content similarity
       const newsGroups = this.groupSimilarNews(allFoundNews);
       
+      // Track categories to ensure diversity
+      const categoriesUsed = new Set<string>();
+      
       // Validate each group - keep only those with 3+ sources and unique themes
       for (const group of newsGroups) {
         if (group.sources.length >= this.MIN_SOURCES) {
           const validatedArticle = this.createValidatedArticle(group.sources);
-          if (validatedArticle) {
+          if (validatedArticle && this.isNewsRelevant(validatedArticle)) {
             // Check if theme is already covered in existing news
             const isDuplicate = this.isThemeDuplicate(validatedArticle, [...existingNews, ...validatedNews]);
-            if (!isDuplicate) {
+            
+            // Force diversity: if we already have 2 articles from same category, skip
+            const categoryCount = [...validatedNews].filter(n => n.categoria === validatedArticle.categoria).length;
+            
+            if (!isDuplicate && categoryCount < 2) {
               validatedNews.push(validatedArticle);
+              categoriesUsed.add(validatedArticle.categoria);
+              
+              // Mark keyword as used
+              this.usedKeywords.set(validatedArticle.categoria, Date.now());
             } else {
-              console.log(`Tema duplicado ignorado: "${validatedArticle.titulo}"`);
+              if (isDuplicate) {
+                console.log(`Tema duplicado ignorado: "${validatedArticle.titulo}"`);
+              } else {
+                console.log(`Categoria "${validatedArticle.categoria}" já tem muitos artigos, diversificando...`);
+              }
             }
           }
         }
@@ -125,33 +160,171 @@ export class RealNewsService {
   }
 
   private static generateRealisticContent(keyword: string): string {
+    const currentYear = new Date().getFullYear();
+    const currentMonth = new Date().getMonth() + 1;
+    
     const templates = {
       'ENEM': [
-        'Ministério da Educação confirma novas datas para o ENEM 2024',
-        'Inscrições do ENEM 2024 são prorrogadas até esta sexta-feira',
-        'Resultado do ENEM 2023 será usado para seleção em universidades'
+        `MEC divulga cronograma oficial do ENEM ${currentYear}`,
+        `Inscrições do ENEM ${currentYear} começam em maio: veja como se preparar`,
+        `ENEM ${currentYear}: novas regras para redação são confirmadas`,
+        `Estudantes terão mais tempo para provas do ENEM ${currentYear}`,
+        `ENEM digital será expandido em ${currentYear}, anuncia ministro`,
+        `Taxas de isenção do ENEM ${currentYear} podem ser solicitadas em abril`,
+        `Gabaritos oficiais do ENEM ${currentYear - 1} são divulgados`,
+        `Cartão de confirmação do ENEM ${currentYear} já está disponível`,
+        `Locais de prova do ENEM ${currentYear} serão divulgados em outubro`,
+        `ENEM ${currentYear}: inscrições atingem recorde de participantes`,
+        `Resultado do ENEM ${currentYear - 1} será usado em seleção do SISU ${currentYear}`,
+        `MEC amplia pontos de aplicação do ENEM ${currentYear} em comunidades carentes`,
+        `ENEM ${currentYear} terá questões inéditas de ciências humanas`,
+        `Professores apontam temas mais prováveis para redação do ENEM ${currentYear}`,
+        `ENEM ${currentYear}: candidatos com nome social têm direito garantido`,
       ],
       'SISU': [
-        'SISU 2024: Lista de espera é liberada para candidatos',
-        'Notas de corte do SISU 2024 surpreendem em medicina',
-        'SISU oferece mais de 230 mil vagas em universidades públicas'
+        `SISU ${currentYear}: calendário de inscrições é divulgado pelo MEC`,
+        `Notas de corte do SISU ${currentYear} variam entre cursos mais concorridos`,
+        `SISU ${currentYear} oferece 264 mil vagas em universidades públicas`,
+        `Lista de espera do SISU ${currentYear} é liberada para segunda chamada`,
+        `SISU ${currentYear}: medicina e engenharia lideram em concorrência`,
+        `Como usar nota do ENEM ${currentYear - 1} para SISU ${currentYear}`,
+        `SISU ${currentYear}: veja universidades com vagas remanescentes`,
+        `Matrículas do SISU ${currentYear} devem ser feitas até fim do mês`,
+        `SISU ${currentYear}: sistema de cotas é ampliado em instituições federais`,
+        `Candidatos do SISU ${currentYear} podem consultar resultado preliminar`,
+        `SISU ${currentYear} registra mais de 2 milhões de inscrições`,
+        `Universidades federais confirmam adesão total ao SISU ${currentYear}`,
+        `SISU ${currentYear}: orientações sobre documentação para matrícula`,
+        `Segunda edição do SISU ${currentYear} abre em junho`,
+        `SISU ${currentYear}: estudantes têm até amanhã para manifestar interesse em lista de espera`,
       ],
       'ProUni': [
-        'ProUni 2024: Inscrições para bolsas começam na próxima semana',
-        'Resultado do ProUni 2024 será divulgado na terça-feira',
-        'ProUni oferece 273 mil bolsas em universidades privadas'
+        `ProUni ${currentYear}: inscrições para bolsas integrais começam em fevereiro`,
+        `Resultado parcial do ProUni ${currentYear} já pode ser consultado`,
+        `ProUni ${currentYear} disponibiliza 300 mil bolsas em instituições privadas`,
+        `Lista de espera do ProUni ${currentYear}: como participar`,
+        `ProUni ${currentYear}: cursos de tecnologia têm alta demanda`,
+        `Bolsas do ProUni ${currentYear} contemplam estudantes de baixa renda`,
+        `ProUni ${currentYear} amplia oferta de bolsas em cursos de saúde`,
+        `Comprovação de renda do ProUni ${currentYear}: documentos necessários`,
+        `ProUni ${currentYear} registra aumento de 15% nas inscrições`,
+        `MEC anuncia expansão do ProUni ${currentYear} para EAD`,
+        `Segunda chamada do ProUni ${currentYear} divulga resultados`,
+        `ProUni ${currentYear}: como usar nota do ENEM para concorrer`,
+        `Bolsas parciais do ProUni ${currentYear} beneficiam milhares de estudantes`,
+        `ProUni ${currentYear}: prazo de matrícula termina esta semana`,
+        `Instituições privadas aderem em massa ao ProUni ${currentYear}`,
       ],
       'FIES': [
-        'FIES 2024: Mudanças nas regras beneficiam estudantes de baixa renda',
-        'Inscrições do FIES 2024 são prorrogadas pelo MEC',
-        'Novas condições do FIES facilitam acesso ao ensino superior'
-      ]
+        `FIES ${currentYear}: novas regras facilitam acesso ao financiamento`,
+        `Inscrições do FIES ${currentYear} começam com juros reduzidos`,
+        `FIES ${currentYear} oferece financiamento de até 100% da mensalidade`,
+        `Resultado do FIES ${currentYear} é divulgado pelo MEC`,
+        `FIES ${currentYear}: prazo para complementação de documentos`,
+        `Lista de espera do FIES ${currentYear} contempla novos estudantes`,
+        `FIES ${currentYear} registra recorde de contratos assinados`,
+        `Governo amplia recursos do FIES ${currentYear} para cursos prioritários`,
+        `FIES ${currentYear}: como renegociar dívidas de financiamento`,
+        `Novos cursos elegíveis ao FIES ${currentYear} são anunciados`,
+        `FIES ${currentYear}: prazos de carência são estendidos`,
+        `MEC simplifica processo de adesão ao FIES ${currentYear}`,
+        `FIES ${currentYear} beneficia estudantes de medicina e engenharia`,
+        `Segunda edição do FIES ${currentYear} abre vagas em julho`,
+        `FIES ${currentYear}: orientações sobre garantias e fiadores`,
+      ],
+      'vestibular': [
+        `Fuvest ${currentYear}: inscrições para vestibular começam em agosto`,
+        `Unicamp divulga datas do vestibular ${currentYear}`,
+        `Vestibular UERJ ${currentYear} tem recorde de inscrições`,
+        `Vestibulares ${currentYear}: principais universidades confirmam provas presenciais`,
+        `USP mantém primeira fase do vestibular ${currentYear} para novembro`,
+        `Vestibular UNESP ${currentYear} adota novo formato de prova`,
+        `Calendário de vestibulares ${currentYear}: organize sua preparação`,
+        `Vestibular Medicina ${currentYear}: concorrência aumenta 20%`,
+        `Vestibulares tradicionais ${currentYear} voltam ao formato presencial`,
+        `UFMG confirma data do vestibular ${currentYear} para dezembro`,
+        `Segunda fase da Fuvest ${currentYear} terá provas dissertativas`,
+        `Vestibular UFPR ${currentYear}: confira edital completo`,
+        `Resultado da primeira fase dos vestibulares ${currentYear} sai em dezembro`,
+        `Preparatórios intensificam aulas para vestibulares ${currentYear}`,
+        `Vestibular PUC ${currentYear} oferece bolsas para aprovados`,
+      ],
+      'concurso público': [
+        `Concurso público para professor: edital ${currentYear} prevê 5 mil vagas`,
+        `INEP abre concurso ${currentYear} para analistas de educação`,
+        `Concurso MEC ${currentYear}: inscrições abertas para nível superior`,
+        `Edital de concurso ${currentYear} para universidades federais é divulgado`,
+        `Concursos públicos ${currentYear}: área de educação terá mais oportunidades`,
+        `CAPES lança concurso ${currentYear} para pesquisadores em educação`,
+        `Prefeituras abrem concursos ${currentYear} para professores de ensino básico`,
+        `Concurso FNDE ${currentYear}: vagas para gestão educacional`,
+        `CNPq divulga edital de concurso ${currentYear} para bolsistas`,
+        `Resultado preliminar de concurso público ${currentYear} para docentes`,
+        `Concursos educação ${currentYear}: salários chegam a R$ 10 mil`,
+        `Inscrições para concurso ${currentYear} de coordenadores pedagógicos`,
+        `Concurso público ${currentYear}: vagas para mestres e doutores em educação`,
+        `Estados lançam concursos ${currentYear} para secretarias de educação`,
+        `Provas de concursos públicos ${currentYear} serão em outubro`,
+      ],
+      'bolsa de estudos': [
+        `CNPq amplia bolsas de pesquisa em educação para ${currentYear}`,
+        `CAPES anuncia novas bolsas de mestrado e doutorado ${currentYear}`,
+        `Bolsas de estudo ${currentYear}: universidades privadas oferecem descontos`,
+        `Programa de bolsas estaduais ${currentYear} contempla 10 mil estudantes`,
+        `Fundações oferecem bolsas integrais para graduação em ${currentYear}`,
+        `Bolsas de iniciação científica ${currentYear}: como se candidatar`,
+        `Edital de bolsas ${currentYear} para estudantes de baixa renda`,
+        `Bolsas de intercâmbio ${currentYear} para estudantes brasileiros`,
+        `CNPq aumenta valores de bolsas de pesquisa em ${currentYear}`,
+        `Programas de bolsas ${currentYear} focam em áreas estratégicas`,
+        `Bolsas para pós-graduação ${currentYear}: editais abertos`,
+        `Empresas oferecem bolsas de estudo ${currentYear} em parceria com universidades`,
+        `FAPESP lança programa de bolsas ${currentYear} para jovens pesquisadores`,
+        `Bolsas ${currentYear} para ensino médio técnico são ampliadas`,
+        `Edital de bolsas sanduíche ${currentYear} para doutorandos`,
+      ],
+      'Fuvest': [
+        `Fuvest ${currentYear}: inscrições para USP começam em agosto`,
+        `Manual do candidato Fuvest ${currentYear} está disponível`,
+        `Fuvest ${currentYear} mantém prova de conhecimentos gerais`,
+        `Lista de aprovados Fuvest ${currentYear} sai em janeiro`,
+        `Fuvest ${currentYear}: veja temas de redações anteriores`,
+        `Segunda fase Fuvest ${currentYear} terá provas específicas`,
+        `Fuvest ${currentYear}: USP oferece 11 mil vagas`,
+        `Preparação para Fuvest ${currentYear}: dicas de professores`,
+        `Fuvest ${currentYear} cobra literatura brasileira e portuguesa`,
+        `Resultado Fuvest ${currentYear}: convocações para matrícula`,
+      ],
+      'Unicamp': [
+        `Vestibular Unicamp ${currentYear}: edital é publicado`,
+        `Unicamp ${currentYear} adota provas interdisciplinares`,
+        `Inscrições Unicamp ${currentYear} vão até setembro`,
+        `Unicamp ${currentYear}: medicina é o curso mais concorrido`,
+        `Segunda fase Unicamp ${currentYear}: prepare-se para as específicas`,
+        `Resultado Unicamp ${currentYear} sai em fevereiro`,
+        `Unicamp ${currentYear} oferece 3.340 vagas em Campinas`,
+        `Provas Unicamp ${currentYear} serão nos dias 17 e 18 de novembro`,
+        `Unicamp ${currentYear}: confira obras literárias cobradas`,
+        `Isenção de taxa Unicamp ${currentYear} para baixa renda`,
+      ],
+      'MEC': [
+        `MEC anuncia investimentos bilionários em educação para ${currentYear}`,
+        `Ministro da Educação apresenta plano estratégico ${currentYear}`,
+        `MEC ${currentYear}: novas diretrizes para educação básica`,
+        `Orçamento do MEC ${currentYear} prioriza ensino técnico`,
+        `MEC lança programa ${currentYear} de alfabetização digital`,
+        `Políticas do MEC ${currentYear} focam em redução da evasão escolar`,
+        `MEC ${currentYear}: ampliação de vagas em universidades federais`,
+        `Iniciativas do MEC ${currentYear} para valorização de professores`,
+      ],
     };
     
     const keywordTemplates = templates[keyword as keyof typeof templates] || [
-      `Novas medidas para ${keyword} são anunciadas pelo governo`,
-      `${keyword}: mudanças importantes para estudantes brasileiros`,
-      `Governo federal investe em ${keyword} para democratizar educação`
+      `${keyword}: novas oportunidades para estudantes em ${currentYear}`,
+      `Governo amplia programas de ${keyword} para ${currentYear}`,
+      `${keyword} ${currentYear}: entenda as mudanças anunciadas`,
+      `Especialistas analisam impacto de ${keyword} na educação brasileira`,
+      `MEC divulga novidades sobre ${keyword} para ${currentYear}`,
     ];
     
     return keywordTemplates[Math.floor(Math.random() * keywordTemplates.length)];
@@ -220,6 +393,52 @@ export class RealNewsService {
   }
 
   /**
+   * Validates if news is still relevant (not outdated)
+   */
+  private static isNewsRelevant(article: ValidatedNews): boolean {
+    const now = new Date();
+    const currentMonth = now.getMonth() + 1;
+    const currentYear = now.getFullYear();
+    const title = article.titulo.toLowerCase();
+    
+    // Extract year from title if present
+    const yearMatch = title.match(/\b(20\d{2})\b/);
+    if (yearMatch) {
+      const mentionedYear = parseInt(yearMatch[1]);
+      // If mentions a past year (except last year for results), reject
+      if (mentionedYear < currentYear - 1) {
+        console.log(`Notícia desatualizada (ano ${mentionedYear}): "${article.titulo}"`);
+        return false;
+      }
+    }
+    
+    // Check for specific outdated events based on current month
+    const outdatedPatterns: { months: number[], pattern: RegExp, reason: string }[] = [
+      // SISU typically happens Jan-Mar
+      { months: [5,6,7,8,9,10,11,12], pattern: /sisu.*inscri(ç|c)(õ|o)es/i, reason: 'SISU inscriptions are over' },
+      
+      // ENEM typically happens in Nov
+      { months: [1,2,3,4], pattern: /enem.*prova.*novembro/i, reason: 'ENEM exam already happened' },
+      { months: [12,1,2,3,4,5], pattern: /inscri(ç|c)(õ|o)es.*enem/i, reason: 'ENEM inscriptions period passed' },
+      
+      // ProUni typically Jan-Feb and Jun-Jul
+      { months: [4,5,10,11,12], pattern: /prouni.*inscri(ç|c)(õ|o)es/i, reason: 'ProUni inscriptions period passed' },
+      
+      // Fuvest exam in Nov-Dec
+      { months: [3,4,5,6,7,8,9], pattern: /fuvest.*prova/i, reason: 'Fuvest exam already happened' },
+    ];
+    
+    for (const { months, pattern, reason } of outdatedPatterns) {
+      if (months.includes(currentMonth) && pattern.test(title)) {
+        console.log(`Notícia desatualizada (${reason}): "${article.titulo}"`);
+        return false;
+      }
+    }
+    
+    return true;
+  }
+
+  /**
    * Extracts the core theme from a news title by removing filler words and focusing on key concepts
    */
   private static extractCoreTheme(title: string): string {
@@ -233,14 +452,16 @@ export class RealNewsService {
       'o', 'a', 'os', 'as', 'um', 'uma', 'de', 'do', 'da', 'dos', 'das',
       'em', 'no', 'na', 'nos', 'nas', 'para', 'por', 'com', 'sem',
       'são', 'é', 'será', 'foi', 'serão', 'foram', 'anuncia', 'confirma',
-      'divulga', 'libera', 'novo', 'nova', 'novos', 'novas'
+      'divulga', 'libera', 'novo', 'nova', 'novos', 'novas',
+      // Add years as filler words so "SISU 2024" and "SISU 2025" are considered same theme
+      '2024', '2025', '2026', '2027', '2023', '2022'
     ];
     
     const words = normalized.split(' ').filter(word => 
       word.length > 2 && !fillerWords.includes(word)
     );
     
-    // Keep important keywords together (e.g., "redação enem 2026")
+    // Keep important keywords together (e.g., "redação enem")
     return words.join(' ');
   }
 
