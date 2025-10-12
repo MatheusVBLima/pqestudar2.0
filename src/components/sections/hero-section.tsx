@@ -1,4 +1,4 @@
-import { NewsletterForm } from "@/components/ui/newsletter-form";
+import matheusHero from "@/assets/matheus-hero.png";
 
 export function HeroSection() {
   return (
@@ -10,31 +10,37 @@ export function HeroSection() {
       
       <div className="container mx-auto px-4 py-12 md:py-20 relative z-10 w-full">
         <div className="grid lg:grid-cols-2 gap-12 items-center animate-fade-in max-w-7xl mx-auto">
-          {/* Left Column - Content */}
-          <div className="space-y-6 text-left">
+          {/* Left Column - Image */}
+          <div className="flex items-center justify-center lg:justify-start order-2 lg:order-1">
+            <div className="relative w-full max-w-lg">
+              <img 
+                src={matheusHero} 
+                alt="Matheus Dias - Fundador do PqEstudar" 
+                className="w-full h-auto rounded-2xl shadow-2xl"
+              />
+            </div>
+          </div>
+
+          {/* Right Column - Content */}
+          <div className="space-y-6 text-left order-1 lg:order-2">
             {/* Headline */}
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold leading-tight">
+              <span className="text-foreground">Menos conteúdo, </span>
               <span className="bg-gradient-primary bg-clip-text text-transparent">
-                Transforme Informação
+                mais aplicação.
               </span>
-              {" "}
-              <span className="text-foreground">em Resultado.</span>
             </h1>
             
             {/* Sub-headline */}
-            <p className="text-lg md:text-xl lg:text-2xl text-muted-foreground leading-relaxed">
-              Descubra métodos e ferramentas de produtividade para acelerar sua carreira e projetos, sem se afogar em conteúdo.
+            <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
+              Meu nome é <strong>Matheus Dias</strong> e por anos eu acreditei que precisava consumir mais para ter sucesso. A verdade é o oposto.
             </p>
-          </div>
-
-          {/* Right Column - Newsletter Form */}
-          <div className="flex items-center justify-center lg:justify-end">
-            <NewsletterForm 
-              title="Receba Ferramentas de Resultado"
-              description="Uma curadoria semanal das melhores ferramentas e métodos de produtividade, direto no seu e-mail."
-              variant="hero"
-              className="w-full max-w-md"
-            />
+            <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
+              O sucesso vem de <strong>aplicar o conhecimento certo, da forma mais rápida possível</strong>. O PqEstudar? nasceu para ser o seu filtro.
+            </p>
+            <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
+              Aqui, compartilhamos apenas o que funciona no mundo real, para profissionais que não têm tempo a perder.
+            </p>
           </div>
         </div>
       </div>

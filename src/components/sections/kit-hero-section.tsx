@@ -47,16 +47,8 @@ export function KitHeroSection() {
   return (
     <section className="py-20 px-4 bg-gradient-to-b from-background to-accent/20">
       <div className="container mx-auto max-w-6xl">
-        {/* Badge */}
-        <div className="text-center mb-6 animate-fade-in">
-          <Badge className="bg-primary/10 text-primary hover:bg-primary/20 border-primary/20 px-4 py-2 text-sm font-semibold inline-flex items-center gap-2">
-            <Star className="h-4 w-4 fill-primary" />
-            Plataforma #1 em Educação Gratuita
-          </Badge>
-        </div>
-
         {/* Hero Content */}
-        <div className="text-center mb-12 animate-fade-in" style={{ animationDelay: "0.1s" }}>
+        <div className="text-center mb-12 animate-fade-in">
           <h1 className="text-4xl md:text-6xl font-bold mb-6">
             Menos Esforço, <span className="bg-gradient-primary bg-clip-text text-transparent">Mais Resultados.</span>
           </h1>
@@ -66,35 +58,14 @@ export function KitHeroSection() {
           </p>
         </div>
 
-        {/* CTAs */}
-        <div className="flex flex-col sm:flex-row gap-4 justify-center mb-20 animate-fade-in" style={{ animationDelay: "0.2s" }}>
-          <Button
-            variant="premium"
-            size="lg"
-            onClick={scrollToArsenal}
-            className="text-base px-8"
-          >
-            COMEÇAR A GERAR RESULTADOS
-          </Button>
-          <Button
-            variant="outline"
-            size="lg"
-            onClick={() => navigate('/explorar')}
-            className="text-base px-8"
-          >
-            Ver Categorias
-          </Button>
-        </div>
-
         {/* Features Grid */}
-        <div className="grid md:grid-cols-2 gap-6 mb-20">
+        <div className="grid md:grid-cols-2 gap-6 mb-12 animate-fade-in" style={{ animationDelay: "0.1s" }}>
           {features.map((feature, index) => {
             const Icon = feature.icon;
             return (
               <Card 
                 key={index}
-                className="p-6 bg-card/80 backdrop-blur-sm shadow-card-custom hover:shadow-lg transition-all duration-300 hover:-translate-y-1 animate-fade-in"
-                style={{ animationDelay: `${0.3 + index * 0.1}s` }}
+                className="p-6 bg-card/80 backdrop-blur-sm shadow-card-custom hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
               >
                 <div className="flex items-start gap-4">
                   <div className="flex-shrink-0 w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
@@ -111,14 +82,13 @@ export function KitHeroSection() {
         </div>
 
         {/* Statistics Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12 animate-fade-in" style={{ animationDelay: "0.2s" }}>
           {statistics.map((stat, index) => {
             const Icon = stat.icon;
             return (
               <Card 
                 key={index}
-                className="p-6 text-center bg-card/80 backdrop-blur-sm shadow-card-custom hover:shadow-lg transition-all duration-300 hover:-translate-y-1 animate-fade-in"
-                style={{ animationDelay: `${0.7 + index * 0.1}s` }}
+                className="p-6 text-center bg-card/80 backdrop-blur-sm shadow-card-custom hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
               >
                 <div className="flex flex-col items-center gap-3">
                   <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
@@ -134,6 +104,26 @@ export function KitHeroSection() {
               </Card>
             );
           })}
+        </div>
+
+        {/* CTAs */}
+        <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in" style={{ animationDelay: "0.3s" }}>
+          <Button
+            variant="premium"
+            size="lg"
+            onClick={scrollToArsenal}
+            className="text-base px-8"
+          >
+            COMEÇAR A GERAR RESULTADOS
+          </Button>
+          <Button
+            variant="outline"
+            size="lg"
+            onClick={() => navigate('/explorar')}
+            className="text-base px-8"
+          >
+            Ver Categorias
+          </Button>
         </div>
       </div>
     </section>
