@@ -1,9 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { Sparkles } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export function PremiumCTASection() {
+  const navigate = useNavigate();
+  
   const handleCTAClick = () => {
-    window.open('https://kit.pqestudar.com.br', '_blank');
+    navigate('/kit');
   };
 
   return (

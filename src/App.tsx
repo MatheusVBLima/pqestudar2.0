@@ -31,6 +31,7 @@ import Login from "./pages/Login";
 import { ResetPassword } from "./pages/ResetPassword";
 import AdminCourses from "./pages/AdminCourses";
 import NotFound from "./pages/NotFound";
+import KitAceleracao from "./pages/KitAceleracao";
 
 const queryClient = new QueryClient();
 
@@ -67,6 +68,7 @@ const App = () => (
           <Route path="/login" element={<Login />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/admin/cursos" element={<AdminCourses />} />
+          <Route path="/kit" element={<KitAceleracao />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
