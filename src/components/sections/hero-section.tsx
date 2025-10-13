@@ -1,5 +1,4 @@
 import { NewsletterForm } from "@/components/ui/newsletter-form";
-import { Badge } from "@/components/ui/badge";
 
 export function HeroSection() {
   return (
@@ -30,36 +29,12 @@ export function HeroSection() {
           {/* Right Column - Newsletter Card */}
           <div className="order-1 lg:order-2 flex items-center justify-center">
             <div className="w-full max-w-lg bg-card border border-border rounded-2xl p-8 shadow-elegant">
-              <div className="space-y-6">
-                {/* Badge */}
-                <Badge variant="secondary" className="text-sm font-semibold">
-                  🎁 BÔNUS GRATUITO
-                </Badge>
-                
-                {/* Card Title */}
-                <div className="space-y-3">
-                  <h3 className="text-2xl md:text-3xl font-bold text-foreground">
-                    Receba Ferramentas de Resultado
-                  </h3>
-                  <p className="text-base text-muted-foreground">
-                    Uma curadoria semanal das melhores ferramentas e métodos de produtividade, direto no seu e-mail.
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    Nossa equipe de especialistas selecionou a dedo os melhores recursos para você economizar tempo e ir direto ao ponto.
-                  </p>
-                </div>
-
-                {/* Newsletter Form */}
-                <NewsletterForm 
-                  variant="default"
-                  className="w-full"
-                />
-
-                {/* Security Text */}
-                <p className="text-xs text-muted-foreground text-center">
-                  🔒 Seus dados estão seguros e você pode cancelar a qualquer momento
-                </p>
-              </div>
+              <NewsletterForm 
+                title="Receba Ferramentas de Resultado"
+                description="Uma curadoria semanal das melhores ferramentas e métodos de produtividade, direto no seu e-mail."
+                variant="default"
+                className="w-full"
+              />
             </div>
           </div>
         </div>
