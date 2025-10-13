@@ -2,15 +2,15 @@ import matheusProfile from "@/assets/matheus-profile.png";
 
 export function ManifestoSection() {
   return (
-    <section className="py-20 bg-background w-full">
+    <section className="pb-0 pt-20 bg-background w-full overflow-hidden">
       <div className="container mx-auto px-4 max-w-7xl">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           {/* Foto */}
-          <div className="relative flex items-center justify-center">
+          <div className="relative flex items-end justify-center h-full">
             <img 
               src={matheusProfile}
               alt="Matheus Dias - Fundador do PqEstudar?"
-              className="w-full h-auto"
+              className="w-full h-auto object-contain object-bottom"
             />
           </div>
 
