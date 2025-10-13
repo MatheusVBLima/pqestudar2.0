@@ -1,4 +1,4 @@
-import matheusProfile from "@/assets/matheus-profile.jpg";
+import matheusProfile from "@/assets/matheus-profile.png";
 
 export function ManifestoSection() {
   return (
@@ -6,16 +6,12 @@ export function ManifestoSection() {
       <div className="container mx-auto px-4 max-w-7xl">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           {/* Foto */}
-          <div className="relative">
-            <div className="aspect-square rounded-2xl overflow-hidden shadow-elegant">
-              <img 
-                src={matheusProfile}
-                alt="Matheus Dias - Fundador do PqEstudar?"
-                className="w-full h-full object-cover"
-              />
-            </div>
-            {/* Decorative element */}
-            <div className="absolute -z-10 top-4 left-4 w-full h-full rounded-2xl bg-gradient-primary opacity-20" />
+          <div className="relative flex items-center justify-center">
+            <img 
+              src={matheusProfile}
+              alt="Matheus Dias - Fundador do PqEstudar?"
+              className="w-full h-auto"
+            />
           </div>
 
           {/* Texto */}
