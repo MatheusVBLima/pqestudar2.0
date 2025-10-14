@@ -54,7 +54,9 @@ export default function ExploreCourses() {
   });
   const [showBonus, setShowBonus] = useState(false);
   const [showNewsletterModal, setShowNewsletterModal] = useState(false);
-  const [showAdminPanel, setShowAdminPanel] = useState(false);
+  const [managementMode, setManagementMode] = useState(false);
+  const [showCourseForm, setShowCourseForm] = useState(false);
+  const [editingCourse, setEditingCourse] = useState<any>(null);
 
   // Calcular contagens reais de cursos por categoria
   const getCategoryCounts = () => {
@@ -142,13 +144,12 @@ export default function ExploreCourses() {
             {isAdmin && (
               <div className="flex justify-center mb-6">
                 <Button 
-                  variant="secondary" 
-                  onClick={() => setShowAdminPanel(!showAdminPanel)}
+                  variant={managementMode ? "default" : "secondary"}
+                  onClick={() => setManagementMode(!managementMode)}
                   className="flex items-center gap-2"
                 >
                   <Settings className="h-4 w-4" />
-                  {showAdminPanel ? 'Ocultar' : 'Mostrar'} Painel Admin
-                  {showAdminPanel ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                  {managementMode ? 'Sair do' : 'Entrar no'} Modo de Gerenciamento
                 </Button>
               </div>
             )}
@@ -169,14 +170,6 @@ export default function ExploreCourses() {
         </div>
       </div>
 
-      {/* Admin Panel */}
-      {isAdmin && showAdminPanel && (
-        <div className="container mx-auto px-4 py-8">
-          <Card className="p-6 bg-gradient-to-br from-primary/5 to-primary/10 border-2 border-primary/20">
-            <CourseManagement />
-          </Card>
-        </div>
-      )}
 
       <div className="container mx-auto px-4 py-12">
         <div className="flex flex-col lg:flex-row gap-8">
@@ -187,6 +180,19 @@ export default function ExploreCourses() {
                 <Filter className="h-5 w-5 text-primary" />
                 <h3 className="text-lg font-semibold">Categorias</h3>
               </div>
+              
+              {isAdmin && managementMode && (
+                <Button 
+                  onClick={() => {
+                    setEditingCourse(null);
+                    setShowCourseForm(true);
+                  }}
+                  className="w-full mb-4 bg-gradient-primary hover:opacity-90"
+                >
+                  <span className="text-xl mr-2">+</span>
+                  Adicionar Curso
+                </Button>
+              )}
               
               <div className="space-y-2">
                 {categories.map((category) => {
@@ -321,6 +327,19 @@ export default function ExploreCourses() {
                     }}
                     isFavorite={favorites.includes(course.id)}
                     onToggleFavorite={toggleFavorite}
+                    isManagementMode={isAdmin && managementMode}
+                    onEdit={(course) => {
+                      setEditingCourse(course);
+                      setShowCourseForm(true);
+                    }}
+                    onDelete={(courseId) => {
+                      // Implementar lógica de exclusão
+                      console.log('Delete course:', courseId);
+                    }}
+                    onToggleVisibility={(courseId) => {
+                      // Implementar lógica de ocultar/mostrar
+                      console.log('Toggle visibility:', courseId);
+                    }}
                   />
                 ))}
               </div>
@@ -399,6 +418,26 @@ export default function ExploreCourses() {
                 setShowBonus(false);
               }}
             />
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal Formulário de Curso */}
+      <Dialog open={showCourseForm} onOpenChange={setShowCourseForm}>
+        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {editingCourse ? 'Editar Curso' : 'Adicionar Novo Curso'}
+            </DialogTitle>
+            <DialogDescription>
+              {editingCourse 
+                ? 'Atualize as informações do curso abaixo.' 
+                : 'Preencha as informações do novo curso.'}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="mt-4">
+            {/* CourseForm será importado */}
+            <p className="text-sm text-muted-foreground">Formulário será implementado</p>
           </div>
         </DialogContent>
       </Dialog>
