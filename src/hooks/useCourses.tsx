@@ -26,13 +26,13 @@ export interface Course {
 
 export interface CreateCourseData {
   title: string;
-  description: string;
+  description?: string;
   category: string;
   duration: string;
-  price: string;
+  price?: string;
   image_url?: string;
-  institution: string;
-  level: 'Iniciante' | 'Intermediário' | 'Avançado';
+  institution?: string;
+  level?: 'Iniciante' | 'Intermediário' | 'Avançado';
   badge?: 'trending' | 'popular' | 'community' | null;
 }
 
@@ -71,7 +71,15 @@ export const useCourses = () => {
       const { data, error } = await supabase
         .from('courses')
         .insert([{
-          ...courseData,
+          title: courseData.title,
+          description: courseData.description || '',
+          category: courseData.category,
+          duration: courseData.duration,
+          price: courseData.price || 'Consultar',
+          image_url: courseData.image_url,
+          institution: courseData.institution || 'Plataforma Parceira',
+          level: courseData.level || 'Iniciante',
+          badge: courseData.badge,
           created_by: user.id
         }])
         .select()

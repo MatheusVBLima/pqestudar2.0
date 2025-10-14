@@ -7,6 +7,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from '@/components/ui/dialog';
 import {
   Form,
@@ -17,7 +18,6 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import {
   Select,
@@ -26,18 +26,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Course } from '@/hooks/useCourses';
 
 const courseSchema = z.object({
   title: z.string().min(1, 'Título é obrigatório'),
-  description: z.string().min(1, 'Descrição é obrigatória'),
+  affiliate_link: z.string().url('Deve ser uma URL válida').min(1, 'Link de afiliado é obrigatório'),
+  image_url: z.string().url('Deve ser uma URL válida de imagem').min(1, 'URL da imagem é obrigatória'),
   category: z.string().min(1, 'Categoria é obrigatória'),
-  duration: z.string().min(1, 'Duração é obrigatória'),
-  price: z.string().min(1, 'Preço é obrigatório'),
-  image_url: z.string().optional(),
-  institution: z.string().min(1, 'Instituição é obrigatória'),
-  level: z.enum(['Iniciante', 'Intermediário', 'Avançado']),
-  badge: z.string().optional(),
+  duration: z.string().min(1, 'Duração estimada é obrigatória'),
+  badges: z.array(z.string()).optional(),
 });
 
 type CourseFormData = z.infer<typeof courseSchema>;
@@ -54,14 +52,11 @@ export const CourseForm = ({ course, isOpen, onClose, onSubmit }: CourseFormProp
     resolver: zodResolver(courseSchema),
     defaultValues: {
       title: '',
-      description: '',
+      affiliate_link: '',
+      image_url: '',
       category: '',
       duration: '',
-      price: '',
-      image_url: '',
-      institution: '',
-      level: 'Iniciante',
-      badge: '',
+      badges: [],
     },
   });
 
@@ -69,36 +64,38 @@ export const CourseForm = ({ course, isOpen, onClose, onSubmit }: CourseFormProp
     if (course) {
       form.reset({
         title: course.title,
-        description: course.description,
+        affiliate_link: '',
+        image_url: course.image_url || '',
         category: course.category,
         duration: course.duration,
-        price: course.price,
-        image_url: course.image_url || '',
-        institution: course.institution,
-        level: course.level,
-        badge: course.badge || '',
+        badges: course.badge ? [course.badge] : [],
       });
     } else {
       form.reset({
         title: '',
-        description: '',
+        affiliate_link: '',
+        image_url: '',
         category: '',
         duration: '',
-        price: '',
-        image_url: '',
-        institution: '',
-        level: 'Iniciante',
-        badge: '',
+        badges: [],
       });
     }
   }, [course]);
 
   const handleSubmit = (data: CourseFormData) => {
     try {
+      // Mapear dados do formulário para campos existentes na tabela
       const transformedData = {
-        ...data,
-        image_url: data.image_url || undefined,
-        badge: (!data.badge || data.badge === '') ? null : data.badge,
+        title: data.title,
+        description: `Link de afiliado: ${data.affiliate_link}`, // Armazena link no campo description
+        image_url: data.image_url,
+        category: data.category,
+        duration: data.duration,
+        badge: (data.badges && data.badges.length > 0 ? data.badges[0] : null) as 'trending' | 'popular' | 'community' | null,
+        // Valores padrão para campos obrigatórios
+        price: 'Consultar',
+        institution: 'Plataforma Parceira',
+        level: 'Iniciante' as const,
       };
       onSubmit(transformedData);
       form.reset();
@@ -114,51 +111,38 @@ export const CourseForm = ({ course, isOpen, onClose, onSubmit }: CourseFormProp
           <DialogTitle>
             {course ? 'Editar Curso' : 'Adicionar Novo Curso'}
           </DialogTitle>
+          <DialogDescription>
+            Preencha as informações do novo curso.
+          </DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="title"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Título</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Título do curso" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="institution"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Instituição</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Nome da instituição" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+            <FormField
+              control={form.control}
+              name="title"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Título do Curso</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Ex: Curso Completo de Análise de Dados com Python" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <FormField
               control={form.control}
-              name="description"
+              name="affiliate_link"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Descrição</FormLabel>
+                  <FormLabel>Link de Afiliado (URL)</FormLabel>
                   <FormControl>
-                    <Textarea 
-                      placeholder="Descrição do curso"
-                      className="resize-none"
-                      {...field}
+                    <Input 
+                      type="url" 
+                      placeholder="https://plataforma.com/curso/...?aff=pqestudar" 
+                      {...field} 
                     />
                   </FormControl>
                   <FormMessage />
@@ -166,118 +150,105 @@ export const CourseForm = ({ course, isOpen, onClose, onSubmit }: CourseFormProp
               )}
             />
 
-            <div className="grid grid-cols-3 gap-4">
-              <FormField
-                control={form.control}
-                name="category"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Categoria</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecione" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="tech">Tecnologia</SelectItem>
-                        <SelectItem value="business">Negócios</SelectItem>
-                        <SelectItem value="design">Design</SelectItem>
-                        <SelectItem value="marketing">Marketing</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="level"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Nível</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecione" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="Iniciante">Iniciante</SelectItem>
-                        <SelectItem value="Intermediário">Intermediário</SelectItem>
-                        <SelectItem value="Avançado">Avançado</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="duration"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Duração</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Ex: 40h" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="price"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Preço (Use "0" para gratuito)</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Ex: R$ 199,90 ou 0" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="image_url"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>URL da Imagem (opcional)</FormLabel>
-                    <FormControl>
-                      <Input placeholder="https://exemplo.com/imagem.jpg" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+            <FormField
+              control={form.control}
+              name="image_url"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>URL da Imagem da Capa</FormLabel>
+                  <FormControl>
+                    <Input 
+                      type="url" 
+                      placeholder="https://servidor.com/imagem-do-curso.jpg" 
+                      {...field} 
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <FormField
               control={form.control}
-              name="badge"
+              name="category"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Selo de Tendência (opcional)</FormLabel>
+                  <FormLabel>Categoria</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Nenhum" />
+                        <SelectValue placeholder="Selecione uma categoria" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="">Nenhum</SelectItem>
-                      <SelectItem value="trending">🔥 Em Alta</SelectItem>
-                      <SelectItem value="popular">🚀 Mais Procurado</SelectItem>
-                      <SelectItem value="community">⭐ Escolha da Comunidade</SelectItem>
+                      <SelectItem value="tech">Tecnologia</SelectItem>
+                      <SelectItem value="business">Negócios</SelectItem>
+                      <SelectItem value="design">Design</SelectItem>
+                      <SelectItem value="marketing">Marketing</SelectItem>
                     </SelectContent>
                   </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="duration"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Duração Estimada</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Ex: 40 horas ou 3 semanas" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="badges"
+              render={() => (
+                <FormItem>
+                  <div className="mb-4">
+                    <FormLabel>Selos (Opcional)</FormLabel>
+                  </div>
+                  {['trending', 'popular', 'new'].map((badge) => (
+                    <FormField
+                      key={badge}
+                      control={form.control}
+                      name="badges"
+                      render={({ field }) => {
+                        return (
+                          <FormItem
+                            key={badge}
+                            className="flex flex-row items-start space-x-3 space-y-0"
+                          >
+                            <FormControl>
+                              <Checkbox
+                                checked={field.value?.includes(badge)}
+                                onCheckedChange={(checked) => {
+                                  return checked
+                                    ? field.onChange([...(field.value || []), badge])
+                                    : field.onChange(
+                                        field.value?.filter(
+                                          (value) => value !== badge
+                                        )
+                                      )
+                                }}
+                              />
+                            </FormControl>
+                            <FormLabel className="font-normal">
+                              {badge === 'trending' && '🔥 Em Alta'}
+                              {badge === 'popular' && '⭐ Mais Acessado'}
+                              {badge === 'new' && '✨ Novidade'}
+                            </FormLabel>
+                          </FormItem>
+                        )
+                      }}
+                    />
+                  ))}
                   <FormMessage />
                 </FormItem>
               )}
@@ -288,7 +259,7 @@ export const CourseForm = ({ course, isOpen, onClose, onSubmit }: CourseFormProp
                 Cancelar
               </Button>
               <Button type="submit">
-                {course ? 'Atualizar' : 'Criar'} Curso
+                Salvar Curso
               </Button>
             </div>
           </form>
