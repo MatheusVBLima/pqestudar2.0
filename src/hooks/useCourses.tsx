@@ -38,6 +38,7 @@ export interface CreateCourseData {
 
 export interface UpdateCourseData extends CreateCourseData {
   id: string;
+  is_active?: boolean;
 }
 
 export const useCourses = () => {
@@ -94,18 +95,19 @@ export const useCourses = () => {
     }
   };
 
-  const updateCourse = async (courseData: UpdateCourseData) => {
+  const updateCourse = async (courseData: UpdateCourseData | { id: string; is_active: boolean }) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Usuário não autenticado');
 
+      const { id, ...updateFields } = courseData;
       const { data, error } = await supabase
         .from('courses')
         .update({
-          ...courseData,
+          ...updateFields,
           updated_by: user.id
         })
-        .eq('id', courseData.id)
+        .eq('id', id)
         .select()
         .single();
 

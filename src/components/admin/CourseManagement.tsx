@@ -203,10 +203,11 @@ export const CourseManagement = () => {
       {/* Course Form Modal */}
       <CourseForm
         course={editingCourse}
-        isOpen={isFormOpen || !!editingCourse}
-        onClose={() => {
-          setIsFormOpen(false);
-          setEditingCourse(null);
+        onOpenChange={(open) => {
+          if (!open) {
+            setIsFormOpen(false);
+            setEditingCourse(null);
+          }
         }}
         onSubmit={editingCourse ? handleUpdateCourse : handleCreateCourse}
       />

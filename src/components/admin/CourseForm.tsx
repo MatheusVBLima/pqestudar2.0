@@ -42,12 +42,11 @@ type CourseFormData = z.infer<typeof courseSchema>;
 
 interface CourseFormProps {
   course?: Course | null;
-  isOpen: boolean;
-  onClose: () => void;
+  onOpenChange: (open: boolean) => void;
   onSubmit: (data: any) => void;
 }
 
-export const CourseForm = ({ course, isOpen, onClose, onSubmit }: CourseFormProps) => {
+export const CourseForm = ({ course, onOpenChange, onSubmit }: CourseFormProps) => {
   const form = useForm<CourseFormData>({
     resolver: zodResolver(courseSchema),
     defaultValues: {
@@ -105,7 +104,7 @@ export const CourseForm = ({ course, isOpen, onClose, onSubmit }: CourseFormProp
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <div>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
@@ -255,7 +254,7 @@ export const CourseForm = ({ course, isOpen, onClose, onSubmit }: CourseFormProp
             />
 
             <div className="flex justify-end gap-2 pt-4">
-              <Button type="button" variant="outline" onClick={onClose}>
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                 Cancelar
               </Button>
               <Button type="submit">
@@ -265,6 +264,6 @@ export const CourseForm = ({ course, isOpen, onClose, onSubmit }: CourseFormProp
           </form>
         </Form>
       </DialogContent>
-    </Dialog>
+    </div>
   );
 };

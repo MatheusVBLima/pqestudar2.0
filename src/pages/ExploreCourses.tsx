@@ -11,7 +11,8 @@ import { useCourses } from "@/hooks/useCourses";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { NewsletterForm } from "@/components/ui/newsletter-form";
-import { CourseManagement } from "@/components/admin/CourseManagement";
+import { CourseForm } from "@/components/admin/CourseForm";
+import { useToast } from "@/hooks/use-toast";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -40,7 +41,8 @@ export default function ExploreCourses() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { isAdmin } = useUserRoles();
-  const { courses, loading } = useCourses();
+  const { courses, loading, createCourse, updateCourse, deleteCourse, refetch } = useCourses();
+  const { toast } = useToast();
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("trending"); // trending, popular, duration, rating, price
@@ -124,6 +126,85 @@ export default function ExploreCourses() {
       ...prev,
       [categoryId]: !prev[categoryId]
     }));
+  };
+
+  const handleCreateCourse = async (courseData: any) => {
+    try {
+      await createCourse(courseData);
+      toast({
+        title: "Curso criado com sucesso!",
+        description: "O curso foi adicionado à plataforma.",
+      });
+      setShowCourseForm(false);
+      refetch();
+    } catch (error) {
+      toast({
+        title: "Erro ao criar curso",
+        description: "Tente novamente mais tarde.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleUpdateCourse = async (courseData: any) => {
+    try {
+      await updateCourse({ ...courseData, id: editingCourse.id });
+      toast({
+        title: "Curso atualizado com sucesso!",
+        description: "As alterações foram salvas.",
+      });
+      setShowCourseForm(false);
+      setEditingCourse(null);
+      refetch();
+    } catch (error) {
+      toast({
+        title: "Erro ao atualizar curso",
+        description: "Tente novamente mais tarde.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDeleteCourse = async (courseId: string) => {
+    try {
+      await deleteCourse(courseId);
+      toast({
+        title: "Curso removido com sucesso!",
+        description: "O curso foi excluído da plataforma.",
+      });
+      refetch();
+    } catch (error) {
+      toast({
+        title: "Erro ao remover curso",
+        description: "Tente novamente mais tarde.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleToggleVisibility = async (courseId: string) => {
+    const course = courses.find(c => c.id === courseId);
+    if (!course) return;
+
+    try {
+      await updateCourse({ 
+        id: courseId, 
+        is_active: !course.is_active 
+      });
+      toast({
+        title: course.is_active ? "Curso ocultado" : "Curso visível",
+        description: course.is_active 
+          ? "O curso não está mais visível para usuários." 
+          : "O curso está visível para usuários.",
+      });
+      refetch();
+    } catch (error) {
+      toast({
+        title: "Erro ao alterar visibilidade",
+        description: "Tente novamente mais tarde.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -332,14 +413,8 @@ export default function ExploreCourses() {
                       setEditingCourse(course);
                       setShowCourseForm(true);
                     }}
-                    onDelete={(courseId) => {
-                      // Implementar lógica de exclusão
-                      console.log('Delete course:', courseId);
-                    }}
-                    onToggleVisibility={(courseId) => {
-                      // Implementar lógica de ocultar/mostrar
-                      console.log('Toggle visibility:', courseId);
-                    }}
+                    onDelete={handleDeleteCourse}
+                    onToggleVisibility={handleToggleVisibility}
                   />
                 ))}
               </div>
@@ -424,22 +499,11 @@ export default function ExploreCourses() {
 
       {/* Modal Formulário de Curso */}
       <Dialog open={showCourseForm} onOpenChange={setShowCourseForm}>
-        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>
-              {editingCourse ? 'Editar Curso' : 'Adicionar Novo Curso'}
-            </DialogTitle>
-            <DialogDescription>
-              {editingCourse 
-                ? 'Atualize as informações do curso abaixo.' 
-                : 'Preencha as informações do novo curso.'}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="mt-4">
-            {/* CourseForm será importado */}
-            <p className="text-sm text-muted-foreground">Formulário será implementado</p>
-          </div>
-        </DialogContent>
+        <CourseForm
+          course={editingCourse}
+          onOpenChange={setShowCourseForm}
+          onSubmit={editingCourse ? handleUpdateCourse : handleCreateCourse}
+        />
       </Dialog>
     </div>
   );
