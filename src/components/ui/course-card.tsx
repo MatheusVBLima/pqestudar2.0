@@ -31,6 +31,7 @@ interface Course {
   level: string;
   badge?: 'trending' | 'popular' | 'community' | null;
   is_active?: boolean;
+  affiliate_link?: string;
 }
 
 interface CourseCardProps {
@@ -138,9 +139,7 @@ export function CourseCard({
         <CardTitle className="text-lg leading-tight group-hover:text-primary transition-colors">
           {course.title}
         </CardTitle>
-        <CardDescription className="text-sm">
-          {course.description}
-        </CardDescription>
+        {/* Não mostrar link de afiliado para usuários */}
       </CardHeader>
       
       <CardContent className="space-y-4">
@@ -205,7 +204,13 @@ export function CourseCard({
           </div>
           <Button 
             className="hover-scale"
-            onClick={() => navigate(`/curso/${course.id}`)}
+            onClick={() => {
+              if (course.affiliate_link) {
+                window.open(course.affiliate_link, '_blank');
+              } else {
+                navigate(`/curso/${course.id}`);
+              }
+            }}
           >
             Inscrever-se
           </Button>

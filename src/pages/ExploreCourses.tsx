@@ -399,24 +399,32 @@ export default function ExploreCourses() {
               </div>
             ) : (
               <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
-                {filteredCourses.map((course) => (
-                  <CourseCard
-                    key={course.id}
-                    course={{
-                      ...course,
-                      image: course.image_url || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=250&fit=crop&crop=center'
-                    }}
-                    isFavorite={favorites.includes(course.id)}
-                    onToggleFavorite={toggleFavorite}
-                    isManagementMode={isAdmin && managementMode}
-                    onEdit={(course) => {
-                      setEditingCourse(course);
-                      setShowCourseForm(true);
-                    }}
-                    onDelete={handleDeleteCourse}
-                    onToggleVisibility={handleToggleVisibility}
-                  />
-                ))}
+                {filteredCourses.map((course) => {
+                  // Extrair affiliate_link do description se existir
+                  const affiliateLink = course.description?.includes('Link de afiliado:')
+                    ? course.description.replace('Link de afiliado: ', '').trim()
+                    : undefined;
+                  
+                  return (
+                    <CourseCard
+                      key={course.id}
+                      course={{
+                        ...course,
+                        image: course.image_url || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=250&fit=crop&crop=center',
+                        affiliate_link: affiliateLink
+                      }}
+                      isFavorite={favorites.includes(course.id)}
+                      onToggleFavorite={toggleFavorite}
+                      isManagementMode={isAdmin && managementMode}
+                      onEdit={(course) => {
+                        setEditingCourse(course);
+                        setShowCourseForm(true);
+                      }}
+                      onDelete={handleDeleteCourse}
+                      onToggleVisibility={handleToggleVisibility}
+                    />
+                  );
+                })}
               </div>
             )}
 

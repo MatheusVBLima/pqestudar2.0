@@ -35,6 +35,8 @@ const courseSchema = z.object({
   image_url: z.string().url('Deve ser uma URL válida de imagem').min(1, 'URL da imagem é obrigatória'),
   category: z.string().min(1, 'Categoria é obrigatória'),
   duration: z.string().min(1, 'Duração estimada é obrigatória'),
+  ideal_for: z.string().min(1, 'Campo "Ideal para" é obrigatório'),
+  has_certificate: z.string().min(1, 'Selecione se oferece certificado'),
   badges: z.array(z.string()).optional(),
 });
 
@@ -55,18 +57,27 @@ export const CourseForm = ({ course, onOpenChange, onSubmit }: CourseFormProps) 
       image_url: '',
       category: '',
       duration: '',
+      ideal_for: '',
+      has_certificate: '',
       badges: [],
     },
   });
 
   useEffect(() => {
     if (course) {
+      // Extrair link de afiliado do campo description se existir
+      const affiliateLink = course.description?.includes('Link de afiliado:') 
+        ? course.description.replace('Link de afiliado: ', '').trim()
+        : '';
+      
       form.reset({
         title: course.title,
-        affiliate_link: '',
+        affiliate_link: affiliateLink,
         image_url: course.image_url || '',
         category: course.category,
         duration: course.duration,
+        ideal_for: course.level || '',
+        has_certificate: 'Não',
         badges: course.badge ? [course.badge] : [],
       });
     } else {
@@ -76,6 +87,8 @@ export const CourseForm = ({ course, onOpenChange, onSubmit }: CourseFormProps) 
         image_url: '',
         category: '',
         duration: '',
+        ideal_for: '',
+        has_certificate: '',
         badges: [],
       });
     }
@@ -87,6 +100,7 @@ export const CourseForm = ({ course, onOpenChange, onSubmit }: CourseFormProps) 
       const transformedData = {
         title: data.title,
         description: `Link de afiliado: ${data.affiliate_link}`, // Armazena link no campo description
+        affiliate_link: data.affiliate_link, // Adicionar campo affiliate_link separado
         image_url: data.image_url,
         category: data.category,
         duration: data.duration,
@@ -94,7 +108,7 @@ export const CourseForm = ({ course, onOpenChange, onSubmit }: CourseFormProps) 
         // Valores padrão para campos obrigatórios
         price: 'Consultar',
         institution: 'Plataforma Parceira',
-        level: 'Iniciante' as const,
+        level: data.ideal_for,
       };
       onSubmit(transformedData);
       form.reset();
@@ -198,8 +212,44 @@ export const CourseForm = ({ course, onOpenChange, onSubmit }: CourseFormProps) 
                 <FormItem>
                   <FormLabel>Duração Estimada</FormLabel>
                   <FormControl>
-                    <Input placeholder="Ex: 40 horas ou 3 semanas" {...field} />
+                    <Input placeholder="Ex: 40 horas" {...field} />
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="ideal_for"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Ideal para</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Ex: Iniciantes em Programação ou Educadores e Gestores" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="has_certificate"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Certificado</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Oferece certificado?" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="Sim">Sim</SelectItem>
+                      <SelectItem value="Não">Não</SelectItem>
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
@@ -213,7 +263,7 @@ export const CourseForm = ({ course, onOpenChange, onSubmit }: CourseFormProps) 
                   <div className="mb-4">
                     <FormLabel>Selos (Opcional)</FormLabel>
                   </div>
-                  {['trending', 'popular', 'new'].map((badge) => (
+                  {['trending', 'popular', 'community'].map((badge) => (
                     <FormField
                       key={badge}
                       control={form.control}
@@ -241,7 +291,7 @@ export const CourseForm = ({ course, onOpenChange, onSubmit }: CourseFormProps) 
                             <FormLabel className="font-normal">
                               {badge === 'trending' && '🔥 Em Alta'}
                               {badge === 'popular' && '⭐ Mais Acessado'}
-                              {badge === 'new' && '✨ Novidade'}
+                              {badge === 'community' && '✨ Novidade'}
                             </FormLabel>
                           </FormItem>
                         )

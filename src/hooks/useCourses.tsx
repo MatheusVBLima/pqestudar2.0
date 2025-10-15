@@ -12,7 +12,7 @@ export interface Course {
   price: string;
   image_url?: string;
   institution: string;
-  level: 'Iniciante' | 'Intermediário' | 'Avançado';
+  level: string;
   is_active: boolean;
   badge?: 'trending' | 'popular' | 'community' | null;
   upvotes: number;
@@ -22,6 +22,7 @@ export interface Course {
   updated_at: string;
   created_by?: string;
   updated_by?: string;
+  affiliate_link?: string;
 }
 
 export interface CreateCourseData {
@@ -32,8 +33,9 @@ export interface CreateCourseData {
   price?: string;
   image_url?: string;
   institution?: string;
-  level?: 'Iniciante' | 'Intermediário' | 'Avançado';
+  level?: string;
   badge?: 'trending' | 'popular' | 'community' | null;
+  affiliate_link?: string;
 }
 
 export interface UpdateCourseData extends CreateCourseData {
@@ -81,6 +83,7 @@ export const useCourses = () => {
           institution: courseData.institution || 'Plataforma Parceira',
           level: courseData.level || 'Iniciante',
           badge: courseData.badge,
+          affiliate_link: courseData.affiliate_link,
           created_by: user.id
         }])
         .select()
