@@ -91,10 +91,12 @@ export default function ExploreCourses() {
   }, []);
 
   const filteredCourses = courses.filter(course => {
+    // No modo admin, mostra todos os cursos. Senão, apenas ativos
+    const matchesActive = isAdmin && managementMode ? true : course.is_active;
     const matchesCategory = selectedCategory === "all" || course.category === selectedCategory;
     const matchesSearch = course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          course.description.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesCategory && matchesSearch;
+    return matchesActive && matchesCategory && matchesSearch;
   }).sort((a, b) => {
     switch (sortBy) {
       case "duration":
@@ -293,21 +295,19 @@ export default function ExploreCourses() {
                         <span>{category.name}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
+                        <span
                           onClick={(e) => {
                             e.stopPropagation();
                             toggleNotification(category.id);
                           }}
-                          className="h-6 w-6 p-0"
+                          className="h-6 w-6 p-0 cursor-pointer hover:opacity-70 transition-opacity flex items-center justify-center"
                         >
                           {notifications[category.id] ? (
                             <Bell className="h-3 w-3 text-primary" />
                           ) : (
                             <BellOff className="h-3 w-3 text-muted-foreground" />
                           )}
-                        </Button>
+                        </span>
                         <Badge variant="secondary" className="text-xs">
                           {category.count}
                         </Badge>

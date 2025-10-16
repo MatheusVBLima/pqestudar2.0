@@ -54,7 +54,6 @@ export const useCourses = () => {
       const { data, error } = await supabase
         .from('courses')
         .select('*')
-        .eq('is_active', true)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -127,14 +126,22 @@ export const useCourses = () => {
 
   const deleteCourse = async (courseId: string) => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Usuário não autenticado');
+
       const { error } = await supabase
         .from('courses')
-        .update({ is_active: false })
+        .update({ 
+          is_active: false,
+          updated_by: user.id
+        })
         .eq('id', courseId);
 
       if (error) throw error;
       
-      setCourses(prev => prev.filter(course => course.id !== courseId));
+      setCourses(prev => prev.map(course => 
+        course.id === courseId ? { ...course, is_active: false } : course
+      ));
       return { error: null };
     } catch (err: any) {
       return { error: err.message };
