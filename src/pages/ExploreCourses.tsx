@@ -141,11 +141,11 @@ export default function ExploreCourses() {
       });
     } else {
       toast({
-        title: "Curso criado!",
-        description: "O curso foi adicionado à plataforma.",
+        title: "✅ Curso criado",
+        description: "O curso foi adicionado com sucesso.",
       });
       setShowCourseForm(false);
-      await refetch();
+      setEditingCourse(null);
     }
   };
 
@@ -160,12 +160,11 @@ export default function ExploreCourses() {
       });
     } else {
       toast({
-        title: "Curso atualizado!",
-        description: "As alterações foram salvas.",
+        title: "✅ Curso atualizado",
+        description: "As alterações foram salvas com sucesso.",
       });
       setShowCourseForm(false);
       setEditingCourse(null);
-      await refetch();
     }
   };
 
@@ -174,20 +173,19 @@ export default function ExploreCourses() {
     
     if (result.error) {
       toast({
-        title: "Erro ao remover curso",
+        title: "Erro ao excluir curso",
         description: result.error,
         variant: "destructive",
       });
     } else {
       toast({
-        title: "Curso removido!",
-        description: "O curso foi excluído da plataforma.",
+        title: "🗑️ Curso excluído",
+        description: "O curso foi excluído permanentemente.",
       });
-      await refetch();
     }
   };
 
-  const handleToggleVisibility = async (courseId: string) => {
+  const handleHideCourse = async (courseId: string) => {
     const result = await hideCourse(courseId);
     
     if (result.error) {
@@ -198,10 +196,9 @@ export default function ExploreCourses() {
       });
     } else {
       toast({
-        title: "Curso ocultado!",
-        description: "O curso foi removido da visualização.",
+        title: "👁️ Curso ocultado",
+        description: "O curso foi ocultado da listagem pública.",
       });
-      await refetch();
     }
   };
 
@@ -417,7 +414,7 @@ export default function ExploreCourses() {
                         setShowCourseForm(true);
                       }}
                       onDelete={handleDeleteCourse}
-                      onToggleVisibility={handleToggleVisibility}
+                      onHide={handleHideCourse}
                     />
                   );
                 })}

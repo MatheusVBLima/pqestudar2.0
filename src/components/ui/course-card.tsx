@@ -41,7 +41,7 @@ interface CourseCardProps {
   isManagementMode?: boolean;
   onEdit?: (course: Course) => void;
   onDelete?: (courseId: string) => void;
-  onToggleVisibility?: (courseId: string) => void;
+  onHide?: (courseId: string) => void;
 }
 
 export function CourseCard({ 
@@ -51,7 +51,7 @@ export function CourseCard({
   isManagementMode = false,
   onEdit,
   onDelete,
-  onToggleVisibility
+  onHide
 }: CourseCardProps) {
   const navigate = useNavigate();
   const { userVote, upvotes, downvotes, vote, loading } = useVoting(course.id);
@@ -80,24 +80,24 @@ export function CourseCard({
               size="sm"
               onClick={(e) => {
                 e.stopPropagation();
-                setShowDeleteDialog(true);
+                onHide?.(course.id);
               }}
-              className="h-8 w-8 p-0 hover:bg-red-100 hover:text-red-700 dark:hover:bg-red-900 dark:hover:text-red-300"
-              title="Remover curso"
+              className="h-8 w-8 p-0 hover:bg-amber-100 hover:text-amber-700 dark:hover:bg-amber-900 dark:hover:text-amber-300"
+              title="Ocultar curso"
             >
-              <Trash2 className="h-4 w-4" />
+              <EyeOff className="h-4 w-4" />
             </Button>
             <Button
               variant="ghost"
               size="sm"
               onClick={(e) => {
                 e.stopPropagation();
-                onToggleVisibility?.(course.id);
+                setShowDeleteDialog(true);
               }}
-              className="h-8 w-8 p-0 hover:bg-amber-100 hover:text-amber-700 dark:hover:bg-amber-900 dark:hover:text-amber-300"
-              title={course.is_active ? "Ocultar curso" : "Mostrar curso"}
+              className="h-8 w-8 p-0 hover:bg-red-100 hover:text-red-700 dark:hover:bg-red-900 dark:hover:text-red-300"
+              title="Excluir permanentemente"
             >
-              {course.is_active ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+              <Trash2 className="h-4 w-4" />
             </Button>
           </div>
         )}
