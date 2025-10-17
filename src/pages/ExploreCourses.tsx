@@ -41,7 +41,7 @@ export default function ExploreCourses() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { isAdmin } = useUserRoles();
-  const { courses, loading, createCourse, updateCourse, deleteCourse, refetch } = useCourses();
+  const { courses, loading, createCourse, updateCourse, deleteCourse, hideCourse, refetch } = useCourses();
   const { toast } = useToast();
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
@@ -131,120 +131,77 @@ export default function ExploreCourses() {
   };
 
   const handleCreateCourse = async (courseData: any) => {
-    try {
-      console.log('Criando curso com dados:', courseData);
-      const result = await createCourse(courseData);
-      console.log('Resultado da criação:', result);
-      
-      if (result.error) {
-        toast({
-          title: "Erro ao criar curso",
-          description: result.error,
-          variant: "destructive",
-        });
-        return;
-      }
-      
+    const result = await createCourse(courseData);
+    
+    if (result.error) {
       toast({
-        title: "Curso criado com sucesso!",
+        title: "Erro ao criar curso",
+        description: result.error,
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Curso criado!",
         description: "O curso foi adicionado à plataforma.",
       });
       setShowCourseForm(false);
       await refetch();
-    } catch (error: any) {
-      console.error('Erro ao criar curso:', error);
-      toast({
-        title: "Erro ao criar curso",
-        description: error?.message || "Tente novamente mais tarde.",
-        variant: "destructive",
-      });
     }
   };
 
   const handleUpdateCourse = async (courseData: any) => {
-    try {
-      console.log('Atualizando curso:', editingCourse?.id, 'com dados:', courseData);
-      const result = await updateCourse({ ...courseData, id: editingCourse.id });
-      console.log('Resultado da atualização:', result);
-      
-      if (result.error) {
-        toast({
-          title: "Erro ao atualizar curso",
-          description: result.error,
-          variant: "destructive",
-        });
-        return;
-      }
-      
+    const result = await updateCourse({ ...courseData, id: editingCourse.id });
+    
+    if (result.error) {
       toast({
-        title: "Curso atualizado com sucesso!",
+        title: "Erro ao atualizar curso",
+        description: result.error,
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Curso atualizado!",
         description: "As alterações foram salvas.",
       });
       setShowCourseForm(false);
       setEditingCourse(null);
       await refetch();
-    } catch (error: any) {
-      console.error('Erro ao atualizar curso:', error);
-      toast({
-        title: "Erro ao atualizar curso",
-        description: error?.message || "Tente novamente mais tarde.",
-        variant: "destructive",
-      });
     }
   };
 
   const handleDeleteCourse = async (courseId: string) => {
-    try {
-      console.log('Deletando curso:', courseId);
-      const result = await deleteCourse(courseId);
-      console.log('Resultado da exclusão:', result);
-      
-      if (result.error) {
-        toast({
-          title: "Erro ao remover curso",
-          description: result.error,
-          variant: "destructive",
-        });
-        return;
-      }
-      
+    const result = await deleteCourse(courseId);
+    
+    if (result.error) {
       toast({
-        title: "Curso removido com sucesso!",
+        title: "Erro ao remover curso",
+        description: result.error,
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Curso removido!",
         description: "O curso foi excluído da plataforma.",
       });
       await refetch();
-    } catch (error: any) {
-      console.error('Erro ao remover curso:', error);
-      toast({
-        title: "Erro ao remover curso",
-        description: error?.message || "Tente novamente mais tarde.",
-        variant: "destructive",
-      });
     }
   };
 
   const handleToggleVisibility = async (courseId: string) => {
-    const course = courses.find(c => c.id === courseId);
-    if (!course) return;
-
-    try {
-      await updateCourse({ 
-        id: courseId, 
-        is_active: !course.is_active 
-      });
+    const result = await hideCourse(courseId);
+    
+    if (result.error) {
       toast({
-        title: course.is_active ? "Curso ocultado" : "Curso visível",
-        description: course.is_active 
-          ? "O curso não está mais visível para usuários." 
-          : "O curso está visível para usuários.",
-      });
-      refetch();
-    } catch (error) {
-      toast({
-        title: "Erro ao alterar visibilidade",
-        description: "Tente novamente mais tarde.",
+        title: "Erro ao ocultar curso",
+        description: result.error,
         variant: "destructive",
       });
+    } else {
+      toast({
+        title: "Curso ocultado!",
+        description: "O curso foi removido da visualização.",
+      });
+      await refetch();
     }
   };
 

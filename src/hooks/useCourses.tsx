@@ -14,6 +14,7 @@ export interface Course {
   institution: string;
   level: string;
   is_active: boolean;
+  is_hidden: boolean;
   badge?: 'trending' | 'popular' | 'community' | null;
   upvotes: number;
   downvotes: number;
@@ -54,6 +55,7 @@ export const useCourses = () => {
       const { data, error } = await supabase
         .from('courses')
         .select('*')
+        .eq('is_hidden', false)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -131,17 +133,34 @@ export const useCourses = () => {
 
       const { error } = await supabase
         .from('courses')
+        .delete()
+        .eq('id', courseId);
+
+      if (error) throw error;
+      
+      setCourses(prev => prev.filter(course => course.id !== courseId));
+      return { error: null };
+    } catch (err: any) {
+      return { error: err.message };
+    }
+  };
+
+  const hideCourse = async (courseId: string) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Usuário não autenticado');
+
+      const { error } = await supabase
+        .from('courses')
         .update({ 
-          is_active: false,
+          is_hidden: true,
           updated_by: user.id
         })
         .eq('id', courseId);
 
       if (error) throw error;
       
-      setCourses(prev => prev.map(course => 
-        course.id === courseId ? { ...course, is_active: false } : course
-      ));
+      setCourses(prev => prev.filter(course => course.id !== courseId));
       return { error: null };
     } catch (err: any) {
       return { error: err.message };
@@ -159,6 +178,7 @@ export const useCourses = () => {
     createCourse,
     updateCourse,
     deleteCourse,
+    hideCourse,
     refetch: fetchCourses
   };
 };

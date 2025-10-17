@@ -96,6 +96,7 @@ export type Database = {
       }
       courses: {
         Row: {
+          affiliate_link: string | null
           badge: Database["public"]["Enums"]["course_badge"] | null
           category: string
           created_at: string
@@ -107,6 +108,7 @@ export type Database = {
           image_url: string | null
           institution: string
           is_active: boolean
+          is_hidden: boolean
           level: string
           price: string
           rating: number
@@ -118,6 +120,7 @@ export type Database = {
           vote_score: number | null
         }
         Insert: {
+          affiliate_link?: string | null
           badge?: Database["public"]["Enums"]["course_badge"] | null
           category: string
           created_at?: string
@@ -129,6 +132,7 @@ export type Database = {
           image_url?: string | null
           institution: string
           is_active?: boolean
+          is_hidden?: boolean
           level: string
           price: string
           rating?: number
@@ -140,6 +144,7 @@ export type Database = {
           vote_score?: number | null
         }
         Update: {
+          affiliate_link?: string | null
           badge?: Database["public"]["Enums"]["course_badge"] | null
           category?: string
           created_at?: string
@@ -151,6 +156,7 @@ export type Database = {
           image_url?: string | null
           institution?: string
           is_active?: boolean
+          is_hidden?: boolean
           level?: string
           price?: string
           rating?: number
