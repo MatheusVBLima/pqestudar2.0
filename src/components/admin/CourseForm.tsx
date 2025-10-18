@@ -29,11 +29,12 @@ import {
 import { Checkbox } from '@/components/ui/checkbox';
 import { Course } from '@/hooks/useCourses';
 
-// Mapeamento de níveis: rótulo PT-BR -> valor do banco
+// IMPORTANTE: O banco aceita valores PT-BR diretamente!
+// A constraint é: level IN ('Iniciante', 'Intermediário', 'Avançado')
 const LEVEL_OPTIONS = {
-  'Iniciante': 'beginner',
-  'Intermediário': 'intermediate',
-  'Avançado': 'advanced',
+  'Iniciante': 'Iniciante',
+  'Intermediário': 'Intermediário',
+  'Avançado': 'Avançado',
 } as const;
 
 const courseSchema = z.object({
@@ -77,10 +78,8 @@ export const CourseForm = ({ course, onOpenChange, onSubmit }: CourseFormProps) 
         ? course.description.replace('Link de afiliado: ', '').trim()
         : '';
       
-      // Converter valor do banco (EN) para rótulo (PT-BR)
-      const levelLabel = Object.entries(LEVEL_OPTIONS).find(
-        ([_, value]) => value === course.level
-      )?.[0] || 'Iniciante';
+      // O banco já armazena em PT-BR, então usamos diretamente
+      const levelLabel = course.level || 'Iniciante';
       
       form.reset({
         title: course.title,
@@ -108,8 +107,17 @@ export const CourseForm = ({ course, onOpenChange, onSubmit }: CourseFormProps) 
 
   const handleSubmit = (data: CourseFormData) => {
     try {
-      // Converter rótulo PT-BR para valor do banco (EN)
-      const levelValue = LEVEL_OPTIONS[data.level as keyof typeof LEVEL_OPTIONS] || 'beginner';
+      // O banco aceita valores PT-BR diretamente
+      const levelValue = LEVEL_OPTIONS[data.level as keyof typeof LEVEL_OPTIONS] || 'Iniciante';
+      
+      // Validação: garantir que o valor está no conjunto permitido pelo banco
+      const allowedLevels = ['Iniciante', 'Intermediário', 'Avançado'];
+      if (!allowedLevels.includes(levelValue)) {
+        console.error('Nível inválido:', levelValue);
+        throw new Error('Nível selecionado não é válido');
+      }
+      
+      console.log('🔍 Payload level:', levelValue);
       
       // Mapear dados do formulário para campos existentes na tabela
       const transformedData = {
@@ -125,6 +133,9 @@ export const CourseForm = ({ course, onOpenChange, onSubmit }: CourseFormProps) 
         institution: 'Plataforma Parceira',
         level: levelValue,
       };
+      
+      console.log('📤 Dados enviados:', transformedData);
+      
       onSubmit(transformedData);
       form.reset();
     } catch (error) {
