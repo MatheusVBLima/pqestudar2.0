@@ -28,6 +28,16 @@ export const useUserRoles = () => {
 
     try {
       setLoading(true);
+      
+      // Usar RPC is_admin() em vez de ler a tabela diretamente
+      const { data: adminCheck, error: adminError } = await supabase
+        .rpc('is_admin');
+
+      if (adminError) throw adminError;
+      
+      setIsAdmin(adminCheck || false);
+
+      // Buscar apenas as próprias roles (RLS permite isso)
       const { data, error } = await supabase
         .from('user_roles')
         .select('*')
@@ -36,7 +46,6 @@ export const useUserRoles = () => {
       if (error) throw error;
 
       setUserRoles(data || []);
-      setIsAdmin(data?.some(role => role.role === 'admin') || false);
     } catch (error) {
       console.error('Erro ao buscar roles:', error);
       setUserRoles([]);
