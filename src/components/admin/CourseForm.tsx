@@ -29,13 +29,20 @@ import {
 import { Checkbox } from '@/components/ui/checkbox';
 import { Course } from '@/hooks/useCourses';
 
+// Mapeamento de níveis: rótulo PT-BR -> valor do banco
+const LEVEL_OPTIONS = {
+  'Iniciante': 'beginner',
+  'Intermediário': 'intermediate',
+  'Avançado': 'advanced',
+} as const;
+
 const courseSchema = z.object({
   title: z.string().min(1, 'Título é obrigatório'),
   affiliate_link: z.string().url('Deve ser uma URL válida').min(1, 'Link de afiliado é obrigatório'),
   image_url: z.string().url('Deve ser uma URL válida de imagem').min(1, 'URL da imagem é obrigatória'),
   category: z.string().min(1, 'Categoria é obrigatória'),
   duration: z.string().min(1, 'Duração estimada é obrigatória'),
-  ideal_for: z.string().min(1, 'Campo "Ideal para" é obrigatório'),
+  level: z.string().min(1, 'Nível é obrigatório'),
   has_certificate: z.string().min(1, 'Selecione se oferece certificado'),
   badges: z.array(z.string()).optional(),
 });
@@ -57,7 +64,7 @@ export const CourseForm = ({ course, onOpenChange, onSubmit }: CourseFormProps) 
       image_url: '',
       category: '',
       duration: '',
-      ideal_for: '',
+      level: 'Iniciante',
       has_certificate: '',
       badges: [],
     },
@@ -70,13 +77,18 @@ export const CourseForm = ({ course, onOpenChange, onSubmit }: CourseFormProps) 
         ? course.description.replace('Link de afiliado: ', '').trim()
         : '';
       
+      // Converter valor do banco (EN) para rótulo (PT-BR)
+      const levelLabel = Object.entries(LEVEL_OPTIONS).find(
+        ([_, value]) => value === course.level
+      )?.[0] || 'Iniciante';
+      
       form.reset({
         title: course.title,
         affiliate_link: affiliateLink,
         image_url: course.image_url || '',
         category: course.category,
         duration: course.duration,
-        ideal_for: course.level || '',
+        level: levelLabel,
         has_certificate: 'Não',
         badges: course.badge ? [course.badge] : [],
       });
@@ -87,7 +99,7 @@ export const CourseForm = ({ course, onOpenChange, onSubmit }: CourseFormProps) 
         image_url: '',
         category: '',
         duration: '',
-        ideal_for: '',
+        level: 'Iniciante',
         has_certificate: '',
         badges: [],
       });
@@ -96,6 +108,9 @@ export const CourseForm = ({ course, onOpenChange, onSubmit }: CourseFormProps) 
 
   const handleSubmit = (data: CourseFormData) => {
     try {
+      // Converter rótulo PT-BR para valor do banco (EN)
+      const levelValue = LEVEL_OPTIONS[data.level as keyof typeof LEVEL_OPTIONS] || 'beginner';
+      
       // Mapear dados do formulário para campos existentes na tabela
       const transformedData = {
         title: data.title,
@@ -108,7 +123,7 @@ export const CourseForm = ({ course, onOpenChange, onSubmit }: CourseFormProps) 
         // Valores padrão para campos obrigatórios
         price: 'Consultar',
         institution: 'Plataforma Parceira',
-        level: data.ideal_for,
+        level: levelValue,
       };
       onSubmit(transformedData);
       form.reset();
@@ -220,13 +235,22 @@ export const CourseForm = ({ course, onOpenChange, onSubmit }: CourseFormProps) 
 
           <FormField
             control={form.control}
-            name="ideal_for"
+            name="level"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Ideal para</FormLabel>
-                <FormControl>
-                  <Input placeholder="Ex: Iniciantes em Programação ou Educadores e Gestores" {...field} />
-                </FormControl>
+                <FormLabel>Nível</FormLabel>
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o nível" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="Iniciante">Iniciante</SelectItem>
+                    <SelectItem value="Intermediário">Intermediário</SelectItem>
+                    <SelectItem value="Avançado">Avançado</SelectItem>
+                  </SelectContent>
+                </Select>
                 <FormMessage />
               </FormItem>
             )}
