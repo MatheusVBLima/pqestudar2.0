@@ -56,9 +56,40 @@ if (isAdmin) {
 - Acesso apenas via edge functions autenticadas
 - Sem SELECT público
 
-### Courses
-- `created_by` e `updated_by` visíveis apenas para admins
-- Dados públicos limitados aos necessários para exibição
+### Courses - VIEW Pública Segura
+
+A tabela `courses` contém informações sensíveis como `created_by` e `updated_by` que identificam quem criou ou modificou cada curso.
+
+#### Proteção Implementada
+
+1. **VIEW `public.active_courses`**:
+   - Expõe apenas campos seguros (sem `created_by` nem `updated_by`)
+   - Filtra automaticamente: `WHERE is_active = true AND is_hidden = false`
+   - Inclui campos calculados: `likes`, `dislikes`, `calculated_rating`
+   - Acesso READ-ONLY para `anon` e `authenticated`
+
+2. **Tabela `courses` original**:
+   - Mantém RLS restritivo
+   - Admins têm acesso total via `is_admin()`
+   - Público não tem acesso direto à tabela
+
+#### Acesso Seguro no App
+
+**❌ NUNCA faça**:
+```typescript
+// Isso expõe created_by e updated_by!
+const { data } = await supabase
+  .from('courses')
+  .select('*');
+```
+
+**✅ SEMPRE use a VIEW**:
+```typescript
+// Acesso seguro via VIEW sem dados sensíveis
+const { data } = await supabase
+  .from('active_courses')
+  .select('*');
+```
 
 ## Boas Práticas
 

@@ -19,11 +19,14 @@ export interface Course {
   upvotes: number;
   downvotes: number;
   vote_score: number;
+  views: number;
   created_at: string;
   updated_at: string;
-  created_by?: string;
-  updated_by?: string;
   affiliate_link?: string;
+  // Calculated fields from view
+  likes?: number;
+  dislikes?: number;
+  calculated_rating?: number;
 }
 
 export interface CreateCourseData {
@@ -52,10 +55,10 @@ export const useCourses = () => {
   const fetchCourses = async () => {
     try {
       setLoading(true);
+      // Use secure public view that doesn't expose created_by/updated_by
       const { data, error } = await supabase
-        .from('courses')
+        .from('active_courses')
         .select('*')
-        .eq('is_hidden', false)
         .order('created_at', { ascending: false });
 
       if (error) throw error;

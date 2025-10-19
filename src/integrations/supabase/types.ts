@@ -89,6 +89,13 @@ export type Database = {
             foreignKeyName: "course_votes_course_id_fkey"
             columns: ["course_id"]
             isOneToOne: false
+            referencedRelation: "active_courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "course_votes_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
             referencedRelation: "courses"
             referencedColumns: ["id"]
           },
@@ -117,6 +124,7 @@ export type Database = {
           updated_at: string
           updated_by: string | null
           upvotes: number | null
+          views: number
           vote_score: number | null
         }
         Insert: {
@@ -141,6 +149,7 @@ export type Database = {
           updated_at?: string
           updated_by?: string | null
           upvotes?: number | null
+          views?: number
           vote_score?: number | null
         }
         Update: {
@@ -165,6 +174,7 @@ export type Database = {
           updated_at?: string
           updated_by?: string | null
           upvotes?: number | null
+          views?: number
           vote_score?: number | null
         }
         Relationships: []
@@ -228,7 +238,87 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      active_courses: {
+        Row: {
+          affiliate_link: string | null
+          badge: Database["public"]["Enums"]["course_badge"] | null
+          calculated_rating: number | null
+          category: string | null
+          created_at: string | null
+          description: string | null
+          dislikes: number | null
+          downvotes: number | null
+          duration: string | null
+          id: string | null
+          image_url: string | null
+          institution: string | null
+          is_active: boolean | null
+          is_hidden: boolean | null
+          level: string | null
+          likes: number | null
+          price: string | null
+          rating: number | null
+          students: number | null
+          title: string | null
+          updated_at: string | null
+          upvotes: number | null
+          views: number | null
+          vote_score: number | null
+        }
+        Insert: {
+          affiliate_link?: string | null
+          badge?: Database["public"]["Enums"]["course_badge"] | null
+          calculated_rating?: never
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          dislikes?: never
+          downvotes?: number | null
+          duration?: string | null
+          id?: string | null
+          image_url?: string | null
+          institution?: string | null
+          is_active?: boolean | null
+          is_hidden?: boolean | null
+          level?: string | null
+          likes?: never
+          price?: string | null
+          rating?: number | null
+          students?: number | null
+          title?: string | null
+          updated_at?: string | null
+          upvotes?: number | null
+          views?: number | null
+          vote_score?: number | null
+        }
+        Update: {
+          affiliate_link?: string | null
+          badge?: Database["public"]["Enums"]["course_badge"] | null
+          calculated_rating?: never
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          dislikes?: never
+          downvotes?: number | null
+          duration?: string | null
+          id?: string | null
+          image_url?: string | null
+          institution?: string | null
+          is_active?: boolean | null
+          is_hidden?: boolean | null
+          level?: string | null
+          likes?: never
+          price?: string | null
+          rating?: number | null
+          students?: number | null
+          title?: string | null
+          updated_at?: string | null
+          upvotes?: number | null
+          views?: number | null
+          vote_score?: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       cleanup_old_rate_limit_entries: {

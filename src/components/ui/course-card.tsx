@@ -36,6 +36,7 @@ interface Course {
   views?: number;
   upvotes?: number;
   downvotes?: number;
+  calculated_rating?: number;
 }
 
 interface CourseCardProps {
@@ -61,14 +62,13 @@ export function CourseCard({
   const { userVote, upvotes, downvotes, vote, loading } = useVoting(course.id);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
-  // Calcular nota média baseada em votos (0 a 5)
+  // Usar calculated_rating da VIEW ou calcular se não disponível
   const totalVotes = upvotes + downvotes;
-  const calculateRating = () => {
+  const averageRating = course.calculated_rating ?? (() => {
     if (totalVotes === 0) return null;
     const score = ((upvotes - downvotes) / totalVotes) * 5;
     return Math.max(0, Math.min(5, Number(score.toFixed(1))));
-  };
-  const averageRating = calculateRating();
+  })();
 
   // Formatar views
   const formatViews = (views?: number) => {
