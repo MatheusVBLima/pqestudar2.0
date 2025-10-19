@@ -24,8 +24,8 @@ export interface Course {
   updated_at: string;
   affiliate_link?: string;
   // Calculated fields from view
-  likes?: number;
-  dislikes?: number;
+  likes: number;
+  dislikes: number;
   calculated_rating?: number;
 }
 
@@ -95,7 +95,15 @@ export const useCourses = () => {
 
       if (error) throw error;
       
-      setCourses(prev => [data as Course, ...prev]);
+      // Add default values for calculated fields
+      const courseWithDefaults = {
+        ...data,
+        likes: data.upvotes || 0,
+        dislikes: data.downvotes || 0,
+        views: data.views || 0
+      } as Course;
+      
+      setCourses(prev => [courseWithDefaults, ...prev]);
       return { data, error: null };
     } catch (err: any) {
       return { data: null, error: err.message };
@@ -120,8 +128,16 @@ export const useCourses = () => {
 
       if (error) throw error;
       
+      // Add default values for calculated fields
+      const courseWithDefaults = {
+        ...data,
+        likes: data.upvotes || 0,
+        dislikes: data.downvotes || 0,
+        views: data.views || 0
+      } as Course;
+      
       setCourses(prev => prev.map(course => 
-        course.id === courseData.id ? data as Course : course
+        course.id === courseData.id ? courseWithDefaults : course
       ));
       return { data, error: null };
     } catch (err: any) {

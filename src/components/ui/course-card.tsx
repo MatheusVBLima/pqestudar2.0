@@ -33,9 +33,9 @@ interface Course {
   badge?: 'trending' | 'popular' | 'community' | null;
   is_active?: boolean;
   affiliate_link?: string;
-  views?: number;
-  upvotes?: number;
-  downvotes?: number;
+  views: number;
+  likes: number;
+  dislikes: number;
   calculated_rating?: number;
 }
 
@@ -62,23 +62,18 @@ export function CourseCard({
   const { userVote, upvotes, downvotes, vote, loading } = useVoting(course.id);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
-  // Usar calculated_rating da VIEW ou calcular se não disponível
-  const totalVotes = upvotes + downvotes;
-  const averageRating = course.calculated_rating ?? (() => {
-    if (totalVotes === 0) return null;
-    const score = ((upvotes - downvotes) / totalVotes) * 5;
-    return Math.max(0, Math.min(5, Number(score.toFixed(1))));
-  })();
+  // Usar calculated_rating pré-calculado da VIEW
+  const averageRating = course.calculated_rating ?? null;
+  const totalVotes = course.likes + course.dislikes;
 
   // Formatar views
-  const formatViews = (views?: number) => {
-    if (!views && views !== 0) return null;
+  const formatViews = (views: number) => {
     if (views >= 1000) {
       return `${(views / 1000).toFixed(1)}k`;
     }
     return views.toString();
   };
-  const formattedViews = formatViews(course.views);
+  const formattedViews = course.views > 0 ? formatViews(course.views) : null;
 
   return (
     <>

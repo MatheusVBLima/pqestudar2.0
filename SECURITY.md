@@ -65,13 +65,18 @@ A tabela `courses` contém informações sensíveis como `created_by` e `updated
 1. **VIEW `public.active_courses`**:
    - Expõe apenas campos seguros (sem `created_by` nem `updated_by`)
    - Filtra automaticamente: `WHERE is_active = true AND is_hidden = false`
-   - Inclui campos calculados: `likes`, `dislikes`, `calculated_rating`
+   - Inclui campos calculados pré-processados:
+     - `likes`: COALESCE(upvotes, 0)
+     - `dislikes`: COALESCE(downvotes, 0)
+     - `calculated_rating`: Nota de 0 a 5 baseada em (likes - dislikes) / total_votos
    - Acesso READ-ONLY para `anon` e `authenticated`
+   - GRANT SELECT explícito para anon e authenticated
 
 2. **Tabela `courses` original**:
    - Mantém RLS restritivo
    - Admins têm acesso total via `is_admin()`
    - Público não tem acesso direto à tabela
+   - Operações de INSERT/UPDATE/DELETE restritas a admins
 
 #### Acesso Seguro no App
 
@@ -89,6 +94,9 @@ const { data } = await supabase
 const { data } = await supabase
   .from('active_courses')
   .select('*');
+
+// A VIEW já retorna likes, dislikes e calculated_rating
+// Não é necessário calcular no frontend
 ```
 
 ## Boas Práticas

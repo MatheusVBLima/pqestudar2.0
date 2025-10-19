@@ -17,7 +17,10 @@ const courses = [
     price: "R$ 199,90",
     image: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=250&fit=crop&crop=center",
     institution: "João Silva",
-    level: "Iniciante"
+    level: "Iniciante",
+    views: 0,
+    likes: 0,
+    dislikes: 0
   },
   {
     id: "2",
@@ -30,7 +33,10 @@ const courses = [
     price: "R$ 299,90",
     image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&h=250&fit=crop&crop=center",
     institution: "Maria Santos",
-    level: "Intermediário"
+    level: "Intermediário",
+    views: 0,
+    likes: 0,
+    dislikes: 0
   },
   {
     id: "3",
@@ -43,7 +49,10 @@ const courses = [
     price: "R$ 179,90",
     image: "https://images.unsplash.com/photo-1561070791-2526d30994b5?w=400&h=250&fit=crop&crop=center",
     institution: "Pedro Costa",
-    level: "Iniciante"
+    level: "Iniciante",
+    views: 0,
+    likes: 0,
+    dislikes: 0
   },
   {
     id: "5",
@@ -56,7 +65,10 @@ const courses = [
     price: "R$ 349,90",
     image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400&h=250&fit=crop&crop=center",
     institution: "Carlos Oliveira",
-    level: "Avançado"
+    level: "Avançado",
+    views: 0,
+    likes: 0,
+    dislikes: 0
   }
 ];
 
