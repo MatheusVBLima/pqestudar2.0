@@ -2,7 +2,8 @@ import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Clock, Users, Star, Heart, ThumbsUp, ThumbsDown, Pencil, Trash2, Eye, EyeOff } from "lucide-react";
+import { Clock, Eye as EyeIcon, Star, Heart, ThumbsUp, ThumbsDown, Pencil, Trash2, EyeOff } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { TrendingBadge } from "./trending-badge";
 import { useVoting } from "@/hooks/useVoting";
 import {
@@ -32,6 +33,9 @@ interface Course {
   badge?: 'trending' | 'popular' | 'community' | null;
   is_active?: boolean;
   affiliate_link?: string;
+  views?: number;
+  upvotes?: number;
+  downvotes?: number;
 }
 
 interface CourseCardProps {
@@ -56,6 +60,25 @@ export function CourseCard({
   const navigate = useNavigate();
   const { userVote, upvotes, downvotes, vote, loading } = useVoting(course.id);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+
+  // Calcular nota média baseada em votos (0 a 5)
+  const totalVotes = upvotes + downvotes;
+  const calculateRating = () => {
+    if (totalVotes === 0) return null;
+    const score = ((upvotes - downvotes) / totalVotes) * 5;
+    return Math.max(0, Math.min(5, Number(score.toFixed(1))));
+  };
+  const averageRating = calculateRating();
+
+  // Formatar views
+  const formatViews = (views?: number) => {
+    if (!views && views !== 0) return null;
+    if (views >= 1000) {
+      return `${(views / 1000).toFixed(1)}k`;
+    }
+    return views.toString();
+  };
+  const formattedViews = formatViews(course.views);
 
   return (
     <>
@@ -143,20 +166,55 @@ export function CourseCard({
       </CardHeader>
       
       <CardContent className="space-y-4">
-        <div className="flex items-center justify-between text-sm text-muted-foreground">
-          <div className="flex items-center gap-1">
-            <Clock className="h-4 w-4" />
-            {course.duration}
+        <TooltipProvider>
+          <div className="flex items-center justify-between text-sm text-muted-foreground">
+            <div className="flex items-center gap-1">
+              <Clock className="h-4 w-4" />
+              {course.duration}
+            </div>
+            
+            {/* Views */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="flex items-center gap-1">
+                  <EyeIcon className="h-4 w-4" />
+                  <span className={formattedViews === null ? "text-muted-foreground/50" : ""}>
+                    {formattedViews ?? "—"}
+                  </span>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{formattedViews === null ? "Sem dados" : `${course.views} visualizações`}</p>
+              </TooltipContent>
+            </Tooltip>
+
+            {/* Rating baseado em votos */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div 
+                  className="flex items-center gap-1"
+                  aria-label={averageRating !== null ? `Nota média ${averageRating} de 5` : "Sem avaliações"}
+                >
+                  <Star 
+                    className={`h-4 w-4 transition-all duration-300 ${
+                      averageRating !== null && averageRating > 3
+                        ? 'fill-yellow-400 text-yellow-400 drop-shadow-[0_0_4px_rgba(250,204,21,0.5)]'
+                        : averageRating !== null
+                        ? 'fill-yellow-400 text-yellow-400'
+                        : 'text-muted-foreground/50'
+                    }`}
+                  />
+                  <span className={averageRating === null ? "text-muted-foreground/50" : "font-medium"}>
+                    {averageRating ?? "—"}
+                  </span>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{averageRating !== null ? `Nota ${averageRating} de 5 (baseada em ${totalVotes} votos)` : "Sem avaliações"}</p>
+              </TooltipContent>
+            </Tooltip>
           </div>
-          <div className="flex items-center gap-1">
-            <Users className="h-4 w-4" />
-            {course.students}
-          </div>
-          <div className="flex items-center gap-1">
-            <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-            {course.rating}
-          </div>
-        </div>
+        </TooltipProvider>
 
         <div className="flex items-center gap-2 pt-2 border-t">
           <Button
@@ -167,12 +225,15 @@ export function CourseCard({
               vote('up');
             }}
             disabled={loading}
-            className={`flex items-center gap-1 h-8 px-2 ${
-              userVote === 'up' ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300' : ''
+            aria-label="Curtir curso"
+            className={`flex items-center gap-1.5 h-9 px-3 transition-all duration-200 hover:scale-105 ${
+              userVote === 'up' 
+                ? 'bg-primary/10 text-primary border border-primary/20' 
+                : 'hover:bg-primary/5'
             }`}
           >
-            <ThumbsUp className="h-3.5 w-3.5" />
-            <span className="text-xs font-medium">{upvotes}</span>
+            <ThumbsUp className={`h-4 w-4 transition-transform ${userVote === 'up' ? 'scale-110' : ''}`} />
+            <span className="text-sm font-medium">{upvotes}</span>
           </Button>
           <Button
             variant="ghost"
@@ -182,28 +243,29 @@ export function CourseCard({
               vote('down');
             }}
             disabled={loading}
-            className={`flex items-center gap-1 h-8 px-2 ${
-              userVote === 'down' ? 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300' : ''
+            aria-label="Não curtir curso"
+            className={`flex items-center gap-1.5 h-9 px-3 transition-all duration-200 hover:scale-105 ${
+              userVote === 'down' 
+                ? 'bg-destructive/10 text-destructive border border-destructive/20' 
+                : 'hover:bg-destructive/5'
             }`}
           >
-            <ThumbsDown className="h-3.5 w-3.5" />
-            <span className="text-xs font-medium">{downvotes}</span>
+            <ThumbsDown className={`h-4 w-4 transition-transform ${userVote === 'down' ? 'scale-110' : ''}`} />
+            <span className="text-sm font-medium">{downvotes}</span>
           </Button>
         </div>
         
-        <div className="flex items-center justify-between">
-          <div>
-            {course.price === "0" || course.price === "R$ 0" || course.price === "R$ 0,00" ? (
-              <Badge className="bg-green-600 text-white hover:bg-green-700 text-lg px-3 py-1">
-                GRATUITO
-              </Badge>
-            ) : (
-              <p className="text-2xl font-bold text-primary">{course.price}</p>
-            )}
-            <p className="text-sm text-muted-foreground mt-1">por {course.institution}</p>
+        <div className="flex items-end justify-between gap-3">
+          <div className="flex flex-col justify-end min-h-[60px]">
+            <div className="text-xl font-bold text-primary leading-tight">
+              Consultar
+            </div>
+            <p className="text-sm text-muted-foreground leading-tight">
+              por {course.institution}
+            </p>
           </div>
           <Button 
-            className="hover-scale"
+            className="hover-scale shrink-0"
             onClick={() => {
               if (course.affiliate_link) {
                 window.open(course.affiliate_link, '_blank');
