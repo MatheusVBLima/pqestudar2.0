@@ -179,6 +179,144 @@ export type Database = {
         }
         Relationships: []
       }
+      news: {
+        Row: {
+          author: string | null
+          category: string
+          created_at: string
+          created_by: string | null
+          embedding: string | null
+          id: string
+          image_url: string | null
+          lang: string | null
+          published_at: string
+          source: string
+          source_url: string
+          summary: string
+          title: string
+          title_hash: string
+          topic: string | null
+          updated_at: string
+        }
+        Insert: {
+          author?: string | null
+          category: string
+          created_at?: string
+          created_by?: string | null
+          embedding?: string | null
+          id?: string
+          image_url?: string | null
+          lang?: string | null
+          published_at: string
+          source: string
+          source_url: string
+          summary: string
+          title: string
+          title_hash: string
+          topic?: string | null
+          updated_at?: string
+        }
+        Update: {
+          author?: string | null
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          embedding?: string | null
+          id?: string
+          image_url?: string | null
+          lang?: string | null
+          published_at?: string
+          source?: string
+          source_url?: string
+          summary?: string
+          title?: string
+          title_hash?: string
+          topic?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      news_generation_logs: {
+        Row: {
+          candidates_fetched: number | null
+          created_at: string
+          discarded_duplicate_hash: number | null
+          discarded_duplicate_semantic: number | null
+          discarded_duplicate_topic: number | null
+          discarded_duplicate_url: number | null
+          discarded_old: number | null
+          executed_by: string | null
+          execution_details: Json | null
+          id: string
+          published_count: number | null
+        }
+        Insert: {
+          candidates_fetched?: number | null
+          created_at?: string
+          discarded_duplicate_hash?: number | null
+          discarded_duplicate_semantic?: number | null
+          discarded_duplicate_topic?: number | null
+          discarded_duplicate_url?: number | null
+          discarded_old?: number | null
+          executed_by?: string | null
+          execution_details?: Json | null
+          id?: string
+          published_count?: number | null
+        }
+        Update: {
+          candidates_fetched?: number | null
+          created_at?: string
+          discarded_duplicate_hash?: number | null
+          discarded_duplicate_semantic?: number | null
+          discarded_duplicate_topic?: number | null
+          discarded_duplicate_url?: number | null
+          discarded_old?: number | null
+          executed_by?: string | null
+          execution_details?: Json | null
+          id?: string
+          published_count?: number | null
+        }
+        Relationships: []
+      }
+      news_generator_config: {
+        Row: {
+          created_at: string
+          duplicate_similarity_threshold: number
+          id: string
+          max_age_days: number
+          max_candidates: number
+          min_category_distance: number
+          target_news_count: number
+          topic_repost_days: number
+          topic_similarity_threshold: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          duplicate_similarity_threshold?: number
+          id?: string
+          max_age_days?: number
+          max_candidates?: number
+          min_category_distance?: number
+          target_news_count?: number
+          topic_repost_days?: number
+          topic_similarity_threshold?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          duplicate_similarity_threshold?: number
+          id?: string
+          max_age_days?: number
+          max_candidates?: number
+          min_category_distance?: number
+          target_news_count?: number
+          topic_repost_days?: number
+          topic_similarity_threshold?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       newsletter_subscribers: {
         Row: {
           confirmed: boolean
@@ -318,9 +456,29 @@ export type Database = {
       }
     }
     Functions: {
+      binary_quantize: {
+        Args: { "": string } | { "": unknown }
+        Returns: unknown
+      }
       cleanup_old_rate_limit_entries: {
         Args: Record<PropertyKey, never>
         Returns: undefined
+      }
+      halfvec_avg: {
+        Args: { "": number[] }
+        Returns: unknown
+      }
+      halfvec_out: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      halfvec_send: {
+        Args: { "": unknown }
+        Returns: string
+      }
+      halfvec_typmod_in: {
+        Args: { "": unknown[] }
+        Returns: number
       }
       has_role: {
         Args: {
@@ -329,9 +487,81 @@ export type Database = {
         }
         Returns: boolean
       }
+      hnsw_bit_support: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      hnsw_halfvec_support: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      hnsw_sparsevec_support: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      hnswhandler: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
       is_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean
+      }
+      ivfflat_bit_support: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      ivfflat_halfvec_support: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      ivfflathandler: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      l2_norm: {
+        Args: { "": unknown } | { "": unknown }
+        Returns: number
+      }
+      l2_normalize: {
+        Args: { "": string } | { "": unknown } | { "": unknown }
+        Returns: unknown
+      }
+      sparsevec_out: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      sparsevec_send: {
+        Args: { "": unknown }
+        Returns: string
+      }
+      sparsevec_typmod_in: {
+        Args: { "": unknown[] }
+        Returns: number
+      }
+      vector_avg: {
+        Args: { "": number[] }
+        Returns: string
+      }
+      vector_dims: {
+        Args: { "": string } | { "": unknown }
+        Returns: number
+      }
+      vector_norm: {
+        Args: { "": string }
+        Returns: number
+      }
+      vector_out: {
+        Args: { "": string }
+        Returns: unknown
+      }
+      vector_send: {
+        Args: { "": string }
+        Returns: string
+      }
+      vector_typmod_in: {
+        Args: { "": unknown[] }
+        Returns: number
       }
     }
     Enums: {
