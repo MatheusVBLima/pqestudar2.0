@@ -63,14 +63,16 @@ A tabela `courses` contém informações sensíveis como `created_by` e `updated
 #### Proteção Implementada
 
 1. **VIEW `public.active_courses`**:
+   - **SECURITY INVOKER**: View criada com `security_invoker = true` para herdar RLS da tabela base
    - Expõe apenas campos seguros (sem `created_by` nem `updated_by`)
    - Filtra automaticamente: `WHERE is_active = true AND is_hidden = false`
    - Inclui campos calculados pré-processados:
      - `likes`: COALESCE(upvotes, 0)
      - `dislikes`: COALESCE(downvotes, 0)
-     - `calculated_rating`: Nota de 0 a 5 baseada em (likes - dislikes) / total_votos
+     - `rating`: Nota de 0 a 5 baseada em (likes - dislikes) / total_votos
    - Acesso READ-ONLY para `anon` e `authenticated`
    - GRANT SELECT explícito para anon e authenticated
+   - Herda políticas RLS da tabela `courses` (não usa SECURITY DEFINER)
 
 2. **Tabela `courses` original**:
    - Mantém RLS restritivo
@@ -95,7 +97,7 @@ const { data } = await supabase
   .from('active_courses')
   .select('*');
 
-// A VIEW já retorna likes, dislikes e calculated_rating
+// A VIEW já retorna likes, dislikes e rating calculado
 // Não é necessário calcular no frontend
 ```
 

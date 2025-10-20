@@ -36,7 +36,6 @@ interface Course {
   views: number;
   likes: number;
   dislikes: number;
-  calculated_rating?: number;
 }
 
 interface CourseCardProps {
@@ -62,8 +61,8 @@ export function CourseCard({
   const { userVote, upvotes, downvotes, vote, loading } = useVoting(course.id);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
-  // Usar calculated_rating pré-calculado da VIEW
-  const averageRating = course.calculated_rating ?? null;
+  // Usar rating pré-calculado da VIEW (0-5 baseado em votos)
+  const averageRating = course.rating ?? null;
   const totalVotes = course.likes + course.dislikes;
 
   // Formatar views

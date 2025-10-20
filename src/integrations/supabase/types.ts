@@ -242,7 +242,6 @@ export type Database = {
         Row: {
           affiliate_link: string | null
           badge: Database["public"]["Enums"]["course_badge"] | null
-          calculated_rating: number | null
           category: string | null
           created_at: string | null
           description: string | null
@@ -268,7 +267,6 @@ export type Database = {
         Insert: {
           affiliate_link?: string | null
           badge?: Database["public"]["Enums"]["course_badge"] | null
-          calculated_rating?: never
           category?: string | null
           created_at?: string | null
           description?: string | null
@@ -283,7 +281,7 @@ export type Database = {
           level?: string | null
           likes?: never
           price?: string | null
-          rating?: number | null
+          rating?: never
           students?: number | null
           title?: string | null
           updated_at?: string | null
@@ -294,7 +292,6 @@ export type Database = {
         Update: {
           affiliate_link?: string | null
           badge?: Database["public"]["Enums"]["course_badge"] | null
-          calculated_rating?: never
           category?: string | null
           created_at?: string | null
           description?: string | null
@@ -309,7 +306,7 @@ export type Database = {
           level?: string | null
           likes?: never
           price?: string | null
-          rating?: number | null
+          rating?: never
           students?: number | null
           title?: string | null
           updated_at?: string | null

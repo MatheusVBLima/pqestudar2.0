@@ -26,7 +26,6 @@ export interface Course {
   // Calculated fields from view
   likes: number;
   dislikes: number;
-  calculated_rating?: number;
 }
 
 export interface CreateCourseData {
