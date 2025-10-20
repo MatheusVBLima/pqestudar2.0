@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.generate-validated-news]
 verify_jwt = false
+
+[functions.generate-news]
+verify_jwt = true
