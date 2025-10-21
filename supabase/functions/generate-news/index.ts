@@ -150,6 +150,7 @@ serve(async (req) => {
     const stats = {
       candidates_fetched: 0,
       discarded_old: 0,
+      discarded_invalid_date: 0,
       discarded_duplicate_hash: 0,
       discarded_duplicate_url: 0,
       discarded_duplicate_semantic: 0,
@@ -243,32 +244,91 @@ serve(async (req) => {
 
       const candidate = JSON.parse(toolCall.function.arguments);
       
-      // Validação 1: Recência
-      const publishedDate = new Date(candidate.published_at);
-      const maxAgeDate = new Date();
-      maxAgeDate.setDate(maxAgeDate.getDate() - maxAgeDays);
-      
-      if (publishedDate < maxAgeDate || isNaN(publishedDate.getTime())) {
-        stats.discarded_old++;
+      // Validação 1: Data obrigatória e válida
+      if (!candidate.published_at) {
+        stats.discarded_invalid_date++;
         stats.execution_details.push({
           title: candidate.title,
-          reason: 'Data de publicação muito antiga ou inválida',
-          published_at: candidate.published_at
+          source: candidate.source,
+          status: 'Descartado',
+          reason: 'Sem data de publicação - data obrigatória',
+          date_detected: null
         });
         continue;
       }
 
-      // Validação 2: Deduplicação por URL
+      const publishedDate = new Date(candidate.published_at);
+      const now = new Date();
+      const maxAgeDate = new Date();
+      maxAgeDate.setDate(maxAgeDate.getDate() - maxAgeDays);
+      
+      // Validar: não pode ser data inválida, futura ou muito antiga (>365 dias)
+      const oneYearAgo = new Date();
+      oneYearAgo.setDate(oneYearAgo.getDate() - 365);
+      
+      if (isNaN(publishedDate.getTime())) {
+        stats.discarded_invalid_date++;
+        stats.execution_details.push({
+          title: candidate.title,
+          source: candidate.source,
+          status: 'Descartado',
+          reason: 'Data de publicação inválida (formato incorreto)',
+          date_detected: candidate.published_at
+        });
+        continue;
+      }
+      
+      if (publishedDate > now) {
+        stats.discarded_invalid_date++;
+        stats.execution_details.push({
+          title: candidate.title,
+          source: candidate.source,
+          status: 'Descartado',
+          reason: 'Data de publicação no futuro (não confiável)',
+          date_detected: candidate.published_at
+        });
+        continue;
+      }
+      
+      if (publishedDate < oneYearAgo) {
+        stats.discarded_old++;
+        stats.execution_details.push({
+          title: candidate.title,
+          source: candidate.source,
+          status: 'Descartado',
+          reason: `Data muito antiga (> 365 dias): ${publishedDate.toISOString().split('T')[0]}`,
+          date_detected: candidate.published_at
+        });
+        continue;
+      }
+      
+      // Validação 2: Janela de frescor obrigatória (parametrizável)
+      if (publishedDate < maxAgeDate) {
+        stats.discarded_old++;
+        stats.execution_details.push({
+          title: candidate.title,
+          source: candidate.source,
+          status: 'Descartado',
+          reason: `Fora da janela de frescor (> ${maxAgeDays} dias): ${publishedDate.toISOString().split('T')[0]}`,
+          date_detected: candidate.published_at
+        });
+        continue;
+      }
+
+      // Validação 3: Deduplicação por URL
       if (recentNews?.some(n => n.source_url === candidate.source_url)) {
         stats.discarded_duplicate_url++;
         stats.execution_details.push({
           title: candidate.title,
-          reason: 'URL duplicada'
+          source: candidate.source,
+          status: 'Descartado',
+          reason: 'URL duplicada',
+          date_detected: candidate.published_at
         });
         continue;
       }
 
-      // Validação 3: Deduplicação por hash
+      // Validação 4: Deduplicação por hash
       const normalizedTitle = normalizeTitle(candidate.title);
       const sourceDomain = extractDomain(candidate.source_url);
       const titleHash = await createTitleHash(normalizedTitle, sourceDomain);
@@ -277,12 +337,15 @@ serve(async (req) => {
         stats.discarded_duplicate_hash++;
         stats.execution_details.push({
           title: candidate.title,
-          reason: 'Hash de título duplicado'
+          source: candidate.source,
+          status: 'Descartado',
+          reason: 'Hash de título duplicado',
+          date_detected: candidate.published_at
         });
         continue;
       }
 
-      // Validação 4: Deduplicação semântica com embeddings
+      // Validação 5: Deduplicação semântica com embeddings
       const titleEmbedding = await generateEmbedding(candidate.title);
       
       let isDuplicateSemantic = false;
@@ -294,8 +357,11 @@ serve(async (req) => {
             stats.discarded_duplicate_semantic++;
             stats.execution_details.push({
               title: candidate.title,
+              source: candidate.source,
+              status: 'Descartado',
               reason: `Duplicata semântica (similaridade: ${similarity.toFixed(3)})`,
-              similar_to: existingNews.title
+              similar_to: existingNews.title,
+              date_detected: candidate.published_at
             });
             break;
           }
@@ -304,7 +370,7 @@ serve(async (req) => {
 
       if (isDuplicateSemantic) continue;
 
-      // Validação 5: Anti-loop de tópico
+      // Validação 6: Anti-loop de tópico
       const topic = extractTopic(candidate.title, candidate.summary);
       const topicCutoffDate = new Date();
       topicCutoffDate.setDate(topicCutoffDate.getDate() - topicRepostDays);
@@ -323,9 +389,12 @@ serve(async (req) => {
             stats.discarded_duplicate_topic++;
             stats.execution_details.push({
               title: candidate.title,
+              source: candidate.source,
+              status: 'Descartado',
               reason: `Tópico duplicado (similaridade: ${topicSimilarity.toFixed(3)})`,
               topic,
-              similar_topic: existingNews.topic
+              similar_topic: existingNews.topic,
+              date_detected: candidate.published_at
             });
             break;
           }
@@ -356,7 +425,10 @@ serve(async (req) => {
         console.error('Insert error:', insertError);
         stats.execution_details.push({
           title: candidate.title,
-          reason: `Erro ao inserir: ${insertError.message}`
+          source: candidate.source,
+          status: 'Erro',
+          reason: `Erro ao inserir: ${insertError.message}`,
+          date_detected: candidate.published_at
         });
         continue;
       }
@@ -365,13 +437,43 @@ serve(async (req) => {
       publishedNews.push(candidate);
       stats.execution_details.push({
         title: candidate.title,
+        source: candidate.source,
+        status: 'Publicado',
         reason: 'Publicada com sucesso',
         category: targetCategory,
-        topic
+        topic,
+        date_detected: candidate.published_at
       });
 
       // Avançar para próxima categoria (round-robin)
       currentCategoryIndex = (currentCategoryIndex + 1) % categories.length;
+    }
+
+    // Verificar se não encontrou nenhuma notícia válida
+    if (stats.published_count === 0 && stats.candidates_fetched > 0) {
+      const message = `Nenhuma notícia recente encontrada (≤ ${maxAgeDays} dias). ` +
+        `Candidatos avaliados: ${stats.candidates_fetched}. ` +
+        `Descartados: ${stats.discarded_old} (velhas), ${stats.discarded_invalid_date} (data inválida), ` +
+        `${stats.discarded_duplicate_url + stats.discarded_duplicate_hash + stats.discarded_duplicate_semantic + stats.discarded_duplicate_topic} (duplicatas). ` +
+        `Tente outra categoria ou ampliar a janela de frescor.`;
+      
+      // Salvar log mesmo quando não publicou nada
+      await supabaseClient
+        .from('news_generation_logs')
+        .insert({
+          executed_by: user.id,
+          ...stats
+        });
+
+      return new Response(JSON.stringify({
+        success: false,
+        message,
+        stats,
+        published: []
+      }), {
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     // Salvar log de execução
@@ -382,8 +484,15 @@ serve(async (req) => {
         ...stats
       });
 
+    // Resumo para o usuário
+    const summary = `Publicadas ${stats.published_count} | Descartadas ${stats.candidates_fetched - stats.published_count} ` +
+      `(${stats.discarded_old} velhas, ${stats.discarded_invalid_date} sem data válida, ` +
+      `${stats.discarded_duplicate_url} URL duplicada, ${stats.discarded_duplicate_hash} hash duplicado, ` +
+      `${stats.discarded_duplicate_semantic} semântica, ${stats.discarded_duplicate_topic} tópico)`;
+
     return new Response(JSON.stringify({
       success: true,
+      summary,
       stats,
       published: publishedNews
     }), {
