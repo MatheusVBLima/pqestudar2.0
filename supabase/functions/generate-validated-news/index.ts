@@ -54,18 +54,35 @@ serve(async (req) => {
     }
 
     const allNews = [];
+    const stats = {
+      generated: 0,
+      discarded_old: 0,
+      discarded_future: 0,
+      discarded_invalid: 0
+    };
+
+    // Calcular datas para validação
+    const hoje = new Date();
+    const dataLimite = new Date(hoje.getTime() - 15 * 24 * 60 * 60 * 1000);
+    const hojeStr = hoje.toISOString().split('T')[0];
+    const dataLimiteStr = dataLimite.toISOString().split('T')[0];
 
     // Buscar notícias para cada palavra-chave
     for (const keywordObj of selectedKeywords) {
       console.log(`Searching news for: ${keywordObj.term} (${keywordObj.days} days, ${keywordObj.category})`);
       
-      const searchPrompt = `Busque notícias REAIS e RECENTES (últimos ${keywordObj.days} dias) sobre "${keywordObj.term}" especificamente no contexto da educação brasileira. 
+      const searchPrompt = `ATENÇÃO CRÍTICA: A data de publicação DEVE estar entre ${dataLimiteStr} e ${hojeStr} (últimos 15 dias).
+
+Exemplo de data válida: ${hojeStr}
+
+Busque notícias REAIS e RECENTES (últimos 15 dias) sobre "${keywordObj.term}" especificamente no contexto da educação brasileira. 
 
 IMPORTANTE: 
+- A DATA DEVE SER ENTRE ${dataLimiteStr} E ${hojeStr}
+- NÃO use datas antigas (antes de ${dataLimiteStr})
+- NÃO use datas futuras (depois de ${hojeStr})
 - Categoria: ${keywordObj.category}
-- Janela de tempo: ${keywordObj.days} dias atrás até hoje
 - Cite SEMPRE as fontes reais (G1, Folha, Estadão, UOL, MEC, portais universitários, etc.)
-- Inclua a data EXATA da publicação (verificar que está dentro dos últimos ${keywordObj.days} dias)
 - Confirme que a notícia é de ${new Date().getFullYear()}
 - Para eventos de curto prazo: foque em inscrições, prazos, resultados, editais recentes
 - Para mudanças estruturais: foque em novas leis, análises de impacto, tendências
@@ -180,9 +197,38 @@ Exemplo de estrutura:
         
         // Validar campos obrigatórios
         if (!newsData.titulo || !newsData.descricao || !newsData.fontes || newsData.fontes.length === 0) {
-          console.warn(`Invalid news data structure for: ${keywordObj.term}`);
+          console.warn(`❌ DESCARTADO: "${newsData.titulo}" - Campos obrigatórios faltando`);
+          stats.discarded_invalid++;
           continue;
         }
+
+        // VALIDAÇÃO CRÍTICA DE FRESCOR - Antes de qualquer processamento
+        if (!newsData.dataPublicacao) {
+          console.warn(`❌ DESCARTADO: "${newsData.titulo}" - Sem data de publicação`);
+          stats.discarded_invalid++;
+          continue;
+        }
+
+        const publishDate = new Date(newsData.dataPublicacao);
+        const diffMs = hoje.getTime() - publishDate.getTime();
+        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+        // Rejeitar se data for no futuro
+        if (publishDate > hoje) {
+          console.warn(`❌ DESCARTADO: "${newsData.titulo}" - Data no futuro (${newsData.dataPublicacao})`);
+          stats.discarded_future++;
+          continue;
+        }
+
+        // Rejeitar se data for mais antiga que 15 dias
+        if (diffDays > 15) {
+          console.warn(`❌ DESCARTADO: "${newsData.titulo}" - Data muito antiga (${diffDays} dias, publicado em ${newsData.dataPublicacao})`);
+          stats.discarded_old++;
+          continue;
+        }
+
+        // ✅ Data válida - prosseguir com processamento
+        console.log(`✅ ACEITO: "${newsData.titulo}" - Data válida (${diffDays} dias atrás)`);
 
         // Processar fontes para separar nome e URL
         const processedFontes = newsData.fontes.map((fonte: string) => {
@@ -200,7 +246,6 @@ Exemplo de estrutura:
         const validationScore = Math.min(100, newsData.fontes.length * 33);
 
         // Calcular tempo atrás
-        const publishDate = new Date(newsData.dataPublicacao || new Date());
         const timeAgo = getTimeAgo(publishDate);
 
         allNews.push({
@@ -225,27 +270,56 @@ Exemplo de estrutura:
           visualizacoes: Math.floor(Math.random() * 50000) + 1000
         });
 
-        console.log(`Successfully generated news: ${newsData.titulo.substring(0, 50)}... (${keywordObj.category})`);
+        stats.generated++;
+        console.log(`✅ PUBLICADO: ${newsData.titulo.substring(0, 50)}... (${diffDays} dias atrás, ${keywordObj.category})`);
         
       } catch (parseError) {
         console.error(`Failed to parse tool call arguments for ${keywordObj.term}:`, parseError);
+        stats.discarded_invalid++;
         continue;
       }
     }
 
-    // Ordenar por score de validação
-    allNews.sort((a, b) => b.validationScore - a.validationScore);
+    // Log estatísticas finais
+    console.log(`
+    📊 ESTATÍSTICAS:
+    - Geradas: ${stats.generated}
+    - Descartadas (antigas): ${stats.discarded_old}
+    - Descartadas (futuras): ${stats.discarded_future}
+    - Descartadas (inválidas): ${stats.discarded_invalid}
+    - Total processadas: ${stats.generated + stats.discarded_old + stats.discarded_future + stats.discarded_invalid}
+    `);
+
+    // Verificar se alguma notícia foi gerada
+    if (allNews.length === 0) {
+      console.warn(`⚠️ NENHUMA NOTÍCIA VÁLIDA GERADA - Todas foram descartadas por violarem regras de frescor (≤15 dias)`);
+      return new Response(
+        JSON.stringify({ 
+          success: false,
+          error: "Nenhuma notícia recente (≤15 dias) foi encontrada. A IA não conseguiu gerar conteúdo dentro da janela de frescor.",
+          stats,
+          news: []
+        }), 
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
+    // Ordenar por data mais recente
+    allNews.sort((a, b) => new Date(b.data).getTime() - new Date(a.data).getTime());
 
     // Retornar apenas as notícias solicitadas
     const validatedNews = allNews.slice(0, maxResults);
 
-    console.log(`Generated ${validatedNews.length} validated news articles`);
+    console.log(`✅ SUCESSO: ${validatedNews.length} notícias validadas retornadas`);
 
     return new Response(
       JSON.stringify({ 
         success: true, 
         news: validatedNews,
-        totalGenerated: validatedNews.length
+        totalGenerated: validatedNews.length,
+        stats
       }), 
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
