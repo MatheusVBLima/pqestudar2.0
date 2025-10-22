@@ -138,10 +138,10 @@ serve(async (req) => {
       .select('*')
       .single();
 
-    const maxAgeDays = config?.max_age_days || 14;
+    const maxAgeDays = config?.max_age_days || 15;
     const minCategoryDistance = config?.min_category_distance || 3;
-    const duplicateSimilarityThreshold = config?.duplicate_similarity_threshold || 0.88;
-    const topicSimilarityThreshold = config?.topic_similarity_threshold || 0.90;
+    const duplicateSimilarityThreshold = config?.duplicate_similarity_threshold || 0.85;
+    const topicSimilarityThreshold = config?.topic_similarity_threshold || 0.85;
     const topicRepostDays = config?.topic_repost_days || 7;
     const maxCandidates = config?.max_candidates || 8;
     const targetNewsCount = config?.target_news_count || 3;
@@ -159,12 +159,12 @@ serve(async (req) => {
       execution_details: [] as any[]
     };
 
-    // Buscar últimas notícias para verificação de duplicatas e diversidade
+    // Buscar últimas 5 notícias para verificação de diversidade de tema
     const { data: recentNews } = await supabaseClient
       .from('news')
       .select('*')
       .order('published_at', { ascending: false })
-      .limit(200);
+      .limit(5);
 
     const publishedNews: any[] = [];
     const categories = ['ENEM', 'Concursos', 'SISU', 'ProUni', 'FIES', 'Vestibular', 'Educação Geral'];
@@ -345,13 +345,21 @@ serve(async (req) => {
         continue;
       }
 
-      // Validação 5: Deduplicação semântica com embeddings
+      // Validação 5: Deduplicação semântica (últimas 5 notícias, threshold 0.85)
       const titleEmbedding = await generateEmbedding(candidate.title);
       
       let isDuplicateSemantic = false;
+      let maxSimilarity = 0;
+      let similarTitle = '';
+      
       for (const existingNews of recentNews || []) {
         if (existingNews.embedding) {
           const similarity = cosineSimilarity(titleEmbedding, existingNews.embedding as number[]);
+          if (similarity > maxSimilarity) {
+            maxSimilarity = similarity;
+            similarTitle = existingNews.title;
+          }
+          
           if (similarity >= duplicateSimilarityThreshold) {
             isDuplicateSemantic = true;
             stats.discarded_duplicate_semantic++;
@@ -359,7 +367,7 @@ serve(async (req) => {
               title: candidate.title,
               source: candidate.source,
               status: 'Descartado',
-              reason: `Duplicata semântica (similaridade: ${similarity.toFixed(3)})`,
+              reason: `Tema repetido (similaridade: ${(similarity * 100).toFixed(1)}%)`,
               similar_to: existingNews.title,
               date_detected: candidate.published_at
             });
@@ -437,12 +445,13 @@ serve(async (req) => {
       publishedNews.push(candidate);
       stats.execution_details.push({
         title: candidate.title,
-        source: candidate.source,
+        source: `${candidate.source} (${candidate.source_url})`,
         status: 'Publicado',
-        reason: 'Publicada com sucesso',
+        reason: 'Aprovada',
         category: targetCategory,
         topic,
-        date_detected: candidate.published_at
+        date_detected: new Date(candidate.published_at).toISOString().split('T')[0],
+        similarity: maxSimilarity ? `${(maxSimilarity * 100).toFixed(1)}%` : 'N/A'
       });
 
       // Avançar para próxima categoria (round-robin)
