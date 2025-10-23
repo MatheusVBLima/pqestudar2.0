@@ -37,25 +37,27 @@ export function EcosystemSection() {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+        <div className="grid md:grid-cols-2 gap-6 md:gap-8 max-w-5xl mx-auto">
           {cards.map((card) => (
             <Card 
               key={card.title}
               className="group hover:shadow-elegant transition-all duration-300 border-border/50 hover:border-primary/20"
             >
-              <CardHeader>
-                <div className={`w-16 h-16 rounded-lg bg-gradient-to-br ${card.gradient} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}>
-                  <card.icon className="h-8 w-8 text-primary" />
+              <CardHeader className="flex flex-col items-center text-center md:flex-row md:items-start md:text-left gap-4">
+                <div className={`w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-gradient-to-br ${card.gradient} flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300`}>
+                  <card.icon className="h-7 w-7 sm:h-8 sm:w-8 text-primary" />
                 </div>
-                <CardTitle className="text-2xl">{card.title}</CardTitle>
-                <CardDescription className="text-base leading-relaxed">
-                  {card.description}
-                </CardDescription>
+                <div className="flex-1 space-y-2">
+                  <CardTitle className="text-xl sm:text-2xl">{card.title}</CardTitle>
+                  <CardDescription className="text-sm sm:text-base leading-relaxed">
+                    {card.description}
+                  </CardDescription>
+                </div>
               </CardHeader>
-              <CardContent>
+              <CardContent className="flex justify-center md:justify-start md:pl-20">
                 <Button 
                   onClick={() => navigate(card.link)}
-                  className="w-full bg-gradient-primary hover:opacity-90"
+                  className="w-full sm:w-auto min-w-[200px] bg-gradient-primary hover:opacity-90 transition-opacity duration-300"
                   size="lg"
                 >
                   {card.cta}
