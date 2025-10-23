@@ -27,13 +27,13 @@ export function EcosystemSection() {
 
   return (
     <section className="py-20 bg-accent/5 w-full">
-      <div className="container mx-auto px-4 max-w-7xl">
-        <div className="text-center mb-12">
-          <h2 className="text-4xl md:text-5xl font-bold mb-4">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+        <div className="text-center space-y-6 md:space-y-8 mb-12 md:mb-16">
+          <h2 className="text-4xl sm:text-5xl md:text-6xl lg:text-5xl xl:text-6xl font-bold leading-[1.1] tracking-tight">
             O <span className="bg-gradient-primary bg-clip-text text-transparent">Ecossistema</span>
           </h2>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Explore as diferentes áreas do portal e encontre o que você precisa
+          <p className="text-lg sm:text-xl md:text-2xl lg:text-xl text-muted-foreground leading-relaxed max-w-xl mx-auto lg:max-w-2xl">
+            Duas áreas integradas para transformar conhecimento em resultado prático.
           </p>
         </div>
 

@@ -7,7 +7,7 @@ export function ManifestoSection() {
         <div className="grid lg:grid-cols-2 gap-8 md:gap-12 lg:gap-16 items-center">
           {/* Texto */}
           <div className="space-y-6 md:space-y-8 text-center lg:text-left lg:order-2">
-            <h2 className="text-4xl sm:text-5xl lg:text-4xl xl:text-5xl font-bold leading-tight tracking-tight">
+            <h2 className="text-4xl sm:text-5xl md:text-6xl lg:text-5xl xl:text-6xl font-bold leading-[1.1] tracking-tight">
               Menos conteúdo,{" "}
               <span className="bg-gradient-primary bg-clip-text text-transparent">
                 mais aplicação.
@@ -16,21 +16,21 @@ export function ManifestoSection() {
             
             <div className="prose prose-lg max-w-none">
               {/* Versão mobile: parágrafo resumido */}
-              <p className="text-base sm:text-lg text-muted-foreground leading-relaxed lg:hidden">
+              <p className="text-lg sm:text-xl md:text-2xl lg:text-xl text-muted-foreground leading-relaxed max-w-xl mx-auto lg:mx-0 lg:hidden">
                 Meu nome é <span className="text-foreground font-semibold">Matheus Dias</span> e por anos acreditei que precisava consumir mais para ter sucesso. A verdade é o oposto: o sucesso vem de <span className="text-foreground font-semibold">aplicar o conhecimento certo</span>.
               </p>
               
               {/* Versão desktop: texto completo */}
-              <div className="hidden lg:block space-y-4">
-                <p className="text-muted-foreground leading-relaxed">
+              <div className="hidden lg:block space-y-4 max-w-2xl">
+                <p className="text-lg sm:text-xl md:text-2xl lg:text-xl text-muted-foreground leading-relaxed">
                   Meu nome é <span className="text-foreground font-semibold">Matheus Dias</span> e por anos eu acreditei que precisava consumir mais para ter sucesso. A verdade é o oposto.
                 </p>
                 
-                <p className="text-muted-foreground leading-relaxed">
+                <p className="text-lg sm:text-xl md:text-2xl lg:text-xl text-muted-foreground leading-relaxed">
                   O sucesso vem de <span className="text-foreground font-semibold">aplicar o conhecimento certo, da forma mais rápida possível</span>. O PqEstudar? nasceu para ser o seu filtro.
                 </p>
                 
-                <p className="text-muted-foreground leading-relaxed">
+                <p className="text-lg sm:text-xl md:text-2xl lg:text-xl text-muted-foreground leading-relaxed">
                   Aqui, compartilhamos apenas o que funciona no mundo real, para profissionais que não têm tempo a perder.
                 </p>
               </div>

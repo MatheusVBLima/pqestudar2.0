@@ -17,15 +17,15 @@ export function PremiumCTASection() {
         <div className="absolute bottom-0 right-0 w-96 h-96 bg-accent rounded-full blur-3xl" />
       </div>
 
-      <div className="container mx-auto px-4 max-w-4xl relative z-10">
-        <div className="text-center space-y-8">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl relative z-10">
+        <div className="text-center space-y-6 md:space-y-8">
           {/* Icon */}
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-primary shadow-purple">
             <Sparkles className="h-8 w-8 text-primary-foreground" />
           </div>
 
           {/* Headline */}
-          <h2 className="text-4xl md:text-5xl font-bold leading-tight">
+          <h2 className="text-4xl sm:text-5xl md:text-6xl lg:text-5xl xl:text-6xl font-bold leading-[1.1] tracking-tight">
             Pronto para um{" "}
             <span className="bg-gradient-primary bg-clip-text text-transparent">
               Sistema
@@ -34,7 +34,7 @@ export function PremiumCTASection() {
           </h2>
 
           {/* Text */}
-          <p className="text-xl text-muted-foreground leading-relaxed max-w-2xl mx-auto">
+          <p className="text-lg sm:text-xl md:text-2xl lg:text-xl text-muted-foreground leading-relaxed max-w-xl mx-auto lg:max-w-2xl">
             Para profissionais que buscam um método completo para transformar teoria em resultado prático, nós criamos o{" "}
             <span className="text-foreground font-semibold">Kit de Ferramentas: Produtividade Exponencial</span>.
           </p>
