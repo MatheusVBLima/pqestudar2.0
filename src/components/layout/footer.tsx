@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { BookOpen } from "lucide-react";
 
 interface FooterProps {
@@ -8,6 +8,9 @@ interface FooterProps {
 
 export function Footer({ isHomePage = false }: FooterProps) {
   const navigate = useNavigate();
+  const location = useLocation();
+  
+  const hidePartnersLink = ['/explorar-cursos', '/noticias', '/kit'].includes(location.pathname);
   
   return (
     <footer className="border-t-2 border-border bg-muted/30 mt-16 w-full overflow-hidden">
@@ -34,6 +37,12 @@ export function Footer({ isHomePage = false }: FooterProps) {
             <Button variant="ghost" size="sm" onClick={() => navigate("/privacidade")} className="h-8 px-0 hover:bg-transparent hover:text-primary">
               Política de Privacidade
             </Button>
+            
+            {!hidePartnersLink && (
+              <Button variant="ghost" size="sm" onClick={() => navigate("/parceiros")} className="h-8 px-0 hover:bg-transparent hover:text-primary">
+                Parceiros
+              </Button>
+            )}
             
             {!isHomePage && (
               <>
