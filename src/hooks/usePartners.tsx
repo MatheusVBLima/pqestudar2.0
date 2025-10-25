@@ -146,6 +146,71 @@ export const usePartners = (includeInactive = false) => {
     return updatePartner(id, { is_active: !currentState });
   };
 
+  const reorderPartners = async (reorderedPartners: Partner[]) => {
+    const startTime = Date.now();
+    console.log('[Partners Reorder] Starting reorder operation', {
+      count: reorderedPartners.length,
+      items: reorderedPartners.map((p, idx) => ({ id: p.id, title: p.title, newOrder: idx }))
+    });
+
+    // Atualizar UI otimisticamente
+    const previousPartners = [...partners];
+    setPartners(reorderedPartners);
+
+    try {
+      // Atualizar todos de uma vez usando batch update
+      const updates = reorderedPartners.map((partner, index) => ({
+        id: partner.id,
+        sort_order: index,
+        updated_by: user?.id
+      }));
+
+      console.log('[Partners Reorder] Sending batch update', { payload: updates });
+
+      // Executar updates em paralelo
+      const results = await Promise.all(
+        updates.map(({ id, sort_order, updated_by }) =>
+          supabase
+            .from('partners')
+            .update({ sort_order, updated_by })
+            .eq('id', id)
+        )
+      );
+
+      // Verificar erros
+      const errors = results.filter(r => r.error);
+      if (errors.length > 0) {
+        throw new Error(`Failed to update ${errors.length} partner(s)`);
+      }
+
+      const duration = Date.now() - startTime;
+      console.log('[Partners Reorder] Success', { duration: `${duration}ms` });
+
+      toast({
+        title: "Ordem atualizada",
+        description: "A ordem dos parceiros foi salva com sucesso."
+      });
+
+      return { error: null };
+    } catch (err: any) {
+      console.error('[Partners Reorder] Error', { 
+        error: err.message, 
+        duration: `${Date.now() - startTime}ms` 
+      });
+
+      // Reverter para ordem anterior
+      setPartners(previousPartners);
+
+      toast({
+        title: "Erro ao salvar ordem",
+        description: "Não foi possível salvar a nova ordem. Tente novamente.",
+        variant: "destructive"
+      });
+
+      return { error: err.message };
+    }
+  };
+
   useEffect(() => {
     fetchPartners();
   }, [includeInactive]);
@@ -157,6 +222,7 @@ export const usePartners = (includeInactive = false) => {
     updatePartner,
     deletePartner,
     toggleActive,
+    reorderPartners,
     refetch: fetchPartners
   };
 };
