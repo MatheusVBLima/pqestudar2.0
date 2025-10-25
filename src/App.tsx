@@ -23,8 +23,6 @@ import FAQ from "./pages/FAQ";
 import Contato from "./pages/Contato";
 import ConfiguracoesCookies from "./pages/ConfiguracoesCookies";
 import Notificacoes from "./pages/Notificacoes";
-import PlataformasAfiliados from "./pages/PlataformasAfiliados";
-import ConteudoPremium from "./pages/ConteudoPremium";
 import ProgramasBeneficios from "./pages/ProgramasBeneficios";
 import OportunidadesAfiliados from "./pages/OportunidadesAfiliados";
 import Login from "./pages/Login";
@@ -62,8 +60,6 @@ const App = () => (
           <Route path="/contato" element={<Contato />} />
           <Route path="/configuracoes-cookies" element={<ConfiguracoesCookies />} />
           <Route path="/notificacoes" element={<Notificacoes />} />
-          <Route path="/plataformas-afiliados" element={<PlataformasAfiliados />} />
-          <Route path="/conteudo-premium" element={<ConteudoPremium />} />
           <Route path="/programas-beneficios" element={<ProgramasBeneficios />} />
           <Route path="/oportunidades-afiliados" element={<OportunidadesAfiliados />} />
           <Route path="/login" element={<Login />} />

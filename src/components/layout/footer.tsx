@@ -48,14 +48,6 @@ export function Footer({ isHomePage = false }: FooterProps) {
                 <Button variant="ghost" size="sm" onClick={() => navigate("/contato")} className="h-8 px-0 hover:bg-transparent hover:text-primary">
                   Contato
                 </Button>
-                
-                <Button variant="ghost" size="sm" onClick={() => navigate("/plataformas-afiliados")} className="h-8 px-0 hover:bg-transparent hover:text-primary">
-                  Plataformas de Afiliados
-                </Button>
-                
-                <Button variant="ghost" size="sm" onClick={() => navigate("/conteudo-premium")} className="h-8 px-0 hover:bg-transparent hover:text-primary">
-                  Conteúdo Premium
-                </Button>
               </>
             )}
           </div>

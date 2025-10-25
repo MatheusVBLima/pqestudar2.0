@@ -26,9 +26,7 @@ export function FeaturesPreview() {
   const navigate = useNavigate();
 
   const handleButtonClick = (title: string) => {
-    if (title === "Acesso a Conteúdo Exclusivo") {
-      navigate('/conteudo-premium');
-    } else if (title === "Benefícios para Membros Ativos") {
+    if (title === "Benefícios para Membros Ativos") {
       navigate('/programas-beneficios');
     } else if (title === "Recomende e Ganhe") {
       navigate('/oportunidades-afiliados');
