@@ -1,6 +1,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -50,13 +51,7 @@ interface PartnerModalProps {
 export function PartnerModal({ open, onOpenChange, partner, onSave }: PartnerModalProps) {
   const form = useForm<PartnerFormData>({
     resolver: zodResolver(partnerSchema),
-    defaultValues: partner ? {
-      title: partner.title,
-      logo_url: partner.logo_url,
-      url: partner.url,
-      is_active: partner.is_active,
-      sort_order: partner.sort_order
-    } : {
+    defaultValues: {
       title: "",
       logo_url: "",
       url: "",
@@ -64,6 +59,28 @@ export function PartnerModal({ open, onOpenChange, partner, onSave }: PartnerMod
       sort_order: 0
     }
   });
+
+  // Reset form when partner changes or modal opens
+  useEffect(() => {
+    if (open) {
+      const values = partner ? {
+        title: partner.title,
+        logo_url: partner.logo_url,
+        url: partner.url,
+        is_active: partner.is_active,
+        sort_order: partner.sort_order
+      } : {
+        title: "",
+        logo_url: "",
+        url: "",
+        is_active: true,
+        sort_order: 0
+      };
+      
+      console.log('[PartnerModal] Resetting form with values:', values);
+      form.reset(values);
+    }
+  }, [partner, open, form]);
 
   const handleSubmit = async (data: PartnerFormData) => {
     await onSave(data);
