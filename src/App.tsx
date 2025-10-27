@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { CookieBanner } from "@/components/ui/cookie-banner";
 import { AuthProvider } from "@/hooks/useAuth";
+import { useGoogleAnalytics } from "@/hooks/useGoogleAnalytics";
 import Index from "./pages/Index";
 import ExploreCourses from "./pages/ExploreCourses";
 import CourseDetail from "./pages/CourseDetail";
@@ -34,14 +35,14 @@ import Parceiros from "./pages/Parceiros";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <CookieBanner />
-        <BrowserRouter>
+const AppContent = () => {
+  // Initialize Google Analytics with Consent Mode v2
+  useGoogleAnalytics();
+
+  return (
+    <>
+      <CookieBanner />
+      <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/explorar-cursos" element={<ExploreCourses />} />
@@ -71,6 +72,17 @@ const App = () => (
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
+    </>
+  );
+};
+
+const App = () => (
+  <QueryClientProvider client={queryClient}>
+    <AuthProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <AppContent />
       </TooltipProvider>
     </AuthProvider>
   </QueryClientProvider>
