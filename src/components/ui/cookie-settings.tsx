@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Cookie, Settings, Shield, BarChart, Target, Zap } from 'lucide-react';
 import { Button } from './button';
 import { Switch } from './switch';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './card';
 import { Badge } from './badge';
 import { useCookieConsent, CookiePreferences } from '@/hooks/useCookieConsent';
+import { useToast } from '@/hooks/use-toast';
 
 interface CookieSettingsProps {
   onClose?: () => void;
@@ -12,9 +13,28 @@ interface CookieSettingsProps {
 
 export const CookieSettings = ({ onClose }: CookieSettingsProps) => {
   const { consentData, updatePreferences, resetConsent } = useCookieConsent();
+  const { toast } = useToast();
   const [tempPreferences, setTempPreferences] = useState<CookiePreferences>(
     consentData.preferences
   );
+
+  // Sync with external changes (cross-tab or banner updates)
+  useEffect(() => {
+    setTempPreferences(consentData.preferences);
+  }, [consentData.preferences]);
+
+  // Cross-tab synchronization via storage event
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'cookieConsent' && e.newValue) {
+        console.log('[CookieSettings] Cross-tab sync detected');
+        // Hook will auto-update consentData
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
 
   const handlePreferenceChange = (type: keyof CookiePreferences, value: boolean) => {
     if (type === 'necessary') return; // Cannot disable necessary cookies
@@ -26,7 +46,27 @@ export const CookieSettings = ({ onClose }: CookieSettingsProps) => {
   };
 
   const handleSavePreferences = () => {
+    console.log('[CookieSettings] Saving preferences:', tempPreferences);
     updatePreferences(tempPreferences);
+    
+    toast({
+      title: "Preferências salvas",
+      description: "Suas configurações de cookies foram atualizadas com sucesso.",
+    });
+    
+    onClose?.();
+  };
+
+  const handleResetConsent = () => {
+    console.log('[CookieSettings] Resetting consent');
+    resetConsent();
+    
+    toast({
+      title: "Consentimento redefinido",
+      description: "Suas preferências foram resetadas. O banner aparecerá novamente.",
+      variant: "destructive",
+    });
+    
     onClose?.();
   };
 
@@ -183,7 +223,7 @@ export const CookieSettings = ({ onClose }: CookieSettingsProps) => {
         
         <Button
           variant="outline"
-          onClick={resetConsent}
+          onClick={handleResetConsent}
           className="sm:w-auto"
         >
           Redefinir Consentimento
