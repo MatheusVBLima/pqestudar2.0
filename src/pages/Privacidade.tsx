@@ -26,154 +26,114 @@ const Privacidade = () => {
 
   const sections = [
     {
-      id: "1-compromisso",
-      title: "1. Compromisso com sua Privacidade",
-      content: "A PqEstudar está comprometida em proteger sua privacidade e dados pessoais. Esta política descreve como coletamos, usamos, armazenamos e protegemos suas informações quando você utiliza nossos serviços. Valorizamos a transparência e a confiança que você deposita em nós ao compartilhar seus dados."
+      id: "1-nosso-compromisso",
+      title: "1. Nosso Compromisso com sua Privacidade",
+      content: "A PqEstudar (pqestudar.com.br), referida como \"Plataforma\", está comprometida em proteger sua privacidade e seus dados pessoais. Esta Política descreve de forma transparente como coletamos, usamos, armazenamos e protegemos suas informações em conformidade com a Lei Geral de Proteção de Dados (LGPD – Lei nº 13.709/2018)."
     },
     {
-      id: "2-informacoes-coletadas",
-      title: "2. Informações que Coletamos",
+      id: "2-quais-informacoes",
+      title: "2. Quais Informações Coletamos e Por Quê",
       content: `<div class="space-y-4">
+        <p>Coletamos diferentes tipos de informações para finalidades específicas:</p>
         <div>
-          <h3 class="text-lg font-semibold mb-2">Informações Fornecidas por Você:</h3>
+          <h3 class="text-lg font-semibold mb-2">a) Informações Fornecidas Diretamente por Você:</h3>
           <ul class="list-disc list-inside ml-4 space-y-1">
-            <li>Nome, e-mail e informações de perfil</li>
-            <li>Dados de pagamento (processados por terceiros seguros como Stripe)</li>
-            <li>Conteúdo que você compartilha na plataforma</li>
-            <li>Comunicações conosco via e-mail ou formulários</li>
-            <li>Preferências de consentimento de cookies</li>
+            <li><strong>Dados de Inscrição (Leads):</strong> Quando você se cadastra para receber nossos bônus, newsletters ou materiais gratuitos, coletamos seu endereço de e-mail. Utilizamos este dado para cumprir nossa promessa de enviar o conteúdo solicitado e para nos comunicarmos com você, enviando outros conteúdos e ofertas que possam ser do seu interesse.</li>
+            <li><strong>Dados de Compra:</strong> Ao adquirir nosso "Kit de Aceleração" ou outros produtos, coletamos informações necessárias para a transação, como nome completo, e-mail e CPF. Seus dados de pagamento (como número do cartão de crédito) são inseridos diretamente em um ambiente seguro de nossos parceiros de processamento de pagamento e não são armazenados por nós.</li>
+            <li><strong>Comunicações:</strong> Se você entrar em contato conosco, guardamos o histórico da comunicação para oferecer um suporte melhor.</li>
           </ul>
         </div>
         <div>
-          <h3 class="text-lg font-semibold mb-2">Informações Coletadas Automaticamente:</h3>
+          <h3 class="text-lg font-semibold mb-2">b) Informações Coletadas Automaticamente (Dados de Navegação):</h3>
           <ul class="list-disc list-inside ml-4 space-y-1">
-            <li>Dados de uso e navegação (páginas visitadas, tempo de sessão)</li>
-            <li>Informações do dispositivo e navegador (tipo, versão, resolução)</li>
-            <li>Endereço IP e localização aproximada</li>
-            <li>Cookies e tecnologias similares (detalhados na seção de cookies)</li>
+            <li><strong>Dados de Uso:</strong> Coletamos informações sobre como você interage com nossa Plataforma, como as páginas que visita, os links em que clica e o tempo que permanece em cada página.</li>
+            <li><strong>Dados Técnicos:</strong> Coletamos informações do seu dispositivo e navegador, como endereço IP, tipo de navegador, sistema operacional e localização geográfica aproximada.</li>
+            <li><strong>Cookies e Tecnologias Similares:</strong> Utilizamos cookies para coletar esses dados a fim de operar, analisar e personalizar nossos serviços.</li>
           </ul>
         </div>
       </div>`
     },
     {
-      id: "3-uso-informacoes",
-      title: "3. Como Utilizamos suas Informações",
+      id: "3-como-utilizamos",
+      title: "3. Como e Por Que Utilizamos suas Informações",
       content: `<div class="space-y-2">
-        <p>Utilizamos suas informações para:</p>
+        <p>As informações coletadas são utilizadas para as seguintes finalidades:</p>
         <ul class="list-disc list-inside ml-4 space-y-1">
-          <li>Fornecer e melhorar nossos serviços educacionais</li>
-          <li>Personalizar sua experiência de aprendizagem e recomendações</li>
-          <li>Processar pagamentos e gerenciar sua conta de usuário</li>
-          <li>Comunicar sobre cursos, atualizações e promoções relevantes</li>
-          <li>Garantir a segurança da plataforma e prevenir fraudes</li>
-          <li>Cumprir obrigações legais e regulatórias</li>
-          <li>Realizar análises estatísticas para melhoria contínua</li>
+          <li><strong>Operar e Melhorar a Plataforma:</strong> Garantir que o site funcione corretamente e entender quais conteúdos e recursos são mais populares para aprimorar a experiência do usuário.</li>
+          <li><strong>Personalizar sua Experiência:</strong> Exibir conteúdo e recomendações que sejam mais relevantes para seus interesses.</li>
+          <li><strong>Realizar Transações:</strong> Processar a compra de nossos produtos e gerenciar o acesso de clientes.</li>
+          <li><strong>Marketing e Comunicação:</strong> Enviar e-mails com notícias, dicas, ofertas e realizar campanhas de publicidade direcionada (remarketing), sempre que houver seu consentimento para tal.</li>
+          <li><strong>Segurança:</strong> Proteger nossa Plataforma contra fraudes e atividades maliciosas.</li>
+          <li><strong>Obrigações Legais:</strong> Cumprir exigências legais e regulatórias.</li>
         </ul>
       </div>`
     },
     {
-      id: "4-compartilhamento",
-      title: "4. Compartilhamento de Informações",
-      content: `<p class="mb-2">Não vendemos suas informações pessoais. Podemos compartilhar dados apenas com:</p>
-      <ul class="list-disc list-inside ml-4 space-y-1">
-        <li><strong>Provedores de serviços:</strong> Empresas que nos auxiliam nas operações (hospedagem, pagamentos, e-mail marketing)</li>
-        <li><strong>Autoridades legais:</strong> Quando exigido por lei ou para proteger direitos legais</li>
-        <li><strong>Parceiros de negócios:</strong> Com seu consentimento explícito para ofertas específicas</li>
-        <li><strong>Transferência de ativos:</strong> Em caso de fusão, aquisição ou venda de ativos da empresa</li>
-      </ul>`
-    },
-    {
-      id: "5-cookies",
-      title: "5. Cookies e Tecnologias Similares",
-      content: `<p class="mb-4">Utilizamos cookies e tecnologias similares para melhorar sua experiência. Você pode gerenciar suas preferências através do nosso Centro de Preferências de Cookies.</p>
-      <div class="my-4">
-        <h4 class="font-semibold mb-2">Tipos de Cookies que Utilizamos:</h4>
-        <p class="text-sm text-muted-foreground mb-2">Veja a tabela detalhada abaixo com todos os cookies utilizados.</p>
+      id: "4-cookies",
+      title: "4. Cookies: O Que São e Como Usamos",
+      content: `<div class="space-y-3">
+        <p>Cookies são pequenos arquivos de texto armazenados no seu navegador. Nós os utilizamos para:</p>
+        <ul class="list-disc list-inside ml-4 space-y-2">
+          <li><strong>Cookies Necessários:</strong> Essenciais para o funcionamento básico do site (ex.: segurança, login).</li>
+          <li><strong>Cookies de Análise (Analytics):</strong> Ajudam a entender como os visitantes usam o site (ex.: Google Analytics). Estes só são ativados com o seu consentimento.</li>
+          <li><strong>Cookies de Marketing:</strong> Permitem personalizar anúncios e campanhas em outras plataformas, como redes sociais (ex.: Pixel da Meta). Estes só são ativados com o seu consentimento.</li>
+          <li><strong>Cookies Funcionais:</strong> Lembram suas preferências, como idioma ou outras configurações. Estes só são ativados com o seu consentimento.</li>
+        </ul>
+        <p class="mt-3"><strong>Observação:</strong> Você pode gerenciar suas preferências de cookies a qualquer momento através do nosso banner de consentimento ou pelo link "Gerenciar Cookies" no rodapé do site.</p>
+        <div class="my-4">
+          <p class="text-sm text-muted-foreground">Veja a tabela detalhada abaixo com todos os cookies utilizados por categoria.</p>
+        </div>
       </div>`
     },
     {
-      id: "6-seus-direitos",
-      title: "6. Seus Direitos (LGPD)",
-      content: `<p class="mb-2">De acordo com a Lei Geral de Proteção de Dados (LGPD), você tem os seguintes direitos:</p>
-      <ul class="list-disc list-inside ml-4 space-y-1">
-        <li><strong>Acesso:</strong> Confirmar se tratamos seus dados e acessar suas informações</li>
-        <li><strong>Correção:</strong> Corrigir dados incompletos, inexatos ou desatualizados</li>
-        <li><strong>Exclusão:</strong> Solicitar a eliminação de dados desnecessários ou tratados em desconformidade</li>
-        <li><strong>Portabilidade:</strong> Receber seus dados em formato estruturado e interoperável</li>
-        <li><strong>Revogação:</strong> Revogar consentimentos dados anteriormente</li>
-        <li><strong>Informação:</strong> Ser informado sobre violações de dados que possam acarretar risco</li>
-        <li><strong>Oposição:</strong> Opor-se ao tratamento de dados em determinadas situações</li>
-      </ul>
-      <p class="mt-4">Para exercer seus direitos, utilize o card "Seus Direitos" abaixo ou entre em contato conosco.</p>`
+      id: "5-compartilhamento",
+      title: "5. Com Quem Compartilhamos suas Informações",
+      content: `<div class="space-y-2">
+        <p>Não vendemos suas informações pessoais. O compartilhamento ocorre apenas nas seguintes circunstâncias:</p>
+        <ul class="list-disc list-inside ml-4 space-y-1">
+          <li><strong>Provedores de Serviço:</strong> Empresas que nos auxiliam a operar, como plataformas de e-mail marketing, processadores de pagamento e ferramentas de análise de dados (como Google e Meta). Exigimos que todos cumpram as normas de proteção de dados.</li>
+          <li><strong>Autoridades Legais:</strong> Quando exigido por lei, ordem judicial ou para proteger nossos direitos.</li>
+        </ul>
+      </div>`
     },
     {
-      id: "7-seguranca",
-      title: "7. Segurança dos Dados",
-      content: `<p>Implementamos medidas técnicas e organizacionais adequadas para proteger suas informações contra acesso não autorizado, alteração, divulgação ou destruição. Nossas medidas incluem:</p>
-      <ul class="list-disc list-inside ml-4 space-y-1 mt-2">
-        <li>Criptografia SSL/TLS para transmissão de dados</li>
-        <li>Controles de acesso baseados em função (RBAC)</li>
-        <li>Monitoramento contínuo de segurança e detecção de ameaças</li>
-        <li>Backups regulares e planos de recuperação de desastres</li>
-        <li>Treinamento de equipe sobre práticas de segurança</li>
-        <li>Auditorias periódicas de segurança</li>
-      </ul>`
+      id: "6-seus-direitos-lgpd",
+      title: "6. Seus Direitos como Titular dos Dados (LGPD)",
+      content: `<div class="space-y-2">
+        <p>Você tem o direito de:</p>
+        <ul class="list-disc list-inside ml-4 space-y-1">
+          <li><strong>Acessar</strong> seus dados e confirmar a existência do tratamento.</li>
+          <li><strong>Corrigir</strong> informações incompletas, inexatas ou desatualizadas.</li>
+          <li><strong>Solicitar a anonimização, bloqueio ou eliminação</strong> de dados desnecessários ou tratados em desconformidade com a LGPD.</li>
+          <li><strong>Revogar</strong> seu consentimento a qualquer momento.</li>
+          <li><strong>Solicitar a portabilidade</strong> dos seus dados a outro fornecedor.</li>
+          <li><strong>Ser informado</strong> sobre com quem compartilhamos seus dados.</li>
+        </ul>
+        <p class="mt-3">Para exercer seus direitos, entre em contato pelo e-mail <strong>privacidade@pqestudar.com.br</strong>.</p>
+      </div>`
     },
     {
-      id: "8-retencao",
-      title: "8. Retenção de Dados",
-      content: `<p>Mantemos suas informações pelo tempo necessário para fornecer nossos serviços, cumprir obrigações legais e resolver disputas. Os períodos de retenção variam conforme o tipo de dado:</p>
-      <ul class="list-disc list-inside ml-4 space-y-1 mt-2">
-        <li><strong>Dados de conta ativa:</strong> Durante a vigência da conta e até 5 anos após inatividade</li>
-        <li><strong>Dados de transação:</strong> Conforme requisitos fiscais e legais (geralmente 5 anos)</li>
-        <li><strong>Dados de marketing:</strong> Até a revogação do consentimento ou 2 anos de inatividade</li>
-        <li><strong>Logs de acesso:</strong> 6 meses para fins de segurança</li>
-      </ul>
-      <p class="mt-2">Dados inativos são anonimizados ou excluídos conforme nossa política de retenção.</p>`
+      id: "7-seguranca-retencao",
+      title: "7. Segurança e Retenção dos Dados",
+      content: `<div class="space-y-3">
+        <p>Implementamos medidas de segurança técnicas e organizacionais para proteger seus dados. Mantemos suas informações apenas pelo tempo necessário para cumprir as finalidades para as quais foram coletadas, para obrigações legais ou para a resolução de disputas.</p>
+      </div>`
     },
     {
-      id: "9-transferencias",
-      title: "9. Transferências Internacionais",
-      content: `<p>Seus dados podem ser transferidos e processados em servidores localizados fora do Brasil, incluindo países que podem ter leis de proteção de dados diferentes. Garantimos que todas as transferências internacionais cumprem requisitos da LGPD através de:</p>
-      <ul class="list-disc list-inside ml-4 space-y-1 mt-2">
-        <li>Cláusulas contratuais padrão aprovadas</li>
-        <li>Certificações de adequação de privacidade</li>
-        <li>Garantias apropriadas de proteção de dados</li>
-      </ul>`
-    },
-    {
-      id: "10-menores",
-      title: "10. Privacidade de Menores",
-      content: `<p>Nossos serviços não são direcionados a menores de 18 anos. Não coletamos intencionalmente informações de menores. Se você é pai, mãe ou responsável e acredita que seu filho nos forneceu dados pessoais, entre em contato conosco imediatamente para que possamos tomar as medidas necessárias.</p>`
-    },
-    {
-      id: "11-atualizacoes",
-      title: "11. Atualizações desta Política",
-      content: `<p>Reservamo-nos o direito de modificar esta política a qualquer momento. As alterações significativas serão notificadas através de:</p>
-      <ul class="list-disc list-inside ml-4 space-y-1 mt-2">
-        <li>Aviso destacado em nossa plataforma</li>
-        <li>E-mail para usuários cadastrados</li>
-        <li>Atualização da data de "Última atualização" no topo desta página</li>
-      </ul>
-      <p class="mt-2">É sua responsabilidade revisar esta política periodicamente. O uso continuado do serviço após as modificações constitui sua aceitação dos novos termos.</p>`
-    },
-    {
-      id: "12-contato",
-      title: "12. Contato e DPO",
-      content: `<p class="mb-2">Para exercer seus direitos, esclarecer dúvidas sobre esta política ou relatar preocupações de privacidade, entre em contato conosco:</p>
-      <ul class="list-disc list-inside ml-4 space-y-1">
-        <li><strong>E-mail:</strong> privacidade@pqestudar.com</li>
-        <li><strong>E-mail do DPO:</strong> dpo@pqestudar.com</li>
-        <li><strong>Telefone:</strong> (11) 1234-5678</li>
-        <li><strong>Endereço:</strong> Rua da Educação, 123 - São Paulo, SP - CEP 01234-567</li>
-      </ul>
-      <p class="mt-4">Respondemos a todas as solicitações em até 15 dias úteis, conforme previsto pela LGPD.</p>`
+      id: "8-contato",
+      title: "8. Contato",
+      content: `<div class="space-y-2">
+        <p>Para exercer seus direitos ou esclarecer dúvidas sobre esta política, entre em contato conosco:</p>
+        <ul class="list-disc list-inside ml-4 space-y-1">
+          <li><strong>E-mail:</strong> privacidade@pqestudar.com.br</li>
+        </ul>
+      </div>`
     }
   ];
 
   const cookiesData = [
     {
-      categoria: "Essenciais",
+      categoria: "Necessários",
       cookies: [
         { nome: "cookieConsent", finalidade: "Armazena suas preferências de consentimento de cookies", duracao: "365 dias", provedor: "PqEstudar" },
         { nome: "session_id", finalidade: "Mantém sua sessão de login ativa", duracao: "Sessão", provedor: "PqEstudar" },
@@ -181,7 +141,7 @@ const Privacidade = () => {
       ]
     },
     {
-      categoria: "Desempenho e Análise",
+      categoria: "Análise",
       cookies: [
         { nome: "_ga", finalidade: "Google Analytics - Distingue usuários", duracao: "2 anos", provedor: "Google" },
         { nome: "_ga_*", finalidade: "Google Analytics - Mantém estado da sessão", duracao: "2 anos", provedor: "Google" },
@@ -220,10 +180,10 @@ const Privacidade = () => {
 
   useEffect(() => {
     // SEO
-    document.title = "Política de Privacidade — PqEstudar | Proteção de Dados e LGPD";
+    document.title = "Política de Privacidade – PqEstudar";
     const metaDesc = document.querySelector('meta[name="description"]');
     if (metaDesc) {
-      metaDesc.setAttribute("content", "Política de Privacidade da PqEstudar. Saiba como coletamos, usamos e protegemos seus dados pessoais conforme a LGPD. Última atualização: 28 de Outubro de 2025.");
+      metaDesc.setAttribute("content", "Transparência e proteção dos seus dados pessoais são nossa prioridade. Veja como coletamos, usamos e protegemos suas informações conforme a LGPD.");
     }
 
     const canonical = document.querySelector('link[rel="canonical"]');
@@ -236,10 +196,10 @@ const Privacidade = () => {
     script.type = "application/ld+json";
     script.text = JSON.stringify({
       "@context": "https://schema.org",
-      "@type": "WebPage",
+      "@type": ["WebPage", "PrivacyPolicy"],
       "@id": "https://pqestudar.com.br/privacidade",
-      "name": "Política de Privacidade — PqEstudar",
-      "description": "Política de Privacidade da PqEstudar conforme LGPD",
+      "name": "Política de Privacidade – PqEstudar",
+      "description": "Transparência e proteção dos seus dados pessoais são nossa prioridade. Veja como coletamos, usamos e protegemos suas informações conforme a LGPD.",
       "publisher": {
         "@type": "Organization",
         "name": "PqEstudar"
@@ -383,10 +343,10 @@ const Privacidade = () => {
             <Shield className="h-16 w-16 md:h-20 md:w-20 text-primary mx-auto mb-6" />
             <Badge variant="secondary" className="mb-4">
               <CheckCircle2 className="h-3 w-3 mr-1" />
-              Última atualização: 28 de Outubro de 2025
+              Última atualização: 28 de outubro de 2025
             </Badge>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight mb-6 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              Política de Privacidade
+              Política de Privacidade – PqEstudar
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
               Transparência e proteção dos seus dados pessoais são nossa prioridade. Veja como coletamos, usamos e protegemos suas informações conforme a LGPD.
