@@ -1,6 +1,6 @@
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
-import { Shield, Search, Printer, Link2, ChevronDown, ChevronUp, Download, Eye, Edit, Trash2, FileText, Cookie, CheckCircle2, Settings } from "lucide-react";
+import { Shield, Search, Printer, Link2, ChevronDown, ChevronUp, Download, Eye, Edit, Trash2, FileText, Cookie, CheckCircle2, Settings, Building2, List } from "lucide-react";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,8 @@ const Privacidade = () => {
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const [activeSection, setActiveSection] = useState("");
   const [showCookiePreferences, setShowCookiePreferences] = useState(false);
+  const [expandedCookieCategories, setExpandedCookieCategories] = useState<string[]>([]);
+  const [showMobileTOC, setShowMobileTOC] = useState(false);
   const { toast } = useToast();
   const { consentData, acceptAll, acceptNecessaryOnly, updatePreferences } = useCookieConsent();
 
@@ -133,7 +135,8 @@ const Privacidade = () => {
 
   const cookiesData = [
     {
-      categoria: "Necessários",
+      categoria: "Essenciais",
+      descricao: "Necessários para o funcionamento básico e segurança da plataforma",
       cookies: [
         { nome: "cookieConsent", finalidade: "Armazena suas preferências de consentimento de cookies", duracao: "365 dias", provedor: "PqEstudar" },
         { nome: "session_id", finalidade: "Mantém sua sessão de login ativa", duracao: "Sessão", provedor: "PqEstudar" },
@@ -141,7 +144,8 @@ const Privacidade = () => {
       ]
     },
     {
-      categoria: "Análise",
+      categoria: "Desempenho e Análise",
+      descricao: "Ajudam a entender como os visitantes usam o site para melhorias",
       cookies: [
         { nome: "_ga", finalidade: "Google Analytics - Distingue usuários", duracao: "2 anos", provedor: "Google" },
         { nome: "_ga_*", finalidade: "Google Analytics - Mantém estado da sessão", duracao: "2 anos", provedor: "Google" },
@@ -150,6 +154,7 @@ const Privacidade = () => {
     },
     {
       categoria: "Funcionais",
+      descricao: "Lembram suas preferências e configurações personalizadas",
       cookies: [
         { nome: "theme_preference", finalidade: "Armazena sua preferência de tema (claro/escuro)", duracao: "365 dias", provedor: "PqEstudar" },
         { nome: "lang_preference", finalidade: "Armazena sua preferência de idioma", duracao: "365 dias", provedor: "PqEstudar" }
@@ -157,8 +162,10 @@ const Privacidade = () => {
     },
     {
       categoria: "Marketing",
+      descricao: "Permitem personalizar anúncios e campanhas em outras plataformas",
       cookies: [
         { nome: "_fbp", finalidade: "Facebook Pixel - Rastreamento de conversões", duracao: "90 dias", provedor: "Meta" },
+        { nome: "_gcl_au", finalidade: "Conversões de anúncios Google", duracao: "90 dias", provedor: "Google" },
         { nome: "utm_*", finalidade: "Rastreamento de campanhas de marketing", duracao: "30 dias", provedor: "PqEstudar" }
       ]
     }
@@ -357,7 +364,44 @@ const Privacidade = () => {
 
       <main className="flex-1 container mx-auto px-4 py-12">
         <div className="grid lg:grid-cols-[280px_1fr] gap-8 max-w-7xl mx-auto">
-          {/* Sidebar TOC */}
+          {/* Mobile TOC Toggle */}
+          <div className="lg:hidden mb-6">
+            <Button
+              onClick={() => setShowMobileTOC(!showMobileTOC)}
+              variant="outline"
+              className="w-full justify-between"
+            >
+              <div className="flex items-center gap-2">
+                <List className="h-4 w-4" />
+                <span>Índice de Conteúdo</span>
+              </div>
+              <ChevronDown className={`h-4 w-4 transition-transform ${showMobileTOC ? 'rotate-180' : ''}`} />
+            </Button>
+            {showMobileTOC && (
+              <Card className="mt-2 p-4">
+                <nav className="space-y-2">
+                  {sections.map((section) => (
+                    <button
+                      key={section.id}
+                      onClick={() => {
+                        scrollToSection(section.id);
+                        setShowMobileTOC(false);
+                      }}
+                      className={`block w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${
+                        activeSection === section.id
+                          ? "bg-primary text-primary-foreground font-medium"
+                          : "hover:bg-muted"
+                      }`}
+                    >
+                      {section.title}
+                    </button>
+                  ))}
+                </nav>
+              </Card>
+            )}
+          </div>
+
+          {/* Sidebar TOC (Desktop) */}
           <aside className="hidden lg:block">
             <div className="sticky top-24 space-y-4">
               <Card className="shadow-lg">
@@ -391,7 +435,7 @@ const Privacidade = () => {
             {/* Search and Actions */}
             <Card className="shadow-lg border-2">
               <CardHeader>
-                <CardTitle className="text-xl">Navegação e Ferramentas</CardTitle>
+                <CardTitle className="text-lg sm:text-xl">Navegação e Ferramentas</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="relative">
@@ -401,21 +445,21 @@ const Privacidade = () => {
                     placeholder="Buscar na política..."
                     value={searchTerm}
                     onChange={(e) => handleSearchChange(e.target.value)}
-                    className="pl-10"
+                    className="pl-10 w-full"
                   />
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  <Button variant="outline" size="sm" onClick={handleExpandAll}>
+                <div className="flex flex-col sm:flex-row flex-wrap gap-2">
+                  <Button variant="outline" size="sm" onClick={handleExpandAll} className="w-full sm:w-auto justify-start sm:justify-center">
                     <ChevronDown className="h-4 w-4 mr-1" />
-                    Expandir Tudo
+                    <span>Expandir Tudo</span>
                   </Button>
-                  <Button variant="outline" size="sm" onClick={handleCollapseAll}>
+                  <Button variant="outline" size="sm" onClick={handleCollapseAll} className="w-full sm:w-auto justify-start sm:justify-center">
                     <ChevronUp className="h-4 w-4 mr-1" />
-                    Recolher Tudo
+                    <span>Recolher Tudo</span>
                   </Button>
-                  <Button variant="outline" size="sm" onClick={handlePrint}>
+                  <Button variant="outline" size="sm" onClick={handlePrint} className="w-full sm:w-auto justify-start sm:justify-center">
                     <Printer className="h-4 w-4 mr-1" />
-                    Imprimir/PDF
+                    <span>Imprimir/PDF</span>
                   </Button>
                 </div>
               </CardContent>
@@ -438,25 +482,26 @@ const Privacidade = () => {
                   <AccordionItem
                     value={section.id}
                     id={section.id}
-                    className="border-2 rounded-2xl shadow-md px-6 bg-card"
+                    className="border-2 rounded-2xl shadow-md px-4 sm:px-6 bg-card"
                   >
-                    <AccordionTrigger className="text-lg font-semibold hover:no-underline py-6">
-                      <div className="flex items-center justify-between w-full pr-4">
-                        <span dangerouslySetInnerHTML={{ __html: highlightText(section.title) }} />
+                    <AccordionTrigger className="text-base sm:text-lg font-semibold hover:no-underline py-4 sm:py-6">
+                      <div className="flex items-center justify-between w-full pr-2 sm:pr-4 gap-2">
+                        <span className="text-left break-words flex-1" dangerouslySetInnerHTML={{ __html: highlightText(section.title) }} />
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8"
+                          className="h-8 w-8 flex-shrink-0"
                           onClick={(e) => {
                             e.stopPropagation();
                             handleCopyLink(section.id);
                           }}
                         >
                           <Link2 className="h-4 w-4" />
+                          <span className="sr-only">Copiar link</span>
                         </Button>
                       </div>
                     </AccordionTrigger>
-                    <AccordionContent className="text-muted-foreground pb-6 pt-2 leading-relaxed">
+                    <AccordionContent className="text-muted-foreground pb-4 sm:pb-6 pt-2 leading-relaxed [&>div]:break-words">
                       <div dangerouslySetInnerHTML={{ __html: highlightText(section.content) }} />
                     </AccordionContent>
                   </AccordionItem>
@@ -464,50 +509,95 @@ const Privacidade = () => {
               ))}
             </Accordion>
 
-            {/* Tabela de Cookies */}
+            {/* Tabela de Cookies - Collapsible */}
             <Card className="shadow-lg border-2">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-xl sm:text-2xl">
                   <Cookie className="h-6 w-6" />
                   Tabela Detalhada de Cookies
                 </CardTitle>
                 <CardDescription>
-                  Veja todos os cookies que utilizamos, sua finalidade e duração
+                  Clique em cada categoria para ver os cookies utilizados
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                {cookiesData.map((category, idx) => (
-                  <div key={idx} className="space-y-3">
-                    <h3 className="text-lg font-semibold">{category.categoria}</h3>
-                    <div className="overflow-x-auto">
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Nome</TableHead>
-                            <TableHead>Finalidade</TableHead>
-                            <TableHead>Duração</TableHead>
-                            <TableHead>Provedor</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
+                <Accordion
+                  type="multiple"
+                  value={expandedCookieCategories}
+                  onValueChange={setExpandedCookieCategories}
+                  className="space-y-3"
+                >
+                  {cookiesData.map((category, idx) => (
+                    <AccordionItem
+                      key={idx}
+                      value={category.categoria}
+                      className="border-2 rounded-xl overflow-hidden"
+                    >
+                      <AccordionTrigger className="px-4 py-3 hover:bg-muted/50 [&[data-state=open]]:bg-muted/30">
+                        <div className="flex items-center gap-3 flex-1 text-left pr-2">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="font-semibold text-sm sm:text-base break-words">{category.categoria}</span>
+                              <Badge variant="secondary" className="text-xs flex-shrink-0">
+                                {category.cookies.length} {category.cookies.length === 1 ? 'cookie' : 'cookies'}
+                              </Badge>
+                            </div>
+                            <p className="text-xs sm:text-sm text-muted-foreground mt-1 break-words">
+                              {category.descricao}
+                            </p>
+                          </div>
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent className="px-4 py-3 bg-card/50">
+                        {/* Desktop Table */}
+                        <div className="hidden md:block overflow-x-auto">
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead>Nome</TableHead>
+                                <TableHead>Finalidade</TableHead>
+                                <TableHead>Duração</TableHead>
+                                <TableHead>Provedor</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {category.cookies.map((cookie, cIdx) => (
+                                <TableRow key={cIdx}>
+                                  <TableCell className="font-mono text-sm">{cookie.nome}</TableCell>
+                                  <TableCell>{cookie.finalidade}</TableCell>
+                                  <TableCell>{cookie.duracao}</TableCell>
+                                  <TableCell>{cookie.provedor}</TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        </div>
+
+                        {/* Mobile Cards */}
+                        <div className="md:hidden space-y-3">
                           {category.cookies.map((cookie, cIdx) => (
-                            <TableRow key={cIdx}>
-                              <TableCell className="font-mono text-sm">{cookie.nome}</TableCell>
-                              <TableCell>{cookie.finalidade}</TableCell>
-                              <TableCell>{cookie.duracao}</TableCell>
-                              <TableCell>{cookie.provedor}</TableCell>
-                            </TableRow>
+                            <Card key={cIdx} className="p-3 space-y-2">
+                              <div className="flex items-center justify-between gap-2">
+                                <span className="font-mono text-sm font-semibold break-all">{cookie.nome}</span>
+                                <Badge variant="outline" className="text-xs flex-shrink-0">{cookie.duracao}</Badge>
+                              </div>
+                              <p className="text-sm text-muted-foreground break-words">{cookie.finalidade}</p>
+                              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                <Building2 className="h-3 w-3 flex-shrink-0" />
+                                <span className="break-words">{cookie.provedor}</span>
+                              </div>
+                            </Card>
                           ))}
-                        </TableBody>
-                      </Table>
-                    </div>
-                    {idx < cookiesData.length - 1 && <Separator className="my-4" />}
-                  </div>
-                ))}
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  ))}
+                </Accordion>
+                
                 <div className="mt-6 text-center">
                   <Dialog open={showCookiePreferences} onOpenChange={setShowCookiePreferences}>
                     <DialogTrigger asChild>
-                      <Button variant="premium" size="lg">
+                      <Button variant="premium" size="lg" className="w-full sm:w-auto">
                         <Settings className="h-5 w-5 mr-2" />
                         Gerenciar Preferências de Cookies
                       </Button>
@@ -689,33 +779,39 @@ const Privacidade = () => {
               </CardContent>
             </Card>
 
-            {/* Card de Contato */}
+            {/* Card de Contato - Simplified */}
             <Card className="shadow-lg border-2 bg-gradient-to-br from-accent/10 to-background">
               <CardHeader>
-                <CardTitle className="text-2xl">Entre em Contato</CardTitle>
+                <CardTitle className="text-xl sm:text-2xl">Entre em Contato</CardTitle>
                 <CardDescription>
                   Dúvidas sobre privacidade? Nossa equipe está pronta para ajudar.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <h4 className="font-semibold mb-2">E-mail</h4>
-                    <p className="text-sm text-muted-foreground">privacidade@pqestudar.com</p>
-                    <p className="text-sm text-muted-foreground">dpo@pqestudar.com</p>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold mb-2">Telefone</h4>
-                    <p className="text-sm text-muted-foreground">(11) 1234-5678</p>
-                  </div>
+                <div className="p-4 bg-muted/30 rounded-lg">
+                  <h4 className="font-semibold mb-2 flex items-center gap-2">
+                    <FileText className="h-4 w-4" />
+                    E-mail
+                  </h4>
+                  <a 
+                    href="mailto:privacidade@pqestudar.com" 
+                    className="text-primary hover:underline break-all font-medium"
+                  >
+                    privacidade@pqestudar.com
+                  </a>
                 </div>
-                <Separator />
-                <div className="flex flex-wrap gap-3">
-                  <Button variant="outline" asChild>
-                    <a href="/termos">Ver Termos de Uso</a>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <Button variant="outline" asChild className="flex-1 justify-start sm:justify-center">
+                    <a href="/termos">
+                      <FileText className="h-4 w-4 mr-2" />
+                      Ver Termos de Uso
+                    </a>
                   </Button>
-                  <Button variant="outline" asChild>
-                    <a href="/configuracoes-cookies">Configurações de Cookies</a>
+                  <Button variant="outline" asChild className="flex-1 justify-start sm:justify-center">
+                    <a href="/configuracoes-cookies">
+                      <Settings className="h-4 w-4 mr-2" />
+                      Configurações de Cookies
+                    </a>
                   </Button>
                 </div>
               </CardContent>
