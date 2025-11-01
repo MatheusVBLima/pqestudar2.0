@@ -29,6 +29,8 @@ import OportunidadesAfiliados from "./pages/OportunidadesAfiliados";
 import Login from "./pages/Login";
 import { ResetPassword } from "./pages/ResetPassword";
 import AdminCourses from "./pages/AdminCourses";
+import AdminBonusPages from "./pages/AdminBonusPages";
+import BonusPage from "./pages/BonusPage";
 import NotFound from "./pages/NotFound";
 import KitAceleracao from "./pages/KitAceleracao";
 import Parceiros from "./pages/Parceiros";
@@ -66,8 +68,17 @@ const AppContent = () => {
           <Route path="/login" element={<Login />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/admin/cursos" element={<AdminCourses />} />
+          <Route path="/admin/bonus" element={<AdminBonusPages />} />
           <Route path="/kit" element={<KitAceleracao />} />
           <Route path="/parceiros" element={<Parceiros />} />
+          
+          {/* Bonus Pages - Secret Links (noindex) */}
+          <Route path="/acesso-kit-partida-8h3z" element={<BonusPage />} />
+          <Route path="/curadoria-conteudo-ia-k4f9" element={<BonusPage />} />
+          <Route path="/acervo-video-prod-b7g1" element={<BonusPage />} />
+          <Route path="/metodos-automacao-w2p5" element={<BonusPage />} />
+          <Route path="/recursos-alta-performance-z9x0" element={<BonusPage />} />
+          
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

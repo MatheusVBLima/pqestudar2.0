@@ -1,0 +1,144 @@
+import { useEffect, useState } from "react";
+import { useParams, Navigate } from "react-router-dom";
+import { Navbar } from "@/components/layout/navbar";
+import { Footer } from "@/components/layout/footer";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { ExternalLink } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { BonusPage as BonusPageType } from "@/hooks/useBonusPages";
+import { useUserRoles } from "@/hooks/useUserRoles";
+import { Helmet } from "react-helmet";
+
+const BonusPage = () => {
+  const { slug } = useParams<{ slug: string }>();
+  const [page, setPage] = useState<BonusPageType | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
+  const { isAdmin } = useUserRoles();
+
+  useEffect(() => {
+    const fetchPage = async () => {
+      if (!slug) {
+        setNotFound(true);
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from('newsletter_bonus_pages')
+          .select('*')
+          .eq('slug', `/${slug}`)
+          .maybeSingle();
+
+        if (error) throw error;
+
+        if (!data) {
+          setNotFound(true);
+        } else if (data.status === 'hidden' && !isAdmin) {
+          setNotFound(true);
+        } else {
+          setPage(data as unknown as BonusPageType);
+        }
+      } catch (error) {
+        console.error('Error fetching bonus page:', error);
+        setNotFound(true);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPage();
+  }, [slug, isAdmin]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-muted-foreground">Carregando...</div>
+      </div>
+    );
+  }
+
+  if (notFound || !page) {
+    return <Navigate to="/404" replace />;
+  }
+
+  return (
+    <>
+      <Helmet>
+        <title>{page.title} – PqEstudar</title>
+        <meta name="robots" content="noindex, nofollow" />
+        <meta name="description" content={page.intro} />
+      </Helmet>
+
+      <div className="min-h-screen flex flex-col">
+        <Navbar />
+        
+        <main className="flex-1 container mx-auto px-4 py-12">
+          <div className="max-w-5xl mx-auto space-y-12">
+            {/* Hero Section */}
+            <div className="text-center space-y-4">
+              <h1 className="text-4xl md:text-5xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+                {page.title}
+              </h1>
+              <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">
+                {page.intro}
+              </p>
+            </div>
+
+            {/* Tools Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {page.cards.map((tool, index) => (
+                <Card 
+                  key={index}
+                  className="group hover:shadow-lg transition-all duration-300 border-2 hover:border-primary/20"
+                >
+                  <CardContent className="p-6 space-y-4">
+                    {tool.logoUrl && (
+                      <div className="flex items-center justify-center h-16">
+                        <img
+                          src={tool.logoUrl}
+                          alt={tool.logoAlt}
+                          className="max-h-full max-w-full object-contain"
+                        />
+                      </div>
+                    )}
+                    
+                    <div className="space-y-2">
+                      <h4 className="font-semibold text-lg">{tool.toolTitle}</h4>
+                      <p className="text-sm text-muted-foreground leading-relaxed">
+                        {tool.toolDescription}
+                      </p>
+                    </div>
+
+                    {tool.toolLink && (
+                      <Button
+                        asChild
+                        className="w-full group-hover:scale-105 transition-transform"
+                      >
+                        <a
+                          href={tool.toolLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          aria-label={`Acessar ${tool.toolTitle} em nova aba`}
+                        >
+                          Acessar Ferramenta
+                          <ExternalLink className="ml-2 h-4 w-4" />
+                        </a>
+                      </Button>
+                    )}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </main>
+
+        <Footer />
+      </div>
+    </>
+  );
+};
+
+export default BonusPage;

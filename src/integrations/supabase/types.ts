@@ -317,6 +317,42 @@ export type Database = {
         }
         Relationships: []
       }
+      newsletter_bonus_pages: {
+        Row: {
+          cards: Json
+          created_at: string
+          id: string
+          intro: string
+          slug: string
+          sort_order: number
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          cards?: Json
+          created_at?: string
+          id?: string
+          intro: string
+          slug: string
+          sort_order?: number
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          cards?: Json
+          created_at?: string
+          id?: string
+          intro?: string
+          slug?: string
+          sort_order?: number
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       newsletter_subscribers: {
         Row: {
           confirmed: boolean
