@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Pencil, Trash2, Eye, EyeOff, Plus, Shield } from "lucide-react";
+import { Pencil, Trash2, Eye, EyeOff, Plus, Shield, ExternalLink, Copy } from "lucide-react";
 import { useBonusPages, BonusPage } from "@/hooks/useBonusPages";
 import { BonusPageModal } from "./BonusPageModal";
 import {
@@ -24,9 +24,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { useToast } from "@/hooks/use-toast";
 
 export const BonusManagement = () => {
   const { pages, loading, addPage, updatePage, deletePage, toggleStatus } = useBonusPages();
+  const { toast } = useToast();
   const [managementMode, setManagementMode] = useState(false);
   const [filterStatus, setFilterStatus] = useState<'all' | 'visible' | 'hidden'>('all');
   const [modalOpen, setModalOpen] = useState(false);
@@ -68,6 +70,21 @@ export const BonusManagement = () => {
       setPageToDelete(null);
       setDeleteDialogOpen(false);
     }
+  };
+
+  const handleOpen = (slug: string) => {
+    const url = `${window.location.origin}${slug}`;
+    window.open(url, '_blank', 'noopener,noreferrer');
+  };
+
+  const handleCopyLink = (slug: string) => {
+    const url = `${window.location.origin}${slug}`;
+    navigator.clipboard.writeText(url).then(() => {
+      toast({
+        title: "Link copiado",
+        description: "O link da página foi copiado para a área de transferência.",
+      });
+    });
   };
 
   if (loading) {
@@ -148,39 +165,67 @@ export const BonusManagement = () => {
               </div>
 
               {managementMode && (
-                <div className="flex items-center gap-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handleEdit(page)}
-                    aria-label="Editar página"
-                  >
-                    <Pencil className="h-3 w-3 mr-1" />
-                    Editar
-                  </Button>
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleOpen(page.slug)}
+                      aria-label="Abrir página em nova aba"
+                      className="flex-1"
+                    >
+                      <ExternalLink className="h-3 w-3 mr-1" />
+                      Abrir
+                    </Button>
 
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => toggleStatus(page.id, page.status)}
-                    aria-label={page.status === 'visible' ? 'Ocultar' : 'Exibir'}
-                  >
-                    {page.status === 'visible' ? (
-                      <EyeOff className="h-3 w-3 mr-1" />
-                    ) : (
-                      <Eye className="h-3 w-3 mr-1" />
-                    )}
-                    {page.status === 'visible' ? 'Ocultar' : 'Exibir'}
-                  </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleCopyLink(page.slug)}
+                      aria-label="Copiar link da página"
+                      className="flex-1"
+                    >
+                      <Copy className="h-3 w-3 mr-1" />
+                      Copiar
+                    </Button>
+                  </div>
 
-                  <Button
-                    size="sm"
-                    variant="destructive"
-                    onClick={() => handleDeleteClick(page.id)}
-                    aria-label="Excluir página"
-                  >
-                    <Trash2 className="h-3 w-3" />
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleEdit(page)}
+                      aria-label="Editar página"
+                      className="flex-1"
+                    >
+                      <Pencil className="h-3 w-3 mr-1" />
+                      Editar
+                    </Button>
+
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => toggleStatus(page.id, page.status)}
+                      aria-label={page.status === 'visible' ? 'Ocultar' : 'Exibir'}
+                      className="flex-1"
+                    >
+                      {page.status === 'visible' ? (
+                        <EyeOff className="h-3 w-3 mr-1" />
+                      ) : (
+                        <Eye className="h-3 w-3 mr-1" />
+                      )}
+                      {page.status === 'visible' ? 'Ocultar' : 'Exibir'}
+                    </Button>
+
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      onClick={() => handleDeleteClick(page.id)}
+                      aria-label="Excluir página"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  </div>
                 </div>
               )}
             </CardContent>
