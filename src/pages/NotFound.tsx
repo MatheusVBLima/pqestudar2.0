@@ -70,21 +70,20 @@ function MessageDisplay({ onGoBack, onGoHome }: MessageDisplayProps) {
           isVisible ? 'opacity-100' : 'opacity-0'
         }`}
       >
-        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-4">
+        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4" style={{ color: '#000000' }}>
           Página não encontrada
         </h1>
-        <div className="text-6xl sm:text-7xl lg:text-8xl font-extrabold bg-gradient-primary bg-clip-text text-transparent mb-6">
+        <div className="text-6xl sm:text-7xl lg:text-8xl font-extrabold mb-6" style={{ color: '#000000' }}>
           404
         </div>
-        <p className="text-sm sm:text-base lg:text-lg w-full sm:w-3/4 lg:w-1/2 text-center text-muted-foreground mb-12 px-4">
+        <p className="text-sm sm:text-base lg:text-lg w-full sm:w-3/4 lg:w-1/2 text-center mb-12 px-4" style={{ color: 'rgba(0, 0, 0, 0.85)' }}>
           A página que você procura pode ter sido removida, teve o nome alterado ou está temporariamente indisponível.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
           <Button
             onClick={onGoBack}
-            variant="outline"
             size="lg"
-            className="rounded-2xl text-base font-medium px-8 hover:scale-105 transition-transform duration-300"
+            className="rounded-2xl text-base font-medium px-8 min-h-[44px] bg-white text-[#111111] border border-[#111111] hover:bg-[#F5F5F5] hover:scale-105 transition-all duration-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-black focus-visible:outline-offset-2 active:scale-98"
           >
             <ArrowLeft className="w-5 h-5" />
             Voltar
@@ -92,9 +91,8 @@ function MessageDisplay({ onGoBack, onGoHome }: MessageDisplayProps) {
           <Button
             ref={homeButtonRef}
             onClick={onGoHome}
-            variant="hero"
             size="lg"
-            className="rounded-2xl text-base font-medium px-8 hover:scale-105 transition-transform duration-300"
+            className="rounded-2xl text-base font-medium px-8 min-h-[44px] bg-[#111111] text-white hover:bg-black hover:scale-105 transition-all duration-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 active:scale-98"
           >
             <Home className="w-5 h-5" />
             Ir para o início
@@ -184,8 +182,8 @@ function CharactersAnimation() {
       stick.style.position = 'absolute';
       stick.style.width = '18%';
       stick.style.height = '18%';
-      stick.style.opacity = '0.15';
-      stick.style.filter = 'grayscale(0.3) hue-rotate(280deg)';
+      stick.style.opacity = '1';
+      stick.style.filter = 'brightness(0)';
 
       // Set position
       if (figure.top) stick.style.top = figure.top;
@@ -311,7 +309,7 @@ function CircleAnimation() {
     }
   };
 
-  // Drawing function
+  // Drawing function with binary mask composition
   const draw = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -325,12 +323,19 @@ function CircleAnimation() {
     const distanceX = prefersReducedMotion ? canvas.width / 400 : canvas.width / 80;
     const growthRate = prefersReducedMotion ? canvas.width / 5000 : canvas.width / 1000;
     
-    // Use brand purple color with low opacity instead of white
-    context.fillStyle = 'hsl(300 100% 25% / 0.08)';
     context.clearRect(0, 0, canvas.width, canvas.height);
     
+    // Create offscreen canvas for binary mask
+    const offscreen = document.createElement('canvas');
+    offscreen.width = canvas.width;
+    offscreen.height = canvas.height;
+    const offscreenCtx = offscreen.getContext('2d');
+    if (!offscreenCtx) return;
+    
+    // Draw circles to offscreen with full opacity
+    offscreenCtx.fillStyle = 'rgba(0, 0, 0, 1)';
     circulosRef.current.forEach((circulo) => {
-      context.beginPath();
+      offscreenCtx.beginPath();
       
       if (timerRef.current < 65) {
         circulo.x = circulo.x - distanceX;
@@ -342,9 +347,37 @@ function CircleAnimation() {
         circulo.size = circulo.size + (growthRate * 0.2);
       }
       
-      context.arc(circulo.x, circulo.y, circulo.size, 0, 360);
-      context.fill();
+      offscreenCtx.arc(circulo.x, circulo.y, circulo.size, 0, 360);
+      offscreenCtx.fill();
     });
+    
+    // Apply binary threshold mask (0.5)
+    const imageData = offscreenCtx.getImageData(0, 0, offscreen.width, offscreen.height);
+    const data = imageData.data;
+    const maskThreshold = 0.5;
+    
+    for (let i = 0; i < data.length; i += 4) {
+      const alpha = data[i + 3] / 255;
+      if (alpha > maskThreshold) {
+        // Solid black area
+        data[i] = 0;
+        data[i + 1] = 0;
+        data[i + 2] = 0;
+        data[i + 3] = 255;
+      } else {
+        // Transparent area (will show white background)
+        data[i + 3] = 0;
+      }
+    }
+    
+    offscreenCtx.putImageData(imageData, 0, 0);
+    
+    // Draw white background on main canvas
+    context.fillStyle = '#FFFFFF';
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Composite the binary mask
+    context.drawImage(offscreen, 0, 0);
     
     if (timerRef.current > 500) {
       if (requestIdRef.current) {
