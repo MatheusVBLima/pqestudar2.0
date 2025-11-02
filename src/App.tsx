@@ -72,8 +72,15 @@ const AppContent = () => {
           <Route path="/kit" element={<KitAceleracao />} />
           <Route path="/parceiros" element={<Parceiros />} />
           
-          {/* Bonus Pages - Secret Links (noindex) - Dynamic route */}
-          <Route path="/:slug" element={<BonusPage />} />
+          {/* Bonus Pages - Exact Routes (noindex) */}
+          <Route path="/acesso-kit-partida-8h3z" element={<BonusPage />} />
+          <Route path="/curadoria-conteudo-ia-k4f9" element={<BonusPage />} />
+          <Route path="/acervo-video-prod-b7g1" element={<BonusPage />} />
+          <Route path="/metodos-automacao-w2p5" element={<BonusPage />} />
+          <Route path="/recursos-alta-performance-z9x0" element={<BonusPage />} />
+          
+          {/* Bonus Pages - Dynamic route for future pages */}
+          <Route path="/bonus/:slug" element={<BonusPage />} />
           
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

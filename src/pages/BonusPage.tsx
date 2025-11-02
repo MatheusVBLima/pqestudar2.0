@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, Navigate } from "react-router-dom";
+import { useParams, Navigate, useLocation } from "react-router-dom";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { Button } from "@/components/ui/button";
@@ -11,7 +11,8 @@ import { useUserRoles } from "@/hooks/useUserRoles";
 import { Helmet } from "react-helmet";
 
 const BonusPage = () => {
-  const { slug } = useParams<{ slug: string }>();
+  const { slug: paramSlug } = useParams<{ slug: string }>();
+  const location = useLocation();
   const [page, setPage] = useState<BonusPageType | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
@@ -19,7 +20,10 @@ const BonusPage = () => {
 
   useEffect(() => {
     const fetchPage = async () => {
-      if (!slug) {
+      // Use location.pathname for exact routes, or construct from param for dynamic routes
+      const slugToFetch = paramSlug ? `/${paramSlug}` : location.pathname;
+      
+      if (!slugToFetch) {
         setNotFound(true);
         setLoading(false);
         return;
@@ -29,7 +33,7 @@ const BonusPage = () => {
         const { data, error } = await supabase
           .from('newsletter_bonus_pages')
           .select('*')
-          .eq('slug', `/${slug}`)
+          .eq('slug', slugToFetch)
           .maybeSingle();
 
         if (error) throw error;
@@ -50,7 +54,7 @@ const BonusPage = () => {
     };
 
     fetchPage();
-  }, [slug, isAdmin]);
+  }, [paramSlug, location.pathname, isAdmin]);
 
   if (loading) {
     return (
