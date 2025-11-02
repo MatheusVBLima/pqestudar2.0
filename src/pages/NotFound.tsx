@@ -30,7 +30,20 @@ const NotFound = () => {
         <meta name="robots" content="noindex, nofollow" />
       </Helmet>
       
-      <div className="w-full h-screen bg-background overflow-hidden flex justify-center items-center relative">
+      <style>{`
+        :root {
+          --404-bg-a: #FFFFFF;
+          --404-bg-b: #E0F2F1;
+          --404-text: #000000;
+          --404-btn-primary: #0EA5A5;
+          --404-btn-primary-fg: #FFFFFF;
+          --404-btn-secondary: #FFFFFF;
+          --404-btn-secondary-fg: #000000;
+          --404-btn-border: #111111;
+        }
+      `}</style>
+      
+      <div className="w-full h-screen overflow-hidden flex justify-center items-center relative" style={{ backgroundColor: 'var(--404-bg-a)' }}>
         <MessageDisplay onGoBack={handleGoBack} onGoHome={() => navigate("/")} />
         <CharactersAnimation />
         <CircleAnimation />
@@ -70,39 +83,74 @@ function MessageDisplay({ onGoBack, onGoHome }: MessageDisplayProps) {
           isVisible ? 'opacity-100' : 'opacity-0'
         }`}
       >
-        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-4">
+        <h1 
+          className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4"
+          style={{ color: 'var(--404-text)' }}
+        >
           Página não encontrada
         </h1>
-        <div className="text-6xl sm:text-7xl lg:text-8xl font-extrabold bg-gradient-primary bg-clip-text text-transparent mb-6">
+        <div 
+          className="text-6xl sm:text-7xl lg:text-8xl font-extrabold mb-6"
+          style={{ color: 'var(--404-text)' }}
+        >
           404
         </div>
-        <p className="text-sm sm:text-base lg:text-lg w-full sm:w-3/4 lg:w-1/2 text-center text-muted-foreground mb-12 px-4">
+        <p 
+          className="text-sm sm:text-base lg:text-lg w-full sm:w-3/4 lg:w-1/2 text-center mb-12 px-4"
+          style={{ color: 'var(--404-text)', opacity: 0.85 }}
+        >
           A página que você procura pode ter sido removida, teve o nome alterado ou está temporariamente indisponível.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
-          <Button
+          <button
             onClick={onGoBack}
-            variant="outline"
-            size="lg"
-            className="rounded-2xl text-base font-medium px-8 hover:scale-105 transition-transform duration-300"
+            className="min-h-[44px] rounded-2xl text-base font-medium px-8 transition-all duration-300 hover:scale-105 active:scale-98 flex items-center gap-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            style={{
+              backgroundColor: 'var(--404-btn-secondary)',
+              color: 'var(--404-btn-secondary-fg)',
+              border: '1px solid var(--404-btn-border)',
+              outlineColor: 'var(--404-btn-border)'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#F5F5F5'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--404-btn-secondary)'}
           >
             <ArrowLeft className="w-5 h-5" />
             Voltar
-          </Button>
-          <Button
+          </button>
+          <button
             ref={homeButtonRef}
             onClick={onGoHome}
-            variant="hero"
-            size="lg"
-            className="rounded-2xl text-base font-medium px-8 hover:scale-105 transition-transform duration-300"
+            className="min-h-[44px] rounded-2xl text-base font-medium px-8 transition-all duration-300 hover:scale-105 active:scale-98 flex items-center gap-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            style={{
+              backgroundColor: 'var(--404-btn-primary)',
+              color: 'var(--404-btn-primary-fg)',
+              outlineColor: 'var(--404-btn-primary-fg)'
+            }}
+            onMouseEnter={(e) => {
+              const rgb = hexToRgb('#0EA5A5');
+              if (rgb) {
+                e.currentTarget.style.backgroundColor = `rgb(${Math.floor(rgb.r * 0.9)}, ${Math.floor(rgb.g * 0.9)}, ${Math.floor(rgb.b * 0.9)})`;
+              }
+            }}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--404-btn-primary)'}
           >
             <Home className="w-5 h-5" />
             Ir para o início
-          </Button>
+          </button>
         </div>
       </div>
     </div>
   );
+}
+
+// Helper function for hover effect
+function hexToRgb(hex: string) {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result ? {
+    r: parseInt(result[1], 16),
+    g: parseInt(result[2], 16),
+    b: parseInt(result[3], 16)
+  } : null;
 }
 
 // 2. Characters Animation Component
@@ -184,8 +232,8 @@ function CharactersAnimation() {
       stick.style.position = 'absolute';
       stick.style.width = '18%';
       stick.style.height = '18%';
-      stick.style.opacity = '0.15';
-      stick.style.filter = 'grayscale(0.3) hue-rotate(280deg)';
+      stick.style.opacity = '0.1';
+      stick.style.filter = 'grayscale(1) brightness(0.4)';
 
       // Set position
       if (figure.top) stick.style.top = figure.top;
@@ -311,13 +359,16 @@ function CircleAnimation() {
     }
   };
 
-  // Drawing function
+  // Drawing function with binary mask composition
   const draw = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     
-    const context = canvas.getContext('2d');
+    const context = canvas.getContext('2d', { alpha: false });
     if (!context) return;
+    
+    // Disable image smoothing for sharp edges
+    context.imageSmoothingEnabled = false;
     
     timerRef.current++;
     context.setTransform(1, 0, 0, 1, 0, 0);
@@ -325,12 +376,20 @@ function CircleAnimation() {
     const distanceX = prefersReducedMotion ? canvas.width / 400 : canvas.width / 80;
     const growthRate = prefersReducedMotion ? canvas.width / 5000 : canvas.width / 1000;
     
-    // Use brand purple color with low opacity instead of white
-    context.fillStyle = 'hsl(300 100% 25% / 0.08)';
-    context.clearRect(0, 0, canvas.width, canvas.height);
+    // Create offscreen canvas for mask
+    const offscreen = document.createElement('canvas');
+    offscreen.width = canvas.width;
+    offscreen.height = canvas.height;
+    const offscreenCtx = offscreen.getContext('2d', { alpha: true });
+    if (!offscreenCtx) return;
     
+    offscreenCtx.imageSmoothingEnabled = false;
+    offscreenCtx.clearRect(0, 0, offscreen.width, offscreen.height);
+    
+    // Draw circles to offscreen canvas with full opacity
+    offscreenCtx.fillStyle = 'rgba(0, 0, 0, 1)';
     circulosRef.current.forEach((circulo) => {
-      context.beginPath();
+      offscreenCtx.beginPath();
       
       if (timerRef.current < 65) {
         circulo.x = circulo.x - distanceX;
@@ -342,9 +401,46 @@ function CircleAnimation() {
         circulo.size = circulo.size + (growthRate * 0.2);
       }
       
-      context.arc(circulo.x, circulo.y, circulo.size, 0, 360);
-      context.fill();
+      offscreenCtx.arc(circulo.x, circulo.y, circulo.size, 0, 360);
+      offscreenCtx.fill();
     });
+    
+    // Apply binary threshold to create mask
+    const imageData = offscreenCtx.getImageData(0, 0, offscreen.width, offscreen.height);
+    const data = imageData.data;
+    const maskThreshold = 0.5;
+    
+    for (let i = 0; i < data.length; i += 4) {
+      const alpha = data[i + 3] / 255;
+      if (alpha >= maskThreshold) {
+        data[i + 3] = 255; // Fully opaque
+      } else {
+        data[i + 3] = 0; // Fully transparent
+      }
+    }
+    offscreenCtx.putImageData(imageData, 0, 0);
+    
+    // Fill main canvas with color A (white)
+    context.fillStyle = '#FFFFFF';
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Create a temporary canvas to apply color B
+    const colorCanvas = document.createElement('canvas');
+    colorCanvas.width = canvas.width;
+    colorCanvas.height = canvas.height;
+    const colorCtx = colorCanvas.getContext('2d', { alpha: true });
+    if (!colorCtx) return;
+    
+    colorCtx.imageSmoothingEnabled = false;
+    colorCtx.fillStyle = '#E0F2F1'; // Color B (teal)
+    colorCtx.fillRect(0, 0, colorCanvas.width, colorCanvas.height);
+    
+    // Apply mask to color B
+    colorCtx.globalCompositeOperation = 'destination-in';
+    colorCtx.drawImage(offscreen, 0, 0);
+    
+    // Composite color B onto main canvas
+    context.drawImage(colorCanvas, 0, 0);
     
     if (timerRef.current > 500) {
       if (requestIdRef.current) {
