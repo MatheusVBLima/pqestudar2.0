@@ -32,14 +32,16 @@ const NotFound = () => {
       
       <style>{`
         :root {
+          --brand-purple: 300 100% 25%;
           --404-bg-a: #FFFFFF;
-          --404-bg-b: #E0F2F1;
-          --404-text: #000000;
-          --404-btn-primary: #0EA5A5;
+          --404-bg-b: hsl(300 100% 25%);
+          --404-text: #FFFFFF;
+          --404-figure: hsl(300 100% 25%);
+          --404-btn-primary: hsl(300 100% 25%);
           --404-btn-primary-fg: #FFFFFF;
           --404-btn-secondary: #FFFFFF;
-          --404-btn-secondary-fg: #000000;
-          --404-btn-border: #111111;
+          --404-btn-secondary-fg: hsl(300 100% 25%);
+          --404-btn-border: hsl(300 100% 25%);
         }
       `}</style>
       
@@ -127,10 +129,7 @@ function MessageDisplay({ onGoBack, onGoHome }: MessageDisplayProps) {
               outlineColor: 'var(--404-btn-primary-fg)'
             }}
             onMouseEnter={(e) => {
-              const rgb = hexToRgb('#0EA5A5');
-              if (rgb) {
-                e.currentTarget.style.backgroundColor = `rgb(${Math.floor(rgb.r * 0.9)}, ${Math.floor(rgb.g * 0.9)}, ${Math.floor(rgb.b * 0.9)})`;
-              }
+              e.currentTarget.style.backgroundColor = 'hsl(300, 100%, 22%)';
             }}
             onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--404-btn-primary)'}
           >
@@ -232,8 +231,8 @@ function CharactersAnimation() {
       stick.style.position = 'absolute';
       stick.style.width = '18%';
       stick.style.height = '18%';
-      stick.style.opacity = '0.1';
-      stick.style.filter = 'grayscale(1) brightness(0.4)';
+      stick.style.opacity = '1';
+      stick.style.filter = 'brightness(0) saturate(100%) invert(14%) sepia(98%) saturate(6522%) hue-rotate(293deg) brightness(85%) contrast(129%)';
 
       // Set position
       if (figure.top) stick.style.top = figure.top;
@@ -432,7 +431,7 @@ function CircleAnimation() {
     if (!colorCtx) return;
     
     colorCtx.imageSmoothingEnabled = false;
-    colorCtx.fillStyle = '#E0F2F1'; // Color B (teal)
+    colorCtx.fillStyle = 'hsl(300, 100%, 25%)'; // Color B (brand purple)
     colorCtx.fillRect(0, 0, colorCanvas.width, colorCanvas.height);
     
     // Apply mask to color B
