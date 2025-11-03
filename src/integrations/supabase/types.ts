@@ -32,6 +32,54 @@ export type Database = {
         }
         Relationships: []
       }
+      brevo_config: {
+        Row: {
+          allow_resend_welcome: boolean
+          api_key_encrypted: string | null
+          created_at: string
+          default_list_id: string
+          default_tags: string[]
+          error_message_already_subscribed: string
+          error_message_generic: string
+          id: string
+          opt_in_mode: string
+          success_message_doi: string
+          success_message_single: string
+          updated_at: string
+          webhook_url: string | null
+        }
+        Insert: {
+          allow_resend_welcome?: boolean
+          api_key_encrypted?: string | null
+          created_at?: string
+          default_list_id?: string
+          default_tags?: string[]
+          error_message_already_subscribed?: string
+          error_message_generic?: string
+          id?: string
+          opt_in_mode?: string
+          success_message_doi?: string
+          success_message_single?: string
+          updated_at?: string
+          webhook_url?: string | null
+        }
+        Update: {
+          allow_resend_welcome?: boolean
+          api_key_encrypted?: string | null
+          created_at?: string
+          default_list_id?: string
+          default_tags?: string[]
+          error_message_already_subscribed?: string
+          error_message_generic?: string
+          id?: string
+          opt_in_mode?: string
+          success_message_doi?: string
+          success_message_single?: string
+          updated_at?: string
+          webhook_url?: string | null
+        }
+        Relationships: []
+      }
       course_suggestions: {
         Row: {
           created_at: string
@@ -353,6 +401,78 @@ export type Database = {
         }
         Relationships: []
       }
+      newsletter_events: {
+        Row: {
+          created_at: string
+          email_hash: string
+          error_message: string | null
+          event_type: string
+          id: string
+          ip_hash: string | null
+          metadata: Json | null
+          page_slug: string | null
+          utm_campaign: string | null
+          utm_content: string | null
+          utm_medium: string | null
+          utm_source: string | null
+          utm_term: string | null
+        }
+        Insert: {
+          created_at?: string
+          email_hash: string
+          error_message?: string | null
+          event_type: string
+          id?: string
+          ip_hash?: string | null
+          metadata?: Json | null
+          page_slug?: string | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+        }
+        Update: {
+          created_at?: string
+          email_hash?: string
+          error_message?: string | null
+          event_type?: string
+          id?: string
+          ip_hash?: string | null
+          metadata?: Json | null
+          page_slug?: string | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+        }
+        Relationships: []
+      }
+      newsletter_rate_limit: {
+        Row: {
+          attempts: number
+          created_at: string
+          id: string
+          ip_hash: string
+          window_start: string
+        }
+        Insert: {
+          attempts?: number
+          created_at?: string
+          id?: string
+          ip_hash: string
+          window_start?: string
+        }
+        Update: {
+          attempts?: number
+          created_at?: string
+          id?: string
+          ip_hash?: string
+          window_start?: string
+        }
+        Relationships: []
+      }
       newsletter_subscribers: {
         Row: {
           confirmed: boolean
@@ -558,6 +678,7 @@ export type Database = {
       }
     }
     Functions: {
+      cleanup_newsletter_rate_limit: { Args: never; Returns: undefined }
       cleanup_old_rate_limit_entries: { Args: never; Returns: undefined }
       has_role: {
         Args: {
