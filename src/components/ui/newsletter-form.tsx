@@ -52,31 +52,46 @@ export function NewsletterForm({
     setIsLoading(true);
     
     try {
-      // Call the newsletter welcome edge function
-      const { data, error } = await supabase.functions.invoke('send-newsletter-welcome', {
-        body: { email }
+      // Get UTM parameters from URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const utmSource = urlParams.get('utm_source') || undefined;
+      const utmMedium = urlParams.get('utm_medium') || undefined;
+      const utmCampaign = urlParams.get('utm_campaign') || undefined;
+      const utmContent = urlParams.get('utm_content') || undefined;
+      const utmTerm = urlParams.get('utm_term') || undefined;
+      const pageSlug = window.location.pathname === '/' ? 'homepage' : window.location.pathname.slice(1);
+
+      // Call the Brevo newsletter integration edge function
+      const { data, error } = await supabase.functions.invoke('subscribe-newsletter-brevo', {
+        body: { 
+          email,
+          consent,
+          utmSource,
+          utmMedium,
+          utmCampaign,
+          utmContent,
+          utmTerm,
+          pageSlug,
+        }
       });
 
       if (error) {
         console.error('Newsletter signup error:', error);
-        
-        // Handle specific error cases
-        if (error.message?.includes('já está cadastrado')) {
-          toast({
-            title: "Email já cadastrado",
-            description: "Este email já está em nossa lista. Verifique sua caixa de entrada!",
-            variant: "destructive",
-          });
-          return;
-        }
-        
         throw error;
+      }
+
+      if (data?.alreadySubscribed) {
+        toast({
+          title: "Email já inscrito",
+          description: data.message || "Esse e-mail já está inscrito na nossa lista.",
+        });
+        return;
       }
       
       setIsSuccess(true);
       toast({
-        title: "Sucesso!",
-        description: "Cadastro realizado! Verifique seu email para receber a lista de cursos gratuitos.",
+        title: data?.requiresConfirmation ? "Quase lá!" : "Sucesso!",
+        description: data?.message || "Cadastro realizado! Verifique seu email.",
       });
       
       // Call onSuccess callback if provided
