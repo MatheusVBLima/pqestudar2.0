@@ -678,7 +678,9 @@ export type Database = {
       }
     }
     Functions: {
+      cleanup_newsletter_events_180d: { Args: never; Returns: undefined }
       cleanup_newsletter_rate_limit: { Args: never; Returns: undefined }
+      cleanup_newsletter_rate_limit_30d: { Args: never; Returns: undefined }
       cleanup_old_rate_limit_entries: { Args: never; Returns: undefined }
       has_role: {
         Args: {
