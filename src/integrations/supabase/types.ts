@@ -84,6 +84,7 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          is_anonymous: boolean | null
           status: string | null
           suggestion: string
           updated_at: string
@@ -92,6 +93,7 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
+          is_anonymous?: boolean | null
           status?: string | null
           suggestion: string
           updated_at?: string
@@ -100,6 +102,7 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          is_anonymous?: boolean | null
           status?: string | null
           suggestion?: string
           updated_at?: string
@@ -673,6 +676,33 @@ export type Database = {
           sort_order?: number | null
           title?: string | null
           url?: string | null
+        }
+        Relationships: []
+      }
+      course_suggestions_public: {
+        Row: {
+          created_at: string | null
+          id: string | null
+          is_anonymous: boolean | null
+          status: string | null
+          suggestion: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string | null
+          is_anonymous?: boolean | null
+          status?: string | null
+          suggestion?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string | null
+          is_anonymous?: boolean | null
+          status?: string | null
+          suggestion?: string | null
+          updated_at?: string | null
         }
         Relationships: []
       }
