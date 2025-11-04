@@ -82,16 +82,18 @@ export function NewsletterForm({
 
       if (data?.alreadySubscribed) {
         toast({
-          title: "Email já inscrito",
-          description: data.message || "Esse e-mail já está inscrito na nossa lista.",
+          title: "Você já está cadastrado(a) 👍",
+          description: "Confira sua caixa de entrada e spam. Verifique se recebeu nossos e-mails.",
         });
         return;
       }
       
       setIsSuccess(true);
       toast({
-        title: data?.requiresConfirmation ? "Quase lá!" : "Sucesso!",
-        description: data?.message || "Cadastro realizado! Verifique seu email.",
+        title: "Cadastro realizado!",
+        description: data?.requiresConfirmation 
+          ? "Verifique seu e-mail para confirmar e receber seus bônus."
+          : "Tudo certo! Enviamos o e-mail de boas-vindas com seus bônus.",
       });
       
       // Call onSuccess callback if provided
@@ -109,8 +111,8 @@ export function NewsletterForm({
     } catch (error) {
       console.error('Newsletter signup error:', error);
       toast({
-        title: "Erro no cadastro",
-        description: "Tente novamente em alguns instantes.",
+        title: "Não foi possível concluir agora",
+        description: "Tente novamente em alguns instantes. Se o erro persistir, fale conosco.",
         variant: "destructive",
       });
     } finally {
@@ -128,7 +130,7 @@ export function NewsletterForm({
           Cadastro realizado!
         </h3>
         <p className="text-muted-foreground">
-          Verifique seu email para receber nossa lista exclusiva de cursos gratuitos.
+          Verifique seu e-mail para confirmar e receber seus bônus.
         </p>
       </div>
     );

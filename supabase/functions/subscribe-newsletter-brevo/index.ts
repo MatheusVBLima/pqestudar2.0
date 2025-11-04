@@ -226,7 +226,16 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     // If already subscribed and not resending, inform user
-    if (isSubscribed && !config.allow_resend_welcome) {
+    if (isSubscribed) {
+      await logEvent(
+        supabase,
+        'newsletter_already_subscribed',
+        emailHash,
+        ipHash,
+        { utmSource, utmMedium, utmCampaign, utmContent, utmTerm },
+        pageSlug
+      );
+      
       return new Response(
         JSON.stringify({
           success: false,
@@ -263,9 +272,19 @@ const handler = async (req: Request): Promise<Response> => {
       body: JSON.stringify(contactPayload),
     });
 
+    const responseText = await brevoResponse.text();
+    let brevoData = null;
+    
+    try {
+      if (responseText) {
+        brevoData = JSON.parse(responseText);
+      }
+    } catch (e) {
+      console.log('Brevo response was not JSON:', responseText);
+    }
+
     if (!brevoResponse.ok) {
-      const errorData = await brevoResponse.text();
-      console.error('Brevo API error:', errorData);
+      console.error('Brevo API error:', responseText);
       
       await logEvent(
         supabase,
@@ -274,7 +293,7 @@ const handler = async (req: Request): Promise<Response> => {
         ipHash,
         { utmSource, utmMedium, utmCampaign, utmContent, utmTerm },
         pageSlug,
-        `Brevo API error: ${errorData}`
+        `Brevo API error: ${responseText}`
       );
 
       throw new Error('Erro ao criar contato na Brevo');
@@ -283,13 +302,13 @@ const handler = async (req: Request): Promise<Response> => {
     // Log successful listing
     await logEvent(
       supabase,
-      'newsletter_listed',
+      'newsletter_subscribed',
       emailHash,
       ipHash,
       { utmSource, utmMedium, utmCampaign, utmContent, utmTerm },
       pageSlug,
       undefined,
-      { brevoResponse: await brevoResponse.json() }
+      { brevoResponse: brevoData }
     );
 
     // Determine success message based on opt-in mode
