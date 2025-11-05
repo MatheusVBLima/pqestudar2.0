@@ -685,6 +685,7 @@ export type Database = {
           id: string | null
           is_anonymous: boolean | null
           status: string | null
+          submitter_type: string | null
           suggestion: string | null
           updated_at: string | null
         }
@@ -693,6 +694,7 @@ export type Database = {
           id?: string | null
           is_anonymous?: boolean | null
           status?: string | null
+          submitter_type?: never
           suggestion?: string | null
           updated_at?: string | null
         }
@@ -701,6 +703,7 @@ export type Database = {
           id?: string | null
           is_anonymous?: boolean | null
           status?: string | null
+          submitter_type?: never
           suggestion?: string | null
           updated_at?: string | null
         }
