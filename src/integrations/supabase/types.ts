@@ -706,6 +706,39 @@ export type Database = {
         }
         Relationships: []
       }
+      partners_public: {
+        Row: {
+          created_at: string | null
+          id: string | null
+          is_active: boolean | null
+          logo_url: string | null
+          sort_order: number | null
+          title: string | null
+          updated_at: string | null
+          url: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string | null
+          is_active?: boolean | null
+          logo_url?: string | null
+          sort_order?: number | null
+          title?: string | null
+          updated_at?: string | null
+          url?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string | null
+          is_active?: boolean | null
+          logo_url?: string | null
+          sort_order?: number | null
+          title?: string | null
+          updated_at?: string | null
+          url?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       cleanup_newsletter_events_180d: { Args: never; Returns: undefined }
