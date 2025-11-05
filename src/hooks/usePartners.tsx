@@ -25,28 +25,19 @@ export const usePartners = (includeInactive = false) => {
     try {
       setLoading(true);
       
-      // Modo admin: busca da tabela base com todos os campos
-      // Modo público: busca da VIEW segura sem campos sensíveis (created_by, updated_by)
-      if (includeInactive) {
-        // Admin mode: usa tabela base 'partners' com todos os campos
-        const { data, error } = await supabase
-          .from('partners')
-          .select('*')
-          .order('sort_order', { ascending: true });
-
-        if (error) throw error;
-        setPartners(data || []);
-      } else {
-        // Public mode: usa VIEW 'partners_public' sem campos sensíveis
-        const { data, error } = await supabase
-          .from('partners_public')
-          .select('*')
-          .order('sort_order', { ascending: true });
-
-        if (error) throw error;
-        // Adicionar campos opcionais como undefined para compatibilidade de tipo
-        setPartners((data || []).map(p => ({ ...p, created_by: undefined, updated_by: undefined })));
+      let query = supabase
+        .from('partners')
+        .select('*')
+        .order('sort_order', { ascending: true });
+      
+      if (!includeInactive) {
+        query = query.eq('is_active', true);
       }
+
+      const { data, error } = await query;
+
+      if (error) throw error;
+      setPartners(data || []);
     } catch (error: any) {
       console.error('Erro ao buscar parceiros:', error);
       toast({
