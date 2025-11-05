@@ -679,13 +679,12 @@ export type Database = {
         }
         Relationships: []
       }
-      course_suggestions_public: {
+      course_suggestions_me: {
         Row: {
           created_at: string | null
           id: string | null
           is_anonymous: boolean | null
           status: string | null
-          submitter_type: string | null
           suggestion: string | null
           updated_at: string | null
         }
@@ -694,7 +693,6 @@ export type Database = {
           id?: string | null
           is_anonymous?: boolean | null
           status?: string | null
-          submitter_type?: never
           suggestion?: string | null
           updated_at?: string | null
         }
@@ -703,9 +701,18 @@ export type Database = {
           id?: string | null
           is_anonymous?: boolean | null
           status?: string | null
-          submitter_type?: never
           suggestion?: string | null
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      course_suggestions_public: {
+        Row: {
+          is_anonymous: boolean | null
+          status: string | null
+          submission_date: string | null
+          submitter_type: string | null
+          suggestion_count: number | null
         }
         Relationships: []
       }
@@ -748,6 +755,20 @@ export type Database = {
       cleanup_newsletter_rate_limit: { Args: never; Returns: undefined }
       cleanup_newsletter_rate_limit_30d: { Args: never; Returns: undefined }
       cleanup_old_rate_limit_entries: { Args: never; Returns: undefined }
+      get_brevo_config: {
+        Args: never
+        Returns: {
+          allow_resend_welcome: boolean
+          default_list_id: string
+          default_tags: string[]
+          error_message_already_subscribed: string
+          error_message_generic: string
+          opt_in_mode: string
+          success_message_doi: string
+          success_message_single: string
+          webhook_url: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
