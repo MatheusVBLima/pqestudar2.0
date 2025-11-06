@@ -7,14 +7,20 @@ import { Navigate } from "react-router-dom";
 const AdminBonusPages = () => {
   const { isAdmin, loading } = useUserRoles();
 
+  // Show loading state while checking admin - no flickering
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-muted-foreground">Carregando...</div>
+      <div className="min-h-screen flex flex-col">
+        <Navbar />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        </div>
+        <Footer />
       </div>
     );
   }
 
+  // Redirect if not admin
   if (!isAdmin) {
     return <Navigate to="/" replace />;
   }

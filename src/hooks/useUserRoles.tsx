@@ -29,25 +29,21 @@ export const useUserRoles = () => {
     try {
       setLoading(true);
       
-      // Usar RPC is_admin() em vez de ler a tabela diretamente
-      const { data: adminCheck, error: adminError } = await supabase
-        .rpc('is_admin');
+      // Use edge function for server-side admin check (não consulta user_roles diretamente)
+      const { data: adminData, error: adminError } = await supabase.functions.invoke('check-admin');
 
-      if (adminError) throw adminError;
-      
-      setIsAdmin(adminCheck || false);
+      if (adminError) {
+        console.error('Error checking admin status:', adminError);
+        setIsAdmin(false);
+      } else {
+        setIsAdmin(adminData?.isAdmin || false);
+      }
 
-      // Buscar apenas as próprias roles (RLS permite isso)
-      const { data, error } = await supabase
-        .from('user_roles')
-        .select('*')
-        .eq('user_id', user.id);
-
-      if (error) throw error;
-
-      setUserRoles(data || []);
+      // Don't fetch user_roles directly from client anymore
+      // Admin operations should use edge functions with service role
+      setUserRoles([]);
     } catch (error) {
-      console.error('Erro ao buscar roles:', error);
+      console.error('Error fetching user roles:', error);
       setUserRoles([]);
       setIsAdmin(false);
     } finally {

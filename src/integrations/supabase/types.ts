@@ -150,6 +150,13 @@ export type Database = {
             referencedRelation: "courses"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "course_votes_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       courses: {
@@ -606,7 +613,7 @@ export type Database = {
           category?: string | null
           created_at?: string | null
           description?: string | null
-          dislikes?: never
+          dislikes?: number | null
           downvotes?: number | null
           duration?: string | null
           id?: string | null
@@ -615,9 +622,9 @@ export type Database = {
           is_active?: boolean | null
           is_hidden?: boolean | null
           level?: string | null
-          likes?: never
+          likes?: number | null
           price?: string | null
-          rating?: never
+          rating?: number | null
           students?: number | null
           title?: string | null
           updated_at?: string | null
@@ -631,7 +638,7 @@ export type Database = {
           category?: string | null
           created_at?: string | null
           description?: string | null
-          dislikes?: never
+          dislikes?: number | null
           downvotes?: number | null
           duration?: string | null
           id?: string | null
@@ -640,9 +647,9 @@ export type Database = {
           is_active?: boolean | null
           is_hidden?: boolean | null
           level?: string | null
-          likes?: never
+          likes?: number | null
           price?: string | null
-          rating?: never
+          rating?: number | null
           students?: number | null
           title?: string | null
           updated_at?: string | null
@@ -676,6 +683,15 @@ export type Database = {
           sort_order?: number | null
           title?: string | null
           url?: string | null
+        }
+        Relationships: []
+      }
+      course_categories_public: {
+        Row: {
+          avg_rating: number | null
+          category: string | null
+          course_count: number | null
+          total_views: number | null
         }
         Relationships: []
       }
@@ -713,6 +729,84 @@ export type Database = {
           submission_date: string | null
           submitter_type: string | null
           suggestion_count: number | null
+        }
+        Relationships: []
+      }
+      courses_public: {
+        Row: {
+          affiliate_link: string | null
+          badge: Database["public"]["Enums"]["course_badge"] | null
+          category: string | null
+          created_at: string | null
+          description: string | null
+          dislikes: number | null
+          downvotes: number | null
+          duration: string | null
+          id: string | null
+          image_url: string | null
+          institution: string | null
+          is_active: boolean | null
+          is_hidden: boolean | null
+          level: string | null
+          likes: number | null
+          price: string | null
+          rating: number | null
+          students: number | null
+          title: string | null
+          updated_at: string | null
+          upvotes: number | null
+          views: number | null
+          vote_score: number | null
+        }
+        Insert: {
+          affiliate_link?: string | null
+          badge?: Database["public"]["Enums"]["course_badge"] | null
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          dislikes?: number | null
+          downvotes?: number | null
+          duration?: string | null
+          id?: string | null
+          image_url?: string | null
+          institution?: string | null
+          is_active?: boolean | null
+          is_hidden?: boolean | null
+          level?: string | null
+          likes?: number | null
+          price?: string | null
+          rating?: number | null
+          students?: number | null
+          title?: string | null
+          updated_at?: string | null
+          upvotes?: number | null
+          views?: number | null
+          vote_score?: number | null
+        }
+        Update: {
+          affiliate_link?: string | null
+          badge?: Database["public"]["Enums"]["course_badge"] | null
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          dislikes?: number | null
+          downvotes?: number | null
+          duration?: string | null
+          id?: string | null
+          image_url?: string | null
+          institution?: string | null
+          is_active?: boolean | null
+          is_hidden?: boolean | null
+          level?: string | null
+          likes?: number | null
+          price?: string | null
+          rating?: number | null
+          students?: number | null
+          title?: string | null
+          updated_at?: string | null
+          upvotes?: number | null
+          views?: number | null
+          vote_score?: number | null
         }
         Relationships: []
       }
