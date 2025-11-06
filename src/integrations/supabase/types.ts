@@ -661,28 +661,31 @@ export type Database = {
       }
       active_partners: {
         Row: {
-          created_at: string | null
+          display_order: number | null
           id: string | null
+          is_active: boolean | null
           logo_url: string | null
-          sort_order: number | null
+          partner_url: string | null
           title: string | null
-          url: string | null
+          updated_at: string | null
         }
         Insert: {
-          created_at?: string | null
+          display_order?: number | null
           id?: string | null
+          is_active?: boolean | null
           logo_url?: string | null
-          sort_order?: number | null
+          partner_url?: string | null
           title?: string | null
-          url?: string | null
+          updated_at?: string | null
         }
         Update: {
-          created_at?: string | null
+          display_order?: number | null
           id?: string | null
+          is_active?: boolean | null
           logo_url?: string | null
-          sort_order?: number | null
+          partner_url?: string | null
           title?: string | null
-          url?: string | null
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -812,34 +815,31 @@ export type Database = {
       }
       partners_public: {
         Row: {
-          created_at: string | null
+          display_order: number | null
           id: string | null
           is_active: boolean | null
           logo_url: string | null
-          sort_order: number | null
+          partner_url: string | null
           title: string | null
           updated_at: string | null
-          url: string | null
         }
         Insert: {
-          created_at?: string | null
+          display_order?: number | null
           id?: string | null
           is_active?: boolean | null
           logo_url?: string | null
-          sort_order?: number | null
+          partner_url?: string | null
           title?: string | null
           updated_at?: string | null
-          url?: string | null
         }
         Update: {
-          created_at?: string | null
+          display_order?: number | null
           id?: string | null
           is_active?: boolean | null
           logo_url?: string | null
-          sort_order?: number | null
+          partner_url?: string | null
           title?: string | null
           updated_at?: string | null
-          url?: string | null
         }
         Relationships: []
       }

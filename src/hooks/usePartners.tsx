@@ -37,23 +37,41 @@ export const usePartners = (includeInactive = false) => {
         if (error) throw error;
         setPartners(data || []);
       } else {
-        // Public mode: usa VIEW 'partners_public' sem campos sensíveis
+        // Public mode: usa VIEW 'active_partners' (alias de partners_public)
         const { data, error } = await supabase
-          .from('partners_public')
-          .select('*')
-          .order('sort_order', { ascending: true });
+          .from('active_partners')
+          .select('id, title, logo_url, partner_url, display_order, is_active, updated_at');
 
         if (error) throw error;
-        // Adicionar campos opcionais como undefined para compatibilidade de tipo
-        setPartners((data || []).map(p => ({ ...p, created_by: undefined, updated_by: undefined })));
+        
+        // Mapear campos da VIEW para o tipo Partner
+        setPartners((data || []).map(p => ({
+          id: p.id,
+          title: p.title,
+          logo_url: p.logo_url,
+          url: p.partner_url,
+          sort_order: p.display_order,
+          is_active: p.is_active,
+          updated_at: p.updated_at,
+          created_at: p.updated_at, // Usar updated_at como fallback
+          created_by: undefined,
+          updated_by: undefined
+        })));
       }
     } catch (error: any) {
-      console.error('Erro ao buscar parceiros:', error);
-      toast({
-        title: "Erro",
-        description: "Não foi possível carregar os parceiros.",
-        variant: "destructive"
-      });
+      // Log apenas em dev; evitar toast vermelho global na produção
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Erro ao buscar parceiros:', error);
+      }
+      
+      // Não exibir toast de erro para modo público (evitar poluir UX)
+      if (includeInactive) {
+        toast({
+          title: "Erro",
+          description: "Não foi possível carregar os parceiros.",
+          variant: "destructive"
+        });
+      }
     } finally {
       setLoading(false);
     }

@@ -336,12 +336,20 @@ export function PartnersSection() {
         )}
 
         {loading ? (
-          <div className="text-center py-8 text-muted-foreground">
-            Carregando parceiros...
+          <div className="flex items-center justify-center gap-4 py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            <span className="text-muted-foreground">Carregando parceiros...</span>
           </div>
         ) : displayPartners.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground">
-            Nenhum parceiro encontrado.
+          <div className="text-center py-12 px-4">
+            <p className="text-lg text-muted-foreground mb-2">
+              Nenhum parceiro encontrado
+            </p>
+            <p className="text-sm text-muted-foreground/70">
+              {managementMode 
+                ? "Adicione novos parceiros para começar." 
+                : "Estamos trabalhando em novas parcerias."}
+            </p>
           </div>
         ) : managementMode ? (
           <DndContext
