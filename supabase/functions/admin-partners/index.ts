@@ -54,6 +54,18 @@ Deno.serve(async (req) => {
     let result
 
     switch (action) {
+      case 'list': {
+        // Admin pode ver todos os parceiros (incluindo inativos)
+        const { data: partners, error } = await supabaseClient
+          .from('partners')
+          .select('*')
+          .order('sort_order', { ascending: true });
+
+        if (error) throw error;
+        result = partners;
+        break;
+      }
+
       case 'create': {
         const { data: partner, error } = await supabaseClient
           .from('partners')
@@ -63,15 +75,15 @@ Deno.serve(async (req) => {
             updated_by: user.id
           }])
           .select()
-          .single()
+          .single();
 
-        if (error) throw error
-        result = partner
-        break
+        if (error) throw error;
+        result = partner;
+        break;
       }
 
       case 'update': {
-        const { id, ...updates } = data
+        const { id, ...updates } = data;
         const { data: partner, error } = await supabaseClient
           .from('partners')
           .update({
@@ -80,22 +92,22 @@ Deno.serve(async (req) => {
           })
           .eq('id', id)
           .select()
-          .single()
+          .single();
 
-        if (error) throw error
-        result = partner
-        break
+        if (error) throw error;
+        result = partner;
+        break;
       }
 
       case 'delete': {
         const { error } = await supabaseClient
           .from('partners')
           .delete()
-          .eq('id', data.id)
+          .eq('id', data.id);
 
-        if (error) throw error
-        result = { success: true }
-        break
+        if (error) throw error;
+        result = { success: true };
+        break;
       }
 
       case 'toggle': {
@@ -105,11 +117,11 @@ Deno.serve(async (req) => {
             is_active: data.is_active,
             updated_by: user.id
           })
-          .eq('id', data.id)
+          .eq('id', data.id);
 
-        if (error) throw error
-        result = { success: true }
-        break
+        if (error) throw error;
+        result = { success: true };
+        break;
       }
 
       case 'reorder': {
@@ -118,7 +130,7 @@ Deno.serve(async (req) => {
           id: p.id,
           sort_order: index,
           updated_by: user.id
-        }))
+        }));
 
         const results = await Promise.all(
           updates.map((u: any) =>
@@ -127,15 +139,15 @@ Deno.serve(async (req) => {
               .update({ sort_order: u.sort_order, updated_by: u.updated_by })
               .eq('id', u.id)
           )
-        )
+        );
 
-        const errors = results.filter(r => r.error)
+        const errors = results.filter(r => r.error);
         if (errors.length > 0) {
-          throw new Error(`Failed to update ${errors.length} partner(s)`)
+          throw new Error(`Failed to update ${errors.length} partner(s)`);
         }
 
-        result = { success: true }
-        break
+        result = { success: true };
+        break;
       }
 
       default:

@@ -25,17 +25,35 @@ export const usePartners = (includeInactive = false) => {
     try {
       setLoading(true);
       
-      // Modo admin: busca da tabela base com todos os campos
+      // Modo admin: busca via edge function com service role
       // Modo público: busca da VIEW segura sem campos sensíveis (created_by, updated_by)
       if (includeInactive) {
-        // Admin mode: usa tabela base 'partners' com todos os campos
-        const { data, error } = await supabase
-          .from('partners')
-          .select('*')
-          .order('sort_order', { ascending: true });
-
+        // Admin mode: requer auth e busca todos os parceiros (incluindo inativos)
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) throw new Error('Admin access requires authentication');
+        
+        const { data, error } = await supabase.functions.invoke('admin-partners', {
+          body: { action: 'list' }
+        });
+        
         if (error) throw error;
-        setPartners(data || []);
+        
+        // Mapear campos da resposta para o formato esperado
+        const mappedData = (data as any[])?.map((p: any) => ({
+          id: p.id,
+          title: p.title,
+          logo_url: p.logo_url,
+          url: p.url,
+          sort_order: p.sort_order,
+          display_order: p.sort_order,
+          is_active: p.is_active,
+          created_by: p.created_by,
+          updated_by: p.updated_by,
+          created_at: p.created_at,
+          updated_at: p.updated_at
+        })) || [];
+        
+        setPartners(mappedData);
       } else {
         // Public mode: usa VIEW 'active_partners' (alias de partners_public)
         const { data, error } = await supabase
