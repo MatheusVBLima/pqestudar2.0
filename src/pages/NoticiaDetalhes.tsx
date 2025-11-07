@@ -11,6 +11,8 @@ import NewsStorageService from "@/services/news-storage";
 import useFavoritos from "@/hooks/useFavoritos";
 import { useToast } from "@/hooks/use-toast";
 
+import { sanitizeHTML } from "@/lib/utils";
+
 const NoticiaDetalhes = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -29,7 +31,7 @@ const NoticiaDetalhes = () => {
 
     // Try to get news from storage first
     let storedNews = NewsStorageService.getNews(id);
-    
+
     if (!storedNews) {
       // Fallback to static data for IDs "1" and "2"
       storedNews = staticNoticias[id as keyof typeof staticNoticias];
@@ -37,14 +39,14 @@ const NoticiaDetalhes = () => {
 
     if (storedNews) {
       // If it's from AI service and doesn't have full content, generate it
-      if ('conteudoCompleto' in storedNews && !storedNews.conteudoCompleto) {
+      if ("conteudoCompleto" in storedNews && !storedNews.conteudoCompleto) {
         const enhancedNews = {
           ...storedNews,
           conteudoCompleto: generateFallbackContent(storedNews),
           autor: storedNews.autor || "Portal de Educação",
           visualizacoes: storedNews.visualizacoes || Math.floor(Math.random() * 50000) + 1000,
           tags: storedNews.tags || [storedNews.categoria, "Educação"],
-          fontes: storedNews.fontes || [{ nome: "Portal de Educação", url: "#" }]
+          fontes: storedNews.fontes || [{ nome: "Portal de Educação", url: "#" }],
         };
         setNoticia(enhancedNews);
       } else {
@@ -53,12 +55,10 @@ const NoticiaDetalhes = () => {
 
       // Buscar notícias relacionadas
       const allNews = NewsStorageService.getAllNews();
-      const related = allNews
-        .filter((n: any) => n.id !== id && n.categoria === storedNews.categoria)
-        .slice(0, 6); // Pegar até 6 relacionadas
+      const related = allNews.filter((n: any) => n.id !== id && n.categoria === storedNews.categoria).slice(0, 6); // Pegar até 6 relacionadas
       setNoticiasRelacionadas(related);
     }
-    
+
     setLoading(false);
   }, [id]);
 
@@ -84,7 +84,8 @@ const NoticiaDetalhes = () => {
     "1": {
       id: 1,
       titulo: "Resultado do ENEM 2024 será divulgado em janeiro",
-      descricao: "O Instituto Nacional de Estudos e Pesquisas Educacionais Anísio Teixeira (Inep) confirmou que as notas individuais do ENEM 2024 serão disponibilizadas no final de janeiro.",
+      descricao:
+        "O Instituto Nacional de Estudos e Pesquisas Educacionais Anísio Teixeira (Inep) confirmou que as notas individuais do ENEM 2024 serão disponibilizadas no final de janeiro.",
       categoria: "ENEM",
       data: "2025-01-15",
       tempo: "há 2 dias",
@@ -139,13 +140,14 @@ const NoticiaDetalhes = () => {
       tags: ["ENEM", "Resultado", "Educação", "Ensino Superior"],
       fontes: [
         { nome: "Portal do Inep", url: "https://www.gov.br/inep" },
-        { nome: "Ministério da Educação", url: "https://www.gov.br/mec" }
-      ]
+        { nome: "Ministério da Educação", url: "https://www.gov.br/mec" },
+      ],
     },
     "2": {
       id: 2,
       titulo: "Inscrições abertas para concurso da PRF 2025",
-      descricao: "A Polícia Rodoviária Federal oficializou a abertura das inscrições para o concurso público 2025, oferecendo 1.000 vagas.",
+      descricao:
+        "A Polícia Rodoviária Federal oficializou a abertura das inscrições para o concurso público 2025, oferecendo 1.000 vagas.",
       categoria: "Concursos",
       data: "2025-01-10",
       tempo: "há 1 semana",
@@ -187,9 +189,9 @@ const NoticiaDetalhes = () => {
       tags: ["PRF", "Concurso Público", "Policial", "Segurança Pública"],
       fontes: [
         { nome: "Portal da PRF", url: "https://www.gov.br/prf" },
-        { nome: "Edital Oficial", url: "#" }
-      ]
-    }
+        { nome: "Edital Oficial", url: "#" },
+      ],
+    },
   };
 
   if (loading) {
@@ -223,11 +225,11 @@ const NoticiaDetalhes = () => {
 
   const getCategoriaColor = (categoria: string) => {
     const cores = {
-      "ENEM": "bg-blue-500",
-      "Concursos": "bg-green-500",
-      "SISU": "bg-purple-500",
-      "ProUni": "bg-orange-500",
-      "FIES": "bg-pink-500"
+      ENEM: "bg-blue-500",
+      Concursos: "bg-green-500",
+      SISU: "bg-purple-500",
+      ProUni: "bg-orange-500",
+      FIES: "bg-pink-500",
     };
     return cores[categoria as keyof typeof cores] || "bg-gray-500";
   };
@@ -241,7 +243,7 @@ const NoticiaDetalhes = () => {
         variant: "destructive",
         duration: 4000,
       });
-      
+
       // Navigate to login after a short delay, with return path
       setTimeout(() => {
         navigate("/login?from=noticias");
@@ -255,20 +257,20 @@ const NoticiaDetalhes = () => {
       descricao: noticia.descricao,
       categoria: noticia.categoria,
       data: noticia.data,
-      tipo: "noticia" as const
+      tipo: "noticia" as const,
     };
 
     if (isFavorito(noticia.id, "noticia")) {
       removerFavorito(noticia.id, "noticia");
       toast({
         title: "Removido dos favoritos",
-        description: "A notícia foi removida da sua lista de favoritos."
+        description: "A notícia foi removida da sua lista de favoritos.",
       });
     } else {
       adicionarFavorito(noticiaFavorito);
       toast({
         title: "Salvo nos favoritos",
-        description: "A notícia foi adicionada à sua lista de favoritos."
+        description: "A notícia foi adicionada à sua lista de favoritos.",
       });
     }
   };
@@ -276,15 +278,11 @@ const NoticiaDetalhes = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      
+
       <main className="container mx-auto px-4 py-8 max-w-4xl">
         {/* Botão Voltar */}
         <div className="mb-6">
-          <Button 
-            variant="ghost" 
-            onClick={() => navigate("/noticias")}
-            className="hover:bg-accent"
-          >
+          <Button variant="ghost" onClick={() => navigate("/noticias")} className="hover:bg-accent">
             <ArrowLeft className="h-4 w-4 mr-2" />
             Voltar para Notícias
           </Button>
@@ -294,30 +292,20 @@ const NoticiaDetalhes = () => {
         <Card className="mb-8">
           <CardContent className="p-8">
             <div className="flex items-center gap-2 mb-4">
-              <Badge 
-                className={`${getCategoriaColor(noticia.categoria)} text-white`}
-              >
-                {noticia.categoria}
-              </Badge>
-              {noticia.urgente && (
-                <Badge variant="destructive">
-                  Urgente
-                </Badge>
-              )}
+              <Badge className={`${getCategoriaColor(noticia.categoria)} text-white`}>{noticia.categoria}</Badge>
+              {noticia.urgente && <Badge variant="destructive">Urgente</Badge>}
             </div>
 
-            <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-6 leading-tight">
-              {noticia.titulo}
-            </h1>
+            <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-6 leading-tight">{noticia.titulo}</h1>
 
             <div className="flex flex-wrap items-center gap-6 text-sm text-muted-foreground mb-6">
               <div className="flex items-center gap-2">
                 <Calendar className="h-4 w-4" />
-                {new Date(noticia.data).toLocaleDateString('pt-BR', {
-                  weekday: 'long',
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric'
+                {new Date(noticia.data).toLocaleDateString("pt-BR", {
+                  weekday: "long",
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
                 })}
               </div>
               <div className="flex items-center gap-2">
@@ -327,14 +315,10 @@ const NoticiaDetalhes = () => {
               {noticia.visualizacoes && (
                 <div className="flex items-center gap-2">
                   <Eye className="h-4 w-4" />
-                  {noticia.visualizacoes.toLocaleString('pt-BR')} visualizações
+                  {noticia.visualizacoes.toLocaleString("pt-BR")} visualizações
                 </div>
               )}
-              {noticia.autor && (
-                <div>
-                  Por {noticia.autor}
-                </div>
-              )}
+              {noticia.autor && <div>Por {noticia.autor}</div>}
             </div>
 
             <div className="flex items-center gap-2">
@@ -342,8 +326,8 @@ const NoticiaDetalhes = () => {
                 <Share2 className="h-4 w-4 mr-2" />
                 Compartilhar
               </Button>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 size="sm"
                 onClick={() => handleSalvarNoticia(noticia)}
                 className={!user ? "opacity-70" : ""}
@@ -353,12 +337,7 @@ const NoticiaDetalhes = () => {
                 ) : (
                   <Bookmark className="h-4 w-4 mr-2" />
                 )}
-                {!user 
-                  ? "Login p/ salvar" 
-                  : isFavorito(noticia.id, "noticia") 
-                    ? "Salvo" 
-                    : "Salvar"
-                }
+                {!user ? "Login p/ salvar" : isFavorito(noticia.id, "noticia") ? "Salvo" : "Salvar"}
               </Button>
             </div>
           </CardContent>
@@ -373,10 +352,10 @@ const NoticiaDetalhes = () => {
               ⚠️ WARNING: If external or user-generated content is added in the future,
               implement HTML sanitization using DOMPurify to prevent XSS attacks.
             */}
-            <div 
+            <div
               className="prose prose-lg max-w-none text-foreground prose-headings:font-bold prose-headings:text-foreground prose-h3:text-2xl prose-h3:mt-8 prose-h3:mb-4 prose-p:mb-4 prose-p:leading-relaxed prose-p:text-base prose-ul:my-6 prose-ul:space-y-2 prose-li:leading-relaxed prose-strong:text-foreground prose-strong:font-semibold"
-              dangerouslySetInnerHTML={{ 
-                __html: noticia.conteudoCompleto || noticia.conteudo || `<p>${noticia.descricao}</p>` 
+              dangerouslySetInnerHTML={{
+                __html: sanitizeHTML(noticia.conteudoCompleto || noticia.conteudo || `<p>${noticia.descricao}</p>`),
               }}
             />
           </CardContent>
@@ -390,14 +369,16 @@ const NoticiaDetalhes = () => {
               <div>
                 <h3 className="font-semibold mb-2">Tags:</h3>
                 <div className="flex flex-wrap gap-2">
-                  {(noticia.tags && noticia.tags.length > 0 ? noticia.tags : [noticia.categoria, "Educação"]).map((tag: string, index: number) => (
-                    <Badge key={index} variant="secondary">
-                      {tag}
-                    </Badge>
-                  ))}
+                  {(noticia.tags && noticia.tags.length > 0 ? noticia.tags : [noticia.categoria, "Educação"]).map(
+                    (tag: string, index: number) => (
+                      <Badge key={index} variant="secondary">
+                        {tag}
+                      </Badge>
+                    ),
+                  )}
                 </div>
               </div>
-              
+
               {noticia.fontes && noticia.fontes.length > 0 && (
                 <>
                   <Separator />
@@ -405,14 +386,14 @@ const NoticiaDetalhes = () => {
                     <h3 className="font-semibold mb-2">Fontes:</h3>
                     <div className="space-y-2">
                       {noticia.fontes.map((fonte: any, index: number) => {
-                        const fonteName = typeof fonte === 'string' ? fonte : fonte.nome;
-                        const fonteUrl = typeof fonte === 'string' ? '#' : fonte.url;
-                        
+                        const fonteName = typeof fonte === "string" ? fonte : fonte.nome;
+                        const fonteUrl = typeof fonte === "string" ? "#" : fonte.url;
+
                         return (
                           <div key={index}>
-                            <a 
-                              href={fonteUrl} 
-                              target="_blank" 
+                            <a
+                              href={fonteUrl}
+                              target="_blank"
                               rel="noopener noreferrer"
                               className="inline-flex items-center text-primary hover:underline"
                             >
@@ -437,15 +418,13 @@ const NoticiaDetalhes = () => {
               <h3 className="text-xl font-semibold mb-4">Notícias Relacionadas</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {noticiasRelacionadas.slice(0, 6).map((relatedNews: any) => (
-                  <div 
+                  <div
                     key={relatedNews.id}
                     onClick={() => navigate(`/noticia/${relatedNews.id}`)}
                     className="flex items-start gap-3 p-4 rounded-lg hover:bg-accent cursor-pointer transition-colors border border-border group"
                   >
                     <div className="flex-1">
-                      <Badge 
-                        className={`${getCategoriaColor(relatedNews.categoria)} text-white text-xs mb-2`}
-                      >
+                      <Badge className={`${getCategoriaColor(relatedNews.categoria)} text-white text-xs mb-2`}>
                         {relatedNews.categoria}
                       </Badge>
                       <h4 className="text-sm font-medium group-hover:text-primary line-clamp-2">
