@@ -356,33 +356,7 @@ const Privacidade = () => {
   );
 
   // Substitua sua função highlightText por esta aqui
-  const highlightText = (text: string) => {
-    if (!searchTerm) return text;
-
-    // Escapa caracteres especiais de regex do termo de busca
-    const safeTerm = searchTerm.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-
-    // Regex case-insensitive
-    const regex = new RegExp(`(${safeTerm})`, "gi");
-
-    // Escapa HTML do texto-base (para não virar tag se o usuário digitar <...>)
-    const escapeHtml = (s: string) =>
-      s
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-
-    // Texto seguro
-    const safeText = escapeHtml(text);
-
-    // Aplica <mark> sobre o texto já escapado (somente inserimos a tag mark)
-    const marked = safeText.replace(regex, '<mark class="bg-yellow-300 dark:bg-yellow-600">$1</mark>');
-
-    // Retorna string segura com apenas <mark> como HTML
-    return marked;
-  };
+  const highlightText = (text: string) => safeHighlight(text, searchTerm);
 
   const handleSearchChange = (value: string) => {
     setSearchTerm(value);
@@ -606,7 +580,7 @@ const Privacidade = () => {
                       </div>
                     </AccordionTrigger>
                     <AccordionContent className="text-muted-foreground pb-4 sm:pb-6 pt-2 leading-relaxed [&>div]:break-words">
-                      <div dangerouslySetInnerHTML={{ __html: highlightText(section.content) }} />
+                      <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(section.content) }} />
                     </AccordionContent>
                   </AccordionItem>
                 </motion.div>
