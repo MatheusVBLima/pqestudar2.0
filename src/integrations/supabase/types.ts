@@ -689,15 +689,6 @@ export type Database = {
         }
         Relationships: []
       }
-      course_categories_public: {
-        Row: {
-          avg_rating: number | null
-          category: string | null
-          course_count: number | null
-          total_views: number | null
-        }
-        Relationships: []
-      }
       course_suggestions_me: {
         Row: {
           created_at: string | null

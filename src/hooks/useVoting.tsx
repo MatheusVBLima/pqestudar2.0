@@ -23,12 +23,12 @@ export const useVoting = (courseId: string) => {
   // Buscar voto do usuário e contadores
   useEffect(() => {
     const fetchVoteData = async () => {
-      // Buscar contadores do curso
+      // Buscar contadores do curso da view pública
       const { data: courseData } = await supabase
-        .from('courses')
+        .from('active_courses')
         .select('upvotes, downvotes')
         .eq('id', courseId)
-        .single();
+        .maybeSingle();
 
       if (courseData) {
         setUpvotes(courseData.upvotes || 0);
@@ -104,10 +104,10 @@ export const useVoting = (courseId: string) => {
 
       // Atualizar contadores localmente
       const { data: courseData } = await supabase
-        .from('courses')
+        .from('active_courses')
         .select('upvotes, downvotes')
         .eq('id', courseId)
-        .single();
+        .maybeSingle();
 
       if (courseData) {
         setUpvotes(courseData.upvotes || 0);
