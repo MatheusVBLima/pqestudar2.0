@@ -693,9 +693,13 @@ const Noticias = () => {
                         <div
                           className="prose prose-sm max-w-none text-muted-foreground"
                           dangerouslySetInnerHTML={{
-                            __html: getSafePreviewHtml(noticia.conteudoCompleto, 400),
+                            __html: sanitizeHTML(
+                              noticia.conteudoCompleto.substring(0, 400) +
+                                (noticia.conteudoCompleto.length > 400 ? "..." : ""),
+                            ),
                           }}
                         />
+
                         {toPlainText(noticia.conteudoCompleto).length > 400 && (
                           <Button
                             variant="link"
