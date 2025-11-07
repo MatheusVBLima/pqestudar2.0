@@ -693,7 +693,7 @@ const Noticias = () => {
                         <div
                           className="prose prose-sm max-w-none text-muted-foreground"
                           dangerouslySetInnerHTML={{
-                            __html: sanitizeHTML(
+                            __html: sanitizeHtml(
                               noticia.conteudoCompleto.substring(0, 400) +
                                 (noticia.conteudoCompleto.length > 400 ? "..." : ""),
                             ),
