@@ -40,7 +40,7 @@ import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { useCookieConsent } from "@/hooks/useCookieConsent";
 
-import { sanitizeHtml, escapeForRegex } from "@/lib/utils";
+import { sanitizeHtml, safeHighlight } from "@/lib/utils";
 
 const Privacidade = () => {
   const [searchTerm, setSearchTerm] = useState("");
