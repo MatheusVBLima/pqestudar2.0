@@ -358,7 +358,7 @@ const NoticiaDetalhes = () => {
               className="prose prose-lg max-w-none text-foreground ..."
               dangerouslySetInnerHTML={{
                 __html: sanitizeHtml(
-                  noticia.conteudoCompleto || noticia.conteudo || `<p>${escapeHtml(noticia.descricao ?? "")}</p>`,
+                  noticia.conteudoCompleto || noticia.conteudo || `<p>${escapeHtml(noticia.descricao)}</p>`,
                 ),
               }}
             />
