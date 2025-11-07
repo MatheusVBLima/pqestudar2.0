@@ -6,8 +6,7 @@ import { PremiumCTASection } from "@/components/sections/premium-cta-section";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 
-// src/lib/index.ts
-export { sanitizeHtml, escapeHtml, safeHighlight, cn } from "./utils";
+import { sanitizeHtml, escapeHtml, safeHighlight, cn } from "@/lib/utils";
 
 const Index = () => {
   return (
