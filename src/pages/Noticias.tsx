@@ -691,11 +691,10 @@ const Noticias = () => {
                       <div className="space-y-3">
                         {/* Conteúdo sanitizado em preview seguro */}
                         <div
-                          className="prose prose-sm max-w-none text-muted-foreground"
+                          className="prose prose-lg max-w-none text-foreground ..."
                           dangerouslySetInnerHTML={{
                             __html: sanitizeHTML(
-                              noticia.conteudoCompleto.substring(0, 400) +
-                                (noticia.conteudoCompleto.length > 400 ? "..." : ""),
+                              noticia.conteudoCompleto || noticia.conteudo || `<p>${noticia.descricao}</p>`,
                             ),
                           }}
                         />
