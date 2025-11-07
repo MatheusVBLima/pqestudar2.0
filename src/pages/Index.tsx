@@ -6,6 +6,9 @@ import { PremiumCTASection } from "@/components/sections/premium-cta-section";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 
+// src/lib/index.ts
+export { sanitizeHtml, escapeHtml, safeHighlight, cn } from "./utils";
+
 const Index = () => {
   return (
     <div className="min-h-screen flex flex-col overflow-x-hidden w-full">
