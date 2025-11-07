@@ -71,38 +71,31 @@ export const useCourses = () => {
 
   const createCourse = async (courseData: CreateCourseData) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Usuário não autenticado');
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Usuário não autenticado');
 
-      const { data, error } = await supabase
-        .from('courses')
-        .insert([{
-          title: courseData.title,
-          description: courseData.description || '',
-          category: courseData.category,
-          duration: courseData.duration,
-          price: courseData.price || 'Consultar',
-          image_url: courseData.image_url,
-          institution: courseData.institution || 'Plataforma Parceira',
-          level: courseData.level || 'Iniciante',
-          badge: courseData.badge,
-          affiliate_link: courseData.affiliate_link,
-          created_by: user.id
-        }])
-        .select()
-        .single();
+      const { data, error } = await supabase.functions.invoke('admin-courses', {
+        body: {
+          action: 'create',
+          data: {
+            title: courseData.title,
+            description: courseData.description || '',
+            category: courseData.category,
+            duration: courseData.duration,
+            price: courseData.price || 'Consultar',
+            image_url: courseData.image_url,
+            institution: courseData.institution || 'Plataforma Parceira',
+            level: courseData.level || 'Iniciante',
+            badge: courseData.badge,
+            affiliate_link: courseData.affiliate_link
+          }
+        }
+      });
 
       if (error) throw error;
       
-      // Add default values for calculated fields
-      const courseWithDefaults = {
-        ...data,
-        likes: data.upvotes || 0,
-        dislikes: data.downvotes || 0,
-        views: data.views || 0
-      } as Course;
-      
-      setCourses(prev => [courseWithDefaults, ...prev]);
+      // Refetch to get updated data from public view
+      await fetchCourses();
       return { data, error: null };
     } catch (err: any) {
       return { data: null, error: err.message };
@@ -111,33 +104,21 @@ export const useCourses = () => {
 
   const updateCourse = async (courseData: UpdateCourseData | { id: string; is_active: boolean }) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Usuário não autenticado');
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Usuário não autenticado');
 
       const { id, ...updateFields } = courseData;
-      const { data, error } = await supabase
-        .from('courses')
-        .update({
-          ...updateFields,
-          updated_by: user.id
-        })
-        .eq('id', id)
-        .select()
-        .single();
+      const { data, error } = await supabase.functions.invoke('admin-courses', {
+        body: {
+          action: 'update',
+          data: { id, ...updateFields }
+        }
+      });
 
       if (error) throw error;
       
-      // Add default values for calculated fields
-      const courseWithDefaults = {
-        ...data,
-        likes: data.upvotes || 0,
-        dislikes: data.downvotes || 0,
-        views: data.views || 0
-      } as Course;
-      
-      setCourses(prev => prev.map(course => 
-        course.id === courseData.id ? courseWithDefaults : course
-      ));
+      // Refetch to get updated data from public view
+      await fetchCourses();
       return { data, error: null };
     } catch (err: any) {
       return { data: null, error: err.message };
@@ -146,17 +127,20 @@ export const useCourses = () => {
 
   const deleteCourse = async (courseId: string) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Usuário não autenticado');
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Usuário não autenticado');
 
-      const { error } = await supabase
-        .from('courses')
-        .delete()
-        .eq('id', courseId);
+      const { error } = await supabase.functions.invoke('admin-courses', {
+        body: {
+          action: 'delete',
+          data: { id: courseId }
+        }
+      });
 
       if (error) throw error;
       
-      setCourses(prev => prev.filter(course => course.id !== courseId));
+      // Refetch to get updated data from public view
+      await fetchCourses();
       return { error: null };
     } catch (err: any) {
       return { error: err.message };
@@ -165,20 +149,20 @@ export const useCourses = () => {
 
   const hideCourse = async (courseId: string) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Usuário não autenticado');
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Usuário não autenticado');
 
-      const { error } = await supabase
-        .from('courses')
-        .update({ 
-          is_hidden: true,
-          updated_by: user.id
-        })
-        .eq('id', courseId);
+      const { error } = await supabase.functions.invoke('admin-courses', {
+        body: {
+          action: 'hide',
+          data: { id: courseId }
+        }
+      });
 
       if (error) throw error;
       
-      setCourses(prev => prev.filter(course => course.id !== courseId));
+      // Refetch to get updated data from public view
+      await fetchCourses();
       return { error: null };
     } catch (err: any) {
       return { error: err.message };

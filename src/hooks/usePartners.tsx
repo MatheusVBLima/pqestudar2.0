@@ -79,19 +79,19 @@ export const usePartners = (includeInactive = false) => {
 
   const addPartner = async (partner: Omit<Partner, 'id' | 'created_at' | 'updated_at' | 'created_by' | 'updated_by'>) => {
     try {
-      const { data, error } = await supabase
-        .from('partners')
-        .insert([{
-          ...partner,
-          created_by: user?.id,
-          updated_by: user?.id
-        }])
-        .select()
-        .single();
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Usuário não autenticado');
+
+      const { data, error } = await supabase.functions.invoke('admin-partners', {
+        body: {
+          action: 'create',
+          data: partner
+        }
+      });
 
       if (error) throw error;
 
-      setPartners(prev => [...prev, data].sort((a, b) => a.sort_order - b.sort_order));
+      await fetchPartners();
       toast({
         title: "Sucesso",
         description: "Parceiro adicionado com sucesso!"
@@ -110,23 +110,19 @@ export const usePartners = (includeInactive = false) => {
 
   const updatePartner = async (id: string, updates: Partial<Partner>) => {
     try {
-      const { data, error } = await supabase
-        .from('partners')
-        .update({
-          ...updates,
-          updated_by: user?.id
-        })
-        .eq('id', id)
-        .select()
-        .single();
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Usuário não autenticado');
+
+      const { data, error } = await supabase.functions.invoke('admin-partners', {
+        body: {
+          action: 'update',
+          data: { id, ...updates }
+        }
+      });
 
       if (error) throw error;
 
-      setPartners(prev => 
-        prev.map(p => p.id === id ? data : p)
-          .sort((a, b) => a.sort_order - b.sort_order)
-      );
-      
+      await fetchPartners();
       toast({
         title: "Sucesso",
         description: "Parceiro atualizado com sucesso!"
@@ -145,14 +141,19 @@ export const usePartners = (includeInactive = false) => {
 
   const deletePartner = async (id: string) => {
     try {
-      const { error } = await supabase
-        .from('partners')
-        .delete()
-        .eq('id', id);
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Usuário não autenticado');
+
+      const { error } = await supabase.functions.invoke('admin-partners', {
+        body: {
+          action: 'delete',
+          data: { id }
+        }
+      });
 
       if (error) throw error;
 
-      setPartners(prev => prev.filter(p => p.id !== id));
+      await fetchPartners();
       toast({
         title: "Sucesso",
         description: "Parceiro removido com sucesso!"
@@ -185,34 +186,24 @@ export const usePartners = (includeInactive = false) => {
     setPartners(reorderedPartners);
 
     try {
-      // Atualizar todos de uma vez usando batch update
-      const updates = reorderedPartners.map((partner, index) => ({
-        id: partner.id,
-        sort_order: index,
-        updated_by: user?.id
-      }));
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Usuário não autenticado');
 
-      console.log('[Partners Reorder] Sending batch update', { payload: updates });
+      const { error } = await supabase.functions.invoke('admin-partners', {
+        body: {
+          action: 'reorder',
+          data: { 
+            partners: reorderedPartners.map((p, index) => ({ id: p.id, sort_order: index }))
+          }
+        }
+      });
 
-      // Executar updates em paralelo
-      const results = await Promise.all(
-        updates.map(({ id, sort_order, updated_by }) =>
-          supabase
-            .from('partners')
-            .update({ sort_order, updated_by })
-            .eq('id', id)
-        )
-      );
-
-      // Verificar erros
-      const errors = results.filter(r => r.error);
-      if (errors.length > 0) {
-        throw new Error(`Failed to update ${errors.length} partner(s)`);
-      }
+      if (error) throw error;
 
       const duration = Date.now() - startTime;
       console.log('[Partners Reorder] Success', { duration: `${duration}ms` });
 
+      await fetchPartners();
       toast({
         title: "Ordem atualizada",
         description: "A ordem dos parceiros foi salva com sucesso."
