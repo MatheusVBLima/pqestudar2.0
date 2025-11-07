@@ -11,7 +11,8 @@ import NewsStorageService from "@/services/news-storage";
 import useFavoritos from "@/hooks/useFavoritos";
 import { useToast } from "@/hooks/use-toast";
 
-import { sanitizeHTML } from "@/lib/utils";
+// no topo
+import { sanitizeHtml, escapeHtml } from "@/lib/utils";
 
 const NoticiaDetalhes = () => {
   const { id } = useParams();
@@ -356,7 +357,9 @@ const NoticiaDetalhes = () => {
             <div
               className="prose prose-lg max-w-none text-foreground ..."
               dangerouslySetInnerHTML={{
-                __html: sanitizeHTML(noticia.conteudoCompleto || noticia.conteudo || `<p>${noticia.descricao}</p>`),
+                __html: sanitizeHtml(
+                  noticia.conteudoCompleto || noticia.conteudo || `<p>${escapeHtml(noticia.descricao ?? "")}</p>`,
+                ),
               }}
             />
           </CardContent>
