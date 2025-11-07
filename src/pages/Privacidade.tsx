@@ -1,6 +1,23 @@
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
-import { Shield, Search, Printer, Link2, ChevronDown, ChevronUp, Download, Eye, Edit, Trash2, FileText, Cookie, CheckCircle2, Settings, Building2, List } from "lucide-react";
+import {
+  Shield,
+  Search,
+  Printer,
+  Link2,
+  ChevronDown,
+  ChevronUp,
+  Download,
+  Eye,
+  Edit,
+  Trash2,
+  FileText,
+  Cookie,
+  CheckCircle2,
+  Settings,
+  Building2,
+  List,
+} from "lucide-react";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -8,13 +25,22 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { useCookieConsent } from "@/hooks/useCookieConsent";
+
+import { sanitizeHtml, escapeForRegex } from "@/lib/utils";
 
 const Privacidade = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -30,7 +56,8 @@ const Privacidade = () => {
     {
       id: "1-nosso-compromisso",
       title: "1. Nosso Compromisso com sua Privacidade",
-      content: "A PqEstudar (pqestudar.com.br), referida como \"Plataforma\", está comprometida em proteger sua privacidade e seus dados pessoais. Esta Política descreve de forma transparente como coletamos, usamos, armazenamos e protegemos suas informações em conformidade com a Lei Geral de Proteção de Dados (LGPD – Lei nº 13.709/2018)."
+      content:
+        'A PqEstudar (pqestudar.com.br), referida como "Plataforma", está comprometida em proteger sua privacidade e seus dados pessoais. Esta Política descreve de forma transparente como coletamos, usamos, armazenamos e protegemos suas informações em conformidade com a Lei Geral de Proteção de Dados (LGPD – Lei nº 13.709/2018).',
     },
     {
       id: "2-quais-informacoes",
@@ -53,7 +80,7 @@ const Privacidade = () => {
             <li><strong>Cookies e Tecnologias Similares:</strong> Utilizamos cookies para coletar esses dados a fim de operar, analisar e personalizar nossos serviços.</li>
           </ul>
         </div>
-      </div>`
+      </div>`,
     },
     {
       id: "3-como-utilizamos",
@@ -68,7 +95,7 @@ const Privacidade = () => {
           <li><strong>Segurança:</strong> Proteger nossa Plataforma contra fraudes e atividades maliciosas.</li>
           <li><strong>Obrigações Legais:</strong> Cumprir exigências legais e regulatórias.</li>
         </ul>
-      </div>`
+      </div>`,
     },
     {
       id: "4-cookies",
@@ -85,7 +112,7 @@ const Privacidade = () => {
         <div class="my-4">
           <p class="text-sm text-muted-foreground">Veja a tabela detalhada abaixo com todos os cookies utilizados por categoria.</p>
         </div>
-      </div>`
+      </div>`,
     },
     {
       id: "5-compartilhamento",
@@ -96,7 +123,7 @@ const Privacidade = () => {
           <li><strong>Provedores de Serviço:</strong> Empresas que nos auxiliam a operar, como plataformas de e-mail marketing, processadores de pagamento e ferramentas de análise de dados (como Google e Meta). Exigimos que todos cumpram as normas de proteção de dados.</li>
           <li><strong>Autoridades Legais:</strong> Quando exigido por lei, ordem judicial ou para proteger nossos direitos.</li>
         </ul>
-      </div>`
+      </div>`,
     },
     {
       id: "6-seus-direitos-lgpd",
@@ -112,14 +139,14 @@ const Privacidade = () => {
           <li><strong>Ser informado</strong> sobre com quem compartilhamos seus dados.</li>
         </ul>
         <p class="mt-3">Para exercer seus direitos, entre em contato pelo e-mail <strong>privacidade@pqestudar.com.br</strong>.</p>
-      </div>`
+      </div>`,
     },
     {
       id: "7-seguranca-retencao",
       title: "7. Segurança e Retenção dos Dados",
       content: `<div class="space-y-3">
         <p>Implementamos medidas de segurança técnicas e organizacionais para proteger seus dados. Mantemos suas informações apenas pelo tempo necessário para cumprir as finalidades para as quais foram coletadas, para obrigações legais ou para a resolução de disputas.</p>
-      </div>`
+      </div>`,
     },
     {
       id: "8-contato",
@@ -129,8 +156,8 @@ const Privacidade = () => {
         <ul class="list-disc list-inside ml-4 space-y-1">
           <li><strong>E-mail:</strong> privacidade@pqestudar.com.br</li>
         </ul>
-      </div>`
-    }
+      </div>`,
+    },
   ];
 
   const cookiesData = [
@@ -138,51 +165,86 @@ const Privacidade = () => {
       categoria: "Essenciais",
       descricao: "Necessários para o funcionamento básico e segurança da plataforma",
       cookies: [
-        { nome: "cookieConsent", finalidade: "Armazena suas preferências de consentimento de cookies", duracao: "365 dias", provedor: "PqEstudar" },
-        { nome: "session_id", finalidade: "Mantém sua sessão de login ativa", duracao: "Sessão", provedor: "PqEstudar" },
-        { nome: "_csrf", finalidade: "Proteção contra ataques CSRF", duracao: "Sessão", provedor: "PqEstudar" }
-      ]
+        {
+          nome: "cookieConsent",
+          finalidade: "Armazena suas preferências de consentimento de cookies",
+          duracao: "365 dias",
+          provedor: "PqEstudar",
+        },
+        {
+          nome: "session_id",
+          finalidade: "Mantém sua sessão de login ativa",
+          duracao: "Sessão",
+          provedor: "PqEstudar",
+        },
+        { nome: "_csrf", finalidade: "Proteção contra ataques CSRF", duracao: "Sessão", provedor: "PqEstudar" },
+      ],
     },
     {
       categoria: "Desempenho e Análise",
       descricao: "Ajudam a entender como os visitantes usam o site para melhorias",
       cookies: [
         { nome: "_ga", finalidade: "Google Analytics - Distingue usuários", duracao: "2 anos", provedor: "Google" },
-        { nome: "_ga_*", finalidade: "Google Analytics - Mantém estado da sessão", duracao: "2 anos", provedor: "Google" },
-        { nome: "_gid", finalidade: "Google Analytics - Distingue usuários", duracao: "24 horas", provedor: "Google" }
-      ]
+        {
+          nome: "_ga_*",
+          finalidade: "Google Analytics - Mantém estado da sessão",
+          duracao: "2 anos",
+          provedor: "Google",
+        },
+        { nome: "_gid", finalidade: "Google Analytics - Distingue usuários", duracao: "24 horas", provedor: "Google" },
+      ],
     },
     {
       categoria: "Funcionais",
       descricao: "Lembram suas preferências e configurações personalizadas",
       cookies: [
-        { nome: "theme_preference", finalidade: "Armazena sua preferência de tema (claro/escuro)", duracao: "365 dias", provedor: "PqEstudar" },
-        { nome: "lang_preference", finalidade: "Armazena sua preferência de idioma", duracao: "365 dias", provedor: "PqEstudar" }
-      ]
+        {
+          nome: "theme_preference",
+          finalidade: "Armazena sua preferência de tema (claro/escuro)",
+          duracao: "365 dias",
+          provedor: "PqEstudar",
+        },
+        {
+          nome: "lang_preference",
+          finalidade: "Armazena sua preferência de idioma",
+          duracao: "365 dias",
+          provedor: "PqEstudar",
+        },
+      ],
     },
     {
       categoria: "Marketing",
       descricao: "Permitem personalizar anúncios e campanhas em outras plataformas",
       cookies: [
-        { nome: "_fbp", finalidade: "Facebook Pixel - Rastreamento de conversões", duracao: "90 dias", provedor: "Meta" },
+        {
+          nome: "_fbp",
+          finalidade: "Facebook Pixel - Rastreamento de conversões",
+          duracao: "90 dias",
+          provedor: "Meta",
+        },
         { nome: "_gcl_au", finalidade: "Conversões de anúncios Google", duracao: "90 dias", provedor: "Google" },
-        { nome: "utm_*", finalidade: "Rastreamento de campanhas de marketing", duracao: "30 dias", provedor: "PqEstudar" }
-      ]
-    }
+        {
+          nome: "utm_*",
+          finalidade: "Rastreamento de campanhas de marketing",
+          duracao: "30 dias",
+          provedor: "PqEstudar",
+        },
+      ],
+    },
   ];
 
   const versionHistory = [
     { date: "28 de Outubro de 2025", changes: "Versão atual - Adição de seção sobre cookies e Centro de Preferências" },
     { date: "15 de Setembro de 2025", changes: "Atualização sobre transferências internacionais de dados" },
     { date: "01 de Junho de 2025", changes: "Adequação completa à LGPD e adição de seção sobre direitos do titular" },
-    { date: "10 de Janeiro de 2024", changes: "Versão inicial da Política de Privacidade" }
+    { date: "10 de Janeiro de 2024", changes: "Versão inicial da Política de Privacidade" },
   ];
 
   const [cookiePrefs, setCookiePrefs] = useState({
     necessary: true,
     analytics: consentData?.preferences?.analytics || false,
     functional: consentData?.preferences?.functional || false,
-    marketing: consentData?.preferences?.marketing || false
+    marketing: consentData?.preferences?.marketing || false,
   });
 
   useEffect(() => {
@@ -190,7 +252,10 @@ const Privacidade = () => {
     document.title = "Política de Privacidade – PqEstudar";
     const metaDesc = document.querySelector('meta[name="description"]');
     if (metaDesc) {
-      metaDesc.setAttribute("content", "Transparência e proteção dos seus dados pessoais são nossa prioridade. Veja como coletamos, usamos e protegemos suas informações conforme a LGPD.");
+      metaDesc.setAttribute(
+        "content",
+        "Transparência e proteção dos seus dados pessoais são nossa prioridade. Veja como coletamos, usamos e protegemos suas informações conforme a LGPD.",
+      );
     }
 
     const canonical = document.querySelector('link[rel="canonical"]');
@@ -205,13 +270,14 @@ const Privacidade = () => {
       "@context": "https://schema.org",
       "@type": ["WebPage", "PrivacyPolicy"],
       "@id": "https://pqestudar.com.br/privacidade",
-      "name": "Política de Privacidade – PqEstudar",
-      "description": "Transparência e proteção dos seus dados pessoais são nossa prioridade. Veja como coletamos, usamos e protegemos suas informações conforme a LGPD.",
-      "publisher": {
+      name: "Política de Privacidade – PqEstudar",
+      description:
+        "Transparência e proteção dos seus dados pessoais são nossa prioridade. Veja como coletamos, usamos e protegemos suas informações conforme a LGPD.",
+      publisher: {
         "@type": "Organization",
-        "name": "PqEstudar"
+        name: "PqEstudar",
       },
-      "dateModified": "2025-10-28"
+      dateModified: "2025-10-28",
     });
     document.head.appendChild(script);
 
@@ -226,13 +292,13 @@ const Privacidade = () => {
     // Scroll spy
     const handleScroll = () => {
       const scrollPosition = window.scrollY + 100;
-      
+
       for (const section of sections) {
         const element = document.getElementById(section.id);
         if (element) {
           const offsetTop = element.offsetTop;
           const offsetBottom = offsetTop + element.offsetHeight;
-          
+
           if (scrollPosition >= offsetTop && scrollPosition < offsetBottom) {
             if (activeSection !== section.id) {
               setActiveSection(section.id);
@@ -251,7 +317,7 @@ const Privacidade = () => {
   }, [activeSection, sections]);
 
   const handleExpandAll = () => {
-    setExpandedItems(sections.map(s => s.id));
+    setExpandedItems(sections.map((s) => s.id));
     console.log("[Privacidade] Todas as seções expandidas");
     toast({ title: "Todas as seções expandidas" });
   };
@@ -282,16 +348,40 @@ const Privacidade = () => {
     }
   };
 
-  const filteredSections = sections.filter(section => 
-    searchTerm === "" || 
-    section.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    section.content.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredSections = sections.filter(
+    (section) =>
+      searchTerm === "" ||
+      section.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      section.content.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
+  // Substitua sua função highlightText por esta aqui
   const highlightText = (text: string) => {
     if (!searchTerm) return text;
-    const regex = new RegExp(`(${searchTerm})`, "gi");
-    return text.replace(regex, '<mark class="bg-yellow-300 dark:bg-yellow-600">$1</mark>');
+
+    // Escapa caracteres especiais de regex do termo de busca
+    const safeTerm = searchTerm.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+    // Regex case-insensitive
+    const regex = new RegExp(`(${safeTerm})`, "gi");
+
+    // Escapa HTML do texto-base (para não virar tag se o usuário digitar <...>)
+    const escapeHtml = (s: string) =>
+      s
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+
+    // Texto seguro
+    const safeText = escapeHtml(text);
+
+    // Aplica <mark> sobre o texto já escapado (somente inserimos a tag mark)
+    const marked = safeText.replace(regex, '<mark class="bg-yellow-300 dark:bg-yellow-600">$1</mark>');
+
+    // Retorna string segura com apenas <mark> como HTML
+    return marked;
   };
 
   const handleSearchChange = (value: string) => {
@@ -322,7 +412,7 @@ const Privacidade = () => {
       necessary: true,
       analytics: cookiePrefs.analytics,
       functional: cookiePrefs.functional,
-      marketing: cookiePrefs.marketing
+      marketing: cookiePrefs.marketing,
     });
     setShowCookiePreferences(false);
     console.log("[Privacidade] Preferências de cookies salvas:", cookiePrefs);
@@ -337,11 +427,11 @@ const Privacidade = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-      
+
       {/* Hero Section */}
       <section className="relative bg-gradient-to-br from-primary/10 via-background to-accent/10 py-16 md:py-24">
         <div className="container mx-auto px-4">
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
@@ -356,7 +446,8 @@ const Privacidade = () => {
               Política de Privacidade – PqEstudar
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
-              Transparência e proteção dos seus dados pessoais são nossa prioridade. Veja como coletamos, usamos e protegemos suas informações conforme a LGPD.
+              Transparência e proteção dos seus dados pessoais são nossa prioridade. Veja como coletamos, usamos e
+              protegemos suas informações conforme a LGPD.
             </p>
           </motion.div>
         </div>
@@ -375,7 +466,7 @@ const Privacidade = () => {
                 <List className="h-4 w-4" />
                 <span>Índice de Conteúdo</span>
               </div>
-              <ChevronDown className={`h-4 w-4 transition-transform ${showMobileTOC ? 'rotate-180' : ''}`} />
+              <ChevronDown className={`h-4 w-4 transition-transform ${showMobileTOC ? "rotate-180" : ""}`} />
             </Button>
             {showMobileTOC && (
               <Card className="mt-2 p-4">
@@ -449,15 +540,30 @@ const Privacidade = () => {
                   />
                 </div>
                 <div className="flex flex-col sm:flex-row flex-wrap gap-2">
-                  <Button variant="outline" size="sm" onClick={handleExpandAll} className="w-full sm:w-auto justify-start sm:justify-center">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleExpandAll}
+                    className="w-full sm:w-auto justify-start sm:justify-center"
+                  >
                     <ChevronDown className="h-4 w-4 mr-1" />
                     <span>Expandir Tudo</span>
                   </Button>
-                  <Button variant="outline" size="sm" onClick={handleCollapseAll} className="w-full sm:w-auto justify-start sm:justify-center">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleCollapseAll}
+                    className="w-full sm:w-auto justify-start sm:justify-center"
+                  >
                     <ChevronUp className="h-4 w-4 mr-1" />
                     <span>Recolher Tudo</span>
                   </Button>
-                  <Button variant="outline" size="sm" onClick={handlePrint} className="w-full sm:w-auto justify-start sm:justify-center">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handlePrint}
+                    className="w-full sm:w-auto justify-start sm:justify-center"
+                  >
                     <Printer className="h-4 w-4 mr-1" />
                     <span>Imprimir/PDF</span>
                   </Button>
@@ -466,12 +572,7 @@ const Privacidade = () => {
             </Card>
 
             {/* Accordion Sections */}
-            <Accordion
-              type="multiple"
-              value={expandedItems}
-              onValueChange={setExpandedItems}
-              className="space-y-4"
-            >
+            <Accordion type="multiple" value={expandedItems} onValueChange={setExpandedItems} className="space-y-4">
               {filteredSections.map((section) => (
                 <motion.div
                   key={section.id}
@@ -486,7 +587,10 @@ const Privacidade = () => {
                   >
                     <AccordionTrigger className="text-base sm:text-lg font-semibold hover:no-underline py-4 sm:py-6">
                       <div className="flex items-center justify-between w-full pr-2 sm:pr-4 gap-2">
-                        <span className="text-left break-words flex-1" dangerouslySetInnerHTML={{ __html: highlightText(section.title) }} />
+                        <span
+                          className="text-left break-words flex-1"
+                          dangerouslySetInnerHTML={{ __html: highlightText(section.title) }}
+                        />
                         <Button
                           variant="ghost"
                           size="icon"
@@ -516,9 +620,7 @@ const Privacidade = () => {
                   <Cookie className="h-6 w-6" />
                   Tabela Detalhada de Cookies
                 </CardTitle>
-                <CardDescription>
-                  Clique em cada categoria para ver os cookies utilizados
-                </CardDescription>
+                <CardDescription>Clique em cada categoria para ver os cookies utilizados</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <Accordion
@@ -528,18 +630,16 @@ const Privacidade = () => {
                   className="space-y-3"
                 >
                   {cookiesData.map((category, idx) => (
-                    <AccordionItem
-                      key={idx}
-                      value={category.categoria}
-                      className="border-2 rounded-xl overflow-hidden"
-                    >
+                    <AccordionItem key={idx} value={category.categoria} className="border-2 rounded-xl overflow-hidden">
                       <AccordionTrigger className="px-4 py-3 hover:bg-muted/50 [&[data-state=open]]:bg-muted/30">
                         <div className="flex items-center gap-3 flex-1 text-left pr-2">
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 flex-wrap">
-                              <span className="font-semibold text-sm sm:text-base break-words">{category.categoria}</span>
+                              <span className="font-semibold text-sm sm:text-base break-words">
+                                {category.categoria}
+                              </span>
                               <Badge variant="secondary" className="text-xs flex-shrink-0">
-                                {category.cookies.length} {category.cookies.length === 1 ? 'cookie' : 'cookies'}
+                                {category.cookies.length} {category.cookies.length === 1 ? "cookie" : "cookies"}
                               </Badge>
                             </div>
                             <p className="text-xs sm:text-sm text-muted-foreground mt-1 break-words">
@@ -579,7 +679,9 @@ const Privacidade = () => {
                             <Card key={cIdx} className="p-3 space-y-2">
                               <div className="flex items-center justify-between gap-2">
                                 <span className="font-mono text-sm font-semibold break-all">{cookie.nome}</span>
-                                <Badge variant="outline" className="text-xs flex-shrink-0">{cookie.duracao}</Badge>
+                                <Badge variant="outline" className="text-xs flex-shrink-0">
+                                  {cookie.duracao}
+                                </Badge>
                               </div>
                               <p className="text-sm text-muted-foreground break-words">{cookie.finalidade}</p>
                               <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -593,7 +695,7 @@ const Privacidade = () => {
                     </AccordionItem>
                   ))}
                 </Accordion>
-                
+
                 <div className="mt-6 text-center">
                   <Dialog open={showCookiePreferences} onOpenChange={setShowCookiePreferences}>
                     <DialogTrigger asChild>
@@ -608,9 +710,7 @@ const Privacidade = () => {
                           <Cookie className="h-6 w-6" />
                           Centro de Preferências de Cookies
                         </DialogTitle>
-                        <DialogDescription>
-                          Gerencie suas preferências de cookies por categoria
-                        </DialogDescription>
+                        <DialogDescription>Gerencie suas preferências de cookies por categoria</DialogDescription>
                       </DialogHeader>
                       <div className="space-y-6 py-4">
                         <div className="space-y-4">
@@ -635,10 +735,10 @@ const Privacidade = () => {
                                 Nos ajudam a entender como você usa o site para melhorá-lo.
                               </p>
                             </div>
-                            <Switch 
-                              id="analytics" 
+                            <Switch
+                              id="analytics"
                               checked={cookiePrefs.analytics}
-                              onCheckedChange={(checked) => setCookiePrefs(prev => ({ ...prev, analytics: checked }))}
+                              onCheckedChange={(checked) => setCookiePrefs((prev) => ({ ...prev, analytics: checked }))}
                             />
                           </div>
 
@@ -651,10 +751,12 @@ const Privacidade = () => {
                                 Permitem funcionalidades avançadas e personalização.
                               </p>
                             </div>
-                            <Switch 
-                              id="functional" 
+                            <Switch
+                              id="functional"
                               checked={cookiePrefs.functional}
-                              onCheckedChange={(checked) => setCookiePrefs(prev => ({ ...prev, functional: checked }))}
+                              onCheckedChange={(checked) =>
+                                setCookiePrefs((prev) => ({ ...prev, functional: checked }))
+                              }
                             />
                           </div>
 
@@ -667,10 +769,10 @@ const Privacidade = () => {
                                 Usados para exibir anúncios relevantes aos seus interesses.
                               </p>
                             </div>
-                            <Switch 
-                              id="marketing" 
+                            <Switch
+                              id="marketing"
                               checked={cookiePrefs.marketing}
-                              onCheckedChange={(checked) => setCookiePrefs(prev => ({ ...prev, marketing: checked }))}
+                              onCheckedChange={(checked) => setCookiePrefs((prev) => ({ ...prev, marketing: checked }))}
                             />
                           </div>
                         </div>
@@ -750,16 +852,16 @@ const Privacidade = () => {
                   <FileText className="h-6 w-6" />
                   Histórico de Versões
                 </CardTitle>
-                <CardDescription>
-                  Acompanhe as mudanças em nossa política ao longo do tempo
-                </CardDescription>
+                <CardDescription>Acompanhe as mudanças em nossa política ao longo do tempo</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   {versionHistory.map((version, idx) => (
                     <div key={idx} className="flex gap-4">
                       <div className="flex flex-col items-center">
-                        <div className={`h-3 w-3 rounded-full ${idx === 0 ? 'bg-primary' : 'bg-muted-foreground/30'}`} />
+                        <div
+                          className={`h-3 w-3 rounded-full ${idx === 0 ? "bg-primary" : "bg-muted-foreground/30"}`}
+                        />
                         {idx < versionHistory.length - 1 && (
                           <div className="w-0.5 h-full bg-muted-foreground/20 mt-1" />
                         )}
@@ -783,9 +885,7 @@ const Privacidade = () => {
             <Card className="shadow-lg border-2 bg-gradient-to-br from-accent/10 to-background">
               <CardHeader>
                 <CardTitle className="text-xl sm:text-2xl">Entre em Contato</CardTitle>
-                <CardDescription>
-                  Dúvidas sobre privacidade? Nossa equipe está pronta para ajudar.
-                </CardDescription>
+                <CardDescription>Dúvidas sobre privacidade? Nossa equipe está pronta para ajudar.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="p-4 bg-muted/30 rounded-lg">
@@ -793,8 +893,8 @@ const Privacidade = () => {
                     <FileText className="h-4 w-4" />
                     E-mail
                   </h4>
-                  <a 
-                    href="mailto:privacidade@pqestudar.com" 
+                  <a
+                    href="mailto:privacidade@pqestudar.com"
                     className="text-primary hover:underline break-all font-medium"
                   >
                     privacidade@pqestudar.com
