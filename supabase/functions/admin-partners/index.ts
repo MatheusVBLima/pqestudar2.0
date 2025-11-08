@@ -37,12 +37,21 @@ Deno.serve(async (req) => {
       throw new Error('Unauthorized')
     }
 
-    // Check admin status
-    const { data: isAdminData, error: adminError } = await supabaseClient
-      .rpc('is_admin')
+    // Check admin status directly from user_roles table using service role
+    const { data: roleData, error: roleError } = await supabaseClient
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', user.id)
+      .eq('role', 'admin')
+      .maybeSingle()
 
-    if (adminError || !isAdminData) {
-      console.error('Admin check failed:', adminError)
+    if (roleError) {
+      console.error('Role check error:', roleError)
+      throw new Error('Forbidden: Admin access required')
+    }
+
+    if (!roleData) {
+      console.error('User is not admin:', user.id)
       throw new Error('Forbidden: Admin access required')
     }
 
