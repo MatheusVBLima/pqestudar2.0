@@ -57,30 +57,37 @@ const Sobre = () => {
     <div className="min-h-screen flex flex-col">
       <Navbar />
       
-      {/* Hero */}
-      <section className="relative bg-gradient-to-br from-primary/10 via-background to-background border-b overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,hsl(var(--primary)/0.1),transparent_50%)]" />
-        <div className="container mx-auto px-6 py-16 md:py-20 relative">
+      {/* Hero Split-Screen */}
+      <section className="relative overflow-hidden">
+        <div className="grid lg:grid-cols-2 min-h-[600px] lg:min-h-[700px]">
+          {/* Left Column - Purple Background + Title */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="max-w-3xl mx-auto text-center"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6 }}
+            className="relative bg-primary flex items-center justify-center p-8 md:p-12 lg:p-16"
           >
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight mb-8 leading-[1.1]">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,hsl(var(--primary-foreground)/0.05),transparent_70%)]" />
+            <h1 className="relative text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-extrabold tracking-tight text-primary-foreground leading-[1.1] max-w-xl">
               Por que estudar? Para hackear o sistema e acelerar sua carreira. Eu te ensino como.
             </h1>
-            
-            <div className="flex justify-center">
-              <img
-                src={sobreImage}
-                alt="Foto de Matheus Dias (página Sobre)."
-                width={768}
-                height={768}
-                loading="lazy"
-                className="max-w-3xl w-full rounded-2xl shadow-lg"
-              />
-            </div>
+          </motion.div>
+
+          {/* Right Column - Photo */}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="relative overflow-hidden bg-muted"
+          >
+            <img
+              src={sobreImage}
+              alt="Foto de Matheus Dias (página Sobre)."
+              width={768}
+              height={768}
+              loading="lazy"
+              className="w-full h-full object-cover object-center"
+            />
           </motion.div>
         </div>
       </section>
