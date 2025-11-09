@@ -355,8 +355,11 @@ const Privacidade = () => {
       section.content.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
-  // Substitua sua função highlightText por esta aqui
-  const highlightText = (text: string) => safeHighlight(text, searchTerm);
+  // Highlight text with safe fallback
+  const highlightText = (text: string) => {
+    if (!text) return "";
+    return safeHighlight(text, searchTerm);
+  };
 
   const handleSearchChange = (value: string) => {
     setSearchTerm(value);
@@ -563,7 +566,7 @@ const Privacidade = () => {
                       <div className="flex items-center justify-between w-full pr-2 sm:pr-4 gap-2">
                         <span
                           className="text-left break-words flex-1"
-                          dangerouslySetInnerHTML={{ __html: highlightText(section.title) }}
+                          dangerouslySetInnerHTML={{ __html: highlightText(section.title || "") }}
                         />
                         <Button
                           variant="ghost"
