@@ -71,3 +71,21 @@ Yes, you can!
 To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
 
 Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+
+## Supabase Authentication Configuration
+
+For email confirmation and password reset to work correctly, configure the following URLs in Supabase:
+
+**Authentication → URL Configuration:**
+
+- **Site URL**: `https://pqestudar.com.br`
+- **Redirect URLs** (add these):
+  - `https://pqestudar.com.br/login`
+  - `https://pqestudar.com.br/entrar`
+  - `https://pqestudar.com.br/auth/callback`
+  - `https://pqestudar.com.br/reset-password`
+
+**For Development/Preview:**
+- Add your preview URL (e.g., `https://[project-id].lovable.app/login`)
+
+This ensures that email confirmation links and password reset flows redirect users to the correct pages after authentication.

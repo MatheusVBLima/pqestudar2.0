@@ -16,7 +16,46 @@ export function SignUpForm({ onSwitchToLogin }: SignUpFormProps) {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
+  const [resendLoading, setResendLoading] = useState(false)
   const { signUp, signInWithGoogle } = useAuth()
+
+  const handleResendConfirmation = async () => {
+    if (!email) {
+      toast.error('Digite seu email para reenviar a confirmação')
+      return
+    }
+
+    console.info('[Auth] Resend confirmation start', { email })
+    setResendLoading(true)
+    
+    try {
+      const supabaseUrl = 'https://omkxiomwzbykmqttfozi.supabase.co'
+      const response = await fetch(`${supabaseUrl}/functions/v1/auth-resend-confirmation`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          redirectTo: window.location.origin + '/login'
+        })
+      })
+
+      console.info('[Auth] Resend confirmation response', { ok: response.ok, status: response.status })
+      const data = await response.json()
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Falha no reenvio')
+      }
+
+      toast.success('E-mail enviado. Verifique sua caixa de entrada e spam.')
+    } catch (error: any) {
+      console.error('[Auth] Resend confirmation error', error)
+      toast.error('Erro ao reenviar. Tente novamente.')
+    } finally {
+      setResendLoading(false)
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -117,7 +156,20 @@ export function SignUpForm({ onSwitchToLogin }: SignUpFormProps) {
               placeholder="••••••••"
             />
           </div>
-          <Button type="submit" className="w-full" disabled={loading || googleLoading}>
+
+          <div className="flex items-center justify-end">
+            <Button
+              type="button"
+              variant="link"
+              className="p-0 h-auto text-sm"
+              onClick={handleResendConfirmation}
+              disabled={resendLoading || !email}
+            >
+              {resendLoading ? 'Reenviando...' : 'Reenviar confirmação'}
+            </Button>
+          </div>
+
+          <Button type="submit" className="w-full" disabled={loading || googleLoading || resendLoading}>
             {loading ? 'Criando conta...' : 'Criar Conta'}
           </Button>
         </form>
@@ -137,7 +189,7 @@ export function SignUpForm({ onSwitchToLogin }: SignUpFormProps) {
             variant="outline"
             className="w-full mt-4"
             onClick={handleGoogleSignUp}
-            disabled={loading || googleLoading}
+            disabled={loading || googleLoading || resendLoading}
           >
             {googleLoading ? 'Cadastrando...' : (
               <>

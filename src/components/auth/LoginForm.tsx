@@ -30,13 +30,23 @@ export function LoginForm({ onSwitchToSignUp }: LoginFormProps) {
     
     if (error) {
       let errorMessage = 'Erro ao fazer login'
+      
       if (error.message?.includes('Invalid login credentials')) {
         errorMessage = 'Email ou senha incorretos. Verifique suas credenciais ou tente recuperar sua senha.'
       } else if (error.message?.includes('Email not confirmed')) {
-        errorMessage = 'Email não confirmado. Verifique sua caixa de entrada e confirme seu email antes de fazer login.'
+        errorMessage = 'Email não confirmado.'
+        toast.error(errorMessage, {
+          action: {
+            label: 'Reenviar confirmação',
+            onClick: () => handleResendConfirmation()
+          }
+        })
+        setLoading(false)
+        return
       } else {
         errorMessage = error.message
       }
+      
       toast.error(errorMessage)
     } else {
       toast.success('Login realizado com sucesso!')
@@ -84,6 +94,7 @@ export function LoginForm({ onSwitchToSignUp }: LoginFormProps) {
       return
     }
 
+    console.info('[Auth] Resend confirmation start', { email })
     setResendLoading(true)
     
     try {
@@ -99,16 +110,17 @@ export function LoginForm({ onSwitchToSignUp }: LoginFormProps) {
         })
       })
 
+      console.info('[Auth] Resend confirmation response', { ok: response.ok, status: response.status })
       const data = await response.json()
       
       if (!response.ok) {
         throw new Error(data.error || 'Falha no reenvio')
       }
 
-      toast.success('E-mail de confirmação enviado! Verifique sua caixa de entrada e spam.')
+      toast.success('E-mail enviado. Verifique sua caixa de entrada e spam.')
     } catch (error: any) {
-      console.error('Resend confirmation error:', error)
-      toast.error(error.message || 'Erro ao reenviar confirmação. Tente novamente.')
+      console.error('[Auth] Resend confirmation error', error)
+      toast.error('Erro ao reenviar. Tente novamente.')
     } finally {
       setResendLoading(false)
     }

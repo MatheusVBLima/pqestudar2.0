@@ -41,15 +41,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const signIn = async (email: string, password: string) => {
+    console.info('[Auth] Login start', { email })
+    
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     })
+    
+    if (error) {
+      console.error('[Auth] Login error', { error: error.message })
+    } else {
+      console.info('[Auth] Login success')
+    }
+    
     return { error }
   }
 
   const signUp = async (email: string, password: string) => {
-    const redirectUrl = `${window.location.origin}/`
+    console.info('[Auth] Signup start', { email })
+    
+    const redirectUrl = `${window.location.origin}/login`
     
     const { data, error } = await supabase.auth.signUp({
       email,
@@ -59,8 +70,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     })
     
+    if (error) {
+      console.error('[Auth] Signup error', { error: error.message })
+      return { error }
+    }
+    
+    console.info('[Auth] Signup response', { 
+      hasUser: !!data?.user, 
+      hasSession: !!data?.session,
+      identitiesCount: data?.user?.identities?.length || 0
+    })
+    
     // Verificar se é um signup repetido
     if (data?.user && !data.session && data.user.identities?.length === 0) {
+      console.warn('[Auth] Existing user detected')
       return { 
         error: { 
           message: "Este email já está cadastrado. Tente fazer login ou recuperar sua senha.",
