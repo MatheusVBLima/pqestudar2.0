@@ -26,7 +26,7 @@ export function escapeHtml(input: string): string {
  * - Normaliza links e imagens
  */
 export function sanitizeHtml(dirty: string): string {
-  if (!dirty) return "";
+  if (!dirty || typeof dirty !== "string") return "";
 
   // Parseia para DOM seguro
   const parser = new DOMParser();
@@ -148,6 +148,11 @@ export function sanitizeHtml(dirty: string): string {
       walk(child);
     }
   };
+
+  if (!doc.body) {
+    console.error("[sanitizeHtml] doc.body is null, returning escaped text");
+    return escapeHtml(dirty);
+  }
 
   walk(doc.body);
   return doc.body.innerHTML;
