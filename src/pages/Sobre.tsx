@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Instagram, Facebook } from "lucide-react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import sobreImage from "@/assets/sobre-matheus.png";
+import sobreImage from "@/assets/sobre-matheus-new.png";
 
 const Sobre = () => {
   const navigate = useNavigate();
