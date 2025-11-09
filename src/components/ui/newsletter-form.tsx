@@ -167,13 +167,10 @@ export function NewsletterForm({
             </span>
           </div>
           <h2 className="text-2xl font-bold text-foreground">
-            Receba Cursos Gratuitos
+            Receba Ferramentas de Resultado
           </h2>
           <p className="text-muted-foreground text-sm">
-            Lista exclusiva e curada com os melhores sites de cursos online com certificado gratuito
-          </p>
-          <p className="text-sm text-muted-foreground">
-            Nossa equipe de especialistas selecionou a dedo os melhores recursos para você economizar tempo e ir direto ao ponto.
+            Uma curadoria semanal das melhores ferramentas e métodos de produtividade, direto no seu e-mail.
           </p>
         </div>
       )}

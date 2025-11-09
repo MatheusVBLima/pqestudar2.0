@@ -463,9 +463,9 @@ export default function ExploreCourses() {
                 <Badge className="bg-primary text-primary-foreground text-xs font-semibold mb-2">
                   🎁 BÔNUS GRATUITO
                 </Badge>
-                <h3 className="font-bold text-lg mb-2">Receba Cursos Gratuitos</h3>
+                <h3 className="font-bold text-lg mb-2">Receba as Melhores Ferramentas de Produtividade</h3>
                 <p className="text-sm text-muted-foreground mb-3">
-                  Lista exclusiva e curada com os melhores sites de cursos online com certificado gratuito
+                  Junte-se à nossa curadoria semanal e receba no seu e-mail as ferramentas e métodos que os melhores profissionais usam para acelerar a carreira. 100% Grátis.
                 </p>
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-semibold text-primary">100% Grátis</span>
