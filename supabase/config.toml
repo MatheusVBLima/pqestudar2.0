@@ -12,5 +12,5 @@ verify_jwt = false
 [functions.generate-news]
 verify_jwt = true
 
-[functions.generate-news]
-verify_jwt = true
+[functions.auth-resend-confirmation]
+verify_jwt = false

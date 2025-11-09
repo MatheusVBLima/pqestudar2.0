@@ -18,6 +18,7 @@ export function LoginForm({ onSwitchToSignUp }: LoginFormProps) {
   const [googleLoading, setGoogleLoading] = useState(false)
   const [resetLoading, setResetLoading] = useState(false)
   const [showForgotPassword, setShowForgotPassword] = useState(false)
+  const [resendLoading, setResendLoading] = useState(false)
   const { signIn, signInWithGoogle, resetPassword } = useAuth()
   const navigate = useNavigate()
 
@@ -77,6 +78,42 @@ export function LoginForm({ onSwitchToSignUp }: LoginFormProps) {
     setResetLoading(false)
   }
 
+  const handleResendConfirmation = async () => {
+    if (!email) {
+      toast.error('Digite seu email para reenviar a confirmação')
+      return
+    }
+
+    setResendLoading(true)
+    
+    try {
+      const supabaseUrl = 'https://omkxiomwzbykmqttfozi.supabase.co'
+      const response = await fetch(`${supabaseUrl}/functions/v1/auth-resend-confirmation`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          redirectTo: window.location.origin + '/login'
+        })
+      })
+
+      const data = await response.json()
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Falha no reenvio')
+      }
+
+      toast.success('E-mail de confirmação enviado! Verifique sua caixa de entrada e spam.')
+    } catch (error: any) {
+      console.error('Resend confirmation error:', error)
+      toast.error(error.message || 'Erro ao reenviar confirmação. Tente novamente.')
+    } finally {
+      setResendLoading(false)
+    }
+  }
+
   return (
     <Card className="w-full max-w-md">
       <CardHeader>
@@ -119,6 +156,15 @@ export function LoginForm({ onSwitchToSignUp }: LoginFormProps) {
             >
               Esqueci minha senha
             </Button>
+            <Button
+              type="button"
+              variant="link"
+              className="p-0 h-auto text-sm"
+              onClick={handleResendConfirmation}
+              disabled={resendLoading || !email}
+            >
+              {resendLoading ? 'Reenviando...' : 'Reenviar confirmação'}
+            </Button>
           </div>
           
           {showForgotPassword && (
@@ -141,7 +187,7 @@ export function LoginForm({ onSwitchToSignUp }: LoginFormProps) {
             </div>
           )}
           
-          <Button type="submit" className="w-full" disabled={loading || googleLoading || resetLoading}>
+          <Button type="submit" className="w-full" disabled={loading || googleLoading || resetLoading || resendLoading}>
             {loading ? 'Entrando...' : 'Entrar'}
           </Button>
         </form>
@@ -161,7 +207,7 @@ export function LoginForm({ onSwitchToSignUp }: LoginFormProps) {
             variant="outline"
             className="w-full mt-4"
             onClick={handleGoogleSignIn}
-            disabled={loading || googleLoading || resetLoading}
+            disabled={loading || googleLoading || resetLoading || resendLoading}
           >
             {googleLoading ? 'Entrando...' : (
               <>
