@@ -34,6 +34,7 @@ import BonusPage from "./pages/BonusPage";
 import NotFound from "./pages/NotFound";
 import KitAceleracao from "./pages/KitAceleracao";
 import Parceiros from "./pages/Parceiros";
+import Assine from "./pages/Assine";
 
 const queryClient = new QueryClient();
 
@@ -71,6 +72,7 @@ const AppContent = () => {
           <Route path="/admin/bonus" element={<AdminBonusPages />} />
           <Route path="/kit" element={<KitAceleracao />} />
           <Route path="/parceiros" element={<Parceiros />} />
+          <Route path="/assine" element={<Assine />} />
           
           {/* Bonus Pages - Exact Routes (noindex) */}
           <Route path="/acesso-kit-partida-8h3z" element={<BonusPage />} />
