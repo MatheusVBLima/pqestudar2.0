@@ -1,8 +1,6 @@
 import { Helmet } from "react-helmet";
 import { HeroSection } from "@/components/sections/hero-section";
 import { SocialProofSection } from "@/components/sections/social-proof-section";
-import { ManifestoSection } from "@/components/sections/manifesto-section";
-import { EcosystemSection } from "@/components/sections/ecosystem-section";
 
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
@@ -39,8 +37,6 @@ const Index = () => {
       <main className="flex-1">
         <HeroSection />
         <SocialProofSection />
-        <ManifestoSection />
-        <EcosystemSection />
       </main>
       <Footer isHomePage />
     </div>
