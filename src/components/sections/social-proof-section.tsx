@@ -78,7 +78,7 @@ const rightIcons: SocialIcon[] = [
 
 export function SocialProofSection() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const hubRef = useRef<HTMLDivElement>(null);
+  const hubRef = useRef<HTMLImageElement>(null);
   const leftRefs = useRef<(HTMLDivElement | null)[]>([]);
   const rightRefs = useRef<(HTMLDivElement | null)[]>([]);
 
@@ -154,18 +154,15 @@ export function SocialProofSection() {
             </div>
 
             {/* Center Hub */}
-            <motion.div
+            <motion.img
               ref={hubRef}
+              src={matheusHub}
+              alt="Foto de Matheus Dias"
               initial={{ opacity: 0, scale: 0.8 }}
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.8, ease }}
-              className="relative z-10 aspect-square shrink-0 w-28 sm:w-32 md:w-40 lg:w-48 rounded-full ring-4 ring-primary bg-cover bg-center"
-              style={{
-                backgroundImage: `url(${matheusHub})`,
-              }}
-              role="img"
-              aria-label="Foto de Matheus Dias"
+              className="relative z-10 block aspect-square shrink-0 w-28 sm:w-32 md:w-40 lg:w-48 rounded-full ring-4 ring-primary object-cover object-center p-0 m-0"
             />
 
             {/* Right Icons */}
