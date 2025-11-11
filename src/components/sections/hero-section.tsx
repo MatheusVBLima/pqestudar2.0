@@ -1,41 +1,85 @@
-import { NewsletterForm } from "@/components/ui/newsletter-form";
+import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { useNavigate } from "react-router-dom";
+import HeroBadge from "@/components/ui/hero-badge";
+import { Sparkles } from "lucide-react";
+
+const ease = [0.16, 1, 0.3, 1] as const;
 
 export function HeroSection() {
+  const navigate = useNavigate();
+
   return (
-    <section className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-accent/20 overflow-hidden w-full">
+    <section className="relative overflow-hidden w-full bg-gradient-to-br from-background to-accent/20">
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-5">
         <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-transparent" />
       </div>
-      
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16 lg:py-20 relative z-10 w-full">
-        <div className="grid lg:grid-cols-2 gap-12 md:gap-16 lg:gap-20 items-center animate-fade-in max-w-7xl mx-auto">
-          {/* Left Column - Content */}
-          <div className="space-y-6 md:space-y-8 text-center lg:text-left mx-auto lg:mx-0 max-w-2xl lg:max-w-none">
-            {/* Headline */}
-            <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-6xl xl:text-7xl font-bold leading-[1.1] tracking-tight">
-              <span className="bg-gradient-primary bg-clip-text text-transparent">
-                Transforme Informação{" "}
-              </span>
-              <span className="text-foreground">em Resultado.</span>
-            </h1>
-            
-            {/* Sub-headline */}
-            <p className="text-lg sm:text-xl md:text-2xl lg:text-xl text-muted-foreground leading-relaxed max-w-xl mx-auto lg:mx-0 lg:max-w-2xl">
-              Descubra métodos e ferramentas de produtividade para acelerar sua carreira e projetos, sem se afogar em conteúdo.
-            </p>
-          </div>
 
-          {/* Right Column - Newsletter Card */}
-          <div className="flex items-center justify-center lg:justify-end mt-8 lg:mt-0">
-            <div className="w-full max-w-lg bg-card border border-border rounded-2xl p-6 sm:p-8 shadow-elegant mx-auto">
-              <NewsletterForm 
-                title="Receba Ferramentas de Resultado"
-                description="Uma curadoria semanal das melhores ferramentas e métodos de produtividade, direto no seu e-mail."
-                variant="default"
-                className="w-full"
+      <div className="container relative">
+        <div className="flex min-h-[calc(100vh-64px)] flex-col items-center justify-center py-8 px-4 md:px-8 lg:px-12">
+          <div className="flex flex-col gap-4 w-full max-w-4xl text-center">
+            {/* Badge */}
+            <div className="flex justify-center">
+              <HeroBadge
+                text="Aprovado por +400 mil seguidores"
+                icon={<Sparkles className="h-4 w-4" />}
+                variant="outline"
+                size="md"
               />
             </div>
+
+            {/* Title */}
+            <motion.h1
+              className="text-4xl font-bold tracking-tight sm:text-6xl lg:text-7xl xl:text-8xl"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, ease }}
+            >
+              Os Segredos da Internet,{" "}
+              <span className="bg-gradient-primary bg-clip-text text-transparent">
+                Revelados.
+              </span>
+            </motion.h1>
+
+            {/* Description */}
+            <motion.p
+              className="max-w-[42rem] mx-auto leading-normal text-muted-foreground sm:text-xl sm:leading-8"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1, duration: 0.8, ease }}
+            >
+              O arsenal completo com os hacks, ferramentas e benefícios que já foram vistos por milhões de pessoas. Explore ou receba as novas descobertas no seu e-mail.
+            </motion.p>
+
+            {/* CTAs */}
+            <motion.div
+              className="flex flex-col sm:flex-row gap-4 pt-4 justify-center"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2, duration: 0.8, ease }}
+            >
+              <Button
+                size="lg"
+                onClick={() => navigate("/parceiros")}
+                className={cn(
+                  "gap-2 w-full sm:w-auto justify-center bg-primary text-primary-foreground hover:bg-primary/90"
+                )}
+              >
+                Explorar o Arsenal
+              </Button>
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={() => navigate("/assine")}
+                className={cn(
+                  "gap-2 w-full sm:w-auto justify-center border-primary text-primary hover:bg-primary/10"
+                )}
+              >
+                Receber os Segredos
+              </Button>
+            </motion.div>
           </div>
         </div>
       </div>
