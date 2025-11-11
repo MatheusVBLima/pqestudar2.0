@@ -2,12 +2,7 @@ import { useRef } from "react";
 import { motion } from "framer-motion";
 import { Instagram, Linkedin, Youtube, Facebook } from "lucide-react";
 import { AnimatedBeam } from "@/components/ui/animated-beam";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import matheusHub from "@/assets/matheus-hub.png";
 
 const ease = [0.16, 1, 0.3, 1] as const;
@@ -32,7 +27,7 @@ const leftIcons: SocialIcon[] = [
     name: "Threads",
     icon: (
       <svg className="h-6 w-6" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M12.186 3.008c-1.964 0-3.672.488-5.093 1.453-.977.663-1.755 1.55-2.314 2.636l2.152 1.242c.394-.768.934-1.39 1.606-1.85.998-.683 2.246-1.029 3.71-1.029 1.293 0 2.361.27 3.178.803.817.534 1.226 1.28 1.226 2.238 0 .676-.216 1.23-.646 1.657-.43.426-1.082.76-1.946 1.004-1.37.39-2.407.894-3.113 1.51-.706.616-1.059 1.452-1.059 2.508 0 .982.312 1.82.934 2.51.622.69 1.47 1.148 2.542 1.374.286.06.579.108.878.142-.002.086-.004.172-.004.258 0 1.326.328 2.404.984 3.233.656.83 1.586 1.245 2.79 1.245 1.37 0 2.42-.512 3.148-1.536.728-1.024 1.092-2.422 1.092-4.194v-.258c1.646-.226 2.934-.792 3.864-1.698.93-.906 1.395-2.058 1.395-3.456 0-1.704-.629-3.05-1.887-4.04-1.258-.99-2.962-1.485-5.112-1.485zm0 1.5c1.87 0 3.346.426 4.428 1.278 1.082.852 1.623 1.992 1.623 3.42 0 1.11-.353 1.99-1.06 2.64-.707.65-1.708 1.078-3.004 1.284v-2.362c0-1.326-.328-2.404-.984-3.233-.656-.83-1.586-1.245-2.79-1.245-1.37 0-2.42.512-3.148 1.536-.728 1.024-1.092 2.422-1.092 4.194v.258c-1.646.226-2.934.792-3.864 1.698-.93.906-1.395 2.058-1.395 3.456 0 1.704.629 3.05 1.887 4.04 1.258.99 2.962 1.485 5.112 1.485 1.964 0 3.672-.488 5.093-1.453.977-.663 1.755-1.55 2.314-2.636l-2.152-1.242c-.394.768-.934 1.39-1.606 1.85-.998.683-2.246 1.029-3.71 1.029-1.293 0-2.361-.27-3.178-.803-.817-.534-1.226-1.28-1.226-2.238 0-.676.216-1.23.646-1.657.43-.426 1.082-.76 1.946-1.004 1.37-.39 2.407-.894 3.113-1.51.706-.616 1.059-1.452 1.059-2.508 0-.982-.312-1.82-.934-2.51-.622-.69-1.47-1.148-2.542-1.374-.286-.06-.579-.108-.878-.142.002-.086.004-.172.004-.258 0-1.326-.328-2.404-.984-3.233-.656-.83-1.586-1.245-2.79-1.245z" />
+        <path d="M12.186 3.008c-1.964 0-3.672.488-5.093 1.453-.977.663-1.755 1.55-2.314 2.636l2.152 1.242c.394-.768.934-1.39 1.606-1.85.998-.683 2.246-1.029 3.71-1.029 1.293 0 2.361.27 3.178.803.817.534 1.226 1.28 1.226 2.238 0 .676-.216 1.23-.646 1.657-.43.426-1.082.76-1.946 1.004-1.37.39-2.407.894-3.113 1.51-.706.616-1.059 1.452-1.059 2.508 0 .982.312 1.82.934 2.51.622.69 1.47 1.148 2.542 1.374.286.06.579.108.878.142-.002.086-.004.172-.004.258 0 1.326.328 2.404.984 3.233.656.83 1.586 1.245 2.79 1.245 1.37 0 2.42-.512 3.148-1.536.728-1.024 1.092-2.422 1.092-4.194v-.258c1.646-.226 2.934-.792 3.864-1.698.93-.906 1.395-2.058 1.395-3.456 0 1.704-.629 3.05-1.887 4.04-1.258-.99-2.962 1.485-5.112 1.485zm0 1.5c1.87 0 3.346.426 4.428 1.278 1.082.852 1.623 1.992 1.623 3.42 0 1.11-.353 1.99-1.06 2.64-.707.65-1.708 1.078-3.004 1.284v-2.362c0-1.326-.328-2.404-.984-3.233-.656-.83-1.586-1.245-2.79-1.245-1.37 0-2.42.512-3.148 1.536-.728 1.024-1.092 2.422-1.092 4.194v.258c-1.646.226-2.934.792-3.864 1.698-.93.906-1.395 2.058-1.395 3.456 0 1.704.629 3.05 1.887 4.04 1.258.99 2.962 1.485 5.112 1.485 1.964 0 3.672-.488 5.093-1.453.977-.663 1.755-1.55 2.314-2.636l-2.152-1.242c-.394.768-.934 1.39-1.606 1.85-.998-.683-2.246 1.029-3.71 1.029-1.293 0-2.361-.27-3.178-.803-.817-.534-1.226-1.28-1.226-2.238 0-.676.216-1.23.646-1.657.43-.426 1.082-.76 1.946-1.004 1.37-.39 2.407-.894 3.113-1.51.706.616 1.059-1.452-1.059-2.508 0-.982-.312-1.82-.934-2.51-.622-.69-1.47-1.148-2.542-1.374-.286-.06-.579-.108-.878-.142.002-.086.004-.172.004-.258 0-1.326-.328-2.404-.984-3.233-.656-.83-1.586-1.245-2.79-1.245z" />
       </svg>
     ),
     href: "https://www.threads.com/@mdias.ofc",
@@ -78,7 +73,7 @@ const rightIcons: SocialIcon[] = [
 
 export function SocialProofSection() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const hubRef = useRef<HTMLDivElement>(null);
+  const hubRef = useRef<HTMLDivElement>(null); // <- MANTÉM A REF NA DIV
   const leftRefs = useRef<(HTMLDivElement | null)[]>([]);
   const rightRefs = useRef<(HTMLDivElement | null)[]>([]);
 
@@ -96,11 +91,9 @@ export function SocialProofSection() {
               transition={{ duration: 0.8, ease }}
             >
               Aprovado por uma{" "}
-              <span className="bg-gradient-primary bg-clip-text text-transparent">
-                Comunidade de Milhões.
-              </span>
+              <span className="bg-gradient-primary bg-clip-text text-transparent">Comunidade de Milhões.</span>
             </motion.h2>
-            
+
             <motion.p
               className="text-muted-foreground sm:text-lg"
               initial={{ opacity: 0, y: 20 }}
@@ -108,9 +101,8 @@ export function SocialProofSection() {
               viewport={{ once: true }}
               transition={{ delay: 0.1, duration: 0.8, ease }}
             >
-              O conteúdo que você encontra aqui é o mesmo que já alcançou milhões
-              de pessoas, ajudando-as a estudar de forma mais inteligente e a
-              acelerar suas carreiras.
+              O conteúdo que você encontra aqui é o mesmo que já alcançou milhões de pessoas, ajudando-as a estudar de
+              forma mais inteligente e a acelerar suas carreiras.
             </motion.p>
           </div>
 
@@ -153,21 +145,25 @@ export function SocialProofSection() {
               ))}
             </div>
 
-            {/* Center Hub */}
+            {/* ====================================================== */}
+            {/* INÍCIO DA ALTERAÇÃO: AQUI ESTÁ A CORREÇÃO */}
+            {/* ====================================================== */}
+
+            {/* Center Hub - AGORA É UMA DIV COM CENTRALIZAÇÃO CORRETA */}
             <motion.div
               ref={hubRef}
-              className="relative w-28 sm:w-32 md:w-40 lg:w-48 aspect-square rounded-full overflow-hidden z-10"
+              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-28 sm:w-32 md:w-40 lg:w-48 aspect-square z-10"
               initial={{ opacity: 0, scale: 0.8 }}
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.8, ease }}
             >
-              <img
-                src={matheusHub}
-                alt="Foto de Matheus Dias"
-                className="absolute inset-0 w-full h-full object-cover object-center rounded-full block m-0 p-0"
-              />
+              <img src={matheusHub} alt="Foto de Matheus Dias" className="w-full h-full object-cover rounded-full" />
             </motion.div>
+
+            {/* ====================================================== */}
+            {/* FIM DA ALTERAÇÃO */}
+            {/* ====================================================== */}
 
             {/* Right Icons */}
             <div className="absolute right-0 md:right-8 lg:right-16 flex flex-col gap-8 md:gap-12">
