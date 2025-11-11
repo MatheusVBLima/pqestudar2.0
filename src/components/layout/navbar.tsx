@@ -75,17 +75,15 @@ export function Navbar() {
 
           {/* Navigation Links */}
           <div className="hidden md:flex items-center space-x-2">
-            {!isHomePage && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => handleNavigation("/")}
-                className="hover:bg-accent"
-              >
-                <Home className="h-4 w-4 mr-2" />
-                Início
-              </Button>
-            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleNavigation("/")}
+              className="hover:bg-accent"
+            >
+              <Home className="h-4 w-4 mr-2" />
+              Início
+            </Button>
             
             <Button
               variant="ghost"
@@ -119,12 +117,10 @@ export function Navbar() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
-                  {!isHomePage && (
-                    <DropdownMenuItem onClick={() => handleNavigation("/")}>
-                      <Home className="h-4 w-4 mr-2" />
-                      Início
-                    </DropdownMenuItem>
-                  )}
+                  <DropdownMenuItem onClick={() => handleNavigation("/")}>
+                    <Home className="h-4 w-4 mr-2" />
+                    Início
+                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => handleNavigation("/parceiros")}>
                     Ferramentas
                   </DropdownMenuItem>
