@@ -24,12 +24,6 @@ export function Footer({ isHomePage = false }: FooterProps) {
 
           {/* Links */}
           <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 md:gap-6">
-            {isHomePage && (
-              <Button variant="ghost" size="sm" onClick={() => navigate("/sobre")} className="h-8 px-0 hover:bg-transparent hover:text-primary">
-                Sobre
-              </Button>
-            )}
-            
             <Button variant="ghost" size="sm" onClick={() => navigate("/termos")} className="h-8 px-0 hover:bg-transparent hover:text-primary">
               Termos de Uso
             </Button>
@@ -38,27 +32,9 @@ export function Footer({ isHomePage = false }: FooterProps) {
               Política de Privacidade
             </Button>
             
-            {!hidePartnersLink && isHomePage && (
-              <Button variant="ghost" size="sm" onClick={() => navigate("/parceiros")} className="h-8 px-0 hover:bg-transparent hover:text-primary">
-                Parceiros
-              </Button>
-            )}
-            
-            {isHomePage && (
-              <>
-                <Button variant="ghost" size="sm" onClick={() => navigate("/configuracoes-cookies")} className="h-8 px-0 hover:bg-transparent hover:text-primary">
-                  Cookies
-                </Button>
-                
-                <Button variant="ghost" size="sm" onClick={() => navigate("/faq")} className="h-8 px-0 hover:bg-transparent hover:text-primary">
-                  FAQ
-                </Button>
-                
-                <Button variant="ghost" size="sm" onClick={() => navigate("/contato")} className="h-8 px-0 hover:bg-transparent hover:text-primary">
-                  Contato
-                </Button>
-              </>
-            )}
+            <Button variant="ghost" size="sm" onClick={() => navigate("/configuracoes-cookies")} className="h-8 px-0 hover:bg-transparent hover:text-primary">
+              Cookies
+            </Button>
           </div>
 
           {/* Copyright */}

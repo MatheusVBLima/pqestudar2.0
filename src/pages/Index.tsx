@@ -1,7 +1,6 @@
 import { HeroSection } from "@/components/sections/hero-section";
 import { ManifestoSection } from "@/components/sections/manifesto-section";
 import { EcosystemSection } from "@/components/sections/ecosystem-section";
-import { PremiumCTASection } from "@/components/sections/premium-cta-section";
 
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
@@ -14,7 +13,6 @@ const Index = () => {
         <HeroSection />
         <ManifestoSection />
         <EcosystemSection />
-        <PremiumCTASection />
       </main>
       <Footer isHomePage />
     </div>

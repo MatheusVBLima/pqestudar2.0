@@ -90,29 +90,19 @@ export function Navbar() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => handleNavigation("/explorar-cursos")}
-              className={`hover:bg-accent ${location.pathname === "/explorar-cursos" ? "bg-accent text-accent-foreground" : ""}`}
+              onClick={() => handleNavigation("/parceiros")}
+              className={`hover:bg-accent ${location.pathname === "/parceiros" ? "bg-accent text-accent-foreground" : ""}`}
             >
-              <Search className="h-4 w-4 mr-2" />
-              Explorar
+              Ferramentas
             </Button>
 
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => handleNavigation("/noticias")}
-              className={`hover:bg-accent ${location.pathname === "/noticias" ? "bg-accent text-accent-foreground" : ""}`}
+              onClick={() => handleNavigation("/sobre")}
+              className={`hover:bg-accent ${location.pathname === "/sobre" ? "bg-accent text-accent-foreground" : ""}`}
             >
-              <Newspaper className="h-4 w-4 mr-2" />
-              Notícias
-            </Button>
-
-            <Button
-              variant="hero"
-              size="sm"
-              onClick={() => navigate('/kit')}
-            >
-              Kit de Aceleração
+              Sobre
             </Button>
 
             {user && <NotificationDropdown />}
@@ -120,57 +110,6 @@ export function Navbar() {
 
           {/* User Menu & Mobile Menu */}
           <div className="flex items-center space-x-2">
-            {user ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="hover:bg-accent">
-                    <User className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuItem onClick={() => handleNavigation("/meu-perfil")}>
-                    <User className="h-4 w-4 mr-2" />
-                    Meu Perfil
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleNavigation("/meus-materiais")}>
-                    <BookOpen className="h-4 w-4 mr-2" />
-                    Meus Materiais
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleNavigation("/favoritos")}>
-                    <Heart className="h-4 w-4 mr-2" />
-                    Minha atividade
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleNavigation("/ranking-comunidade")}>
-                    <Trophy className="h-4 w-4 mr-2" />
-                    Ranking da Comunidade
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleNavigation("/notificacoes")}>
-                    <Bell className="h-4 w-4 mr-2" />
-                    Notificações
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => handleNavigation("/suporte")}>
-                    <HelpCircle className="h-4 w-4 mr-2" />
-                    Central de Ajuda
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem className="text-destructive" onClick={handleSignOut}>
-                    <LogOut className="h-4 w-4 mr-2" />
-                    Sair
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ) : (
-              <Button 
-                variant="default" 
-                size="sm" 
-                onClick={() => handleNavigation('/login')}
-                disabled={loading}
-              >
-                Entrar
-              </Button>
-            )}
-
             {/* Mobile Menu */}
             <div className="md:hidden">
               <DropdownMenu>
@@ -186,30 +125,12 @@ export function Navbar() {
                       Início
                     </DropdownMenuItem>
                   )}
-                  <DropdownMenuItem onClick={() => handleNavigation("/explorar-cursos")}>
-                    <Search className="h-4 w-4 mr-2" />
-                    Explorar Cursos
+                  <DropdownMenuItem onClick={() => handleNavigation("/parceiros")}>
+                    Ferramentas
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleNavigation("/noticias")}>
-                    <Newspaper className="h-4 w-4 mr-2" />
-                    Notícias
+                  <DropdownMenuItem onClick={() => handleNavigation("/sobre")}>
+                    Sobre
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleNavigation('/kit')}>
-                    <BookOpen className="h-4 w-4 mr-2" />
-                    Kit de Aceleração
-                  </DropdownMenuItem>
-                  {user && (
-                    <>
-                      <DropdownMenuItem onClick={() => handleNavigation("/favoritos")}>
-                        <Heart className="h-4 w-4 mr-2" />
-                        Minha atividade
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleNavigation("/notificacoes")}>
-                        <Bell className="h-4 w-4 mr-2" />
-                        Notificações
-                      </DropdownMenuItem>
-                    </>
-                  )}
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
