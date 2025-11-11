@@ -162,13 +162,11 @@ export function SocialProofSection() {
               transition={{ duration: 0.8, ease }}
               className="relative z-10"
             >
-              <div className="aspect-square w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden ring-4 ring-primary ring-offset-2 ring-offset-background grid place-items-center">
-                <img
-                  src={matheusHub}
-                  alt="Foto de Matheus Dias"
-                  className="w-full h-full object-cover object-center"
-                />
-              </div>
+              <img
+                src={matheusHub}
+                alt="Foto de Matheus Dias"
+                className="w-24 h-24 md:w-32 md:h-32 rounded-full ring-4 ring-primary ring-offset-2 ring-offset-background"
+              />
             </motion.div>
 
             {/* Right Icons */}
