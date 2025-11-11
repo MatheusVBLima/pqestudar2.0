@@ -8,7 +8,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import matheusProfile from "@/assets/matheus-profile.png";
+import matheusHub from "@/assets/matheus-hub.png";
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
@@ -86,21 +86,33 @@ export function SocialProofSection() {
     <section className="relative w-full py-16 md:py-24 lg:py-32 bg-background">
       <div className="container">
         <div className="flex flex-col items-center gap-12">
-          {/* Title */}
-          <motion.div
-            className="text-center"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8, ease }}
-          >
-            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">
+          {/* Title and Support Text */}
+          <div className="flex flex-col items-center gap-6 text-center max-w-3xl">
+            <motion.h2
+              className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8, ease }}
+            >
               Aprovado por uma{" "}
               <span className="bg-gradient-primary bg-clip-text text-transparent">
                 Comunidade de Milhões.
               </span>
-            </h2>
-          </motion.div>
+            </motion.h2>
+            
+            <motion.p
+              className="text-muted-foreground sm:text-lg"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.1, duration: 0.8, ease }}
+            >
+              O conteúdo que você encontra aqui é o mesmo que já alcançou milhões
+              de pessoas, ajudando-as a estudar de forma mais inteligente e a
+              acelerar suas carreiras.
+            </motion.p>
+          </div>
 
           {/* Animated Hub */}
           <div
@@ -152,7 +164,7 @@ export function SocialProofSection() {
             >
               <div className="flex h-24 w-24 md:h-32 md:w-32 items-center justify-center rounded-full border-4 border-primary shadow-2xl overflow-hidden bg-gradient-primary">
                 <img
-                  src={matheusProfile}
+                  src={matheusHub}
                   alt="Matheus Dias"
                   className="h-full w-full object-cover"
                 />
@@ -240,19 +252,6 @@ export function SocialProofSection() {
               return null;
             })}
           </div>
-
-          {/* Support Text */}
-          <motion.p
-            className="max-w-2xl text-center text-muted-foreground sm:text-lg"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.7, duration: 0.8, ease }}
-          >
-            O conteúdo que você encontra aqui é o mesmo que já alcançou milhões
-            de pessoas, ajudando-as a estudar de forma mais inteligente e a
-            acelerar suas carreiras.
-          </motion.p>
         </div>
       </div>
     </section>
