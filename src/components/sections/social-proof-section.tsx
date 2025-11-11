@@ -160,13 +160,15 @@ export function SocialProofSection() {
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.8, ease }}
-              className="relative z-10"
+              className="relative z-10 aspect-square w-28 md:w-36 lg:w-44 rounded-full ring-4 ring-primary ring-offset-2 ring-offset-background p-0 overflow-visible"
             >
-              <img
-                src={matheusHub}
-                alt="Foto de Matheus Dias"
-                className="w-24 h-24 md:w-32 md:h-32 rounded-full ring-4 ring-primary ring-offset-2 ring-offset-background"
-              />
+              <div className="absolute inset-0 m-auto rounded-full overflow-hidden aspect-square">
+                <img
+                  src={matheusHub}
+                  alt="Foto de Matheus Dias"
+                  className="w-full h-full object-cover object-center block"
+                />
+              </div>
             </motion.div>
 
             {/* Right Icons */}
