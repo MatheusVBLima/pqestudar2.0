@@ -162,7 +162,7 @@ export function SocialProofSection() {
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.8, ease }}
-              className="relative z-10 block aspect-square shrink-0 w-28 sm:w-32 md:w-40 lg:w-48 rounded-full ring-4 ring-primary object-cover object-center p-0 m-0"
+              className="relative z-10 block aspect-square shrink-0 w-28 sm:w-32 md:w-40 lg:w-48 rounded-full border-[4px] border-primary object-cover object-center p-0 m-0"
             />
 
             {/* Right Icons */}
