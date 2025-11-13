@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Tool } from "@/hooks/useTools";
 import { Badge } from "@/components/ui/badge";
-import { X } from "lucide-react";
+import { X, Sparkles, ImageOff } from "lucide-react";
 
 interface ToolModalProps {
   open: boolean;
@@ -26,6 +26,7 @@ export function ToolModal({ open, onClose, onSave, tool, availableTags }: ToolMo
   const [isVisible, setIsVisible] = useState(true);
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [imageError, setImageError] = useState(false);
 
   useEffect(() => {
     if (tool) {
@@ -63,6 +64,10 @@ export function ToolModal({ open, onClose, onSave, tool, availableTags }: ToolMo
 
     if (url && !url.match(/^https?:\/\/.+/)) {
       newErrors.url = "URL deve começar com http:// ou https://";
+    }
+
+    if (iconUrl && !iconUrl.match(/^https?:\/\/.+/)) {
+      newErrors.iconUrl = "URL do ícone deve começar com http:// ou https://";
     }
 
     if (selectedTags.length === 0) {
@@ -178,13 +183,55 @@ export function ToolModal({ open, onClose, onSave, tool, availableTags }: ToolMo
 
           <div className="space-y-2">
             <Label htmlFor="iconUrl">URL do Ícone/Logo</Label>
-            <Input
-              id="iconUrl"
-              type="url"
-              value={iconUrl}
-              onChange={(e) => setIconUrl(e.target.value)}
-              placeholder="https://exemplo.com/logo.png"
-            />
+            <div className="flex gap-3">
+              <div className="flex-1">
+                <Input
+                  id="iconUrl"
+                  type="url"
+                  value={iconUrl}
+                  onChange={(e) => {
+                    setIconUrl(e.target.value);
+                    setImageError(false);
+                    setErrors((prev) => ({ ...prev, iconUrl: "" }));
+                  }}
+                  placeholder="https://exemplo.com/logo.png"
+                  aria-invalid={!!errors.iconUrl}
+                  aria-describedby={errors.iconUrl ? "iconUrl-error" : undefined}
+                />
+                {errors.iconUrl && (
+                  <p id="iconUrl-error" className="text-sm text-destructive mt-1">
+                    {errors.iconUrl}
+                  </p>
+                )}
+              </div>
+              <div className="w-16 h-16 rounded-xl bg-muted flex items-center justify-center overflow-hidden border">
+                {iconUrl && !imageError ? (
+                  <img
+                    src={iconUrl}
+                    alt="Preview do logo"
+                    className="w-full h-full object-contain p-2"
+                    onError={() => setImageError(true)}
+                  />
+                ) : (
+                  <Sparkles className="w-6 h-6 text-muted-foreground" aria-hidden="true" />
+                )}
+              </div>
+            </div>
+            {iconUrl && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="text-muted-foreground"
+                onClick={() => {
+                  setIconUrl("");
+                  setImageError(false);
+                }}
+              >
+                <X className="w-3 h-3 mr-1" />
+                Remover logo
+              </Button>
+            )}
           </div>
 
           <div className="space-y-2">

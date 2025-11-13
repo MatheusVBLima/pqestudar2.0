@@ -266,8 +266,24 @@ function SortableToolCard({
           )}
 
           <div className="flex items-start gap-4 mb-2">
-            <div className="p-3 rounded-xl bg-primary/10 text-primary">
-              <Icon className="w-6 h-6" aria-hidden="true" />
+            <div className="w-16 h-16 rounded-2xl bg-muted flex items-center justify-center overflow-hidden border">
+              {tool.icon_url ? (
+                <img
+                  src={tool.icon_url}
+                  alt={`Logo de ${tool.name}`}
+                  className="w-full h-full object-contain p-2"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                    const fallback = e.currentTarget.nextElementSibling as HTMLElement;
+                    if (fallback) fallback.style.display = 'block';
+                  }}
+                />
+              ) : null}
+              <Icon 
+                className="w-8 h-8 text-primary" 
+                aria-hidden="true"
+                style={{ display: tool.icon_url ? 'none' : 'block' }}
+              />
             </div>
             <div className="flex-1">
               <CardTitle className="text-xl flex items-center gap-2">
