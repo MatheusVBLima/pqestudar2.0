@@ -555,6 +555,51 @@ export type Database = {
         }
         Relationships: []
       }
+      tools: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string
+          icon_url: string | null
+          id: string
+          is_visible: boolean
+          name: string
+          sort_order: number
+          tags: string[]
+          updated_at: string
+          updated_by: string | null
+          url: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description: string
+          icon_url?: string | null
+          id?: string
+          is_visible?: boolean
+          name: string
+          sort_order?: number
+          tags?: string[]
+          updated_at?: string
+          updated_by?: string | null
+          url?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          icon_url?: string | null
+          id?: string
+          is_visible?: boolean
+          name?: string
+          sort_order?: number
+          tags?: string[]
+          updated_at?: string
+          updated_by?: string | null
+          url?: string | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -831,6 +876,45 @@ export type Database = {
           partner_url?: string | null
           title?: string | null
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      tools_public: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          icon_url: string | null
+          id: string | null
+          is_visible: boolean | null
+          name: string | null
+          sort_order: number | null
+          tags: string[] | null
+          updated_at: string | null
+          url: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          icon_url?: string | null
+          id?: string | null
+          is_visible?: boolean | null
+          name?: string | null
+          sort_order?: number | null
+          tags?: string[] | null
+          updated_at?: string | null
+          url?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          icon_url?: string | null
+          id?: string | null
+          is_visible?: boolean | null
+          name?: string | null
+          sort_order?: number | null
+          tags?: string[] | null
+          updated_at?: string | null
+          url?: string | null
         }
         Relationships: []
       }

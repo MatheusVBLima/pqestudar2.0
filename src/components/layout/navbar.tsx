@@ -88,8 +88,8 @@ export function Navbar() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => handleNavigation("/parceiros")}
-              className={`hover:bg-accent ${location.pathname === "/parceiros" ? "bg-accent text-accent-foreground" : ""}`}
+              onClick={() => handleNavigation("/ferramentas")}
+              className={`hover:bg-accent ${location.pathname === "/ferramentas" ? "bg-accent text-accent-foreground" : ""}`}
             >
               Ferramentas
             </Button>
@@ -121,7 +121,7 @@ export function Navbar() {
                     <Home className="h-4 w-4 mr-2" />
                     Início
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleNavigation("/parceiros")}>
+                  <DropdownMenuItem onClick={() => handleNavigation("/ferramentas")}>
                     Ferramentas
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => handleNavigation("/sobre")}>
