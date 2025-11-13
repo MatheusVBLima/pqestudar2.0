@@ -1,7 +1,8 @@
 import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Helmet } from "react-helmet";
-import { X, Sparkles, Brain, Shield, GraduationCap, Wrench, Zap, Plus, Edit, Eye, EyeOff, Trash2, GripVertical } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
+import { X, Sparkles, Brain, Shield, GraduationCap, Wrench, Zap, Plus, Edit, Eye, EyeOff, Trash2, GripVertical, ChevronLeft, ChevronRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -28,8 +29,17 @@ import {
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { useUserRoles } from "@/hooks/useUserRoles";
-import { useTools, Tool } from "@/hooks/useTools";
+import { useTools, Tool, UseToolsOptions } from "@/hooks/useTools";
 import { ToolModal } from "@/components/admin/ToolModal";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 import {
   DndContext,
   closestCenter,
@@ -68,6 +78,103 @@ const CATEGORY_ICONS: Record<string, any> = {
   "Cursos Gratuitos": GraduationCap,
   "Utilidades": Wrench,
 };
+
+// Componente de controles de paginação
+function PaginationControls({ 
+  currentPage, 
+  totalPages, 
+  onPageChange 
+}: { 
+  currentPage: number; 
+  totalPages: number; 
+  onPageChange: (page: number) => void;
+}) {
+  // Generate page numbers to display
+  const getPageNumbers = () => {
+    const pages: (number | 'ellipsis')[] = [];
+    
+    if (totalPages <= 7) {
+      // Show all pages if 7 or fewer
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      // Always show first page
+      pages.push(1);
+      
+      if (currentPage > 3) {
+        pages.push('ellipsis');
+      }
+      
+      // Show pages around current
+      const start = Math.max(2, currentPage - 1);
+      const end = Math.min(totalPages - 1, currentPage + 1);
+      
+      for (let i = start; i <= end; i++) {
+        pages.push(i);
+      }
+      
+      if (currentPage < totalPages - 2) {
+        pages.push('ellipsis');
+      }
+      
+      // Always show last page
+      pages.push(totalPages);
+    }
+    
+    return pages;
+  };
+
+  const pageNumbers = getPageNumbers();
+
+  return (
+    <Pagination>
+      <PaginationContent>
+        <PaginationItem>
+          <PaginationPrevious 
+            onClick={() => currentPage > 1 && onPageChange(currentPage - 1)}
+            className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+            aria-disabled={currentPage === 1}
+          >
+            <ChevronLeft className="h-4 w-4" />
+            <span className="hidden sm:inline ml-2">Anterior</span>
+          </PaginationPrevious>
+        </PaginationItem>
+
+        {pageNumbers.map((page, index) => (
+          page === 'ellipsis' ? (
+            <PaginationItem key={`ellipsis-${index}`}>
+              <PaginationEllipsis />
+            </PaginationItem>
+          ) : (
+            <PaginationItem key={page}>
+              <PaginationLink
+                onClick={() => onPageChange(page)}
+                isActive={currentPage === page}
+                className="cursor-pointer"
+                aria-current={currentPage === page ? 'page' : undefined}
+              >
+                {page}
+              </PaginationLink>
+            </PaginationItem>
+          )
+        ))}
+
+        <PaginationItem>
+          <PaginationNext 
+            onClick={() => currentPage < totalPages && onPageChange(currentPage + 1)}
+            className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+            aria-disabled={currentPage === totalPages}
+          >
+            <span className="hidden sm:inline mr-2">Próximo</span>
+            <ChevronRight className="h-4 w-4" />
+          </PaginationNext>
+        </PaginationItem>
+      </PaginationContent>
+    </Pagination>
+  );
+}
+
 
 // Componente de card sortable
 function SortableToolCard({ 
@@ -206,6 +313,9 @@ function SortableToolCard({
 }
 
 export default function Ferramentas() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const currentPage = parseInt(searchParams.get('page') || '1', 10);
+  
   // EXATAMENTE o mesmo hook usado em /parceiros
   const { isAdmin, loading: loadingRoles } = useUserRoles();
   
@@ -233,11 +343,18 @@ export default function Ferramentas() {
   const [hasUnsavedOrder, setHasUnsavedOrder] = useState(false);
   const [localTools, setLocalTools] = useState<Tool[]>([]);
 
-  // Fetch tools from Supabase
-  // Public mode: reads from tools_public view
-  // Admin mode: reads/writes via admin-tools edge function
+  // Fetch tools from Supabase with pagination
+  const toolsOptions: UseToolsOptions = {
+    includeInvisible: isManagementMode && effectiveAdmin,
+    page: isManagementMode ? 1 : currentPage, // Admin vê tudo, público tem paginação
+    pageSize: 12,
+    tags: isManagementMode ? [] : selectedTags,
+  };
+
   const { 
     tools, 
+    total,
+    totalPages,
     loading, 
     addTool, 
     updateTool, 
@@ -245,12 +362,30 @@ export default function Ferramentas() {
     toggleVisible, 
     reorderTools,
     refetch
-  } = useTools(isManagementMode && effectiveAdmin);
+  } = useTools(toolsOptions);
 
   // Sync local tools with fetched tools
   useEffect(() => {
     setLocalTools(tools);
   }, [tools]);
+
+  // Reset page to 1 when filters change
+  useEffect(() => {
+    if (!isManagementMode && currentPage > 1) {
+      setSearchParams({ page: '1' });
+    }
+  }, [selectedTags, isManagementMode]);
+
+  // Scroll to top when page changes (smooth)
+  useEffect(() => {
+    if (!isManagementMode) {
+      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      window.scrollTo({ 
+        top: 0, 
+        behavior: prefersReducedMotion ? 'auto' : 'smooth' 
+      });
+    }
+  }, [currentPage]);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -268,15 +403,8 @@ export default function Ferramentas() {
     return Array.from(tagSet).sort();
   }, [localTools]);
 
-  // Filtragem combinada
+  // Filtragem combinada (apenas para admin mode dropdown)
   let displayedTools = localTools;
-
-  // Filtro por tags selecionadas (modo público)
-  if (!isManagementMode && selectedTags.length > 0) {
-    displayedTools = displayedTools.filter((tool) =>
-      tool.tags.some((tag) => selectedTags.includes(tag))
-    );
-  }
 
   // Filtro por categoria dropdown (modo admin)
   if (isManagementMode && categoryFilter !== "all") {
@@ -299,6 +427,12 @@ export default function Ferramentas() {
     setSelectedTags([]);
   };
 
+  const handlePageChange = (newPage: number) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      setSearchParams({ page: String(newPage) });
+    }
+  };
+
   const handleKeyDown = (
     e: React.KeyboardEvent<HTMLDivElement>,
     action: () => void
@@ -308,6 +442,26 @@ export default function Ferramentas() {
       action();
     }
   };
+
+  // Keyboard navigation for pagination
+  useEffect(() => {
+    if (isManagementMode) return;
+
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+        return;
+      }
+      
+      if (e.key === 'ArrowLeft' && currentPage > 1) {
+        handlePageChange(currentPage - 1);
+      } else if (e.key === 'ArrowRight' && currentPage < totalPages) {
+        handlePageChange(currentPage + 1);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [currentPage, totalPages, isManagementMode]);
 
   const handleAddTool = () => {
     setEditingTool(null);
@@ -369,9 +523,14 @@ export default function Ferramentas() {
 
   const activeTool = activeId ? localTools.find((t) => t.id === activeId) : null;
 
+  // Pagination range display
+  const pageStart = (currentPage - 1) * 12 + 1;
+  const pageEnd = Math.min(currentPage * 12, total);
+
   // Show skeleton count and filters
-  const showFilters = !loading && localTools.length > 0 && allTags.length > 0;
+  const showFilters = !loading && !isManagementMode && allTags.length > 0;
   const showCount = !loading && localTools.length > 0;
+  const showPagination = !loading && !isManagementMode && totalPages > 1;
 
   return (
     <>
@@ -507,6 +666,17 @@ export default function Ferramentas() {
                     Categorias
                   </h2>
 
+                  {/* Contador de Resultados com Paginação */}
+                  {showCount && total > 0 && (
+                    <p
+                      className="text-sm text-muted-foreground mb-4"
+                      aria-live="polite"
+                      aria-atomic="true"
+                    >
+                      Mostrando {pageStart}–{pageEnd} de {total} {total === 1 ? 'ferramenta' : 'ferramentas'}
+                    </p>
+                  )}
+
                   {/* Caixa de Seleção */}
                   <div
                     className="mb-6 p-4 rounded-lg border-2 border-dashed border-border bg-muted/20 min-h-[80px] flex flex-wrap gap-2 items-start"
@@ -607,26 +777,26 @@ export default function Ferramentas() {
                       </Button>
                     </motion.div>
                   )}
-
-                  {/* Contador de Resultados */}
-                  {showCount && (
-                    <p
-                      className="text-sm text-muted-foreground mt-4"
-                      aria-live="polite"
-                      aria-atomic="true"
-                    >
-                      {displayedTools.length === localTools.length
-                        ? `Mostrando todas as ${localTools.length} ferramentas`
-                        : `Mostrando ${displayedTools.length} de ${localTools.length} ferramentas`}
-                    </p>
-                  )}
                 </motion.div>
               </div>
             </section>
           )}
 
+          {/* Paginação Superior (modo público) */}
+          {showPagination && (
+            <section className="pb-6 px-4 sm:px-6 lg:px-8">
+              <div className="container max-w-7xl mx-auto">
+                <PaginationControls 
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={handlePageChange}
+                />
+              </div>
+            </section>
+          )}
+
           {/* Grid de Ferramentas */}
-          <section className="pb-24 px-4 sm:px-6 lg:px-8">
+          <section className="pb-12 px-4 sm:px-6 lg:px-8">
             <div className="container max-w-7xl mx-auto">
               {/* Loading State */}
               {loading && (
@@ -759,6 +929,19 @@ export default function Ferramentas() {
               )}
             </div>
           </section>
+
+          {/* Paginação Inferior (modo público) */}
+          {showPagination && (
+            <section className="pb-24 px-4 sm:px-6 lg:px-8">
+              <div className="container max-w-7xl mx-auto">
+                <PaginationControls 
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={handlePageChange}
+                />
+              </div>
+            </section>
+          )}
         </main>
 
         <Footer />

@@ -18,9 +18,26 @@ export interface Tool {
   updated_by?: string;
 }
 
-export const useTools = (includeInvisible = false) => {
+export interface UseToolsOptions {
+  includeInvisible?: boolean;
+  page?: number;
+  pageSize?: number;
+  tags?: string[];
+}
+
+export interface ToolsResult {
+  tools: Tool[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+}
+
+export const useTools = (options: UseToolsOptions = {}) => {
+  const { includeInvisible = false, page = 1, pageSize = 12, tags = [] } = options;
   const { user } = useAuth();
   const [tools, setTools] = useState<Tool[]>([]);
+  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
 
   const fetchTools = async () => {
@@ -38,13 +55,38 @@ export const useTools = (includeInvisible = false) => {
         
         if (error) throw error;
         
-        setTools(data || []);
+        // Apply tag filter if provided
+        let filteredData = data || [];
+        if (tags.length > 0) {
+          filteredData = filteredData.filter((tool: Tool) => 
+            tool.tags.some(tag => tags.includes(tag))
+          );
+        }
+        
+        setTotal(filteredData.length);
+        setTools(filteredData);
       } else {
-        // Public mode: usa VIEW 'tools_public'
-        const { data, error } = await supabase
+        // Public mode: usa VIEW 'tools_public' com paginação
+        let query = supabase
           .from('tools_public')
-          .select('*')
-          .order('sort_order', { ascending: true });
+          .select('*', { count: 'exact' });
+
+        // Apply tag filter if provided
+        if (tags.length > 0) {
+          query = query.overlaps('tags', tags);
+        }
+
+        // Get total count first
+        const { count } = await query;
+        setTotal(count || 0);
+
+        // Apply pagination
+        const from = (page - 1) * pageSize;
+        const to = from + pageSize - 1;
+
+        const { data, error } = await query
+          .order('sort_order', { ascending: true })
+          .range(from, to);
 
         if (error) throw error;
         
@@ -277,11 +319,17 @@ export const useTools = (includeInvisible = false) => {
 
   useEffect(() => {
     fetchTools();
-  }, [includeInvisible]);
+  }, [includeInvisible, page, pageSize, JSON.stringify(tags)]);
+
+  const totalPages = Math.ceil(total / pageSize);
 
   return {
     tools,
+    total,
     loading,
+    page,
+    pageSize,
+    totalPages,
     addTool,
     updateTool,
     deleteTool,
