@@ -272,6 +272,7 @@ function SortableToolCard({
                   src={tool.icon_url}
                   alt={`Logo de ${tool.name}`}
                   className="w-full h-full object-contain p-2"
+                  referrerPolicy="no-referrer"
                   onError={(e) => {
                     e.currentTarget.style.display = 'none';
                     const fallback = e.currentTarget.nextElementSibling as HTMLElement;

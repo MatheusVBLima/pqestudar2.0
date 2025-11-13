@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,7 +7,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Tool } from "@/hooks/useTools";
 import { Badge } from "@/components/ui/badge";
-import { X, Sparkles, ImageOff } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { X, Sparkles, Upload, Link as LinkIcon } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface ToolModalProps {
   open: boolean;
@@ -27,6 +30,12 @@ export function ToolModal({ open, onClose, onSave, tool, availableTags }: ToolMo
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [imageError, setImageError] = useState(false);
+  const [logoSource, setLogoSource] = useState<"upload" | "url">("url");
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [uploadPreview, setUploadPreview] = useState<string>("");
+  const [uploading, setUploading] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (tool) {
@@ -45,6 +54,10 @@ export function ToolModal({ open, onClose, onSave, tool, availableTags }: ToolMo
       setIsVisible(true);
     }
     setErrors({});
+    setUploadedFile(null);
+    setUploadPreview("");
+    setImageError(false);
+    setLogoSource("url");
   }, [tool, open]);
 
   const validate = () => {
@@ -78,17 +91,100 @@ export function ToolModal({ open, onClose, onSave, tool, availableTags }: ToolMo
     return Object.keys(newErrors).length === 0;
   };
 
+  const handleFileSelect = (file: File) => {
+    const maxSize = 1.5 * 1024 * 1024; // 1.5MB
+    const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp', 'image/svg+xml'];
+
+    if (!allowedTypes.includes(file.type)) {
+      setErrors(prev => ({ ...prev, upload: "Formato não suportado. Use PNG, JPG, WEBP ou SVG." }));
+      return;
+    }
+
+    if (file.size > maxSize) {
+      setErrors(prev => ({ ...prev, upload: "Arquivo muito grande. Máximo 1.5MB." }));
+      return;
+    }
+
+    setUploadedFile(file);
+    setErrors(prev => ({ ...prev, upload: "" }));
+    
+    // Create preview
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setUploadPreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files[0];
+    if (file) handleFileSelect(file);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = () => {
+    setIsDragging(false);
+  };
+
+  const uploadToStorage = async (file: File, toolId: string): Promise<string> => {
+    const timestamp = new Date().toISOString().replace(/[-:]/g, '').split('.')[0];
+    const ext = file.name.split('.').pop();
+    const fileName = `${toolId}-${timestamp}.${ext}`;
+    const filePath = `${fileName}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('tools-icons')
+      .upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: false
+      });
+
+    if (uploadError) throw uploadError;
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('tools-icons')
+      .getPublicUrl(filePath);
+
+    return publicUrl;
+  };
+
   const handleSave = async () => {
     if (!validate()) return;
 
     setSaving(true);
     try {
+      let finalIconUrl = iconUrl.trim() || undefined;
+
+      // If uploading a file, upload to storage first
+      if (logoSource === "upload" && uploadedFile) {
+        setUploading(true);
+        try {
+          // Generate temporary ID for new tools
+          const toolId = tool?.id || crypto.randomUUID();
+          finalIconUrl = await uploadToStorage(uploadedFile, toolId);
+        } catch (error) {
+          toast.error("Erro ao fazer upload da imagem");
+          console.error("Upload error:", error);
+          setSaving(false);
+          setUploading(false);
+          return;
+        } finally {
+          setUploading(false);
+        }
+      }
+
       await onSave({
         ...(tool?.id && { id: tool.id }),
         name: name.trim(),
         description: description.trim(),
         url: url.trim() || undefined,
-        icon_url: iconUrl.trim() || undefined,
+        icon_url: finalIconUrl,
         tags: selectedTags,
         is_visible: isVisible,
       });
@@ -182,56 +278,137 @@ export function ToolModal({ open, onClose, onSave, tool, availableTags }: ToolMo
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="iconUrl">URL do Ícone/Logo</Label>
-            <div className="flex gap-3">
-              <div className="flex-1">
-                <Input
-                  id="iconUrl"
-                  type="url"
-                  value={iconUrl}
-                  onChange={(e) => {
-                    setIconUrl(e.target.value);
-                    setImageError(false);
-                    setErrors((prev) => ({ ...prev, iconUrl: "" }));
-                  }}
-                  placeholder="https://exemplo.com/logo.png"
-                  aria-invalid={!!errors.iconUrl}
-                  aria-describedby={errors.iconUrl ? "iconUrl-error" : undefined}
-                />
-                {errors.iconUrl && (
-                  <p id="iconUrl-error" className="text-sm text-destructive mt-1">
-                    {errors.iconUrl}
-                  </p>
+            <Label>Logo/Ícone</Label>
+            <Tabs value={logoSource} onValueChange={(v) => setLogoSource(v as "upload" | "url")}>
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="upload">
+                  <Upload className="w-4 h-4 mr-2" />
+                  Upload
+                </TabsTrigger>
+                <TabsTrigger value="url">
+                  <LinkIcon className="w-4 h-4 mr-2" />
+                  URL
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="upload" className="space-y-3">
+                <div
+                  onDrop={handleDrop}
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
+                    isDragging ? 'border-primary bg-primary/5' : 'border-muted-foreground/25'
+                  }`}
+                >
+                  {uploadPreview ? (
+                    <div className="space-y-3">
+                      <div className="w-24 h-24 mx-auto rounded-xl bg-muted flex items-center justify-center overflow-hidden border">
+                        <img
+                          src={uploadPreview}
+                          alt="Preview"
+                          className="w-full h-full object-contain p-2"
+                        />
+                      </div>
+                      <p className="text-sm text-muted-foreground">{uploadedFile?.name}</p>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setUploadedFile(null);
+                          setUploadPreview("");
+                        }}
+                      >
+                        <X className="w-3 h-3 mr-1" />
+                        Remover
+                      </Button>
+                    </div>
+                  ) : (
+                    <>
+                      <Sparkles className="w-12 h-12 mx-auto mb-3 text-muted-foreground" />
+                      <p className="text-sm mb-2">Arraste uma imagem ou</p>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => fileInputRef.current?.click()}
+                      >
+                        Selecionar arquivo
+                      </Button>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/png,image/jpeg,image/jpg,image/webp,image/svg+xml"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) handleFileSelect(file);
+                        }}
+                      />
+                      <p className="text-xs text-muted-foreground mt-2">
+                        PNG, JPG, WEBP ou SVG • Máx 1.5MB
+                      </p>
+                    </>
+                  )}
+                </div>
+                {errors.upload && (
+                  <p className="text-sm text-destructive">{errors.upload}</p>
                 )}
-              </div>
-              <div className="w-16 h-16 rounded-xl bg-muted flex items-center justify-center overflow-hidden border">
-                {iconUrl && !imageError ? (
-                  <img
-                    src={iconUrl}
-                    alt="Preview do logo"
-                    className="w-full h-full object-contain p-2"
-                    onError={() => setImageError(true)}
-                  />
-                ) : (
-                  <Sparkles className="w-6 h-6 text-muted-foreground" aria-hidden="true" />
+              </TabsContent>
+
+              <TabsContent value="url" className="space-y-3">
+                <div className="flex gap-3">
+                  <div className="flex-1">
+                    <Input
+                      id="iconUrl"
+                      type="url"
+                      value={iconUrl}
+                      onChange={(e) => {
+                        setIconUrl(e.target.value);
+                        setImageError(false);
+                        setErrors((prev) => ({ ...prev, iconUrl: "" }));
+                      }}
+                      placeholder="https://exemplo.com/logo.png"
+                      aria-invalid={!!errors.iconUrl}
+                      aria-describedby={errors.iconUrl ? "iconUrl-error" : undefined}
+                    />
+                    {errors.iconUrl && (
+                      <p id="iconUrl-error" className="text-sm text-destructive mt-1">
+                        {errors.iconUrl}
+                      </p>
+                    )}
+                  </div>
+                  <div className="w-16 h-16 rounded-xl bg-muted flex items-center justify-center overflow-hidden border">
+                    {iconUrl && !imageError ? (
+                      <img
+                        src={iconUrl}
+                        alt="Preview do logo"
+                        className="w-full h-full object-contain p-2"
+                        referrerPolicy="no-referrer"
+                        onError={() => setImageError(true)}
+                      />
+                    ) : (
+                      <Sparkles className="w-6 h-6 text-muted-foreground" aria-hidden="true" />
+                    )}
+                  </div>
+                </div>
+                {iconUrl && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="text-muted-foreground"
+                    onClick={() => {
+                      setIconUrl("");
+                      setImageError(false);
+                    }}
+                  >
+                    <X className="w-3 h-3 mr-1" />
+                    Remover URL
+                  </Button>
                 )}
-              </div>
-            </div>
-            {iconUrl && (
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="text-muted-foreground"
-                onClick={() => {
-                  setIconUrl("");
-                  setImageError(false);
-                }}
-              >
-                <X className="w-3 h-3 mr-1" />
-                Remover logo
-              </Button>
-            )}
+              </TabsContent>
+            </Tabs>
           </div>
 
           <div className="space-y-2">
@@ -280,11 +457,11 @@ export function ToolModal({ open, onClose, onSave, tool, availableTags }: ToolMo
         </div>
 
         <div className="flex justify-end gap-2">
-          <Button variant="outline" onClick={onClose} disabled={saving}>
+          <Button variant="outline" onClick={onClose} disabled={saving || uploading}>
             Cancelar
           </Button>
-          <Button onClick={handleSave} disabled={saving}>
-            {saving ? "Salvando..." : "Salvar"}
+          <Button onClick={handleSave} disabled={saving || uploading}>
+            {uploading ? "Enviando imagem..." : saving ? "Salvando..." : "Salvar"}
           </Button>
         </div>
       </DialogContent>
