@@ -265,8 +265,8 @@ function SortableToolCard({
             </div>
           )}
 
-          <div className="flex items-start gap-4 mb-2">
-            <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center overflow-hidden border shadow-sm">
+          <div className="grid grid-cols-[auto,1fr] gap-4 items-center mb-2">
+            <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center overflow-hidden border shadow-sm shrink-0">
               {tool.icon_url ? (
                 <img
                   src={tool.icon_url}
@@ -286,16 +286,14 @@ function SortableToolCard({
                 style={{ display: tool.icon_url ? 'none' : 'block' }}
               />
             </div>
-            <div className="flex-1">
-              <CardTitle className="text-xl flex items-center gap-2">
-                {tool.name}
-                {isManagementMode && !tool.is_visible && (
-                  <Badge variant="secondary" className="text-xs">
-                    Oculta
-                  </Badge>
-                )}
-              </CardTitle>
-            </div>
+            <CardTitle className="text-xl leading-tight flex items-center gap-2 mt-0">
+              {tool.name}
+              {isManagementMode && !tool.is_visible && (
+                <Badge variant="secondary" className="text-xs">
+                  Oculta
+                </Badge>
+              )}
+            </CardTitle>
           </div>
           <CardDescription className="text-sm leading-relaxed">
             {tool.description}
