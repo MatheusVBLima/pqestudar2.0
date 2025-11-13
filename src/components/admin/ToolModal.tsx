@@ -302,11 +302,11 @@ export function ToolModal({ open, onClose, onSave, tool, availableTags }: ToolMo
                 >
                   {uploadPreview ? (
                     <div className="space-y-3">
-                      <div className="w-24 h-24 mx-auto rounded-xl bg-muted flex items-center justify-center overflow-hidden border">
+                      <div className="w-24 h-24 mx-auto rounded-full bg-muted flex items-center justify-center overflow-hidden border shadow-sm">
                         <img
                           src={uploadPreview}
                           alt="Preview"
-                          className="w-full h-full object-contain p-2"
+                          className="w-full h-full object-contain"
                         />
                       </div>
                       <p className="text-sm text-muted-foreground">{uploadedFile?.name}</p>
@@ -378,12 +378,12 @@ export function ToolModal({ open, onClose, onSave, tool, availableTags }: ToolMo
                       </p>
                     )}
                   </div>
-                  <div className="w-16 h-16 rounded-xl bg-muted flex items-center justify-center overflow-hidden border">
+                  <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center overflow-hidden border shadow-sm">
                     {iconUrl && !imageError ? (
                       <img
                         src={iconUrl}
                         alt="Preview do logo"
-                        className="w-full h-full object-contain p-2"
+                        className="w-full h-full object-contain"
                         referrerPolicy="no-referrer"
                         onError={() => setImageError(true)}
                       />

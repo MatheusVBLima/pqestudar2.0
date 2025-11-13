@@ -266,12 +266,12 @@ function SortableToolCard({
           )}
 
           <div className="flex items-start gap-4 mb-2">
-            <div className="w-16 h-16 rounded-2xl bg-muted flex items-center justify-center overflow-hidden border">
+            <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center overflow-hidden border shadow-sm">
               {tool.icon_url ? (
                 <img
                   src={tool.icon_url}
                   alt={`Logo de ${tool.name}`}
-                  className="w-full h-full object-contain p-2"
+                  className="w-full h-full object-contain"
                   referrerPolicy="no-referrer"
                   onError={(e) => {
                     e.currentTarget.style.display = 'none';
