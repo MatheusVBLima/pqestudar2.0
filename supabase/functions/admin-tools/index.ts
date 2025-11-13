@@ -26,25 +26,63 @@ Deno.serve(async (req) => {
     // Verificar autenticação
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
-      throw new Error('Cabeçalho de autorização ausente');
+      return new Response(
+        JSON.stringify({ 
+          error: 'unauthorized',
+          message: 'Cabeçalho de autorização ausente'
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 401,
+        }
+      );
     }
 
     const token = authHeader.replace('Bearer ', '');
     const { data: { user }, error: userError } = await supabaseClient.auth.getUser(token);
 
     if (userError || !user) {
-      throw new Error('Usuário não autenticado');
+      return new Response(
+        JSON.stringify({ 
+          error: 'unauthorized',
+          message: 'Usuário não autenticado'
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 401,
+        }
+      );
     }
 
-    // Verificar se é admin
-    const { data: isAdminData, error: adminError } = await supabaseClient.rpc('is_admin');
-    
-    if (adminError || !isAdminData) {
-      throw new Error('Acesso negado. Apenas administradores podem gerenciar ferramentas.');
+    // Check admin status directly from user_roles table using service role
+    const { data: roleData, error: roleError } = await supabaseClient
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', user.id)
+      .eq('role', 'admin')
+      .single();
+
+    if (roleError || !roleData) {
+      console.log('[admin-tools] Access denied for user:', user.id);
+      return new Response(
+        JSON.stringify({ 
+          error: 'not_admin',
+          message: 'Acesso negado. Apenas administradores podem gerenciar ferramentas.'
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 403,
+        }
+      );
     }
 
     const { action, data } = await req.json();
-    console.log('[admin-tools] Action:', action, 'User:', user.id);
+    console.log('[admin-tools]', {
+      action,
+      userId: user.id,
+      email: user.email,
+      timestamp: new Date().toISOString()
+    });
 
     switch (action) {
       case 'list': {
@@ -63,6 +101,24 @@ Deno.serve(async (req) => {
 
       case 'create': {
         const { name, description, url, icon_url, tags, is_visible } = data;
+
+        // Validar campos obrigatórios
+        if (!name || !description) {
+          return new Response(
+            JSON.stringify({ 
+              error: 'validation',
+              message: 'Nome e descrição são obrigatórios',
+              details: {
+                name: !name ? 'Nome é obrigatório' : undefined,
+                description: !description ? 'Descrição é obrigatória' : undefined
+              }
+            }),
+            {
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+              status: 400,
+            }
+          );
+        }
 
         // Obter próxima posição
         const { data: lastTool } = await supabaseClient
@@ -102,6 +158,20 @@ Deno.serve(async (req) => {
 
       case 'update': {
         const { id, ...updates } = data;
+
+        if (!id) {
+          return new Response(
+            JSON.stringify({ 
+              error: 'validation',
+              message: 'ID da ferramenta é obrigatório',
+              details: { id: 'ID é obrigatório' }
+            }),
+            {
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+              status: 400,
+            }
+          );
+        }
 
         const { data: updatedTool, error } = await supabaseClient
           .from('tools')
@@ -171,13 +241,22 @@ Deno.serve(async (req) => {
         throw new Error(`Ação desconhecida: ${action}`);
     }
   } catch (error) {
-    console.error('[admin-tools] Error:', error);
+    const traceId = crypto.randomUUID();
+    console.error('[admin-tools] Error', { 
+      traceId,
+      error: error.message,
+      stack: error.stack 
+    });
     
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: 'internal',
+        message: error.message || 'Erro interno do servidor',
+        traceId
+      }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: error.message.includes('Acesso negado') ? 403 : 400,
+        status: 500,
       }
     );
   }

@@ -79,7 +79,18 @@ export const useTools = (includeInvisible = false) => {
         }
       });
 
-      if (error) throw error;
+      if (error) {
+        // Log detalhado em dev
+        if (process.env.NODE_ENV === 'development') {
+          console.error('[useTools] Edge function error:', {
+            url: 'admin-tools',
+            method: 'POST',
+            status: error.status,
+            body: error
+          });
+        }
+        throw error;
+      }
 
       await fetchTools();
       toast({
@@ -89,9 +100,12 @@ export const useTools = (includeInvisible = false) => {
       
       return { data, error: null };
     } catch (err: any) {
+      // Extrair mensagem do JSON se disponível
+      const message = err?.context?.message || err?.message || "Não foi possível adicionar a ferramenta.";
+      
       toast({
         title: "Erro",
-        description: err.message || "Não foi possível adicionar a ferramenta.",
+        description: message,
         variant: "destructive"
       });
       return { data: null, error: err.message };
@@ -110,7 +124,18 @@ export const useTools = (includeInvisible = false) => {
         }
       });
 
-      if (error) throw error;
+      if (error) {
+        // Log detalhado em dev
+        if (process.env.NODE_ENV === 'development') {
+          console.error('[useTools] Edge function error:', {
+            url: 'admin-tools',
+            method: 'PATCH',
+            status: error.status,
+            body: error
+          });
+        }
+        throw error;
+      }
 
       await fetchTools();
       toast({
@@ -120,9 +145,12 @@ export const useTools = (includeInvisible = false) => {
       
       return { data, error: null };
     } catch (err: any) {
+      // Extrair mensagem do JSON se disponível
+      const message = err?.context?.message || err?.message || "Não foi possível atualizar a ferramenta.";
+      
       toast({
         title: "Erro",
-        description: err.message || "Não foi possível atualizar a ferramenta.",
+        description: message,
         variant: "destructive"
       });
       return { data: null, error: err.message };
@@ -141,7 +169,18 @@ export const useTools = (includeInvisible = false) => {
         }
       });
 
-      if (error) throw error;
+      if (error) {
+        // Log detalhado em dev
+        if (process.env.NODE_ENV === 'development') {
+          console.error('[useTools] Edge function error:', {
+            url: 'admin-tools',
+            method: 'DELETE',
+            status: error.status,
+            body: error
+          });
+        }
+        throw error;
+      }
 
       await fetchTools();
       toast({
@@ -151,9 +190,12 @@ export const useTools = (includeInvisible = false) => {
       
       return { error: null };
     } catch (err: any) {
+      // Extrair mensagem do JSON se disponível
+      const message = err?.context?.message || err?.message || "Não foi possível remover a ferramenta.";
+      
       toast({
         title: "Erro",
-        description: err.message || "Não foi possível remover a ferramenta.",
+        description: message,
         variant: "destructive"
       });
       return { error: err.message };
@@ -188,7 +230,18 @@ export const useTools = (includeInvisible = false) => {
         }
       });
 
-      if (error) throw error;
+      if (error) {
+        // Log detalhado em dev
+        if (process.env.NODE_ENV === 'development') {
+          console.error('[useTools] Edge function error:', {
+            url: 'admin-tools',
+            method: 'PATCH',
+            status: error.status,
+            body: error
+          });
+        }
+        throw error;
+      }
 
       const duration = Date.now() - startTime;
       console.log('[Tools Reorder] Success', { duration: `${duration}ms` });
@@ -209,9 +262,12 @@ export const useTools = (includeInvisible = false) => {
       // Reverter para ordem anterior
       setTools(previousTools);
 
+      // Extrair mensagem do JSON se disponível
+      const message = err?.context?.message || err?.message || "Não foi possível salvar a nova ordem. Tente novamente.";
+
       toast({
         title: "Erro ao salvar ordem",
-        description: "Não foi possível salvar a nova ordem. Tente novamente.",
+        description: message,
         variant: "destructive"
       });
 
