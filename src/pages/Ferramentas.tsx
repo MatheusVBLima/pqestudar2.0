@@ -572,7 +572,10 @@ export default function Ferramentas() {
                     transition={{ duration: 0.5 }}
                     className="text-4xl sm:text-5xl md:text-6xl font-bold text-foreground mb-4"
                   >
-                    O Arsenal de Ferramentas Secretas.
+                    O Arsenal de Ferramentas{" "}
+                    <span className="bg-gradient-primary bg-clip-text text-transparent">
+                      Secretas.
+                    </span>
                   </motion.h1>
                   <motion.p
                     initial={{ opacity: 0, y: 20 }}
