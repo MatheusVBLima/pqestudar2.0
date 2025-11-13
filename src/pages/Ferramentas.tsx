@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Helmet } from "react-helmet";
 import { X, Sparkles, Brain, Shield, GraduationCap, Wrench, Zap, Plus, Edit, Eye, EyeOff, Trash2, GripVertical } from "lucide-react";
@@ -49,6 +49,7 @@ import {
   useSortable,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { toast } from "@/hooks/use-toast";
 
 // Categorias disponíveis
 const CATEGORIES = [
@@ -230,8 +231,26 @@ export default function Ferramentas() {
   const [deleteTool, setDeleteTool] = useState<Tool | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [hasUnsavedOrder, setHasUnsavedOrder] = useState(false);
+  const [localTools, setLocalTools] = useState<Tool[]>([]);
 
-  const { tools, loading, addTool, updateTool, deleteTool: removeTool, toggleVisible, reorderTools } = useTools(isManagementMode);
+  // Fetch tools from Supabase
+  // Public mode: reads from tools_public view
+  // Admin mode: reads/writes via admin-tools edge function
+  const { 
+    tools, 
+    loading, 
+    addTool, 
+    updateTool, 
+    deleteTool: removeTool, 
+    toggleVisible, 
+    reorderTools,
+    refetch
+  } = useTools(isManagementMode && effectiveAdmin);
+
+  // Sync local tools with fetched tools
+  useEffect(() => {
+    setLocalTools(tools);
+  }, [tools]);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -240,8 +259,17 @@ export default function Ferramentas() {
     })
   );
 
+  // Extract unique tags from all tools
+  const allTags = useMemo(() => {
+    const tagSet = new Set<string>();
+    localTools.forEach(tool => {
+      tool.tags.forEach(tag => tagSet.add(tag));
+    });
+    return Array.from(tagSet).sort();
+  }, [localTools]);
+
   // Filtragem combinada
-  let displayedTools = tools;
+  let displayedTools = localTools;
 
   // Filtro por tags selecionadas (modo público)
   if (!isManagementMode && selectedTags.length > 0) {
@@ -292,10 +320,16 @@ export default function Ferramentas() {
   };
 
   const handleSaveTool = async (toolData: Partial<Tool>) => {
-    if (editingTool) {
-      await updateTool(editingTool.id, toolData);
-    } else {
-      await addTool(toolData as Omit<Tool, 'id' | 'created_at' | 'updated_at' | 'created_by' | 'updated_by' | 'sort_order'>);
+    try {
+      if (editingTool) {
+        await updateTool(editingTool.id, toolData);
+      } else {
+        await addTool(toolData as Omit<Tool, 'id' | 'created_at' | 'updated_at' | 'created_by' | 'updated_by' | 'sort_order'>);
+      }
+      setModalOpen(false);
+      setEditingTool(null);
+    } catch (error) {
+      // Error toast already shown by useTools hook
     }
   };
 
@@ -315,23 +349,29 @@ export default function Ferramentas() {
     setActiveId(null);
 
     if (over && active.id !== over.id) {
-      const oldIndex = displayedTools.findIndex((t) => t.id === active.id);
-      const newIndex = displayedTools.findIndex((t) => t.id === over.id);
+      const oldIndex = localTools.findIndex((t) => t.id === active.id);
+      const newIndex = localTools.findIndex((t) => t.id === over.id);
 
-      const reordered = arrayMove(displayedTools, oldIndex, newIndex);
+      const reordered = arrayMove(localTools, oldIndex, newIndex);
+      setLocalTools(reordered);
       setHasUnsavedOrder(true);
-      
-      // Atualizar ordem temporariamente para visualização
-      // A ordem real será salva quando clicar em "Salvar ordem"
     }
   };
 
   const handleSaveOrder = async () => {
-    await reorderTools(displayedTools);
+    await reorderTools(localTools);
     setHasUnsavedOrder(false);
   };
 
-  const activeTool = activeId ? tools.find((t) => t.id === activeId) : null;
+  const handleRetry = () => {
+    refetch();
+  };
+
+  const activeTool = activeId ? localTools.find((t) => t.id === activeId) : null;
+
+  // Show skeleton count and filters
+  const showFilters = !loading && localTools.length > 0 && allTags.length > 0;
+  const showCount = !loading && localTools.length > 0;
 
   return (
     <>
@@ -405,7 +445,7 @@ export default function Ferramentas() {
           </section>
 
           {/* Controles Admin */}
-          {isManagementMode && (
+          {isManagementMode && effectiveAdmin && (
             <section className="pb-6 px-4 sm:px-6 lg:px-8">
               <div className="container max-w-7xl mx-auto">
                 <motion.div
@@ -433,9 +473,11 @@ export default function Ferramentas() {
                     </SelectContent>
                   </Select>
 
-                  <Badge variant="secondary" className="ml-auto">
-                    {displayedTools.length} ferramenta(s)
-                  </Badge>
+                  {showCount && (
+                    <Badge variant="secondary" className="ml-auto">
+                      {displayedTools.length} ferramenta(s)
+                    </Badge>
+                  )}
 
                   {hasUnsavedOrder && (
                     <Button
@@ -453,7 +495,7 @@ export default function Ferramentas() {
           )}
 
           {/* Filtros (modo público) */}
-          {!isManagementMode && (
+          {!isManagementMode && showFilters && (
             <section className="pb-12 px-4 sm:px-6 lg:px-8">
               <div className="container max-w-7xl mx-auto">
                 <motion.div
@@ -507,38 +549,44 @@ export default function Ferramentas() {
                   </div>
 
                   {/* Pool de Tags */}
-                  <div
-                    className="flex flex-wrap gap-2 mb-4"
-                    role="list"
-                    aria-label="Categorias disponíveis"
-                  >
-                    <AnimatePresence mode="popLayout">
-                      {availableTags.map((tag) => (
-                        <motion.div
-                          key={tag}
-                          initial={{ opacity: 0, scale: 0.8 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          exit={{ opacity: 0, scale: 0.8 }}
-                          transition={{ duration: 0.2 }}
-                          role="listitem"
-                        >
-                          <Badge
-                            variant="outline"
-                            className="px-3 py-2 text-sm font-semibold rounded-2xl cursor-pointer hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                            tabIndex={0}
-                            onClick={() => handleSelectTag(tag)}
-                            onKeyDown={(e) =>
-                              handleKeyDown(e, () => handleSelectTag(tag))
-                            }
-                            aria-label={`Adicionar filtro ${tag}`}
-                            data-evt="tag_select"
+                  {allTags.length > 0 ? (
+                    <div
+                      className="flex flex-wrap gap-2 mb-4"
+                      role="list"
+                      aria-label="Categorias disponíveis"
+                    >
+                      <AnimatePresence mode="popLayout">
+                        {availableTags.map((tag) => (
+                          <motion.div
+                            key={tag}
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.8 }}
+                            transition={{ duration: 0.2 }}
+                            role="listitem"
                           >
-                            {tag}
-                          </Badge>
-                        </motion.div>
-                      ))}
-                    </AnimatePresence>
-                  </div>
+                            <Badge
+                              variant="outline"
+                              className="px-3 py-2 text-sm font-semibold rounded-2xl cursor-pointer hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                              tabIndex={0}
+                              onClick={() => handleSelectTag(tag)}
+                              onKeyDown={(e) =>
+                                handleKeyDown(e, () => handleSelectTag(tag))
+                              }
+                              aria-label={`Adicionar filtro ${tag}`}
+                              data-evt="tag_select"
+                            >
+                              {tag}
+                            </Badge>
+                          </motion.div>
+                        ))}
+                      </AnimatePresence>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">
+                      Sem categorias cadastradas
+                    </p>
+                  )}
 
                   {/* Botão Limpar Tudo */}
                   {selectedTags.length > 0 && (
@@ -561,15 +609,17 @@ export default function Ferramentas() {
                   )}
 
                   {/* Contador de Resultados */}
-                  <p
-                    className="text-sm text-muted-foreground mt-4"
-                    aria-live="polite"
-                    aria-atomic="true"
-                  >
-                    {displayedTools.length === tools.length
-                      ? `Mostrando todas as ${tools.length} ferramentas`
-                      : `Mostrando ${displayedTools.length} de ${tools.length} ferramentas`}
-                  </p>
+                  {showCount && (
+                    <p
+                      className="text-sm text-muted-foreground mt-4"
+                      aria-live="polite"
+                      aria-atomic="true"
+                    >
+                      {displayedTools.length === localTools.length
+                        ? `Mostrando todas as ${localTools.length} ferramentas`
+                        : `Mostrando ${displayedTools.length} de ${localTools.length} ferramentas`}
+                    </p>
+                  )}
                 </motion.div>
               </div>
             </section>
@@ -578,33 +628,97 @@ export default function Ferramentas() {
           {/* Grid de Ferramentas */}
           <section className="pb-24 px-4 sm:px-6 lg:px-8">
             <div className="container max-w-7xl mx-auto">
-              {loading ? (
-                <div className="text-center py-16">
-                  <p className="text-lg text-muted-foreground">Carregando...</p>
+              {/* Loading State */}
+              {loading && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {[1, 2, 3, 4, 5, 6].map((i) => (
+                    <Card key={i} className="p-6">
+                      <div className="flex items-start gap-4 mb-4">
+                        <Skeleton className="h-12 w-12 rounded-xl" />
+                        <div className="flex-1 space-y-2">
+                          <Skeleton className="h-5 w-3/4" />
+                          <Skeleton className="h-4 w-full" />
+                          <Skeleton className="h-4 w-5/6" />
+                        </div>
+                      </div>
+                      <div className="flex gap-2 mb-3">
+                        <Skeleton className="h-5 w-20" />
+                        <Skeleton className="h-5 w-24" />
+                      </div>
+                      <Skeleton className="h-9 w-full" />
+                    </Card>
+                  ))}
                 </div>
-              ) : displayedTools.length === 0 ? (
+              )}
+
+              {/* Empty State - Public (sem admin) */}
+              {!loading && localTools.length === 0 && !effectiveAdmin && (
                 <motion.div
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.3 }}
-                  className="text-center py-16"
+                  data-evt="empty_state_view"
                 >
-                  <p className="text-lg text-muted-foreground mb-4">
-                    {selectedTags.length > 0
-                      ? "Nenhuma ferramenta encontrada com os filtros selecionados."
-                      : "Nenhuma ferramenta disponível."}
-                  </p>
-                  {selectedTags.length > 0 && (
-                    <Button
-                      variant="outline"
-                      onClick={handleClearAll}
-                      data-evt="clear_all"
-                    >
-                      Limpar filtros
-                    </Button>
-                  )}
+                  <Card className="p-12 text-center">
+                    <div className="max-w-md mx-auto">
+                      <h3 className="text-lg font-semibold mb-2">Nada por aqui ainda</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Em breve novas ferramentas
+                      </p>
+                    </div>
+                  </Card>
                 </motion.div>
-              ) : (
+              )}
+
+              {/* Empty State - Admin */}
+              {!loading && localTools.length === 0 && effectiveAdmin && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.3 }}
+                  data-evt="empty_state_view"
+                >
+                  <Card className="p-12 text-center">
+                    <div className="max-w-md mx-auto">
+                      <h3 className="text-lg font-semibold mb-2">Nenhuma ferramenta cadastrada</h3>
+                      <p className="text-sm text-muted-foreground mb-6">
+                        Comece adicionando a primeira ferramenta ao arsenal
+                      </p>
+                      <Button 
+                        onClick={handleAddTool}
+                        data-evt="empty_state_cta_click"
+                      >
+                        <Plus className="mr-2 h-4 w-4" />
+                        Adicionar primeira ferramenta
+                      </Button>
+                    </div>
+                  </Card>
+                </motion.div>
+              )}
+
+              {/* Filtered Empty State */}
+              {!loading && localTools.length > 0 && displayedTools.length === 0 && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <Card className="p-12 text-center">
+                    <div className="max-w-md mx-auto">
+                      <h3 className="text-lg font-semibold mb-2">Nenhuma ferramenta encontrada</h3>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        Nenhuma ferramenta corresponde aos filtros selecionados
+                      </p>
+                      <Button variant="outline" onClick={handleClearAll}>
+                        Limpar filtros
+                      </Button>
+                    </div>
+                  </Card>
+                </motion.div>
+              )}
+
+              {/* Tools Grid */}
+              {!loading && displayedTools.length > 0 && (
                 <DndContext
                   sensors={sensors}
                   collisionDetection={closestCenter}
@@ -623,7 +737,7 @@ export default function Ferramentas() {
                         <SortableToolCard
                           key={tool.id}
                           tool={tool}
-                          isManagementMode={isManagementMode}
+                          isManagementMode={isManagementMode && effectiveAdmin}
                           handleEdit={handleEdit}
                           toggleVisible={toggleVisible}
                           setDeleteTool={setDeleteTool}
@@ -653,7 +767,10 @@ export default function Ferramentas() {
       {/* Modais */}
       <ToolModal
         open={modalOpen}
-        onClose={() => setModalOpen(false)}
+        onClose={() => {
+          setModalOpen(false);
+          setEditingTool(null);
+        }}
         onSave={handleSaveTool}
         tool={editingTool}
         availableTags={CATEGORIES}
