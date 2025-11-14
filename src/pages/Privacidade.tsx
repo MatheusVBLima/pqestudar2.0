@@ -266,7 +266,7 @@ const Privacidade = () => {
     // JSON-LD
     const script = document.createElement("script");
     script.type = "application/ld+json";
-    script.text = JSON.stringify({
+    script.textContent = JSON.stringify({
       "@context": "https://schema.org",
       "@type": ["WebPage", "PrivacyPolicy"],
       "@id": "https://pqestudar.com.br/privacidade",
@@ -583,7 +583,7 @@ const Privacidade = () => {
                       </div>
                     </AccordionTrigger>
                     <AccordionContent className="text-muted-foreground pb-4 sm:pb-6 pt-2 leading-relaxed [&>div]:break-words">
-                      <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(section.content) }} />
+                      <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(section.content || "") }} />
                     </AccordionContent>
                   </AccordionItem>
                 </motion.div>

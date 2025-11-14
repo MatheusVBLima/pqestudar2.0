@@ -155,6 +155,13 @@ export function sanitizeHtml(dirty: string): string {
   }
 
   walk(doc.body);
+  
+  // Proteção extra: verificar se body ainda existe após walk
+  if (!doc.body) {
+    console.error("[sanitizeHtml] doc.body became null after walk, returning escaped text");
+    return escapeHtml(dirty);
+  }
+  
   return doc.body.innerHTML;
 }
 
