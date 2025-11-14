@@ -62,7 +62,7 @@ export function HeroSection() {
             >
               <Button
                 size="lg"
-                onClick={() => navigate("/parceiros")}
+                onClick={() => navigate("/ferramentas")}
                 className={cn(
                   "gap-2 w-full sm:w-auto justify-center bg-primary text-primary-foreground hover:bg-primary/90"
                 )}
