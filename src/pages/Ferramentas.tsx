@@ -211,9 +211,9 @@ function SortableToolCard({
     <div 
       ref={setNodeRef}
       style={style}
-      className="relative group"
+      className="relative group h-full"
     >
-      <Card className="h-full hover:shadow-lg transition-shadow duration-300">
+      <Card className="h-full hover:shadow-lg transition-shadow duration-300 flex flex-col">
         <CardHeader>
           {isManagementMode && (
             <div 
@@ -295,32 +295,34 @@ function SortableToolCard({
               )}
             </CardTitle>
           </div>
-          <CardDescription className="text-sm leading-relaxed">
+          <CardDescription className="text-sm leading-relaxed flex-1">
             {tool.description}
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="flex flex-wrap gap-2 mb-3">
-            {tool.tags.map((tag) => (
-              <Badge
-                key={tag}
+        <CardContent className="mt-auto">
+          <div className="space-y-3">
+            <div className="flex flex-wrap gap-2">
+              {tool.tags.map((tag) => (
+                <Badge
+                  key={tag}
+                  variant="outline"
+                  className="text-xs"
+                >
+                  {tag}
+                </Badge>
+              ))}
+            </div>
+            {tool.url && (
+              <Button
                 variant="outline"
-                className="text-xs"
+                size="sm"
+                className="w-full"
+                onClick={() => window.open(tool.url, '_blank')}
               >
-                {tag}
-              </Badge>
-            ))}
+                Acessar
+              </Button>
+            )}
           </div>
-          {tool.url && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="w-full"
-              onClick={() => window.open(tool.url, '_blank')}
-            >
-              Acessar
-            </Button>
-          )}
         </CardContent>
       </Card>
     </div>
@@ -919,7 +921,7 @@ export default function Ferramentas() {
                   >
                     <motion.div
                       layout
-                      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+                      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch"
                     >
                       {displayedTools.map((tool) => (
                         <SortableToolCard
