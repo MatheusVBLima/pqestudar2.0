@@ -73,22 +73,7 @@ export function AboutTimeline() {
   const heightTransform = useTransform(scrollYProgress, [0, 1], [0, height]);
   const opacityTransform = useTransform(scrollYProgress, [0, 0.1], [0, 1]);
   return <div className="w-full bg-background font-sans md:px-10" ref={containerRef}>
-      <div className="max-w-7xl mx-auto py-20 px-4 md:px-8 lg:px-10">
-        <h2 className="text-3xl md:text-4xl mb-4 font-bold text-foreground max-w-4xl">
-          Minha Jornada
-        </h2>
-        <p className="text-muted-foreground text-sm md:text-base max-w-2xl mb-8">
-          Você já se sentiu sobrecarregado com a quantidade de coisas que precisa aprender? Já passou horas estudando para sentir que não reteve quase nada? Eu já. Por muito tempo, acreditei que o sucesso vinha de estudar mais, de sacrificar noites de sono e de viver para os livros. 
-
-
-Eu estava errado. 
-
-
-Descobri que o jogo não é sobre estudar mais, é sobre estudar de forma mais inteligente. É sobre encontrar as ferramentas certas, os métodos corretos e os atalhos que a maioria das pessoas não conhece.
-
-
-        </p>
-      </div>
+      
 
       <div ref={ref} className="relative max-w-7xl mx-auto pb-20">
         {timelineData.map((item, index) => <div key={index} className="flex justify-start pt-10 md:pt-40 md:gap-10">
