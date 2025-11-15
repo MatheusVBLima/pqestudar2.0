@@ -10,46 +10,34 @@ interface TimelineEntry {
   image?: string;
 }
 const timelineData: TimelineEntry[] = [{
-  title: "A Frustração",
+  title: "A Frustração (2023)",
   content: <div className="space-y-4">
         <p className="text-base md:text-lg leading-relaxed text-foreground/90">
-          Você já se sentiu sobrecarregado com a quantidade de coisas que precisa aprender? Já passou horas estudando para sentir que não reteve quase nada? Eu já. Por muito tempo, acreditei que o sucesso vinha de estudar mais, de sacrificar noites de sono e de viver para os livros.
-        </p>
-        <p className="text-base md:text-lg leading-relaxed text-foreground/90">
-          Eu estava errado.
+          Por muito tempo, acreditei que o sucesso vinha de estudar mais, de sacrificar noites de sono e de viver para os livros. Eu estava errado. O resultado era sobrecarga, frustração e a sensação de não reter quase nada. Foi o ponto de partida para buscar uma forma mais inteligente de aprender.
         </p>
       </div>,
   image: marcador1
 }, {
-  title: "A Virada de Chave",
+  title: "A Virada de Chave (2023)",
   content: <div className="space-y-4">
         <p className="text-base md:text-lg leading-relaxed text-foreground/90">
-          Descobri que o jogo não é sobre estudar mais, é sobre estudar de forma mais inteligente. É sobre encontrar as ferramentas certas, os métodos corretos e os atalhos que a maioria das pessoas não conhece.
-        </p>
-        <p className="text-base md:text-lg leading-relaxed text-foreground/90">
-          Foi aí que tudo mudou para mim. Comecei a desvendar os segredos que ninguém compartilha: técnicas de memorização, automações que economizam horas e plataformas que entregam resultados reais.
+          Descobri que o jogo não é sobre estudar mais, é sobre encontrar as ferramentas certas, os métodos corretos e os atalhos que a maioria das pessoas não conhece. Foi aí que tudo mudou para mim. Comecei a desvendar os segredos que ninguém compartilha: técnicas de memorização, automações que economizam horas e plataformas que entregam resultados reais.
         </p>
       </div>,
   image: marcador2
 }, {
-  title: "A Missão",
+  title: "A Missão (2024)",
   content: <div className="space-y-4">
         <p className="text-base md:text-lg leading-relaxed text-foreground/90">
-          Quando comecei a compartilhar essas descobertas nas minhas redes sociais, algo incrível aconteceu: milhões de pessoas começaram a me acompanhar. Não porque eu era especial, mas porque eu estava mostrando o que funciona de verdade.
-        </p>
-        <p className="text-base md:text-lg leading-relaxed text-foreground/90">
-          Esse projeto nasceu desse propósito: democratizar o acesso aos segredos que aceleram carreiras e transformam vidas. Aqui, você não encontra promessas vazias. Você encontra ferramentas testadas, métodos validados e hacks que realmente funcionam.
+          Quando comecei a compartilhar essas descobertas nas minhas redes sociais, algo incrível aconteceu: milhões de pessoas começaram a me acompanhar. Esse projeto nasceu desse propósito: democratizar o acesso aos segredos que aceleram carreiras e transformam vidas. Aqui, você não encontra promessas vazias. Você encontra ferramentas testadas, métodos validados e hacks que realmente funcionam.
         </p>
       </div>,
   image: marcador3
 }, {
-  title: "O Convite",
+  title: "O Convite (2025)",
   content: <div className="space-y-4">
         <p className="text-base md:text-lg leading-relaxed text-foreground/90">
-          Agora é a sua vez. Se você está cansado do método tradicional e quer aprender o que realmente importa, este é o seu lugar.
-        </p>
-        <p className="text-base md:text-lg leading-relaxed text-foreground/90">
-          Explore as ferramentas, inscreva-se para receber os hacks semanais ou simplesmente comece a aplicar o que você encontrar aqui. Porque o conhecimento só é poderoso quando você age.
+          Agora é a sua vez. Se você está cansado do método tradicional e quer aprender o que realmente importa, este é o seu lugar. Explore as ferramentas, inscreva-se para receber os hacks semanais ou simplesmente comece a aplicar o que você encontrar aqui. Porque o conhecimento só é poderoso quando você age.
         </p>
       </div>,
   image: marcador4
