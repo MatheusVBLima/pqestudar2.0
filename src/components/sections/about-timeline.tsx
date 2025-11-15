@@ -78,10 +78,10 @@ export function AboutTimeline() {
           Minha Jornada
         </h2>
         <p className="text-muted-foreground text-sm md:text-base max-w-2xl mb-8">
-          Você já se sentiu sobrecarregado com a quantidade de coisas que precisa aprender? Já passou horas estudando para sentir que não reteve quase nada? Eu já. Por muito tempo, acreditei que o sucesso vinha de estudar mais, de sacrificar noites de sono e de viver para os livros.
+          Você já se sentiu sobrecarregado com a quantidade de coisas que precisa aprender? Já passou horas estudando para sentir que não reteve quase nada? Eu já. Por muito tempo, acreditei que o sucesso vinha de estudar mais, de sacrificar noites de sono e de viver para os livros. 
 
 
-Eu estava errado.
+Eu estava errado. 
 
 
 Descobri que o jogo não é sobre estudar mais, é sobre estudar de forma mais inteligente. É sobre encontrar as ferramentas certas, os métodos corretos e os atalhos que a maioria das pessoas não conhece.
