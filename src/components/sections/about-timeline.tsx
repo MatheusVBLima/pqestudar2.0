@@ -47,7 +47,7 @@ export function AboutTimeline() {
   
   const { scrollYProgress } = useScroll({
     target: containerRef,
-    offset: ["start 15%", "end 85%"]
+    offset: ["start start", "end end"]
   });
   return (
     <section 
