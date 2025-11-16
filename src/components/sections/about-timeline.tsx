@@ -13,7 +13,7 @@ const timelineData: TimelineEntry[] = [{
   title: "A Frustração (2023)",
   content: <div className="space-y-4">
         <p className="text-base md:text-lg leading-relaxed text-foreground/90">
-          Por muito tempo, acreditei que o sucesso vinha de estudar mais, de sacrificar noites de sono e de viver para os livros. Eu estava errado. O resultado era sobrecarga, frustração e a sensação de não reter quase nada. Foi o ponto de partida para buscar uma forma mais inteligente de aprender.
+          Minha jornada no estudo sempre foi uma luta. Desde o fundamental, a absorção de conteúdo era difícil. No Ensino Médio, com as constantes mudanças de cidade e a diretora dizendo que era impossível eu passar, senti a humilhação que me motivou a vencer. Eu descobri que o problema não era a minha capacidade, mas o método.
         </p>
       </div>,
   image: marcador1
@@ -21,23 +21,23 @@ const timelineData: TimelineEntry[] = [{
   title: "A Virada de Chave (2023)",
   content: <div className="space-y-4">
         <p className="text-base md:text-lg leading-relaxed text-foreground/90">
-          Descobri que o jogo não é sobre estudar mais, é sobre encontrar as ferramentas certas, os métodos corretos e os atalhos que a maioria das pessoas não conhece. Foi aí que tudo mudou para mim. Comecei a desvendar os segredos que ninguém compartilha: técnicas de memorização, automações que economizam horas e plataformas que entregam resultados reais.
+          A verdadeira virada veio com a necessidade. Trabalhando 12x36, acordando às 4:20 para a faculdade de ADS à noite, eu não tinha tempo para o método tradicional. Eu fui forçado a hackear o sistema: encontrar as ferramentas certas, os atalhos e a automação para sobreviver à rotina. Foi a minha luta por tempo que me transformou em um especialista em produtividade.
         </p>
       </div>,
   image: marcador2
 }, {
-  title: "A Missão (2024)",
+  title: "O Salto de Fé (2024)",
   content: <div className="space-y-4">
         <p className="text-base md:text-lg leading-relaxed text-foreground/90">
-          Quando comecei a compartilhar essas descobertas nas minhas redes sociais, algo incrível aconteceu: milhões de pessoas começaram a me acompanhar. Esse projeto nasceu desse propósito: democratizar o acesso aos segredos que aceleram carreiras e transformam vidas. Aqui, você não encontra promessas vazias. Você encontra ferramentas testadas, métodos validados e hacks que realmente funcionam.
+          Com essa mentalidade de otimização, decidi largar o emprego e investir o seguro-desemprego para viver de internet. Foi um tudo ou nada. No último mês, sem nada sobrando, veio a primeira publicidade de R$ 900. A partir daí, o crescimento foi exponencial, batendo 200k, 300k e 400k. O sucesso veio da aplicação dos mesmos hacks que eu usava para estudar.
         </p>
       </div>,
   image: marcador3
 }, {
-  title: "O Convite (2025)",
+  title: "A Missão (2025)",
   content: <div className="space-y-4">
         <p className="text-base md:text-lg leading-relaxed text-foreground/90">
-          Agora é a sua vez. Se você está cansado do método tradicional e quer aprender o que realmente importa, este é o seu lugar. Explore as ferramentas, inscreva-se para receber os hacks semanais ou simplesmente comece a aplicar o que você encontrar aqui. Porque o conhecimento só é poderoso quando você age.
+          Agora, a missão mudou. Não quero mais viver apenas de publicidade. Quero fazer valer cada esforço e cada hack que me trouxe até aqui. O PqEstudar? nasceu para te entregar o arsenal de superpoderes que eu tive que descobrir na marra. É a prova de que você pode ter mais resultado com menos esforço.
         </p>
       </div>,
   image: marcador4
