@@ -37,26 +37,21 @@ const timelineData: TimelineEntry[] = [{
   title: "A Missão (2025)",
   content: <div className="space-y-4">
         <p className="text-base md:text-lg leading-relaxed text-foreground/90">
-          Agora, a missão mudou. Não quero mais viver apenas de publicidade. Quero fazer valer cada esforço e cada hack que me trouxe até aqui. O PqEstudar? nasceu para te entregar o arsenal de superpoderes que eu tive que descobrir na marra. É a prova de que você pode ter mais resultado com menos esforço.
+          Agora, a missão mudou. Depois de alcançar o sucesso na internet, percebi que meu maior valor não está no alcance, mas sim no método que me trouxe até aqui. O PqEstudar? nasceu para fazer valer cada esforço e cada hack que eu tive que descobrir na marra. É a prova de que você pode ter mais resultado com menos esforço.
         </p>
       </div>,
   image: marcador4
 }];
 export function AboutTimeline() {
   const containerRef = useRef<HTMLDivElement>(null);
-  
-  const { scrollYProgress } = useScroll({
+  const {
+    scrollYProgress
+  } = useScroll({
     target: containerRef,
     offset: ["start start", "end end"]
   });
-  return (
-    <section 
-      id="sobre-timeline" 
-      ref={containerRef} 
-      className="relative max-w-7xl mx-auto py-20 px-4 md:px-8"
-    >
-      {timelineData.map((item, index) => (
-        <div key={index} className="flex justify-start pt-10 md:pt-40 md:gap-10">
+  return <section id="sobre-timeline" ref={containerRef} className="relative max-w-7xl mx-auto py-20 px-4 md:px-8">
+      {timelineData.map((item, index) => <div key={index} className="flex justify-start pt-10 md:pt-40 md:gap-10">
           <div className="sticky flex flex-col md:flex-row z-40 items-center top-40 self-start max-w-xs lg:max-w-sm md:w-full">
             <div className="h-10 absolute left-3 md:left-3 w-10 rounded-full bg-background flex items-center justify-center">
               <div className="h-4 w-4 rounded-full bg-primary border-2 border-primary shadow-lg" />
@@ -72,42 +67,32 @@ export function AboutTimeline() {
             </h3>
             <div className="space-y-6">
               {item.content}
-              {item.image && (
-                <motion.div 
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.2 }}
-                  viewport={{ once: true, margin: "-100px" }}
-                  className="rounded-lg overflow-hidden shadow-lg"
-                >
-                  <img 
-                    src={item.image} 
-                    alt={`Ilustração: ${item.title}`} 
-                    loading="lazy"
-                    className="w-full h-auto object-cover"
-                  />
-                </motion.div>
-              )}
+              {item.image && <motion.div initial={{
+            opacity: 0,
+            y: 20
+          }} whileInView={{
+            opacity: 1,
+            y: 0
+          }} transition={{
+            duration: 0.5,
+            delay: 0.2
+          }} viewport={{
+            once: true,
+            margin: "-100px"
+          }} className="rounded-lg overflow-hidden shadow-lg">
+                  <img src={item.image} alt={`Ilustração: ${item.title}`} loading="lazy" className="w-full h-auto object-cover" />
+                </motion.div>}
             </div>
           </div>
-        </div>
-      ))}
+        </div>)}
       
       {/* Trilho estático */}
-      <div 
-        aria-hidden="true"
-        className="absolute left-8 top-0 h-full w-[2px] bg-border/30"
-      />
+      <div aria-hidden="true" className="absolute left-8 top-0 h-full w-[2px] bg-border/30" />
       
       {/* Linha de progresso dinâmica */}
-      <motion.div
-        aria-hidden="true"
-        style={{ 
-          scaleY: scrollYProgress, 
-          transformOrigin: "top" 
-        }}
-        className="absolute left-8 top-0 h-full w-[2px] bg-gradient-to-b from-primary via-primary/60 to-transparent rounded-full"
-      />
-    </section>
-  );
+      <motion.div aria-hidden="true" style={{
+      scaleY: scrollYProgress,
+      transformOrigin: "top"
+    }} className="absolute left-8 top-0 h-full w-[2px] bg-gradient-to-b from-primary via-primary/60 to-transparent rounded-full" />
+    </section>;
 }
