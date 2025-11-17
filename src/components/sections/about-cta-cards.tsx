@@ -111,73 +111,75 @@ export function AboutCTACards() {
             transition={{ duration: 0.6, ease }}
           >
             <Card className="h-full border-2 border-primary/20 shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col">
-              <CardHeader className="space-y-3">
-                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Mail className="h-6 w-6 text-primary" />
-                </div>
-                <CardTitle className="text-2xl">Receba os Hacks</CardTitle>
-                <CardDescription className="text-base">
-                  Toda semana, os melhores segredos, ferramentas e métodos direto no seu e-mail.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="flex-1 flex flex-col">
-                {isSuccess ? (
-                  <div className="flex flex-col items-center justify-center py-8 space-y-4 flex-1">
-                    <CheckCircle2 className="h-16 w-16 text-primary animate-scale-in" />
-                    <p className="text-lg font-semibold text-center">
-                      Inscrito com sucesso!
-                    </p>
-                  </div>
-                ) : (
-                  <form onSubmit={handleNewsletterSubmit} className="space-y-4 flex-1 flex flex-col">
-                    <div className="flex-1 space-y-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="newsletter-email">E-mail</Label>
-                        <Input
-                          id="newsletter-email"
-                          type="email"
-                          placeholder="seu@email.com"
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                          required
-                          disabled={isLoading}
-                        />
+              {isSuccess ? (
+                <CardContent className="flex-1 flex flex-col items-center justify-center py-12 space-y-6" role="status" aria-live="polite">
+                  <CheckCircle2 className="h-20 w-20 text-primary animate-scale-in" />
+                  <p className="text-xl font-semibold text-center">
+                    Inscrito com sucesso!
+                  </p>
+                </CardContent>
+              ) : (
+                <>
+                  <CardHeader className="space-y-3">
+                    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                      <Mail className="h-6 w-6 text-primary" />
+                    </div>
+                    <CardTitle className="text-2xl">Receba os Hacks</CardTitle>
+                    <CardDescription className="text-base">
+                      Toda semana, os melhores segredos, ferramentas e métodos direto no seu e-mail.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="flex-1 flex flex-col">
+                    <form onSubmit={handleNewsletterSubmit} className="space-y-4 flex-1 flex flex-col">
+                      <div className="flex-1 space-y-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="newsletter-email">E-mail</Label>
+                          <Input
+                            id="newsletter-email"
+                            type="email"
+                            placeholder="seu@email.com"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            required
+                            disabled={isLoading}
+                          />
+                        </div>
+                        <div className="flex items-start space-x-2">
+                          <Checkbox
+                            id="newsletter-consent"
+                            checked={consent}
+                            onCheckedChange={(checked) => setConsent(checked as boolean)}
+                            disabled={isLoading}
+                          />
+                          <label
+                            htmlFor="newsletter-consent"
+                            className="text-sm text-muted-foreground leading-tight cursor-pointer"
+                          >
+                            Aceito receber e-mails com conteúdos e novidades.
+                          </label>
+                        </div>
                       </div>
-                      <div className="flex items-start space-x-2">
-                        <Checkbox
-                          id="newsletter-consent"
-                          checked={consent}
-                          onCheckedChange={(checked) => setConsent(checked as boolean)}
-                          disabled={isLoading}
-                        />
-                        <label
-                          htmlFor="newsletter-consent"
-                          className="text-sm text-muted-foreground leading-tight cursor-pointer"
+                      <div className="mt-auto pt-4">
+                        <Button
+                          type="submit"
+                          size="lg"
+                          className="w-full gap-2 h-12"
+                          disabled={isLoading || !consent}
                         >
-                          Aceito receber e-mails com conteúdos e novidades.
-                        </label>
+                          {isLoading ? (
+                            "Inscrevendo..."
+                          ) : (
+                            <>
+                              <Sparkles className="h-4 w-4" />
+                              Quero Receber os Hacks
+                            </>
+                          )}
+                        </Button>
                       </div>
-                    </div>
-                    <div className="mt-auto pt-4">
-                      <Button
-                        type="submit"
-                        size="lg"
-                        className="w-full gap-2 h-12"
-                        disabled={isLoading || !consent}
-                      >
-                        {isLoading ? (
-                          "Inscrevendo..."
-                        ) : (
-                          <>
-                            <Sparkles className="h-4 w-4" />
-                            Quero Receber os Hacks
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                  </form>
-                )}
-              </CardContent>
+                    </form>
+                  </CardContent>
+                </>
+              )}
             </Card>
           </motion.div>
 
