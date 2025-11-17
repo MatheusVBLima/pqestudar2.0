@@ -20,44 +20,63 @@ export function AboutCTACards() {
   const handleNewsletterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!email || !consent) {
-      toast.error("Preencha o e-mail e aceite os termos.");
+    if (!email) {
+      toast.error("Por favor, insira seu email para continuar.");
+      return;
+    }
+
+    if (!consent) {
+      toast.error("Por favor, aceite os termos para prosseguir.");
       return;
     }
 
     setIsLoading(true);
 
     try {
-      // Capturar UTMs se existirem
-      const params = new URLSearchParams(window.location.search);
-      const utms = {
-        utm_source: params.get("utm_source") || undefined,
-        utm_medium: params.get("utm_medium") || undefined,
-        utm_campaign: params.get("utm_campaign") || undefined,
-        utm_term: params.get("utm_term") || undefined,
-        utm_content: params.get("utm_content") || undefined,
-      };
+      const urlParams = new URLSearchParams(window.location.search);
+      const utmSource = urlParams.get('utm_source') || undefined;
+      const utmMedium = urlParams.get('utm_medium') || undefined;
+      const utmCampaign = urlParams.get('utm_campaign') || undefined;
+      const utmContent = urlParams.get('utm_content') || undefined;
+      const utmTerm = urlParams.get('utm_term') || undefined;
+      const pageSlug = 'sobre';
 
-      const { data, error } = await supabase.functions.invoke(
-        "subscribe-newsletter-brevo",
-        {
-          body: { email, ...utms },
+      const { data, error } = await supabase.functions.invoke('subscribe-newsletter-brevo', {
+        body: { 
+          email,
+          consent,
+          utmSource,
+          utmMedium,
+          utmCampaign,
+          utmContent,
+          utmTerm,
+          pageSlug,
         }
-      );
+      });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Newsletter signup error:', error);
+        throw error;
+      }
 
+      if (data?.alreadySubscribed) {
+        toast.success("Você já está na lista. Verifique sua caixa de entrada.");
+        setIsLoading(false);
+        return;
+      }
+      
       setIsSuccess(true);
-      toast.success("Inscrito com sucesso! Verifique seu e-mail.");
+      toast.success("Cadastro realizado! Confira seu e-mail para acessar os hacks e ferramentas exclusivas.");
       
       setTimeout(() => {
         setEmail("");
         setConsent(false);
         setIsSuccess(false);
-      }, 3000);
-    } catch (error: any) {
-      console.error("Erro ao inscrever:", error);
-      toast.error(error.message || "Erro ao inscrever. Tente novamente.");
+      }, 5000);
+      
+    } catch (error) {
+      console.error('Newsletter signup error:', error);
+      toast.error("Não foi possível concluir agora. Tente novamente em alguns instantes.");
     } finally {
       setIsLoading(false);
     }
