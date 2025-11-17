@@ -26,7 +26,7 @@ const timelineData: TimelineEntry[] = [{
       </div>,
   image: marcador2
 }, {
-  title: "O Salto de Fé (2024)",
+  title: "O Salto de Fé (2023)",
   content: <div className="space-y-4">
         <p className="text-base md:text-lg leading-relaxed text-foreground/90">
           Com essa mentalidade de otimização, decidi largar o emprego e investir o seguro-desemprego para viver de internet. Foi um tudo ou nada. No último mês, sem nada sobrando, veio a primeira publicidade de R$ 900. A partir daí, o crescimento foi exponencial, batendo 200k, 300k e 400k. O sucesso veio da aplicação dos mesmos hacks que eu usava para estudar.
