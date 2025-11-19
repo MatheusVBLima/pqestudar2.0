@@ -24,22 +24,23 @@ const LinkButton = ({
   className,
 }: LinkButtonProps) => {
   const buttonClasses = cn(
-    "w-full h-auto min-h-[64px] px-6 py-4 text-base md:text-lg font-semibold rounded-2xl transition-all duration-300",
-    "hover:-translate-y-0.5 hover:shadow-glow",
-    "focus-visible:ring-4 focus-visible:ring-primary/30",
+    "w-full h-auto min-h-[68px] px-6 py-5 text-base md:text-lg font-semibold rounded-2xl transition-all duration-300",
+    "hover:-translate-y-1 hover:shadow-elegant",
+    "focus-visible:ring-4 focus-visible:ring-primary/30 focus-visible:outline-none",
+    "active:translate-y-0",
     variant === "solid"
-      ? "bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg"
-      : "border-2 border-primary bg-background text-primary hover:bg-primary hover:text-primary-foreground",
+      ? "bg-gradient-primary text-primary-foreground hover:opacity-95 shadow-lg border-0"
+      : "border-2 border-primary/40 bg-background text-foreground hover:bg-primary/5 hover:border-primary",
     className
   );
 
   const content = (
-    <span className="flex items-center justify-between gap-3 w-full">
-      <span className="flex items-center gap-3">
-        {icon && <span className="text-xl md:text-2xl shrink-0">{icon}</span>}
-        <span className="text-left leading-tight">{children}</span>
+    <span className="flex items-center justify-between gap-4 w-full">
+      <span className="flex items-center gap-3.5">
+        {icon && <span className="text-2xl md:text-2xl shrink-0">{icon}</span>}
+        <span className="text-left leading-snug">{children}</span>
       </span>
-      <ArrowRight className="w-5 h-5 shrink-0 opacity-70" />
+      <ArrowRight className="w-5 h-5 shrink-0 opacity-60 transition-opacity group-hover:opacity-100" />
     </span>
   );
 
@@ -54,7 +55,7 @@ const LinkButton = ({
           href={to}
           target="_blank"
           rel="noopener noreferrer"
-          className={buttonClasses}
+          className={cn(buttonClasses, "group")}
           data-evt="links_click"
           data-id={dataId}
           aria-label={typeof children === "string" ? children : undefined}
@@ -73,7 +74,7 @@ const LinkButton = ({
     >
       <Link
         to={to}
-        className={buttonClasses}
+        className={cn(buttonClasses, "group")}
         data-evt="links_click"
         data-id={dataId}
         aria-label={typeof children === "string" ? children : undefined}
