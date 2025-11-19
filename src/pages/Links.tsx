@@ -16,13 +16,13 @@ const Links = () => {
         <meta name="robots" content="index, follow" />
       </Helmet>
 
-      <div className="min-h-screen bg-background py-8 px-4">
-        <div className="max-w-2xl mx-auto space-y-8">
+      <div className="min-h-screen bg-background py-12 px-4 md:px-6">
+        <div className="max-w-xl mx-auto space-y-10">
           {/* Hero com Foto e Títulos */}
           <LinkHero />
 
           {/* Lista de CTAs */}
-          <div className="space-y-4" role="list">
+          <div className="space-y-3.5" role="list">
             {/* 1. Arsenal Secreto - PRIORIDADE MÁXIMA */}
             <div role="listitem">
               <LinkButton
@@ -86,12 +86,12 @@ const Links = () => {
           </div>
 
           {/* Separador */}
-          <div className="relative py-4">
+          <div className="relative py-6">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-border"></div>
+              <div className="w-full border-t border-border/50"></div>
             </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-4 text-muted-foreground">
+            <div className="relative flex justify-center text-xs uppercase tracking-wider">
+              <span className="bg-background px-5 text-muted-foreground font-medium">
                 Redes Sociais
               </span>
             </div>
@@ -101,8 +101,8 @@ const Links = () => {
           <SocialRow />
 
           {/* Footer */}
-          <div className="text-center text-sm text-muted-foreground pt-8">
-            <p>© {new Date().getFullYear()} Matheus - O Hacker dos Estudos</p>
+          <div className="text-center text-sm text-muted-foreground pt-10 pb-4">
+            <p className="opacity-80">© {new Date().getFullYear()} Matheus - O Hacker dos Estudos</p>
           </div>
         </div>
       </div>
