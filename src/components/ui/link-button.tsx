@@ -24,9 +24,11 @@ const LinkButton = ({
   className,
 }: LinkButtonProps) => {
   const buttonClasses = cn(
-    "w-full h-auto min-h-[68px] px-6 py-5 text-base md:text-lg font-semibold rounded-2xl transition-all duration-300",
+    "group w-full block rounded-2xl py-4 md:py-5 px-5 md:px-6",
+    "flex items-center justify-between gap-3",
+    "transition-all duration-300 will-change-transform",
     "hover:-translate-y-1 hover:shadow-elegant",
-    "focus-visible:ring-4 focus-visible:ring-primary/30 focus-visible:outline-none",
+    "focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60",
     "active:translate-y-0",
     variant === "solid"
       ? "bg-gradient-primary text-primary-foreground hover:opacity-95 shadow-lg border-0"
@@ -35,53 +37,41 @@ const LinkButton = ({
   );
 
   const content = (
-    <span className="flex items-center justify-between gap-4 w-full">
-      <span className="flex items-center gap-3.5">
-        {icon && <span className="text-2xl md:text-2xl shrink-0">{icon}</span>}
-        <span className="text-left leading-snug">{children}</span>
+    <>
+      <span className="flex items-center gap-3 text-base md:text-lg font-medium text-left leading-snug">
+        {icon && <span className="text-xl shrink-0">{icon}</span>}
+        <span>{children}</span>
       </span>
-      <ArrowRight className="w-5 h-5 shrink-0 opacity-60 transition-opacity group-hover:opacity-100" />
-    </span>
+      <ArrowRight className="w-5 h-5 shrink-0 opacity-80 transition-opacity group-hover:opacity-100" />
+    </>
   );
 
   if (external) {
     return (
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-      >
-        <a
-          href={to}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={cn(buttonClasses, "group")}
-          data-evt="links_click"
-          data-id={dataId}
-          aria-label={typeof children === "string" ? children : undefined}
-        >
-          {content}
-        </a>
-      </motion.div>
-    );
-  }
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
-    >
-      <Link
-        to={to}
-        className={cn(buttonClasses, "group")}
+      <a
+        href={to}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={buttonClasses}
         data-evt="links_click"
         data-id={dataId}
         aria-label={typeof children === "string" ? children : undefined}
       >
         {content}
-      </Link>
-    </motion.div>
+      </a>
+    );
+  }
+
+  return (
+    <Link
+      to={to}
+      className={buttonClasses}
+      data-evt="links_click"
+      data-id={dataId}
+      aria-label={typeof children === "string" ? children : undefined}
+    >
+      {content}
+    </Link>
   );
 };
 
