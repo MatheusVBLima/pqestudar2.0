@@ -1,8 +1,9 @@
 import { useRef } from "react";
 import { motion } from "framer-motion";
-import { Instagram, Linkedin, Youtube, Facebook, Share2 } from "lucide-react";
+import { Instagram, Linkedin, Youtube, Facebook } from "lucide-react";
 import { AnimatedBeam } from "@/components/ui/animated-beam";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import matheusAvatar from "@/assets/matheus-avatar-hub.png";
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
@@ -148,15 +149,20 @@ export function SocialProofSection() {
             {/* Center Hub Column */}
             <motion.div
               ref={hubRef}
-              className="relative w-28 sm:w-32 md:w-40 lg:w-48 aspect-square rounded-full z-10 flex items-center justify-center bg-background border-2 border-border shadow-lg hover:shadow-xl transition-all duration-300 hover:border-primary hover:scale-[1.02]"
+              className="relative w-28 sm:w-32 md:w-40 lg:w-48 aspect-square rounded-full z-10 flex items-center justify-center overflow-hidden ring-2 ring-purple-500/60 ring-offset-2 ring-offset-background shadow-xl hover:shadow-2xl transition-all duration-300 hover:ring-purple-500/80 hover:scale-[1.02]"
               initial={{ opacity: 0, scale: 0.8 }}
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.8, ease }}
               role="img"
-              aria-label="Símbolo de redes sociais"
+              aria-label="Foto de perfil de Matheus"
+              data-evt="hero_social_hub_center_avatar"
             >
-              <Share2 className="w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 lg:w-20 lg:h-20 text-primary" strokeWidth={1.5} />
+              <img
+                src={matheusAvatar}
+                alt="Foto de perfil de Matheus"
+                className="w-full h-full object-cover object-center"
+              />
             </motion.div>
 
             {/* Right Icons Column */}
