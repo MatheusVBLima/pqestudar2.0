@@ -12,15 +12,16 @@ const LinkHero = () => {
       className="flex flex-col items-center text-center space-y-6 mb-2"
     >
       {/* Foto de Perfil */}
-      <div className="relative">
-        <div className="absolute inset-0 rounded-full bg-gradient-primary opacity-20 blur-xl" />
-        <div className="relative w-40 h-40 md:w-44 md:h-44 rounded-full ring-4 ring-primary/30 shadow-elegant overflow-hidden bg-background">
-          <img
-            src={matheusHub}
-            alt="Matheus - O Hacker dos Estudos"
-            className="w-full h-full object-cover"
-          />
-        </div>
+      <div className="relative mx-auto inline-block p-[6px] rounded-full ring-2 ring-purple-500/70 ring-offset-2 ring-offset-white dark:ring-offset-neutral-950 shadow-[0_10px_30px_rgba(140,0,255,.15)]">
+        {/* Glow suave atrás */}
+        <span aria-hidden className="pointer-events-none absolute inset-0 -z-10 rounded-full bg-purple-500/20 blur-2xl" />
+        <img
+          src={matheusHub}
+          alt="Foto de perfil de Matheus"
+          width={176}
+          height={176}
+          className="size-40 md:size-44 rounded-full object-cover object-center"
+        />
       </div>
 
       {/* Títulos */}
