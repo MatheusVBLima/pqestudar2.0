@@ -24,6 +24,7 @@ export function ToolModal({ open, onClose, onSave, tool, availableTags }: ToolMo
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [url, setUrl] = useState("");
+  const [attachmentUrl, setAttachmentUrl] = useState("");
   const [iconUrl, setIconUrl] = useState("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [isVisible, setIsVisible] = useState(true);
@@ -42,6 +43,7 @@ export function ToolModal({ open, onClose, onSave, tool, availableTags }: ToolMo
       setName(tool.name);
       setDescription(tool.description);
       setUrl(tool.url || "");
+      setAttachmentUrl((tool as any).attachment_url || "");
       setIconUrl(tool.icon_url || "");
       setSelectedTags(tool.tags || []);
       setIsVisible(tool.is_visible);
@@ -49,6 +51,7 @@ export function ToolModal({ open, onClose, onSave, tool, availableTags }: ToolMo
       setName("");
       setDescription("");
       setUrl("");
+      setAttachmentUrl("");
       setIconUrl("");
       setSelectedTags([]);
       setIsVisible(true);
@@ -77,6 +80,10 @@ export function ToolModal({ open, onClose, onSave, tool, availableTags }: ToolMo
 
     if (url && !url.match(/^https?:\/\/.+/)) {
       newErrors.url = "URL deve começar com http:// ou https://";
+    }
+
+    if (attachmentUrl && !attachmentUrl.match(/^https?:\/\/.+/)) {
+      newErrors.attachmentUrl = "URL do anexo deve começar com http:// ou https://";
     }
 
     if (iconUrl && !iconUrl.match(/^https?:\/\/.+/)) {
@@ -184,10 +191,11 @@ export function ToolModal({ open, onClose, onSave, tool, availableTags }: ToolMo
         name: name.trim(),
         description: description.trim(),
         url: url.trim() || undefined,
+        attachment_url: attachmentUrl.trim() || undefined,
         icon_url: finalIconUrl,
         tags: selectedTags,
         is_visible: isVisible,
-      });
+      } as any);
       onClose();
     } finally {
       setSaving(false);
@@ -273,6 +281,30 @@ export function ToolModal({ open, onClose, onSave, tool, availableTags }: ToolMo
             {errors.url && (
               <p id="url-error" className="text-sm text-destructive">
                 {errors.url}
+              </p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="attachmentUrl">Anexo (URL para Download)</Label>
+            <Input
+              id="attachmentUrl"
+              type="url"
+              value={attachmentUrl}
+              onChange={(e) => {
+                setAttachmentUrl(e.target.value);
+                setErrors((prev) => ({ ...prev, attachmentUrl: "" }));
+              }}
+              placeholder="https://exemplo.com/arquivo.pdf"
+              aria-invalid={!!errors.attachmentUrl}
+              aria-describedby={errors.attachmentUrl ? "attachmentUrl-error attachmentUrl-help" : "attachmentUrl-help"}
+            />
+            <p id="attachmentUrl-help" className="text-xs text-muted-foreground">
+              Opcional. Link direto para um arquivo (PDF, e-book, etc.)
+            </p>
+            {errors.attachmentUrl && (
+              <p id="attachmentUrl-error" className="text-sm text-destructive">
+                {errors.attachmentUrl}
               </p>
             )}
           </div>

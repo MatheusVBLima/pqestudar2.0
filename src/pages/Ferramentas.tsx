@@ -312,16 +312,35 @@ function SortableToolCard({
                 </Badge>
               ))}
             </div>
-            {tool.url && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full"
-                onClick={() => window.open(tool.url, '_blank')}
-              >
-                Acessar
-              </Button>
-            )}
+            {(() => {
+              const attachmentUrl = (tool as any).attachment_url;
+              const hasAttachment = attachmentUrl && attachmentUrl.trim();
+              const linkUrl = hasAttachment ? attachmentUrl : tool.url;
+              const buttonText = hasAttachment ? "Fazer download" : "Acessar";
+              const ariaLabel = hasAttachment 
+                ? `Fazer download de ${tool.name}` 
+                : `Acessar ${tool.name}`;
+
+              if (process.env.NODE_ENV === 'development') {
+                console.log(
+                  `[Ferramentas] Botão: '${buttonText}' ->`,
+                  linkUrl
+                );
+              }
+
+              return linkUrl ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                  onClick={() => window.open(linkUrl, '_blank', 'noopener,noreferrer')}
+                  aria-label={ariaLabel}
+                  title={ariaLabel}
+                >
+                  {buttonText}
+                </Button>
+              ) : null;
+            })()}
           </div>
         </CardContent>
       </Card>
