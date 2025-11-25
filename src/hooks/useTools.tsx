@@ -8,6 +8,7 @@ export interface Tool {
   name: string;
   description: string;
   url?: string;
+  attachment_url?: string;
   icon_url?: string;
   tags: string[];
   is_visible: boolean;

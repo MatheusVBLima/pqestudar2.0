@@ -557,6 +557,7 @@ export type Database = {
       }
       tools: {
         Row: {
+          attachment_url: string | null
           created_at: string
           created_by: string | null
           description: string
@@ -571,6 +572,7 @@ export type Database = {
           url: string | null
         }
         Insert: {
+          attachment_url?: string | null
           created_at?: string
           created_by?: string | null
           description: string
@@ -585,6 +587,7 @@ export type Database = {
           url?: string | null
         }
         Update: {
+          attachment_url?: string | null
           created_at?: string
           created_by?: string | null
           description?: string
