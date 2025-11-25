@@ -37,6 +37,11 @@ export function ToolModal({ open, onClose, onSave, tool, availableTags }: ToolMo
   const [uploading, setUploading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [attachmentSource, setAttachmentSource] = useState<"upload" | "url">("url");
+  const [uploadedAttachment, setUploadedAttachment] = useState<File | null>(null);
+  const [attachmentUploading, setAttachmentUploading] = useState(false);
+  const [isDraggingAttachment, setIsDraggingAttachment] = useState(false);
+  const attachmentInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (tool) {
@@ -61,6 +66,8 @@ export function ToolModal({ open, onClose, onSave, tool, availableTags }: ToolMo
     setUploadPreview("");
     setImageError(false);
     setLogoSource("url");
+    setUploadedAttachment(null);
+    setAttachmentSource("url");
   }, [tool, open]);
 
   const validate = () => {
@@ -161,18 +168,83 @@ export function ToolModal({ open, onClose, onSave, tool, availableTags }: ToolMo
     return publicUrl;
   };
 
+  const uploadAttachmentToStorage = async (file: File, toolId: string): Promise<string> => {
+    const timestamp = new Date().toISOString().replace(/[-:]/g, '').split('.')[0];
+    const ext = file.name.split('.').pop();
+    const fileName = `${toolId}-${timestamp}.${ext}`;
+    const filePath = `${fileName}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('tools-attachments')
+      .upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: false
+      });
+
+    if (uploadError) throw uploadError;
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('tools-attachments')
+      .getPublicUrl(filePath);
+
+    return publicUrl;
+  };
+
+  const handleAttachmentFileSelect = (file: File) => {
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    const allowedTypes = [
+      'application/pdf',
+      'application/zip',
+      'application/x-zip-compressed',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'application/vnd.ms-excel',
+      'text/plain',
+      'application/epub+zip'
+    ];
+
+    if (!allowedTypes.includes(file.type)) {
+      setErrors(prev => ({ ...prev, attachmentUpload: "Formato não suportado. Use PDF, ZIP, DOCX, XLSX, TXT ou EPUB." }));
+      return;
+    }
+
+    if (file.size > maxSize) {
+      setErrors(prev => ({ ...prev, attachmentUpload: "Arquivo muito grande. Máximo 10MB." }));
+      return;
+    }
+
+    setUploadedAttachment(file);
+    setErrors(prev => ({ ...prev, attachmentUpload: "" }));
+  };
+
+  const handleAttachmentDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDraggingAttachment(false);
+    const file = e.dataTransfer.files[0];
+    if (file) handleAttachmentFileSelect(file);
+  };
+
+  const handleAttachmentDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDraggingAttachment(true);
+  };
+
+  const handleAttachmentDragLeave = () => {
+    setIsDraggingAttachment(false);
+  };
+
   const handleSave = async () => {
     if (!validate()) return;
 
     setSaving(true);
     try {
       let finalIconUrl = iconUrl.trim() || undefined;
+      let finalAttachmentUrl = attachmentUrl.trim() || undefined;
 
-      // If uploading a file, upload to storage first
+      // If uploading a logo file, upload to storage first
       if (logoSource === "upload" && uploadedFile) {
         setUploading(true);
         try {
-          // Generate temporary ID for new tools
           const toolId = tool?.id || crypto.randomUUID();
           finalIconUrl = await uploadToStorage(uploadedFile, toolId);
         } catch (error) {
@@ -186,12 +258,29 @@ export function ToolModal({ open, onClose, onSave, tool, availableTags }: ToolMo
         }
       }
 
+      // If uploading an attachment file, upload to storage
+      if (attachmentSource === "upload" && uploadedAttachment) {
+        setAttachmentUploading(true);
+        try {
+          const toolId = tool?.id || crypto.randomUUID();
+          finalAttachmentUrl = await uploadAttachmentToStorage(uploadedAttachment, toolId);
+        } catch (error) {
+          toast.error("Erro ao fazer upload do anexo");
+          console.error("Attachment upload error:", error);
+          setSaving(false);
+          setAttachmentUploading(false);
+          return;
+        } finally {
+          setAttachmentUploading(false);
+        }
+      }
+
       await onSave({
         ...(tool?.id && { id: tool.id }),
         name: name.trim(),
         description: description.trim(),
         url: url.trim() || undefined,
-        attachment_url: attachmentUrl.trim() || undefined,
+        attachment_url: finalAttachmentUrl,
         icon_url: finalIconUrl,
         tags: selectedTags,
         is_visible: isVisible,
@@ -286,27 +375,103 @@ export function ToolModal({ open, onClose, onSave, tool, availableTags }: ToolMo
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="attachmentUrl">Anexo (URL para Download)</Label>
-            <Input
-              id="attachmentUrl"
-              type="url"
-              value={attachmentUrl}
-              onChange={(e) => {
-                setAttachmentUrl(e.target.value);
-                setErrors((prev) => ({ ...prev, attachmentUrl: "" }));
-              }}
-              placeholder="https://exemplo.com/arquivo.pdf"
-              aria-invalid={!!errors.attachmentUrl}
-              aria-describedby={errors.attachmentUrl ? "attachmentUrl-error attachmentUrl-help" : "attachmentUrl-help"}
-            />
-            <p id="attachmentUrl-help" className="text-xs text-muted-foreground">
-              Opcional. Link direto para um arquivo (PDF, e-book, etc.)
-            </p>
-            {errors.attachmentUrl && (
-              <p id="attachmentUrl-error" className="text-sm text-destructive">
-                {errors.attachmentUrl}
-              </p>
-            )}
+            <Label>Anexo (URL para Download)</Label>
+            <Tabs value={attachmentSource} onValueChange={(v) => setAttachmentSource(v as "upload" | "url")}>
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="upload">
+                  <Upload className="w-4 h-4 mr-2" />
+                  Upload
+                </TabsTrigger>
+                <TabsTrigger value="url">
+                  <LinkIcon className="w-4 h-4 mr-2" />
+                  URL
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="upload" className="space-y-3">
+                <div
+                  onDrop={handleAttachmentDrop}
+                  onDragOver={handleAttachmentDragOver}
+                  onDragLeave={handleAttachmentDragLeave}
+                  className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
+                    isDraggingAttachment ? 'border-primary bg-primary/5' : 'border-muted-foreground/25'
+                  }`}
+                >
+                  {uploadedAttachment ? (
+                    <div className="space-y-3">
+                      <div className="w-16 h-16 mx-auto rounded-lg bg-muted flex items-center justify-center">
+                        <Upload className="w-8 h-8 text-muted-foreground" />
+                      </div>
+                      <p className="text-sm font-medium">{uploadedAttachment.name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {(uploadedAttachment.size / 1024 / 1024).toFixed(2)} MB
+                      </p>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setUploadedAttachment(null)}
+                      >
+                        <X className="w-3 h-3 mr-1" />
+                        Remover
+                      </Button>
+                    </div>
+                  ) : (
+                    <>
+                      <Upload className="w-12 h-12 mx-auto mb-3 text-muted-foreground" />
+                      <p className="text-sm mb-2">Arraste um arquivo ou</p>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => attachmentInputRef.current?.click()}
+                      >
+                        Selecionar arquivo
+                      </Button>
+                      <input
+                        ref={attachmentInputRef}
+                        type="file"
+                        accept=".pdf,.zip,.docx,.xlsx,.xls,.txt,.epub"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) handleAttachmentFileSelect(file);
+                        }}
+                      />
+                      <p className="text-xs text-muted-foreground mt-2">
+                        PDF, ZIP, DOCX, XLSX, TXT ou EPUB • Máx 10MB
+                      </p>
+                    </>
+                  )}
+                </div>
+                {errors.attachmentUpload && (
+                  <p className="text-sm text-destructive">{errors.attachmentUpload}</p>
+                )}
+              </TabsContent>
+
+              <TabsContent value="url" className="space-y-3">
+                <Input
+                  id="attachmentUrl"
+                  type="url"
+                  value={attachmentUrl}
+                  onChange={(e) => {
+                    setAttachmentUrl(e.target.value);
+                    setErrors((prev) => ({ ...prev, attachmentUrl: "" }));
+                  }}
+                  placeholder="https://exemplo.com/arquivo.pdf"
+                  aria-invalid={!!errors.attachmentUrl}
+                  aria-describedby={errors.attachmentUrl ? "attachmentUrl-error attachmentUrl-help" : "attachmentUrl-help"}
+                />
+                <p id="attachmentUrl-help" className="text-xs text-muted-foreground">
+                  Opcional. Link direto para um arquivo (PDF, e-book, etc.)
+                </p>
+                {errors.attachmentUrl && (
+                  <p id="attachmentUrl-error" className="text-sm text-destructive">
+                    {errors.attachmentUrl}
+                  </p>
+                )}
+              </TabsContent>
+            </Tabs>
           </div>
 
           <div className="space-y-2">
@@ -489,11 +654,11 @@ export function ToolModal({ open, onClose, onSave, tool, availableTags }: ToolMo
         </div>
 
         <div className="flex justify-end gap-2">
-          <Button variant="outline" onClick={onClose} disabled={saving || uploading}>
+          <Button variant="outline" onClick={onClose} disabled={saving || uploading || attachmentUploading}>
             Cancelar
           </Button>
-          <Button onClick={handleSave} disabled={saving || uploading}>
-            {uploading ? "Enviando imagem..." : saving ? "Salvando..." : "Salvar"}
+          <Button onClick={handleSave} disabled={saving || uploading || attachmentUploading}>
+            {uploading || attachmentUploading ? "Enviando..." : saving ? "Salvando..." : "Salvar"}
           </Button>
         </div>
       </DialogContent>
