@@ -106,21 +106,24 @@ export function ToolModal({ open, onClose, onSave, tool, availableTags }: ToolMo
   };
 
   const handleFileSelect = (file: File) => {
+    console.log("[Ferramentas] Upload LOGO -> bucket: tools-icons, file:", file?.name);
     const maxSize = 1.5 * 1024 * 1024; // 1.5MB
     const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp', 'image/svg+xml'];
 
     if (!allowedTypes.includes(file.type)) {
-      setErrors(prev => ({ ...prev, upload: "Formato não suportado. Use PNG, JPG, WEBP ou SVG." }));
+      setErrors(prev => ({ ...prev, logoUpload: "Formato não suportado para logo. Use PNG, JPG, WEBP ou SVG." }));
+      toast.error("Por favor, selecione uma imagem para o logo");
       return;
     }
 
     if (file.size > maxSize) {
-      setErrors(prev => ({ ...prev, upload: "Arquivo muito grande. Máximo 1.5MB." }));
+      setErrors(prev => ({ ...prev, logoUpload: "Arquivo muito grande. Máximo 1.5MB." }));
+      toast.error("Imagem muito grande. Máximo 1.5MB");
       return;
     }
 
     setUploadedFile(file);
-    setErrors(prev => ({ ...prev, upload: "" }));
+    setErrors(prev => ({ ...prev, logoUpload: "" }));
     
     // Create preview
     const reader = new FileReader();
@@ -191,6 +194,7 @@ export function ToolModal({ open, onClose, onSave, tool, availableTags }: ToolMo
   };
 
   const handleAttachmentFileSelect = (file: File) => {
+    console.log("[Ferramentas] Upload ANEXO -> bucket: tools-attachments, file:", file?.name);
     const maxSize = 10 * 1024 * 1024; // 10MB
     const allowedTypes = [
       'application/pdf',
@@ -203,13 +207,23 @@ export function ToolModal({ open, onClose, onSave, tool, availableTags }: ToolMo
       'application/epub+zip'
     ];
 
+    // Bloquear imagens explicitamente no campo de anexo
+    const imageTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp', 'image/svg+xml', 'image/gif'];
+    if (imageTypes.includes(file.type)) {
+      setErrors(prev => ({ ...prev, attachmentUpload: "Imagens não são permitidas aqui. Use o campo 'Logo/Ícone' para imagens." }));
+      toast.error("Use o campo Logo/Ícone para fazer upload de imagens");
+      return;
+    }
+
     if (!allowedTypes.includes(file.type)) {
       setErrors(prev => ({ ...prev, attachmentUpload: "Formato não suportado. Use PDF, ZIP, DOCX, XLSX, TXT ou EPUB." }));
+      toast.error("Formato de arquivo não suportado para anexo");
       return;
     }
 
     if (file.size > maxSize) {
       setErrors(prev => ({ ...prev, attachmentUpload: "Arquivo muito grande. Máximo 10MB." }));
+      toast.error("Arquivo muito grande. Máximo 10MB");
       return;
     }
 
@@ -428,16 +442,18 @@ export function ToolModal({ open, onClose, onSave, tool, availableTags }: ToolMo
                       >
                         Selecionar arquivo
                       </Button>
-                      <input
-                        ref={attachmentInputRef}
-                        type="file"
-                        accept=".pdf,.zip,.docx,.xlsx,.xls,.txt,.epub"
-                        className="hidden"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) handleAttachmentFileSelect(file);
-                        }}
-                      />
+                       <input
+                         ref={attachmentInputRef}
+                         type="file"
+                         name="attachment-upload"
+                         id="attachment-upload-input"
+                         accept=".pdf,.zip,.docx,.xlsx,.xls,.txt,.epub"
+                         className="hidden"
+                         onChange={(e) => {
+                           const file = e.target.files?.[0];
+                           if (file) handleAttachmentFileSelect(file);
+                         }}
+                       />
                       <p className="text-xs text-muted-foreground mt-2">
                         PDF, ZIP, DOCX, XLSX, TXT ou EPUB • Máx 10MB
                       </p>
@@ -532,24 +548,26 @@ export function ToolModal({ open, onClose, onSave, tool, availableTags }: ToolMo
                       >
                         Selecionar arquivo
                       </Button>
-                      <input
-                        ref={fileInputRef}
-                        type="file"
-                        accept="image/png,image/jpeg,image/jpg,image/webp,image/svg+xml"
-                        className="hidden"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) handleFileSelect(file);
-                        }}
-                      />
+                       <input
+                         ref={fileInputRef}
+                         type="file"
+                         name="logo-upload"
+                         id="logo-upload-input"
+                         accept="image/png,image/jpeg,image/jpg,image/webp,image/svg+xml"
+                         className="hidden"
+                         onChange={(e) => {
+                           const file = e.target.files?.[0];
+                           if (file) handleFileSelect(file);
+                         }}
+                       />
                       <p className="text-xs text-muted-foreground mt-2">
                         PNG, JPG, WEBP ou SVG • Máx 1.5MB
                       </p>
                     </>
                   )}
                 </div>
-                {errors.upload && (
-                  <p className="text-sm text-destructive">{errors.upload}</p>
+                {errors.logoUpload && (
+                  <p className="text-sm text-destructive">{errors.logoUpload}</p>
                 )}
               </TabsContent>
 

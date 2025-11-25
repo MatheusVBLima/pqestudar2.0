@@ -321,11 +321,11 @@ function SortableToolCard({
                 ? `Fazer download de ${tool.name}` 
                 : `Acessar ${tool.name}`;
 
-              if (process.env.NODE_ENV === 'development') {
-                console.log(
-                  `[Ferramentas] Botão: '${buttonText}' ->`,
-                  linkUrl
-                );
+              // Log de debug
+              if (hasAttachment) {
+                console.log(`[Ferramentas] Botão: 'Fazer download' ->`, attachmentUrl);
+              } else {
+                console.log(`[Ferramentas] Botão: 'Acessar' ->`, tool.url);
               }
 
               return linkUrl ? (
@@ -336,6 +336,7 @@ function SortableToolCard({
                   onClick={() => window.open(linkUrl, '_blank', 'noopener,noreferrer')}
                   aria-label={ariaLabel}
                   title={ariaLabel}
+                  data-evt={hasAttachment ? "download_tool" : "access_tool"}
                 >
                   {buttonText}
                 </Button>
