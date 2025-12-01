@@ -37,6 +37,7 @@ import Parceiros from "./pages/Parceiros";
 import Assine from "./pages/Assine";
 import Ferramentas from "./pages/Ferramentas";
 import Links from "./pages/Links";
+import MapaDosBeneficios from "./pages/MapaDosBeneficios";
 
 const queryClient = new QueryClient();
 
@@ -77,6 +78,7 @@ const AppContent = () => {
           <Route path="/assine" element={<Assine />} />
           <Route path="/ferramentas" element={<Ferramentas />} />
           <Route path="/links" element={<Links />} />
+          <Route path="/mapa-dos-beneficios" element={<MapaDosBeneficios />} />
           
           {/* Bonus Pages - Exact Routes (noindex) */}
           <Route path="/acesso-kit-partida-8h3z" element={<BonusPage />} />
