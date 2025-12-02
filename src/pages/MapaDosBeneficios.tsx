@@ -376,9 +376,7 @@ const WhyChooseSection = () => {
       }} transition={{
         duration: 0.6,
         ease
-      }} className="text-2xl md:text-4xl font-bold text-center mb-12 italic">
-          Por Que Escolher as Dinâmicas de Artes Marciais?
-        </motion.h2>
+      }} className="text-2xl md:text-4xl font-bold text-center mb-12 italic">Por Que Você Precisa Desse Mapa?</motion.h2>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
           {features.map((feature, index) => <motion.div key={feature.title} initial={{
