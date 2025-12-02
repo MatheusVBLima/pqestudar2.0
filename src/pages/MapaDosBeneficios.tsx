@@ -213,15 +213,9 @@ const HeroSection = () => <section className="relative py-12 md:py-20 px-4 bg-gr
       delay: 0.2,
       ease
     }} className="text-muted-foreground text-base md:text-lg max-w-2xl mx-auto mb-8">
-        Acesso <strong className="text-foreground">imediato</strong> a atividades
-        interativas que estimulam{" "}
-        <strong className="text-foreground">técnica</strong>,{" "}
-        <strong className="text-foreground">disciplina</strong> e{" "}
-        <strong className="text-foreground">desenvolvimento</strong>. Material
-        completo para{" "}
-        <strong className="text-foreground">instrutores</strong>,{" "}
-        <strong className="text-foreground">professores</strong> e{" "}
-        <strong className="text-foreground">academias</strong>.
+        <strong className="text-foreground">Acesso imediato ao guia completo</strong> que revela como acessar{" "}
+        <strong className="text-foreground">auxílios, descontos, cursos e até dinheiro</strong> que já são seus por direito. 
+        Material organizado <strong className="text-foreground">para qualquer cidadão, sem complicação</strong>.
       </motion.p>
 
       <motion.div initial={{
