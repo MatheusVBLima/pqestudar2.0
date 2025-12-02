@@ -30,7 +30,7 @@ const PRICES = {
   basicoAtual: "R$ 9,90",
   premiumAntigo: "R$ 147",
   premiumAtual: "R$ 26,90",
-  totalBonus: "R$ 97"
+  totalBonus: "R$ 111"
 };
 const BONUS_DATA = [{
   title: "50 Alongamentos Rápidos Antes das Dinâmicas",
@@ -429,7 +429,7 @@ const BonusSection = () => <section className="py-16 md:py-24 px-4 bg-gradient-t
       ease
     }} className="text-center mb-10">
         <Badge className="bg-red-600 text-white mb-4 text-sm px-4 py-1">
-          🎁 BÔNUS EXCLUSIVOS - VALOR {PRICES.totalBonus}
+          🎁 BÔNUS EXCLUSIVOS - VALOR TOTAL {PRICES.totalBonus}
         </Badge>
         <h2 className="text-3xl md:text-4xl font-bold mb-3">
           Receba 3 Bônus Incríveis GRÁTIS!
