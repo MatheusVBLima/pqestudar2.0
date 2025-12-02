@@ -347,21 +347,21 @@ const WhatYouReceiveSection = () => <section className="py-16 md:py-24 px-4 bg-b
 // Why Choose Section
 const WhyChooseSection = () => {
   const features = [{
-    icon: Users,
-    title: "Todas as Idades",
-    description: "Atividades para todos os níveis de aprendizado de artes marciais"
+    icon: Gift,
+    title: "Economia Real",
+    description: "Descubra como pagar contas de luz mais baratas, conseguir medicamentos de graça e acessar dinheiro esquecido."
   }, {
     icon: Award,
-    title: "Metodologia Comprovada",
-    description: "Material desenvolvido com técnicas pedagógicas modernas"
+    title: "Oportunidades Únicas",
+    description: "Acesse vagas em cursos gratuitos, programas de moradia e financiamentos com juros baixos que não são divulgados na mídia."
   }, {
-    icon: RefreshCw,
-    title: "Atualizações Mensais",
-    description: "Novas atividades todos os meses, sem custo adicional"
+    icon: FileText,
+    title: "Fim da Burocracia",
+    description: "Chega de se sentir perdido em sites do governo. Nós te damos o link direto e o passo a passo exato do que fazer."
   }, {
-    icon: Heart,
-    title: "Aprendizado Divertido",
-    description: "Estratégias que tornam o ensino de artes marciais mais envolvente e interativo"
+    icon: Shield,
+    title: "Conhecimento é Poder",
+    description: "Pare de perder dinheiro e oportunidades por falta de informação. Tenha o controle dos seus direitos na palma da sua mão."
   }];
   return <section className="py-16 md:py-24 px-4 bg-muted/30">
       <div className="container max-w-5xl mx-auto">
