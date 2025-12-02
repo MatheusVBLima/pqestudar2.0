@@ -197,9 +197,9 @@ const HeroSection = () => <section className="relative py-12 md:py-20 px-4 bg-gr
     }} className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6">
         <span className="text-foreground">+50 Benefícios</span>
         <br />
-        <span className="text-red-600">E Programas Secretos do Governo que Você Pode Ter Direito</span>
+        <span className="text-red-600">Secretos do Governo que Você Pode Ter Direito</span>
         <br />
-        <span className="text-red-600">Ter Direito</span>
+        
         <br />
         <span className="text-foreground">+ Bônus</span>
       </motion.h1>
