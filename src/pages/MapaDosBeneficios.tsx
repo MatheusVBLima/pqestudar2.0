@@ -431,12 +431,8 @@ const BonusSection = () => <section className="py-16 md:py-24 px-4 bg-gradient-t
         <Badge className="bg-red-600 text-white mb-4 text-sm px-4 py-1">
           🎁 BÔNUS EXCLUSIVOS - VALOR TOTAL {PRICES.totalBonus}
         </Badge>
-        <h2 className="text-3xl md:text-4xl font-bold mb-3">
-          Receba 3 Bônus Incríveis GRÁTIS!
-        </h2>
-        <p className="text-muted-foreground">
-          Materiais extras que vão transformar suas aulas em experiências inesquecíveis
-        </p>
+        <h2 className="text-3xl md:text-4xl font-bold mb-3">Receba 3 Guias Incríveis GRÁTIS</h2>
+        <p className="text-muted-foreground">Materiais extras que vão colocar ainda mais dinheiro no seu bolso e proteger seu futuro.</p>
       </motion.div>
 
       <div className="grid md:grid-cols-3 gap-6 mb-10">
