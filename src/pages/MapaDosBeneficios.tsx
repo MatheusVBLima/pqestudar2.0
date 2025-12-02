@@ -406,7 +406,7 @@ const WhyChooseSection = () => {
 
         <div className="text-center">
           <CTAButton href={CONFIG.checkoutPremium} section="why-choose" plan="premium">
-            QUERO AS DINÂMICAS DE ARTES MARCIAIS AGORA!
+            QUERO MEUS BENEFÍCIOS AGORA!
           </CTAButton>
         </div>
       </div>
