@@ -199,8 +199,6 @@ const HeroSection = () => <section className="relative py-12 md:py-20 px-4 bg-gr
         <br />
         <span className="text-red-600">Secretos do Governo que Você Pode Ter Direito</span>
         <br />
-        
-        <br />
         <span className="text-foreground">+ Bônus</span>
       </motion.h1>
 
