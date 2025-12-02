@@ -330,7 +330,7 @@ const WhatYouReceiveSection = () => <section className="py-16 md:py-24 px-4 bg-b
                 <div>
                   <h3 className="font-bold text-lg mb-3">Para Qualquer Cidadão</h3>
                   <ul className="space-y-2">
-                    {["Atividades pensadas para crianças, iniciantes e diferentes níveis de aprendizado", "Ideal para instrutores, professores e academias de artes marciais"].map((item, i) => <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
+                    {["Benefícios para jovens, adultos e idosos.", "Ideal para instrutores, professores e academias de artes marciais"].map((item, i) => <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
                         <CheckCircle className="h-4 w-4 text-emerald-500 flex-shrink-0 mt-0.5" />
                         <span>{item}</span>
                       </li>)}
