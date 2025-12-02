@@ -249,7 +249,7 @@ const HeroSection = () => <section className="relative py-12 md:py-20 px-4 bg-gr
       ease
     }}>
         <CTAButton href={CONFIG.checkoutPremium} section="hero" plan="premium">
-          QUERO AGORA!
+          QUERO ACESSAR O MAPA SECRETO AGORA!
         </CTAButton>
       </motion.div>
     </div>
