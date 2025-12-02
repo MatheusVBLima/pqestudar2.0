@@ -296,7 +296,7 @@ const WhatYouReceiveSection = () => <section className="py-16 md:py-24 px-4 bg-b
                 <div>
                   <h3 className="font-bold text-lg mb-3">Material Completo em PDF</h3>
                   <ul className="space-y-2">
-                    {["Mais de 50 benefícios, programas e auxílios compilados", "Técnicas e metodologias incluídas", "Acesso digital pelo celular, tablet ou computador", "Pronto para imprimir quando quiser"].map((item, i) => <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
+                    {["Mais de 50 benefícios, programas e auxílios compilados", "Link direto e instruções claras para cada benefício", "Acesso digital pelo celular, tablet ou computador", "Pronto para imprimir quando quiser"].map((item, i) => <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
                         <CheckCircle className="h-4 w-4 text-emerald-500 flex-shrink-0 mt-0.5" />
                         <span>{item}</span>
                       </li>)}
