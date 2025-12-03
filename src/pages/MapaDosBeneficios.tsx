@@ -757,11 +757,11 @@ const AboutAuthorSection = () => <section className="py-16 md:py-24 px-4 bg-back
                     <p className="text-sm text-muted-foreground">Anos de Experiência</p>
                   </div>
                   <div>
-                    <p className="text-3xl font-bold text-red-600">50+ Milhões</p>
-                    <p className="text-sm text-muted-foreground">de Visualizações</p>
+                    <p className="text-3xl font-bold text-red-600">50+</p>
+                    <p className="text-sm text-muted-foreground">Milhões de Visualizações</p>
                   </div>
                   <div>
-                    <p className="text-3xl font-bold text-red-600">+400 Mil</p>
+                    <p className="text-3xl font-bold text-red-600">400+</p>
                     <p className="text-sm text-muted-foreground">Seguidores</p>
                   </div>
                 </div>
