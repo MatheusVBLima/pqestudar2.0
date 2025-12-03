@@ -749,44 +749,46 @@ const AboutAuthorSection = () => <section className="py-16 md:py-24 px-4 bg-back
             <div className="grid md:grid-cols-[auto_1fr] gap-8 items-center">
               <div className="text-center">
                 <div className="w-40 h-40 rounded-full ring-4 ring-red-500 mx-auto mb-4 overflow-hidden bg-gradient-to-br from-gray-200 to-gray-300">
-                  <img src="/placeholder.svg" alt="Mestre Carlos Ferreira" className="w-full h-full object-cover" loading="lazy" />
+                  <img src="/placeholder.svg" alt="Matheus Dias" className="w-full h-full object-cover" loading="lazy" />
                 </div>
                 <div className="space-y-2">
                   <div>
-                    <p className="text-3xl font-bold text-red-600">15+</p>
+                    <p className="text-3xl font-bold text-red-600">4+</p>
                     <p className="text-sm text-muted-foreground">Anos de Experiência</p>
                   </div>
                   <div>
-                    <p className="text-3xl font-bold text-red-600">2.000+</p>
-                    <p className="text-sm text-muted-foreground">Instrutores Formados</p>
+                    <p className="text-3xl font-bold text-red-600">50+ Milhões</p>
+                    <p className="text-sm text-muted-foreground">de Visualizações</p>
+                  </div>
+                  <div>
+                    <p className="text-3xl font-bold text-red-600">+400 Mil</p>
+                    <p className="text-sm text-muted-foreground">Seguidores</p>
                   </div>
                 </div>
-                <Button variant="outline" className="mt-4" size="sm">
-                  Faixa Preta
-                </Button>
               </div>
 
               <div>
-                <h3 className="text-2xl font-bold mb-1">Mestre Carlos Ferreira</h3>
-                <p className="text-red-600 font-medium mb-4">Especialista em Artes Marciais</p>
+                <h3 className="text-2xl font-bold mb-1">Matheus Dias</h3>
+                <p className="text-red-600 font-medium mb-4">Especialista em Tecnologia e Oportunidades Digitais</p>
                 <div className="space-y-3 text-muted-foreground text-sm leading-relaxed">
                   <p>
-                    Graduado em <strong className="text-foreground">Educação Física</strong> pela{" "}
-                    <strong className="text-foreground">Universidade Federal</strong> e especialista em{" "}
-                    <strong className="text-foreground">Pedagogia das Artes Marciais</strong>, o Mestre
-                    Carlos acumula mais de 15 anos de vivência com crianças e adultos em academias e
-                    escolas.
+                    Com <strong className="text-foreground">mais de 4 anos de experiência</strong> e{" "}
+                    <strong className="text-foreground">somando mais de 50 milhões de visualizações</strong> em seus vídeos,
+                    Matheus Dias se tornou <strong className="text-foreground">um dos maiores especialistas do Brasil</strong> em{" "}
+                    <strong className="text-foreground">"descomplicar a tecnologia e a vida"</strong> para milhões de pessoas.
+                    Sua paixão é <strong className="text-foreground">descobrir e compartilhar segredos, dicas e oportunidades</strong> que
+                    empoderam o cidadão comum.
                   </p>
                   <p>
-                    Desenvolveu o{" "}
-                    <strong className="text-foreground">Método Dinâmicas Interativas de Artes Marciais</strong>{" "}
-                    após anos observando como os alunos aprendem técnicas marciais de forma mais efetiva:
-                    através de jogos, atividades práticas e exercícios lúdicos.
+                    Depois que seus <strong className="text-foreground">vídeos sobre benefícios do governo viralizaram</strong> e{" "}
+                    <strong className="text-foreground">ajudaram milhões de brasileiros</strong>, ele percebeu que a falta de informação
+                    era o maior obstáculo para as pessoas acessarem seus direitos. Por isso, decidiu criar o "Mapa dos Benefícios Ocultos",
+                    reunindo todo esse conhecimento valioso em um único lugar, de forma simples e acessível para todos.
                   </p>
                   <p>
-                    Já formou mais de 2.000 instrutores em todo o Brasil e suas atividades são utilizadas
-                    em centenas de academias e escolas para o ensino de disciplina, respeito e técnicas de
-                    defesa pessoal.
+                    Hoje, com uma <strong className="text-foreground">comunidade de mais de 400 mil seguidores</strong>, ele continua sua
+                    missão de usar a tecnologia para <strong className="text-foreground">trazer conhecimento e poder para a palma da mão</strong> de
+                    quem mais precisa.
                   </p>
                 </div>
               </div>
