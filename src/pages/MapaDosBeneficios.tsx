@@ -200,11 +200,11 @@ const useCountdown = (targetDate: Date) => {
   return timeLeft;
 };
 
-// Urgency Bar - usa gradiente roxo do PqEstudar
+// Urgency Bar - Vermelho para urgência (psicologia das cores)
 const UrgencyBar = ({ date }: { date: string }) => (
   <div 
     className="sticky top-0 z-50 py-2.5 px-4" 
-    style={{ background: `linear-gradient(135deg, hsl(${BRAND_TOKENS.primary}), hsl(${BRAND_TOKENS.primaryLight}))` }}
+    style={{ background: `linear-gradient(135deg, hsl(${BRAND_TOKENS.red}), hsl(${BRAND_TOKENS.orange}))` }}
     role="status" 
     aria-live="polite"
   >
