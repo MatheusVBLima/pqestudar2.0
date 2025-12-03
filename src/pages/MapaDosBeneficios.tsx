@@ -894,8 +894,7 @@ const FinalCTASection = () => <section className="py-16 md:py-24 px-4 bg-gradien
               Não Perca Esta Oportunidade!
             </h2>
             <p className="text-muted-foreground mb-6">
-              Ensine artes marciais de um jeito fácil e envolvente: são mais de 150 atividades prontas
-              para tornar suas aulas inesquecíveis!
+              Pare de deixar dinheiro na mesa: são mais de 50 benefícios e direitos prontos para você acessar!
             </p>
 
             <div className="flex flex-wrap justify-center gap-4 mb-8 text-sm">
