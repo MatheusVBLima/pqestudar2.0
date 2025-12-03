@@ -26,10 +26,10 @@ const CONFIG = {
   showStickyCta: true
 };
 const PRICES = {
-  basicoAntigo: "R$ 67",
-  basicoAtual: "R$ 9,90",
-  premiumAntigo: "R$ 147",
-  premiumAtual: "R$ 26,90",
+  basicoAntigo: "R$ 47",
+  basicoAtual: "R$ 10",
+  premiumAntigo: "R$ 256",
+  premiumAtual: "R$ 27,00",
   totalBonus: "R$ 111"
 };
 const BONUS_DATA = [{
@@ -496,13 +496,10 @@ const PricingSection = () => {
     seconds
   } = useCountdown(CONFIG.timerEndDate);
   const basicFeatures = [{
-    text: "+150 Dinâmicas Interativas de Artes Marciais PDF",
+    text: "+50 Benefícios Ocultos PDF",
     included: true
   }, {
     text: "Acesso imediato",
-    included: true
-  }, {
-    text: "Metodologia comprovada",
     included: true
   }, {
     text: "Garantia de 7 dias",
@@ -511,35 +508,32 @@ const PricingSection = () => {
     text: "Bônus exclusivos",
     included: false
   }, {
-    text: "Atualizações mensais",
+    text: "Atualizações futuras",
     included: false
   }];
   const premiumFeatures = [{
-    text: "+150 Dinâmicas Interativas de Artes Marciais PDF",
+    text: "+50 Benefícios Ocultos PDF",
     included: true
   }, {
     text: "Acesso imediato",
     included: true
   }, {
-    text: "Metodologia comprovada",
-    included: true
-  }, {
     text: "Garantia de 7 dias",
     included: true
   }, {
-    text: "BÔNUS: 50 Alongamentos Rápidos",
+    text: "BÔNUS: Guia de Renegociação",
     included: true,
     isBonus: true
   }, {
-    text: "BÔNUS: Jogos Interativos de Artes Marciais",
+    text: "BÔNUS: Kit Renda Extra",
     included: true,
     isBonus: true
   }, {
-    text: "BÔNUS: 100 Questões de Artes Marciais",
+    text: "BÔNUS: Checklist do IR",
     included: true,
     isBonus: true
   }, {
-    text: "Atualizações mensais",
+    text: "Atualizações por 1 ano",
     included: true
   }];
   return <section className="py-16 md:py-24 px-4 bg-background">
