@@ -551,7 +551,7 @@ const PricingSection = () => {
         ease
       }} className="text-center mb-10">
           <h2 className="text-3xl md:text-4xl font-bold mb-3 italic">Escolha Seu Plano</h2>
-          <div className="inline-flex flex-col items-center bg-red-600 rounded-2xl px-8 py-4 md:px-12 md:py-5">
+          <div className="flex flex-col items-center bg-red-600 rounded-2xl px-8 py-4 md:px-12 md:py-5 w-full max-w-xl mx-auto">
             <p className="text-white/90 text-sm md:text-base font-medium mb-2">OFERTA LIMITADA - TERMINA EM:</p>
             <div className="flex items-center gap-3 md:gap-4">
               {[{
