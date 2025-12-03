@@ -816,18 +816,18 @@ const PricingSection = () => {
                 MAIS POPULAR
               </Badge>
               <CardContent className="p-6 md:p-8 pt-8">
-                <h3 
-                  className="text-2xl font-bold mb-1"
-                  style={{ color: `hsl(${BRAND_TOKENS.foreground})` }}
-                >
-                  Plano Premium
-                </h3>
                 <p 
-                  className="text-xs mb-2"
+                  className="text-xs mb-1"
                   style={{ color: `hsl(${BRAND_TOKENS.mutedForeground})` }}
                 >
                   +1.253 pessoas escolheram essa oferta
                 </p>
+                <h3 
+                  className="text-2xl font-bold mb-2"
+                  style={{ color: `hsl(${BRAND_TOKENS.foreground})` }}
+                >
+                  Plano Premium
+                </h3>
                 <PriceDisplay oldPrice={PRICES.premiumAntigo} currentPrice={PRICES.premiumAtual} />
                 <p 
                   className="text-sm mb-6"
