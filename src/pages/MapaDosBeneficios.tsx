@@ -749,7 +749,7 @@ const AboutAuthorSection = () => <section className="py-16 md:py-24 px-4 bg-back
             <div className="grid md:grid-cols-[auto_1fr] gap-8 items-center">
               <div className="text-center">
                 <div className="w-40 h-40 rounded-full ring-4 ring-red-500 mx-auto mb-4 overflow-hidden bg-gradient-to-br from-gray-200 to-gray-300">
-                  <img src="/placeholder.svg" alt="Matheus Dias" className="w-full h-full object-cover" loading="lazy" />
+                  <img alt="Matheus Dias" className="w-full h-full object-cover" loading="lazy" src="/lovable-uploads/eef30a09-d048-4db6-994f-c33c8dee49e8.png" />
                 </div>
                 <div className="space-y-2">
                   <div>
