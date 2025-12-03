@@ -296,7 +296,7 @@ const PriceDisplay = ({
   currentPrice: string; 
   showOld?: boolean;
 }) => (
-  <div className="text-center mb-2">
+  <div className="mb-2">
     {showOld && (
       <span 
         className="line-through text-lg mr-2" 
@@ -754,14 +754,14 @@ const PricingSection = () => {
             <BrandCard>
               <CardContent className="p-6 md:p-8">
                 <h3 
-                  className="text-2xl font-bold text-center mb-2"
+                  className="text-2xl font-bold mb-2"
                   style={{ color: `hsl(${BRAND_TOKENS.foreground})` }}
                 >
                   Plano Básico
                 </h3>
                 <PriceDisplay oldPrice={PRICES.basicoAntigo} currentPrice={PRICES.basicoAtual} />
                 <p 
-                  className="text-center text-sm mb-6"
+                  className="text-sm mb-6"
                   style={{ color: `hsl(${BRAND_TOKENS.mutedForeground})` }}
                 >
                   pagamento único
@@ -811,20 +811,20 @@ const PricingSection = () => {
               </Badge>
               <CardContent className="p-6 md:p-8 pt-8">
                 <h3 
-                  className="text-2xl font-bold text-center mb-1"
+                  className="text-2xl font-bold mb-1"
                   style={{ color: `hsl(${BRAND_TOKENS.foreground})` }}
                 >
                   Plano Premium
                 </h3>
                 <p 
-                  className="text-center text-xs mb-2"
+                  className="text-xs mb-2"
                   style={{ color: `hsl(${BRAND_TOKENS.mutedForeground})` }}
                 >
                   +1.253 pessoas escolheram essa oferta
                 </p>
                 <PriceDisplay oldPrice={PRICES.premiumAntigo} currentPrice={PRICES.premiumAtual} />
                 <p 
-                  className="text-center text-sm mb-6"
+                  className="text-sm mb-6"
                   style={{ color: `hsl(${BRAND_TOKENS.mutedForeground})` }}
                 >
                   pagamento único
