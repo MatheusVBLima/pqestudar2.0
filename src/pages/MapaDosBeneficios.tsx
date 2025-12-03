@@ -33,20 +33,20 @@ const PRICES = {
   totalBonus: "R$ 111"
 };
 const BONUS_DATA = [{
-  title: "50 Alongamentos Rápidos Antes das Dinâmicas",
-  description: "Prepare seus alunos com alongamentos específicos para prevenir lesões e melhorar o desempenho",
-  value: "R$ 27",
-  icon: "🧘"
-}, {
-  title: "Jogos Interativos de Artes Marciais",
-  description: "Atividades lúdicas que mantêm os alunos engajados no aprendizado",
+  title: "Guia de Renegociação de Dívidas",
+  description: "Scripts e estratégias para negociar suas dívidas com bancos e financeiras, conseguindo até 90% de desconto.",
   value: "R$ 37",
-  icon: "🎮"
+  icon: "📋"
 }, {
-  title: "100 Questões de Artes Marciais",
-  description: "Estimule técnica, estratégia e confiança nas artes marciais",
-  value: "R$ 33",
-  icon: "🎯"
+  title: "Kit de Sites para Renda Extra",
+  description: "Uma lista curada com 30 sites confiáveis para você ganhar dinheiro online nas suas horas vagas, como freelancer ou respondendo pesquisas.",
+  value: "R$ 47",
+  icon: "💰"
+}, {
+  title: "Checklist do Imposto de Renda para Iniciantes",
+  description: "O passo a passo para declarar seu Imposto de Renda sem erros e evitar cair na malha fina, mesmo que seja sua primeira vez.",
+  value: "R$ 27",
+  icon: "✅"
 }];
 const TESTIMONIALS = [{
   name: "Maria Santos",
