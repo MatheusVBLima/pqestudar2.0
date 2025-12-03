@@ -267,19 +267,25 @@ const CTAButton = ({
 const BrandCard = ({ 
   children, 
   className,
-  highlight = false 
+  highlight = false,
+  highlightGreen = false
 }: { 
   children: React.ReactNode; 
   className?: string;
   highlight?: boolean;
+  highlightGreen?: boolean;
 }) => (
   <Card 
     className={cn("h-full transition-shadow", className)} 
     style={{
       background: `hsl(${BRAND_TOKENS.card})`,
       borderRadius: BRAND_TOKENS.radiusLg,
-      boxShadow: highlight ? BRAND_TOKENS.shadowLg : BRAND_TOKENS.shadow,
-      border: highlight ? `2px solid hsl(${BRAND_TOKENS.primary})` : `1px solid hsl(${BRAND_TOKENS.border})`,
+      boxShadow: (highlight || highlightGreen) ? BRAND_TOKENS.shadowLg : BRAND_TOKENS.shadow,
+      border: highlightGreen 
+        ? `2px solid hsl(${BRAND_TOKENS.green})` 
+        : highlight 
+          ? `2px solid hsl(${BRAND_TOKENS.primary})` 
+          : `1px solid hsl(${BRAND_TOKENS.border})`,
     }}
   >
     {children}
@@ -799,11 +805,11 @@ const PricingSection = () => {
             viewport={{ once: true }} 
             transition={{ duration: 0.5, delay: 0.1, ease }}
           >
-            <BrandCard highlight className="relative scale-[1.02]">
+            <BrandCard highlightGreen className="relative scale-[1.02]">
               <Badge 
                 className="absolute -top-3 left-1/2 -translate-x-1/2 text-white px-4 py-1"
                 style={{ 
-                  background: `hsl(${BRAND_TOKENS.orange})`,
+                  background: `hsl(${BRAND_TOKENS.green})`,
                   borderRadius: BRAND_TOKENS.radius,
                 }}
               >
