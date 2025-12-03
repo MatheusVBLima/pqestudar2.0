@@ -49,19 +49,19 @@ const BONUS_DATA = [{
   icon: "✅"
 }];
 const TESTIMONIALS = [{
-  name: "Maria Santos",
-  role: "Instrutora de Artes Marciais",
-  quote: '"Sempre foi difícil manter a atenção dos alunos nas aulas. Essas dinâmicas salvaram minhas aulas! Agora eles interagem, praticam com disciplina e o aprendizado flui naturalmente."',
+  name: "Maria S.",
+  role: "Dona de Casa",
+  quote: '"Eu nem imaginava que tinha direito à tarifa social de energia. Só com essa dica do Matheus, já economizei o valor do guia em um único mês. Incrível!"',
   avatar: "/placeholder.svg"
 }, {
-  name: "Ana Costa",
-  role: "Coordenadora de Academia",
-  quote: '"Excelente para nossa academia! O material é bem elaborado e segue metodologias modernas de ensino de artes marciais."',
+  name: "João P.",
+  role: "Estudante",
+  quote: '"Sempre quis fazer um curso técnico mas não podia pagar. Com o guia, descobri um programa de bolsas de 100% na minha cidade que eu nem sabia que existia. Já estou matriculado!"',
   avatar: "/placeholder.svg"
 }, {
-  name: "João Silva",
-  role: "Pai de Aluno",
-  quote: '"Meu filho se apaixonou pelas artes marciais com essas atividades. Vale muito a pena! Ele pede para treinar todos os dias."',
+  name: "Carlos A.",
+  role: "Autônomo",
+  quote: '"Tinha um dinheiro do PIS esquecido há anos e não fazia ideia. O passo a passo do guia foi tão simples que resolvi em 10 minutos pelo celular. Valeu demais!"',
   avatar: "/placeholder.svg"
 }];
 const FAQ_DATA = [{
@@ -682,7 +682,7 @@ const TestimonialsSection = () => <section className="py-16 md:py-24 px-4 bg-mut
       duration: 0.6,
       ease
     }} className="text-3xl md:text-4xl font-bold text-center mb-12 italic">
-        O Que Dizem Nossos Instrutores
+        O Que Dizem Nossos Leitores
       </motion.h2>
 
       <div className="grid md:grid-cols-3 gap-6">
