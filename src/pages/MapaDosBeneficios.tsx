@@ -66,22 +66,22 @@ const TESTIMONIALS = [{
 }];
 const FAQ_DATA = [{
   question: "Como vou acessar o material após a compra?",
-  answer: "Após a confirmação do pagamento, você receberá imediatamente por email o acesso ao material digital em PDF. Você poderá baixar e começar a usar as dinâmicas na mesma hora!"
+  answer: "Após a confirmação do pagamento, você receberá imediatamente por e-mail o acesso ao material digital em PDF. Você poderá baixar e começar a descobrir seus benefícios na mesma hora!"
 }, {
   question: "Quais formas de pagamento são aceitas?",
-  answer: "Aceitamos cartão de crédito, débito, PIX e boleto bancário. O acesso é liberado imediatamente após a confirmação do pagamento."
+  answer: "Aceitamos Cartão de Crédito e PIX. O acesso é liberado imediatamente para compras no Cartão e PIX após a confirmação do pagamento."
 }, {
-  question: "O material é realmente aplicável em qualquer estilo de artes marciais?",
-  answer: "Sim! As dinâmicas foram desenvolvidas para serem adaptáveis a qualquer estilo de arte marcial, incluindo judô, jiu-jitsu, karatê, taekwondo, muay thai e outros."
+  question: "Os benefícios servem para qualquer pessoa?",
+  answer: "Sim! O guia foi desenvolvido para ser aplicável a todos os brasileiros. Ele inclui benefícios para diferentes faixas de renda, idades, situações profissionais (CLT, autônomo, estudante) e regiões do país."
 }, {
-  question: "Posso usar o material em minha academia/escola?",
-  answer: "Sim! O material é ideal para uso em academias, escolas e centros de treinamento. Você pode aplicar as dinâmicas em suas aulas normalmente."
+  question: "Preciso ter conhecimento técnico para usar o guia?",
+  answer: "Não! O material foi criado com uma linguagem 100% simples e com links diretos, pensando em quem não tem familiaridade com a burocracia do governo. O objetivo é ser fácil e direto."
 }, {
   question: "Como funciona a garantia de 7 dias?",
   answer: "Se por qualquer motivo você não ficar satisfeito com o material, basta solicitar o reembolso em até 7 dias após a compra. Devolvemos 100% do valor pago, sem perguntas."
 }, {
-  question: "As atividades servem para que idade?",
-  answer: "As dinâmicas foram pensadas para todas as idades, desde crianças a partir de 4 anos até adultos. O material inclui adaptações para diferentes faixas etárias e níveis de habilidade."
+  question: "Para quem o guia é recomendado?",
+  answer: "O guia foi pensado para todas as idades, desde jovens a partir dos 16 anos (ID Jovem, ProUni) até idosos (BPC, isenções). O material inclui benefícios que se adaptam a diferentes fases da vida e necessidades."
 }];
 
 // Mock tracking function - replace with real analytics
