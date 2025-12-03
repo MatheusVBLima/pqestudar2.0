@@ -743,7 +743,7 @@ const PricingSection = () => {
           </div>
         </motion.div>
 
-        <div className="grid md:grid-cols-2 gap-8 items-start">
+        <div className="grid md:grid-cols-2 gap-8 items-center">
           {/* Basic Plan */}
           <motion.div 
             initial={{ opacity: 0, x: -20 }} 
