@@ -707,13 +707,13 @@ const PricingSection = () => {
             Escolha Seu Plano
           </h2>
           
-          {/* Timer - Roxo do PqEstudar */}
+          {/* Timer - Vermelho para urgência (psicologia das cores) */}
           <div 
             className="flex flex-col items-center px-8 py-4 md:px-12 md:py-5 w-full max-w-xl mx-auto"
             style={{ 
-              background: `linear-gradient(135deg, hsl(${BRAND_TOKENS.primary}), hsl(${BRAND_TOKENS.primaryLight}))`,
+              background: `hsl(${BRAND_TOKENS.red})`,
               borderRadius: BRAND_TOKENS.radiusLg,
-              boxShadow: BRAND_TOKENS.shadowLg,
+              boxShadow: `0 10px 40px -15px hsl(${BRAND_TOKENS.red} / 0.4)`,
             }}
             role="timer"
             aria-label="Tempo restante da oferta"
