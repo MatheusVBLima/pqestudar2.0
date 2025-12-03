@@ -204,7 +204,7 @@ const useCountdown = (targetDate: Date) => {
 const UrgencyBar = ({ date }: { date: string }) => (
   <div 
     className="sticky top-0 z-50 py-2.5 px-4" 
-    style={{ background: `linear-gradient(135deg, hsl(${BRAND_TOKENS.red}), hsl(${BRAND_TOKENS.orange}))` }}
+    style={{ background: `hsl(${BRAND_TOKENS.red})` }}
     role="status" 
     aria-live="polite"
   >
