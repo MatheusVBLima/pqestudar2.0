@@ -867,10 +867,7 @@ const GuaranteeSection = () => <section className="py-16 md:py-24 px-4 bg-backgr
           <h2 className="text-2xl md:text-3xl font-bold mb-4">
             Garantia Incondicional de 7 Dias
           </h2>
-          <p className="text-muted-foreground leading-relaxed">
-            Teste o material por 7 dias. Se não ficar 100% satisfeito, devolvemos seu dinheiro! Sem
-            perguntas, sem complicações. Sua satisfação é nossa prioridade.
-          </p>
+          <p className="text-muted-foreground leading-relaxed">Teste o material por 7 dias. Se não ficar 100% satisfeito, devolvemos seu dinheiro! Sem perguntas, sem complicações. Sua satisfação é nossa prioridade e o risco é todo nosso!</p>
         </div>
       </motion.div>
     </div>
