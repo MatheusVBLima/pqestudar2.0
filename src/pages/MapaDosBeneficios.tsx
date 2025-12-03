@@ -551,31 +551,30 @@ const PricingSection = () => {
         ease
       }} className="text-center mb-10">
           <h2 className="text-3xl md:text-4xl font-bold mb-3 italic">Escolha Seu Plano</h2>
-          <p className="text-muted-foreground mb-6">OFERTA LIMITADA - TERMINA EM:</p>
-
-          <div className="flex items-center justify-center gap-2 md:gap-4">
-            {[{
-            value: hours,
-            label: "Horas"
-          }, {
-            value: minutes,
-            label: "Minutos"
-          }, {
-            value: seconds,
-            label: "Segundos"
-          }].map((unit, i) => <React.Fragment key={unit.label}>
-                {i > 0 && <span className="text-2xl font-bold text-red-600">:</span>}
-                <div className="text-center">
-                  <div className="w-16 h-16 md:w-20 md:h-20 rounded-lg border-2 border-red-200 flex items-center justify-center bg-card">
-                    <span className="text-2xl md:text-3xl font-bold text-red-600">
-                      {String(unit.value).padStart(2, "0")}
-                    </span>
-                  </div>
-                  <span className="text-xs text-muted-foreground mt-1 block">
-                    {unit.label}
-                  </span>
-                </div>
-              </React.Fragment>)}
+          <div className="inline-flex flex-col items-center bg-red-600 rounded-2xl px-8 py-4 md:px-12 md:py-5">
+            <p className="text-white/90 text-sm md:text-base font-medium mb-2">OFERTA LIMITADA - TERMINA EM:</p>
+            <div className="flex items-center gap-3 md:gap-4">
+              {[{
+                value: hours,
+                label: "HORAS"
+              }, {
+                value: minutes,
+                label: "MINUTOS"
+              }, {
+                value: seconds,
+                label: "SEGUNDOS"
+              }].map((unit, i) => <React.Fragment key={unit.label}>
+                    {i > 0 && <span className="text-2xl md:text-3xl font-bold text-white">:</span>}
+                    <div className="text-center">
+                      <span className="text-3xl md:text-4xl font-bold text-white block">
+                        {String(unit.value).padStart(2, "0")}
+                      </span>
+                      <span className="text-[10px] md:text-xs text-white/80 font-medium">
+                        {unit.label}
+                      </span>
+                    </div>
+                  </React.Fragment>)}
+            </div>
           </div>
         </motion.div>
 
