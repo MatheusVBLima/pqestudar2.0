@@ -211,18 +211,39 @@ const useCountdown = (targetDate: Date) => {
 
 // Urgency Bar - Vermelho para urgência (psicologia das cores)
 const UrgencyBar = ({
-  date
+  forceDate
 }: {
-  date: string;
-}) => <div className="sticky top-0 z-50 py-2.5 px-4" style={{
-  background: `hsl(${BRAND_TOKENS.red})`
-}} role="status" aria-live="polite">
-    <div className="flex items-center justify-center gap-2 text-white font-semibold text-sm md:text-base">
-      <Flame className="h-4 w-4 md:h-5 md:w-5 animate-pulse" />
-      <span>DESCONTO SÓ HOJE NESSA PÁGINA {date}</span>
-      <Flame className="h-4 w-4 md:h-5 md:w-5 animate-pulse" />
+  forceDate?: string;
+}) => {
+  // Gera data do dia no formato DD/MM/AAAA (timezone do navegador)
+  const todayDate = forceDate || (() => {
+    const now = new Date();
+    const day = String(now.getDate()).padStart(2, '0');
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const year = now.getFullYear();
+    return `${day}/${month}/${year}`;
+  })();
+
+  return (
+    <div 
+      className="sticky z-50 py-2.5 w-full"
+      style={{
+        background: `hsl(${BRAND_TOKENS.red})`,
+        top: 'env(safe-area-inset-top, 0)',
+        paddingLeft: 'max(16px, env(safe-area-inset-left))',
+        paddingRight: 'max(16px, env(safe-area-inset-right))',
+      }}
+      role="status" 
+      aria-live="polite"
+    >
+      <div className="flex items-center justify-center gap-1.5 sm:gap-2 text-white font-semibold text-xs sm:text-sm md:text-base text-center whitespace-normal break-words">
+        <Flame className="hidden sm:block h-4 w-4 md:h-5 md:w-5 animate-pulse shrink-0" />
+        <span className="px-1">🔥 DESCONTO SÓ HOJE NESSA PÁGINA {todayDate} 🔥</span>
+        <Flame className="hidden sm:block h-4 w-4 md:h-5 md:w-5 animate-pulse shrink-0" />
+      </div>
     </div>
-  </div>;
+  );
+};
 
 // CTA Button - Verde do PqEstudar
 const CTAButton = ({
@@ -1330,7 +1351,7 @@ const MapaDosBeneficios = () => {
         <meta name="robots" content="index, follow" />
       </Helmet>
 
-      <UrgencyBar date={CONFIG.urgencyDate} />
+      <UrgencyBar />
       <HeroSection />
       <WhatYouReceiveSection />
       <WhyChooseSection />
