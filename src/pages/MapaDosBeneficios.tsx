@@ -165,7 +165,7 @@ const BrandThemeWrapper = ({
     '--brand-shadow': BRAND_TOKENS.shadow,
     '--brand-shadow-lg': BRAND_TOKENS.shadowLg
   } as React.CSSProperties;
-  return <div className="brand-scope min-h-screen" style={{
+  return <div className="brand-scope min-h-screen overflow-x-hidden" style={{
     ...brandStyles,
     fontFamily: BRAND_TOKENS.fontSans,
     background: `hsl(${BRAND_TOKENS.background})`,
@@ -243,8 +243,14 @@ const CTAButton = ({
   scale: 1.02
 }} whileTap={{
   scale: 0.98
-}}>
-    <Button asChild size={size} className={cn("font-bold text-white transition-all duration-300", "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2", size === "lg" && "text-lg px-8 py-6", className)} style={{
+}} className="w-full max-w-full">
+    <Button asChild size={size} className={cn(
+      "font-bold text-white transition-all duration-300",
+      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
+      "w-full whitespace-normal break-words text-center min-h-[48px] h-auto",
+      size === "lg" && "text-base sm:text-lg px-4 sm:px-8 py-4 sm:py-6",
+      className
+    )} style={{
     background: `hsl(${BRAND_TOKENS.green})`,
     boxShadow: BRAND_TOKENS.shadowLg,
     borderRadius: BRAND_TOKENS.radiusLg
@@ -252,7 +258,7 @@ const CTAButton = ({
     section,
     plan: plan || ""
   })} aria-label={children?.toString()}>
-      <a href={href} target="_blank" rel="noopener noreferrer" className="hover:opacity-90" style={{
+      <a href={href} target="_blank" rel="noopener noreferrer" className="hover:opacity-90 flex items-center justify-center w-full" style={{
       '--tw-ring-color': `hsl(${BRAND_TOKENS.green})`
     } as React.CSSProperties}>
         {children}
@@ -303,10 +309,10 @@ const PriceDisplay = ({
   </div>;
 
 // Hero Section
-const HeroSection = () => <section className="relative py-12 md:py-20 px-4" style={{
+const HeroSection = () => <section className="relative py-10 md:py-20 px-4 sm:px-6" style={{
   background: `linear-gradient(135deg, hsl(${BRAND_TOKENS.muted}), hsl(${BRAND_TOKENS.background}))`
 }}>
-    <div className="container max-w-5xl mx-auto text-center">
+    <div className="container max-w-5xl mx-auto text-center px-0">
       <motion.p initial={{
       opacity: 0,
       y: -20
@@ -332,7 +338,7 @@ const HeroSection = () => <section className="relative py-12 md:py-20 px-4" styl
       duration: 0.6,
       delay: 0.1,
       ease
-    }} className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6" style={{
+    }} className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold leading-tight mb-6" style={{
       color: `hsl(${BRAND_TOKENS.foreground})`
     }}>
         <span>+50 Benefícios</span>
@@ -356,7 +362,7 @@ const HeroSection = () => <section className="relative py-12 md:py-20 px-4" styl
       duration: 0.6,
       delay: 0.2,
       ease
-    }} className="text-base md:text-lg max-w-2xl mx-auto mb-8" style={{
+    }} className="text-sm sm:text-base md:text-lg max-w-2xl mx-auto mb-8 px-2" style={{
       color: `hsl(${BRAND_TOKENS.mutedForeground})`
     }}>
         <strong style={{
@@ -380,7 +386,7 @@ const HeroSection = () => <section className="relative py-12 md:py-20 px-4" styl
       duration: 0.6,
       delay: 0.3,
       ease
-    }} className="relative max-w-2xl mx-auto mb-6">
+    }} className="relative max-w-2xl mx-auto mb-6 overflow-hidden">
         <div className="aspect-video overflow-hidden bg-black" style={{
         borderRadius: BRAND_TOKENS.radiusLg,
         boxShadow: BRAND_TOKENS.shadowLg
@@ -404,7 +410,7 @@ const HeroSection = () => <section className="relative py-12 md:py-20 px-4" styl
       duration: 0.6,
       delay: 0.4,
       ease
-    }}>
+    }} className="flex justify-center">
         <CTAButton href={CONFIG.checkoutPremium} section="hero" plan="premium">
           QUERO ACESSAR O MAPA SECRETO AGORA!
         </CTAButton>
@@ -413,10 +419,10 @@ const HeroSection = () => <section className="relative py-12 md:py-20 px-4" styl
   </section>;
 
 // What You'll Receive Section
-const WhatYouReceiveSection = () => <section className="py-16 md:py-24 px-4" style={{
+const WhatYouReceiveSection = () => <section className="py-10 md:py-24 px-4 sm:px-6" style={{
   background: `hsl(${BRAND_TOKENS.background})`
 }}>
-    <div className="container max-w-5xl mx-auto">
+    <div className="container max-w-5xl mx-auto px-0">
       <motion.h2 initial={{
       opacity: 0,
       y: 20
@@ -428,37 +434,37 @@ const WhatYouReceiveSection = () => <section className="py-16 md:py-24 px-4" sty
     }} transition={{
       duration: 0.6,
       ease
-    }} className="text-3xl md:text-4xl font-bold text-center mb-12" style={{
+    }} className="text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-8 md:mb-12" style={{
       color: `hsl(${BRAND_TOKENS.foreground})`
     }}>
         O Que Você Vai Receber
       </motion.h2>
 
-      <div className="grid md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
         <motion.div initial={{
         opacity: 0,
-        x: -20
+        y: 20
       }} whileInView={{
         opacity: 1,
-        x: 0
+        y: 0
       }} viewport={{
         once: true
       }} transition={{
         duration: 0.5,
         ease
       }}>
-          <BrandCard>
-            <CardContent className="p-6">
-              <div className="flex items-start gap-4">
-                <div className="flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center" style={{
+          <BrandCard className="h-full">
+            <CardContent className="p-4 sm:p-5 md:p-6">
+              <div className="flex flex-col sm:flex-row items-start gap-3 sm:gap-4">
+                <div className="flex-shrink-0 w-11 h-11 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center" style={{
                 background: `hsl(${BRAND_TOKENS.primary} / 0.1)`
               }}>
-                  <FileText className="h-6 w-6" style={{
+                  <FileText className="h-5 w-5 sm:h-6 sm:w-6" style={{
                   color: `hsl(${BRAND_TOKENS.primary})`
                 }} />
                 </div>
-                <div>
-                  <h3 className="font-bold text-lg mb-3" style={{
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-bold text-base sm:text-lg mb-2 sm:mb-3" style={{
                   color: `hsl(${BRAND_TOKENS.foreground})`
                 }}>
                     Material Completo em PDF
@@ -470,7 +476,7 @@ const WhatYouReceiveSection = () => <section className="py-16 md:py-24 px-4" sty
                         <CheckCircle className="h-4 w-4 flex-shrink-0 mt-0.5" style={{
                       color: `hsl(${BRAND_TOKENS.green})`
                     }} />
-                        <span>{item}</span>
+                        <span className="break-words">{item}</span>
                       </li>)}
                   </ul>
                 </div>
@@ -481,10 +487,10 @@ const WhatYouReceiveSection = () => <section className="py-16 md:py-24 px-4" sty
 
         <motion.div initial={{
         opacity: 0,
-        x: 20
+        y: 20
       }} whileInView={{
         opacity: 1,
-        x: 0
+        y: 0
       }} viewport={{
         once: true
       }} transition={{
@@ -492,18 +498,18 @@ const WhatYouReceiveSection = () => <section className="py-16 md:py-24 px-4" sty
         delay: 0.1,
         ease
       }}>
-          <BrandCard>
-            <CardContent className="p-6">
-              <div className="flex items-start gap-4">
-                <div className="flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center" style={{
+          <BrandCard className="h-full">
+            <CardContent className="p-4 sm:p-5 md:p-6">
+              <div className="flex flex-col sm:flex-row items-start gap-3 sm:gap-4">
+                <div className="flex-shrink-0 w-11 h-11 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center" style={{
                 background: `hsl(${BRAND_TOKENS.primary} / 0.1)`
               }}>
-                  <Users className="h-6 w-6" style={{
+                  <Users className="h-5 w-5 sm:h-6 sm:w-6" style={{
                   color: `hsl(${BRAND_TOKENS.primary})`
                 }} />
                 </div>
-                <div>
-                  <h3 className="font-bold text-lg mb-3" style={{
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-bold text-base sm:text-lg mb-2 sm:mb-3" style={{
                   color: `hsl(${BRAND_TOKENS.foreground})`
                 }}>
                     Para Qualquer Cidadão
@@ -515,7 +521,7 @@ const WhatYouReceiveSection = () => <section className="py-16 md:py-24 px-4" sty
                         <CheckCircle className="h-4 w-4 flex-shrink-0 mt-0.5" style={{
                       color: `hsl(${BRAND_TOKENS.green})`
                     }} />
-                        <span>{item}</span>
+                        <span className="break-words">{item}</span>
                       </li>)}
                   </ul>
                 </div>
@@ -546,10 +552,10 @@ const WhyChooseSection = () => {
     title: "Conhecimento é Poder",
     description: "Pare de perder dinheiro e oportunidades por falta de informação. Tenha o controle dos seus direitos na palma da sua mão."
   }];
-  return <section className="py-16 md:py-24 px-4" style={{
+  return <section className="py-10 md:py-24 px-4 sm:px-6" style={{
     background: `hsl(${BRAND_TOKENS.muted})`
   }}>
-      <div className="container max-w-5xl mx-auto">
+      <div className="container max-w-5xl mx-auto px-0">
         <motion.h2 initial={{
         opacity: 0,
         y: 20
@@ -561,13 +567,13 @@ const WhyChooseSection = () => {
       }} transition={{
         duration: 0.6,
         ease
-      }} className="text-2xl md:text-4xl font-bold text-center mb-12" style={{
+      }} className="text-xl sm:text-2xl md:text-4xl font-bold text-center mb-8 md:mb-12" style={{
         color: `hsl(${BRAND_TOKENS.foreground})`
       }}>
           Por Que Você Precisa Desse Mapa?
         </motion.h2>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8 md:mb-10">
           {features.map((feature, index) => <motion.div key={feature.title} initial={{
           opacity: 0,
           y: 20
@@ -581,21 +587,21 @@ const WhyChooseSection = () => {
           delay: index * 0.1,
           ease
         }}>
-              <BrandCard>
-                <CardContent className="p-6 text-center">
-                  <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4" style={{
+              <BrandCard className="h-full">
+                <CardContent className="p-4 sm:p-5 md:p-6 text-center">
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4" style={{
                 background: `hsl(${BRAND_TOKENS.primary} / 0.1)`
               }}>
-                    <feature.icon className="h-7 w-7" style={{
+                    <feature.icon className="h-6 w-6 sm:h-7 sm:w-7" style={{
                   color: `hsl(${BRAND_TOKENS.primary})`
                 }} />
                   </div>
-                  <h3 className="font-bold mb-2" style={{
+                  <h3 className="font-bold mb-2 text-sm sm:text-base" style={{
                 color: `hsl(${BRAND_TOKENS.foreground})`
               }}>
                     {feature.title}
                   </h3>
-                  <p className="text-sm" style={{
+                  <p className="text-xs sm:text-sm" style={{
                 color: `hsl(${BRAND_TOKENS.mutedForeground})`
               }}>
                     {feature.description}
@@ -605,7 +611,7 @@ const WhyChooseSection = () => {
             </motion.div>)}
         </div>
 
-        <div className="text-center">
+        <div className="flex justify-center">
           <CTAButton href={CONFIG.checkoutPremium} section="why-choose" plan="premium">
             QUERO MEUS BENEFÍCIOS AGORA!
           </CTAButton>
@@ -615,10 +621,10 @@ const WhyChooseSection = () => {
 };
 
 // Bonus Section
-const BonusSection = () => <section className="py-16 md:py-24 px-4" style={{
+const BonusSection = () => <section className="py-10 md:py-24 px-4 sm:px-6" style={{
   background: `linear-gradient(135deg, hsl(${BRAND_TOKENS.muted}), hsl(${BRAND_TOKENS.background}))`
 }}>
-    <div className="container max-w-5xl mx-auto">
+    <div className="container max-w-5xl mx-auto px-0">
       <motion.div initial={{
       opacity: 0,
       y: 20
@@ -630,26 +636,26 @@ const BonusSection = () => <section className="py-16 md:py-24 px-4" style={{
     }} transition={{
       duration: 0.6,
       ease
-    }} className="text-center mb-10">
-        <Badge className="mb-4 text-sm px-4 py-1 text-white" style={{
+    }} className="text-center mb-8 md:mb-10">
+        <Badge className="mb-4 text-xs sm:text-sm px-3 sm:px-4 py-1 text-white whitespace-normal" style={{
         background: `hsl(${BRAND_TOKENS.primary})`,
         borderRadius: BRAND_TOKENS.radius
       }}>
           🎁 BÔNUS EXCLUSIVOS - VALOR TOTAL {PRICES.totalBonus}
         </Badge>
-        <h2 className="text-3xl md:text-4xl font-bold mb-3" style={{
+        <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3" style={{
         color: `hsl(${BRAND_TOKENS.foreground})`
       }}>
           Receba 3 Guias Incríveis GRÁTIS
         </h2>
-        <p style={{
+        <p className="text-sm sm:text-base" style={{
         color: `hsl(${BRAND_TOKENS.mutedForeground})`
       }}>
           Materiais extras que vão colocar ainda mais dinheiro no seu bolso e proteger seu futuro.
         </p>
       </motion.div>
 
-      <div className="grid md:grid-cols-3 gap-6 mb-10">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-8 md:mb-10">
         {BONUS_DATA.map((bonus, index) => <motion.div key={bonus.title} initial={{
         opacity: 0,
         y: 20
@@ -663,25 +669,25 @@ const BonusSection = () => <section className="py-16 md:py-24 px-4" style={{
         delay: index * 0.1,
         ease
       }}>
-            <BrandCard className="overflow-hidden">
-              <div className="h-48 flex items-center justify-center" style={{
+            <BrandCard className="overflow-hidden h-full">
+              <div className="h-32 sm:h-40 md:h-48 flex items-center justify-center" style={{
             background: `linear-gradient(135deg, hsl(${BRAND_TOKENS.primary} / 0.2), hsl(${BRAND_TOKENS.primaryLight} / 0.3))`
           }}>
-                <span className="text-6xl">{bonus.icon}</span>
+                <span className="text-5xl sm:text-6xl">{bonus.icon}</span>
               </div>
-              <CardContent className="p-5 text-center">
-                <span className="text-2xl mb-2 block">{bonus.icon}</span>
-                <h3 className="font-bold text-lg mb-2" style={{
+              <CardContent className="p-4 sm:p-5 text-center">
+                <span className="text-xl sm:text-2xl mb-2 block">{bonus.icon}</span>
+                <h3 className="font-bold text-base sm:text-lg mb-2" style={{
               color: `hsl(${BRAND_TOKENS.foreground})`
             }}>
                   {bonus.title}
                 </h3>
-                <p className="text-sm mb-3" style={{
+                <p className="text-xs sm:text-sm mb-3" style={{
               color: `hsl(${BRAND_TOKENS.mutedForeground})`
             }}>
                   {bonus.description}
                 </p>
-                <p className="font-bold" style={{
+                <p className="font-bold text-sm sm:text-base" style={{
               color: `hsl(${BRAND_TOKENS.red})`
             }}>
                   VALOR: {bonus.value}
@@ -702,10 +708,10 @@ const BonusSection = () => <section className="py-16 md:py-24 px-4" style={{
     }} transition={{
       duration: 0.5,
       ease
-    }} className="text-center">
-        <BrandCard className="inline-block">
-          <CardContent className="p-6">
-            <p className="text-lg font-semibold" style={{
+    }} className="flex justify-center">
+        <BrandCard className="w-full max-w-xs sm:max-w-sm">
+          <CardContent className="p-4 sm:p-6 text-center">
+            <p className="text-base sm:text-lg font-semibold" style={{
             color: `hsl(${BRAND_TOKENS.foreground})`
           }}>
               Total em bônus:{" "}
@@ -715,7 +721,7 @@ const BonusSection = () => <section className="py-16 md:py-24 px-4" style={{
                 {PRICES.totalBonus}
               </span>
             </p>
-            <p className="text-2xl font-bold" style={{
+            <p className="text-xl sm:text-2xl font-bold" style={{
             color: `hsl(${BRAND_TOKENS.green})`
           }}>
               HOJE: GRÁTIS!
@@ -774,10 +780,10 @@ const PricingSection = () => {
     text: "Atualizações por 1 ano",
     included: true
   }];
-  return <section className="py-16 md:py-24 px-4" style={{
+  return <section className="py-10 md:py-24 px-4 sm:px-6" style={{
     background: `hsl(${BRAND_TOKENS.background})`
   }}>
-      <div className="container max-w-5xl mx-auto">
+      <div className="container max-w-5xl mx-auto px-0">
         <motion.div initial={{
         opacity: 0,
         y: 20
@@ -789,39 +795,39 @@ const PricingSection = () => {
       }} transition={{
         duration: 0.6,
         ease
-      }} className="text-center mb-10">
-          <h2 className="text-3xl md:text-4xl font-bold mb-6" style={{
+      }} className="text-center mb-8 md:mb-10">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 sm:mb-6" style={{
           color: `hsl(${BRAND_TOKENS.foreground})`
         }}>
             Escolha Seu Plano
           </h2>
           
           {/* Timer - Vermelho para urgência (psicologia das cores) */}
-          <div className="flex flex-col items-center px-8 py-4 md:px-12 md:py-5 w-full max-w-xl mx-auto" style={{
+          <div className="flex flex-col items-center px-4 sm:px-8 md:px-12 py-4 md:py-5 w-full max-w-xl mx-auto" style={{
           background: `hsl(${BRAND_TOKENS.red})`,
           borderRadius: BRAND_TOKENS.radiusLg,
           boxShadow: `0 10px 40px -15px hsl(${BRAND_TOKENS.red} / 0.4)`
         }} role="timer" aria-label="Tempo restante da oferta">
-            <p className="text-white/90 text-sm md:text-base font-medium mb-2">
+            <p className="text-white/90 text-xs sm:text-sm md:text-base font-medium mb-2 text-center">
               OFERTA LIMITADA - TERMINA EM:
             </p>
-            <div className="flex items-center gap-3 md:gap-4">
+            <div className="flex items-center gap-2 sm:gap-3 md:gap-4">
               {[{
               value: hours,
               label: "HORAS"
             }, {
               value: minutes,
-              label: "MINUTOS"
+              label: "MIN"
             }, {
               value: seconds,
-              label: "SEGUNDOS"
+              label: "SEG"
             }].map((unit, i) => <React.Fragment key={unit.label}>
-                  {i > 0 && <span className="text-2xl md:text-3xl font-bold text-white">:</span>}
+                  {i > 0 && <span className="text-xl sm:text-2xl md:text-3xl font-bold text-white">:</span>}
                   <div className="text-center">
-                    <span className="text-3xl md:text-4xl font-bold text-white block">
+                    <span className="text-2xl sm:text-3xl md:text-4xl font-bold text-white block">
                       {String(unit.value).padStart(2, "0")}
                     </span>
-                    <span className="text-[10px] md:text-xs text-white/80 font-medium">
+                    <span className="text-[9px] sm:text-[10px] md:text-xs text-white/80 font-medium">
                       {unit.label}
                     </span>
                   </div>
@@ -830,42 +836,42 @@ const PricingSection = () => {
           </div>
         </motion.div>
 
-        <div className="grid md:grid-cols-2 gap-8 items-center">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 items-stretch">
           {/* Basic Plan */}
           <motion.div initial={{
           opacity: 0,
-          x: -20
+          y: 20
         }} whileInView={{
           opacity: 1,
-          x: 0
+          y: 0
         }} viewport={{
           once: true
         }} transition={{
           duration: 0.5,
           ease
         }}>
-            <BrandCard>
-              <CardContent className="p-6 md:p-8">
-                <h3 className="text-2xl font-bold mb-2" style={{
+            <BrandCard className="h-full">
+              <CardContent className="p-4 sm:p-6 md:p-8">
+                <h3 className="text-xl sm:text-2xl font-bold mb-2" style={{
                 color: `hsl(${BRAND_TOKENS.foreground})`
               }}>
                   Plano Básico
                 </h3>
                 <PriceDisplay oldPrice={PRICES.basicoAntigo} currentPrice={PRICES.basicoAtual} />
-                <p className="text-sm mb-6" style={{
+                <p className="text-sm mb-4 sm:mb-6" style={{
                 color: `hsl(${BRAND_TOKENS.mutedForeground})`
               }}>
                   pagamento único
                 </p>
 
-                <ul className="space-y-3 mb-8">
+                <ul className="space-y-2 sm:space-y-3 mb-6 sm:mb-8">
                   {basicFeatures.map((feature, i) => <li key={i} className="flex items-start gap-2">
-                      {feature.included ? <Check className="h-5 w-5 flex-shrink-0" style={{
+                      {feature.included ? <Check className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 mt-0.5" style={{
                     color: `hsl(${BRAND_TOKENS.green})`
-                  }} /> : <X className="h-5 w-5 flex-shrink-0" style={{
+                  }} /> : <X className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 mt-0.5" style={{
                     color: `hsl(${BRAND_TOKENS.red})`
                   }} />}
-                      <span className={cn("text-sm")} style={{
+                      <span className={cn("text-xs sm:text-sm")} style={{
                     color: feature.included ? `hsl(${BRAND_TOKENS.foreground})` : `hsl(${BRAND_TOKENS.mutedForeground})`
                   }}>
                         {feature.text}
@@ -873,7 +879,7 @@ const PricingSection = () => {
                     </li>)}
                 </ul>
 
-                <CTAButton href={CONFIG.checkoutBasico} section="pricing" plan="basico" className="w-full">
+                <CTAButton href={CONFIG.checkoutBasico} section="pricing" plan="basico">
                   QUERO O BÁSICO
                 </CTAButton>
               </CardContent>
@@ -883,10 +889,10 @@ const PricingSection = () => {
           {/* Premium Plan */}
           <motion.div initial={{
           opacity: 0,
-          x: 20
+          y: 20
         }} whileInView={{
           opacity: 1,
-          x: 0
+          y: 0
         }} viewport={{
           once: true
         }} transition={{
@@ -894,39 +900,39 @@ const PricingSection = () => {
           delay: 0.1,
           ease
         }}>
-            <BrandCard highlightGreen className="relative scale-[1.02]">
-              <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 text-white px-4 py-1" style={{
+            <BrandCard highlightGreen className="relative h-full">
+              <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 text-white px-3 sm:px-4 py-1 text-xs sm:text-sm whitespace-nowrap" style={{
               background: `hsl(${BRAND_TOKENS.green})`,
               borderRadius: BRAND_TOKENS.radius
             }}>
                 MAIS POPULAR
               </Badge>
-              <CardContent className="p-6 md:p-8 pt-8">
+              <CardContent className="p-4 sm:p-6 md:p-8 pt-6 sm:pt-8">
                 <p style={{
                 color: `hsl(${BRAND_TOKENS.mutedForeground})`
-              }} className="text-xs mb-1 font-bold">
+              }} className="text-[10px] sm:text-xs mb-1 font-bold">
                   +1.253 pessoas escolheram essa oferta
                 </p>
-                <h3 className="text-2xl font-bold mb-2" style={{
+                <h3 className="text-xl sm:text-2xl font-bold mb-2" style={{
                 color: `hsl(${BRAND_TOKENS.foreground})`
               }}>
                   Plano Premium
                 </h3>
                 <PriceDisplay oldPrice={PRICES.premiumAntigo} currentPrice={PRICES.premiumAtual} />
-                <p className="text-sm mb-6" style={{
+                <p className="text-sm mb-4 sm:mb-6" style={{
                 color: `hsl(${BRAND_TOKENS.mutedForeground})`
               }}>
                   pagamento único
                 </p>
 
-                <ul className="space-y-3 mb-8">
+                <ul className="space-y-2 sm:space-y-3 mb-6 sm:mb-8">
                   {premiumFeatures.map((feature, i) => <li key={i} className="flex items-start gap-2">
-                      {feature.isBonus ? <Gift className="h-5 w-5 flex-shrink-0" style={{
+                      {feature.isBonus ? <Gift className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 mt-0.5" style={{
                     color: `hsl(${BRAND_TOKENS.primary})`
-                  }} /> : <Check className="h-5 w-5 flex-shrink-0" style={{
+                  }} /> : <Check className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 mt-0.5" style={{
                     color: `hsl(${BRAND_TOKENS.green})`
                   }} />}
-                      <span className={cn("text-sm", feature.isBonus && "font-medium")} style={{
+                      <span className={cn("text-xs sm:text-sm", feature.isBonus && "font-medium")} style={{
                     color: `hsl(${BRAND_TOKENS.foreground})`
                   }}>
                         {feature.text}
@@ -934,7 +940,7 @@ const PricingSection = () => {
                     </li>)}
                 </ul>
 
-                <CTAButton href={CONFIG.checkoutPremium} section="pricing" plan="premium" className="w-full">
+                <CTAButton href={CONFIG.checkoutPremium} section="pricing" plan="premium">
                   QUERO O PREMIUM!
                 </CTAButton>
               </CardContent>
@@ -946,10 +952,10 @@ const PricingSection = () => {
 };
 
 // Testimonials Section
-const TestimonialsSection = () => <section className="py-16 md:py-24 px-4" style={{
+const TestimonialsSection = () => <section className="py-10 md:py-24 px-4 sm:px-6" style={{
   background: `hsl(${BRAND_TOKENS.muted})`
 }}>
-    <div className="container max-w-5xl mx-auto">
+    <div className="container max-w-5xl mx-auto px-0">
       <motion.h2 initial={{
       opacity: 0,
       y: 20
@@ -961,13 +967,13 @@ const TestimonialsSection = () => <section className="py-16 md:py-24 px-4" style
     }} transition={{
       duration: 0.6,
       ease
-    }} className="text-3xl md:text-4xl font-bold text-center mb-12" style={{
+    }} className="text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-8 md:mb-12" style={{
       color: `hsl(${BRAND_TOKENS.foreground})`
     }}>
         O Que Dizem Nossos Leitores
       </motion.h2>
 
-      <div className="grid md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
         {TESTIMONIALS.map((testimonial, index) => <motion.div key={testimonial.name} initial={{
         opacity: 0,
         y: 20
@@ -981,24 +987,24 @@ const TestimonialsSection = () => <section className="py-16 md:py-24 px-4" style
         delay: index * 0.1,
         ease
       }}>
-            <BrandCard className="text-center">
-              <CardContent className="p-6">
-                <div className="w-16 h-16 rounded-full mx-auto mb-4 overflow-hidden" style={{
+            <BrandCard className="text-center h-full">
+              <CardContent className="p-4 sm:p-5 md:p-6">
+                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full mx-auto mb-3 sm:mb-4 overflow-hidden" style={{
               background: `linear-gradient(135deg, hsl(${BRAND_TOKENS.primary}), hsl(${BRAND_TOKENS.primaryLight}))`
             }}>
                   <img src={testimonial.avatar} alt={`Avatar de ${testimonial.name}`} className="w-full h-full object-cover" loading="lazy" />
                 </div>
-                <h3 className="font-bold" style={{
+                <h3 className="font-bold text-sm sm:text-base" style={{
               color: `hsl(${BRAND_TOKENS.foreground})`
             }}>
                   {testimonial.name}
                 </h3>
-                <p className="text-sm mb-4" style={{
+                <p className="text-xs sm:text-sm mb-3 sm:mb-4" style={{
               color: `hsl(${BRAND_TOKENS.mutedForeground})`
             }}>
                   {testimonial.role}
                 </p>
-                <p className="text-sm italic" style={{
+                <p className="text-xs sm:text-sm italic" style={{
               color: `hsl(${BRAND_TOKENS.mutedForeground})`
             }}>
                   {testimonial.quote}
@@ -1011,10 +1017,10 @@ const TestimonialsSection = () => <section className="py-16 md:py-24 px-4" style
   </section>;
 
 // About Author Section
-const AboutAuthorSection = () => <section className="py-16 md:py-24 px-4" style={{
+const AboutAuthorSection = () => <section className="py-10 md:py-24 px-4 sm:px-6" style={{
   background: `hsl(${BRAND_TOKENS.background})`
 }}>
-    <div className="container max-w-4xl mx-auto">
+    <div className="container max-w-4xl mx-auto px-0">
       <motion.h2 initial={{
       opacity: 0,
       y: 20
@@ -1026,7 +1032,7 @@ const AboutAuthorSection = () => <section className="py-16 md:py-24 px-4" style=
     }} transition={{
       duration: 0.6,
       ease
-    }} className="text-3xl md:text-4xl font-bold text-center mb-12" style={{
+    }} className="text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-8 md:mb-12" style={{
       color: `hsl(${BRAND_TOKENS.foreground})`
     }}>
         Sobre o Autor
@@ -1045,16 +1051,16 @@ const AboutAuthorSection = () => <section className="py-16 md:py-24 px-4" style=
       ease
     }}>
         <BrandCard highlight>
-          <CardContent className="p-6 md:p-10">
-            <div className="grid md:grid-cols-[auto_1fr] gap-8 items-center">
+          <CardContent className="p-4 sm:p-6 md:p-10">
+            <div className="grid grid-cols-1 md:grid-cols-[auto_1fr] gap-6 md:gap-8 items-center">
               <div className="text-center">
-                <div className="w-40 h-40 rounded-full mx-auto mb-4 overflow-hidden" style={{
+                <div className="w-28 h-28 sm:w-36 sm:h-36 md:w-40 md:h-40 rounded-full mx-auto mb-4 overflow-hidden" style={{
                 boxShadow: `0 0 0 4px hsl(${BRAND_TOKENS.primary})`,
                 background: `linear-gradient(135deg, hsl(${BRAND_TOKENS.muted}), hsl(${BRAND_TOKENS.border}))`
               }}>
                   <img alt="Matheus Dias" className="w-full h-full object-cover" loading="lazy" src="/lovable-uploads/eef30a09-d048-4db6-994f-c33c8dee49e8.png" />
                 </div>
-                <div className="space-y-2">
+                <div className="flex flex-row md:flex-col justify-center gap-4 md:gap-0 md:space-y-2">
                   {[{
                   value: "4+",
                   label: "Anos de Experiência"
@@ -1064,13 +1070,13 @@ const AboutAuthorSection = () => <section className="py-16 md:py-24 px-4" style=
                 }, {
                   value: "400+",
                   label: "Mil Seguidores"
-                }].map(stat => <div key={stat.label}>
-                      <p className="text-3xl font-bold" style={{
+                }].map(stat => <div key={stat.label} className="text-center">
+                      <p className="text-xl sm:text-2xl md:text-3xl font-bold" style={{
                     color: `hsl(${BRAND_TOKENS.primary})`
                   }}>
                         {stat.value}
                       </p>
-                      <p className="text-sm" style={{
+                      <p className="text-[10px] sm:text-xs md:text-sm" style={{
                     color: `hsl(${BRAND_TOKENS.mutedForeground})`
                   }}>
                         {stat.label}
@@ -1079,18 +1085,18 @@ const AboutAuthorSection = () => <section className="py-16 md:py-24 px-4" style=
                 </div>
               </div>
 
-              <div>
-                <h3 className="text-2xl font-bold mb-1" style={{
+              <div className="text-center md:text-left">
+                <h3 className="text-xl sm:text-2xl font-bold mb-1" style={{
                 color: `hsl(${BRAND_TOKENS.foreground})`
               }}>
                   Matheus Dias
                 </h3>
-                <p className="font-medium mb-4" style={{
+                <p className="font-medium mb-3 sm:mb-4 text-sm sm:text-base" style={{
                 color: `hsl(${BRAND_TOKENS.primary})`
               }}>
                   Especialista em Tecnologia e Oportunidades Digitais
                 </p>
-                <div className="space-y-3 text-sm leading-relaxed" style={{
+                <div className="space-y-2 sm:space-y-3 text-xs sm:text-sm leading-relaxed" style={{
                 color: `hsl(${BRAND_TOKENS.mutedForeground})`
               }}>
                   <p>
@@ -1135,10 +1141,10 @@ const AboutAuthorSection = () => <section className="py-16 md:py-24 px-4" style=
   </section>;
 
 // FAQ Section
-const FAQSection = () => <section className="py-16 md:py-24 px-4" style={{
+const FAQSection = () => <section className="py-10 md:py-24 px-4 sm:px-6" style={{
   background: `hsl(${BRAND_TOKENS.muted})`
 }}>
-    <div className="container max-w-3xl mx-auto">
+    <div className="container max-w-3xl mx-auto px-0">
       <motion.h2 initial={{
       opacity: 0,
       y: 20
@@ -1150,7 +1156,7 @@ const FAQSection = () => <section className="py-16 md:py-24 px-4" style={{
     }} transition={{
       duration: 0.6,
       ease
-    }} className="text-3xl md:text-4xl font-bold text-center mb-12" style={{
+    }} className="text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-8 md:mb-12" style={{
       color: `hsl(${BRAND_TOKENS.foreground})`
     }}>
         Perguntas Frequentes
@@ -1168,19 +1174,19 @@ const FAQSection = () => <section className="py-16 md:py-24 px-4" style={{
       duration: 0.6,
       ease
     }}>
-        <Accordion type="single" collapsible defaultValue="item-0" className="space-y-3">
-          {FAQ_DATA.map((faq, index) => <AccordionItem key={index} value={`item-${index}`} className="px-4" style={{
+        <Accordion type="single" collapsible defaultValue="item-0" className="space-y-2 sm:space-y-3">
+          {FAQ_DATA.map((faq, index) => <AccordionItem key={index} value={`item-${index}`} className="px-3 sm:px-4" style={{
           background: `hsl(${BRAND_TOKENS.card})`,
           borderRadius: BRAND_TOKENS.radius,
           border: `1px solid hsl(${BRAND_TOKENS.border})`,
           boxShadow: BRAND_TOKENS.shadow
         }}>
-              <AccordionTrigger className="text-left font-medium py-4 hover:no-underline" style={{
+              <AccordionTrigger className="text-left font-medium py-3 sm:py-4 hover:no-underline text-sm sm:text-base" style={{
             color: `hsl(${BRAND_TOKENS.foreground})`
           }}>
                 {faq.question}
               </AccordionTrigger>
-              <AccordionContent className="pb-4" style={{
+              <AccordionContent className="pb-3 sm:pb-4 text-xs sm:text-sm" style={{
             color: `hsl(${BRAND_TOKENS.mutedForeground})`
           }}>
                 {faq.answer}
@@ -1192,10 +1198,10 @@ const FAQSection = () => <section className="py-16 md:py-24 px-4" style={{
   </section>;
 
 // Guarantee Section
-const GuaranteeSection = () => <section className="py-16 md:py-24 px-4" style={{
+const GuaranteeSection = () => <section className="py-10 md:py-24 px-4 sm:px-6" style={{
   background: `hsl(${BRAND_TOKENS.background})`
 }}>
-    <div className="container max-w-4xl mx-auto">
+    <div className="container max-w-4xl mx-auto px-0">
       <motion.div initial={{
       opacity: 0,
       y: 20
@@ -1207,23 +1213,23 @@ const GuaranteeSection = () => <section className="py-16 md:py-24 px-4" style={{
     }} transition={{
       duration: 0.6,
       ease
-    }} className="flex flex-col md:flex-row items-center gap-8">
+    }} className="flex flex-col md:flex-row items-center gap-4 sm:gap-6 md:gap-8 text-center md:text-left">
         <div className="flex-shrink-0">
-          <div className="w-40 h-40 flex items-center justify-center">
-            <Shield className="w-32 h-32" style={{
+          <div className="w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 flex items-center justify-center">
+            <Shield className="w-20 h-20 sm:w-28 sm:h-28 md:w-32 md:h-32" style={{
             color: `hsl(${BRAND_TOKENS.orange})`
           }} />
           </div>
         </div>
         <div>
-          <h2 className="text-2xl md:text-3xl font-bold mb-4" style={{
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2 sm:mb-4" style={{
           color: `hsl(${BRAND_TOKENS.foreground})`
         }}>
             Garantia Incondicional de 7 Dias
           </h2>
           <p style={{
           color: `hsl(${BRAND_TOKENS.mutedForeground})`
-        }} className="leading-relaxed">
+        }} className="leading-relaxed text-sm sm:text-base">
             Teste o material por 7 dias. Se não ficar 100% satisfeito, devolvemos seu dinheiro! 
             Sem perguntas, sem complicações. Sua satisfação é nossa prioridade e o risco é todo nosso!
           </p>
@@ -1233,10 +1239,10 @@ const GuaranteeSection = () => <section className="py-16 md:py-24 px-4" style={{
   </section>;
 
 // Final CTA Section
-const FinalCTASection = () => <section className="py-16 md:py-24 px-4" style={{
+const FinalCTASection = () => <section className="py-10 md:py-24 px-4 sm:px-6 overflow-hidden" style={{
   background: `linear-gradient(135deg, hsl(${BRAND_TOKENS.primary}), hsl(${BRAND_TOKENS.primaryLight}))`
 }}>
-    <div className="container max-w-3xl mx-auto">
+    <div className="container max-w-3xl mx-auto px-0">
       <motion.div initial={{
       opacity: 0,
       scale: 0.95
@@ -1250,29 +1256,29 @@ const FinalCTASection = () => <section className="py-16 md:py-24 px-4" style={{
       ease
     }}>
         <BrandCard highlight>
-          <CardContent className="p-8 md:p-12 text-center">
-            <h2 className="text-2xl md:text-4xl font-bold mb-4" style={{
+          <CardContent className="p-5 sm:p-6 md:p-10 lg:p-12 text-center">
+            <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold mb-3 sm:mb-4" style={{
             color: `hsl(${BRAND_TOKENS.foreground})`
           }}>
               Não Perca Esta Oportunidade!
             </h2>
-            <p className="mb-6" style={{
+            <p className="mb-4 sm:mb-6 text-sm sm:text-base" style={{
             color: `hsl(${BRAND_TOKENS.mutedForeground})`
           }}>
               Pare de deixar dinheiro na mesa: são mais de 50 benefícios e direitos prontos para você acessar!
             </p>
 
-            <div className="flex flex-wrap justify-center gap-4 mb-8 text-sm">
-              <div className="flex items-center gap-2">
-                <Check className="h-4 w-4" style={{
+            <div className="flex flex-col sm:flex-row flex-wrap justify-center gap-2 sm:gap-4 mb-6 sm:mb-8 text-xs sm:text-sm">
+              <div className="flex items-center justify-center gap-2">
+                <Check className="h-4 w-4 flex-shrink-0" style={{
                 color: `hsl(${BRAND_TOKENS.green})`
               }} />
                 <span style={{
                 color: `hsl(${BRAND_TOKENS.foreground})`
               }}>Oferta limitada - acaba em breve!</span>
               </div>
-              <div className="flex items-center gap-2">
-                <Check className="h-4 w-4" style={{
+              <div className="flex items-center justify-center gap-2">
+                <Check className="h-4 w-4 flex-shrink-0" style={{
                 color: `hsl(${BRAND_TOKENS.green})`
               }} />
                 <span style={{
@@ -1281,11 +1287,13 @@ const FinalCTASection = () => <section className="py-16 md:py-24 px-4" style={{
               </div>
             </div>
 
-            <CTAButton href={CONFIG.checkoutPremium} section="final-cta" plan="premium" className="text-lg px-10 py-7">
-              QUERO GARANTIR MINHA OFERTA AGORA!
-            </CTAButton>
+            <div className="flex justify-center">
+              <CTAButton href={CONFIG.checkoutPremium} section="final-cta" plan="premium">
+                QUERO GARANTIR MINHA OFERTA AGORA!
+              </CTAButton>
+            </div>
 
-            <p className="text-xs mt-6" style={{
+            <p className="text-[10px] sm:text-xs mt-4 sm:mt-6" style={{
             color: `hsl(${BRAND_TOKENS.mutedForeground})`
           }}>
               Acesso imediato • Pagamento 100% seguro • Garantia de 7 dias
@@ -1297,12 +1305,15 @@ const FinalCTASection = () => <section className="py-16 md:py-24 px-4" style={{
   </section>;
 
 // Sticky Mobile CTA
-const StickyCTA = () => <div className="fixed bottom-0 left-0 right-0 p-3 backdrop-blur border-t z-40 md:hidden" style={{
+const StickyCTA = () => <div className="fixed bottom-0 left-0 right-0 p-3 backdrop-blur border-t z-40 md:hidden safe-area-inset" style={{
   background: `hsl(${BRAND_TOKENS.background} / 0.95)`,
   borderColor: `hsl(${BRAND_TOKENS.border})`,
-  boxShadow: BRAND_TOKENS.shadowLg
+  boxShadow: BRAND_TOKENS.shadowLg,
+  paddingBottom: 'max(12px, env(safe-area-inset-bottom))',
+  paddingLeft: 'max(12px, env(safe-area-inset-left))',
+  paddingRight: 'max(12px, env(safe-area-inset-right))'
 }}>
-    <CTAButton href={CONFIG.checkoutPremium} section="sticky" plan="premium" className="w-full" size="default">
+    <CTAButton href={CONFIG.checkoutPremium} section="sticky" plan="premium" size="default">
       QUERO AGORA!
     </CTAButton>
   </div>;
