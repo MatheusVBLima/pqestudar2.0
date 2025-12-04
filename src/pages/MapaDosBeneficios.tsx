@@ -1325,7 +1325,7 @@ const StickyCTA = () => <div className="fixed bottom-0 left-0 right-0 p-3 backdr
 const MapaDosBeneficios = () => {
   return <BrandThemeWrapper>
       <Helmet>
-        <title>Mapa dos Benefícios Ocultos | +50 Direitos Secretos do Governo</title>
+        <title>Oferta Especial: O Mapa dos Benefícios Ocultos</title>
         <meta name="description" content="Descubra mais de 50 benefícios, auxílios e direitos que você pode ter acesso agora. Guia completo com passo a passo para cada programa do governo." />
         <meta name="robots" content="index, follow" />
       </Helmet>
