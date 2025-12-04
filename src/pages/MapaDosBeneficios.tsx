@@ -455,31 +455,31 @@ const WhatYouReceiveSection = () => <section className="py-10 md:py-24 px-4 sm:p
       }}>
           <BrandCard className="h-full">
             <CardContent className="p-4 sm:p-5 md:p-6">
-              <div className="flex flex-col sm:flex-row items-start gap-3 sm:gap-4">
-                <div className="flex-shrink-0 w-11 h-11 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center" style={{
-                background: `hsl(${BRAND_TOKENS.primary} / 0.1)`
-              }}>
-                  <FileText className="h-5 w-5 sm:h-6 sm:w-6" style={{
-                  color: `hsl(${BRAND_TOKENS.primary})`
-                }} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-bold text-base sm:text-lg mb-2 sm:mb-3" style={{
-                  color: `hsl(${BRAND_TOKENS.foreground})`
+              <div className="flex flex-col gap-3 sm:gap-4">
+                <div className="flex justify-center">
+                  <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center" style={{
+                  background: `hsl(${BRAND_TOKENS.primary} / 0.1)`
                 }}>
-                    Material Completo em PDF
-                  </h3>
-                  <ul className="space-y-2">
-                    {["Mais de 50 benefícios, programas e auxílios compilados", "Link direto e instruções claras para cada benefício", "Acesso digital pelo celular, tablet ou computador", "Pronto para imprimir e consultar quando quiser"].map((item, i) => <li key={i} className="flex items-start gap-2 text-sm" style={{
-                    color: `hsl(${BRAND_TOKENS.mutedForeground})`
-                  }}>
-                        <CheckCircle className="h-4 w-4 flex-shrink-0 mt-0.5" style={{
-                      color: `hsl(${BRAND_TOKENS.green})`
-                    }} />
-                        <span className="break-words">{item}</span>
-                      </li>)}
-                  </ul>
+                    <FileText className="h-5 w-5 sm:h-6 sm:w-6" style={{
+                    color: `hsl(${BRAND_TOKENS.primary})`
+                  }} />
+                  </div>
                 </div>
+                <h3 className="font-bold text-base sm:text-lg text-center" style={{
+                color: `hsl(${BRAND_TOKENS.foreground})`
+              }}>
+                  Material Completo em PDF
+                </h3>
+                <ul className="space-y-2">
+                  {["Mais de 50 benefícios, programas e auxílios compilados", "Link direto e instruções claras para cada benefício", "Acesso digital pelo celular, tablet ou computador", "Pronto para imprimir e consultar quando quiser"].map((item, i) => <li key={i} className="flex items-start gap-2 text-sm" style={{
+                  color: `hsl(${BRAND_TOKENS.mutedForeground})`
+                }}>
+                      <CheckCircle className="h-4 w-4 flex-shrink-0 mt-0.5" style={{
+                    color: `hsl(${BRAND_TOKENS.green})`
+                  }} />
+                      <span className="break-words">{item}</span>
+                    </li>)}
+                </ul>
               </div>
             </CardContent>
           </BrandCard>
@@ -500,31 +500,31 @@ const WhatYouReceiveSection = () => <section className="py-10 md:py-24 px-4 sm:p
       }}>
           <BrandCard className="h-full">
             <CardContent className="p-4 sm:p-5 md:p-6">
-              <div className="flex flex-col sm:flex-row items-start gap-3 sm:gap-4">
-                <div className="flex-shrink-0 w-11 h-11 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center" style={{
-                background: `hsl(${BRAND_TOKENS.primary} / 0.1)`
-              }}>
-                  <Users className="h-5 w-5 sm:h-6 sm:w-6" style={{
-                  color: `hsl(${BRAND_TOKENS.primary})`
-                }} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-bold text-base sm:text-lg mb-2 sm:mb-3" style={{
-                  color: `hsl(${BRAND_TOKENS.foreground})`
+              <div className="flex flex-col gap-3 sm:gap-4">
+                <div className="flex justify-center">
+                  <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center" style={{
+                  background: `hsl(${BRAND_TOKENS.primary} / 0.1)`
                 }}>
-                    Para Qualquer Cidadão
-                  </h3>
-                  <ul className="space-y-2">
-                    {["Benefícios para jovens, adultos e idosos.", "Sem 'juridiquês' ou termos técnicos.", "Ideal para trabalhadores, estudantes, autônomos e aposentados.", "Economize tempo e dinheiro com informações que valem ouro."].map((item, i) => <li key={i} className="flex items-start gap-2 text-sm" style={{
-                    color: `hsl(${BRAND_TOKENS.mutedForeground})`
-                  }}>
-                        <CheckCircle className="h-4 w-4 flex-shrink-0 mt-0.5" style={{
-                      color: `hsl(${BRAND_TOKENS.green})`
-                    }} />
-                        <span className="break-words">{item}</span>
-                      </li>)}
-                  </ul>
+                    <Users className="h-5 w-5 sm:h-6 sm:w-6" style={{
+                    color: `hsl(${BRAND_TOKENS.primary})`
+                  }} />
+                  </div>
                 </div>
+                <h3 className="font-bold text-base sm:text-lg text-center" style={{
+                color: `hsl(${BRAND_TOKENS.foreground})`
+              }}>
+                  Para Qualquer Cidadão
+                </h3>
+                <ul className="space-y-2">
+                  {["Benefícios para jovens, adultos e idosos.", "Sem 'juridiquês' ou termos técnicos.", "Ideal para trabalhadores, estudantes, autônomos e aposentados.", "Economize tempo e dinheiro com informações que valem ouro."].map((item, i) => <li key={i} className="flex items-start gap-2 text-sm" style={{
+                  color: `hsl(${BRAND_TOKENS.mutedForeground})`
+                }}>
+                      <CheckCircle className="h-4 w-4 flex-shrink-0 mt-0.5" style={{
+                    color: `hsl(${BRAND_TOKENS.green})`
+                  }} />
+                      <span className="break-words">{item}</span>
+                    </li>)}
+                </ul>
               </div>
             </CardContent>
           </BrandCard>
