@@ -1303,7 +1303,7 @@ const GuaranteeFinalSection = () => <section className="py-12 md:py-20 px-4 sm:p
                   color: `hsl(${BRAND_TOKENS.green})`
                 }} aria-hidden="true" />
                 <span style={{
-                  color: `hsl(${BRAND_TOKENS.foreground})`
+                  color: `hsl(${BRAND_TOKENS.green})`
                 }}>Garantia incondicional de 7 dias</span>
               </li>
             </ul>
