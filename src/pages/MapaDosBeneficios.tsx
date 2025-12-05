@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Helmet } from "react-helmet";
 import { motion } from "framer-motion";
-import { Flame, CheckCircle, X, FileText, Users, Award, RefreshCw, Heart, Gift, Check, Shield, ChevronDown } from "lucide-react";
+import { Flame, CheckCircle, X, FileText, Users, Award, RefreshCw, Heart, Gift, Check, Shield, ChevronDown, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -1289,24 +1289,24 @@ const GuaranteeFinalSection = () => <section className="py-12 md:py-20 px-4 sm:p
               Pare de deixar dinheiro na mesa: são mais de 50 benefícios e direitos prontos para você acessar!
             </p>
 
-            <div className="flex flex-col sm:flex-row flex-wrap justify-center gap-2 sm:gap-4 mb-6 sm:mb-8 text-xs sm:text-sm">
-              <div className="flex items-center justify-center gap-2">
-                <Check className="h-4 w-4 flex-shrink-0" style={{
-                  color: `hsl(${BRAND_TOKENS.green})`
-                }} />
+            <ul role="list" className="flex flex-col sm:flex-row flex-wrap justify-center gap-3 sm:gap-6 mb-6 sm:mb-8 text-xs sm:text-sm">
+              <li className="flex items-center justify-center gap-2" aria-label="Oferta limitada">
+                <Clock className="h-[18px] w-[18px] flex-shrink-0" style={{
+                  color: `hsl(${BRAND_TOKENS.red})`
+                }} aria-hidden="true" />
                 <span style={{
                   color: `hsl(${BRAND_TOKENS.foreground})`
                 }}>Oferta limitada - acaba em breve!</span>
-              </div>
-              <div className="flex items-center justify-center gap-2">
-                <Check className="h-4 w-4 flex-shrink-0" style={{
+              </li>
+              <li className="flex items-center justify-center gap-2" aria-label="Garantia de 7 dias">
+                <CheckCircle className="h-[18px] w-[18px] flex-shrink-0" style={{
                   color: `hsl(${BRAND_TOKENS.green})`
-                }} />
+                }} aria-hidden="true" />
                 <span style={{
                   color: `hsl(${BRAND_TOKENS.foreground})`
                 }}>Garantia incondicional de 7 dias</span>
-              </div>
-            </div>
+              </li>
+            </ul>
 
             <div className="flex justify-center">
               <CTAButton 
