@@ -1219,110 +1219,114 @@ const FAQSection = () => <section className="py-10 md:py-24 px-4 sm:px-6" style=
     </div>
   </section>;
 
-// Guarantee Section
-const GuaranteeSection = () => <section className="py-10 md:py-24 px-4 sm:px-6" style={{
+// Combined Guarantee + Final CTA Section
+const GuaranteeFinalSection = () => <section className="py-12 md:py-20 px-4 sm:px-6 overflow-x-hidden" style={{
   background: `hsl(${BRAND_TOKENS.background})`
 }}>
-    <div className="container max-w-4xl mx-auto px-0">
-      <motion.div initial={{
-      opacity: 0,
-      y: 20
-    }} whileInView={{
-      opacity: 1,
-      y: 0
-    }} viewport={{
-      once: true
-    }} transition={{
-      duration: 0.6,
-      ease
-    }} className="flex flex-col md:flex-row items-center gap-4 sm:gap-6 md:gap-8 text-center md:text-left">
-        <div className="flex-shrink-0">
-          <img 
-            src={garantiaImage} 
-            alt="Garantia incondicional de 7 dias" 
-            className="w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 object-contain"
-          />
-        </div>
-        <div>
-          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2 sm:mb-4" style={{
-          color: `hsl(${BRAND_TOKENS.foreground})`
-        }}>
-            Garantia Incondicional de 7 Dias
-          </h2>
-          <p style={{
-          color: `hsl(${BRAND_TOKENS.mutedForeground})`
-        }} className="leading-relaxed text-sm sm:text-base">
-            Teste o material por 7 dias. Se não ficar 100% satisfeito, devolvemos seu dinheiro! 
-            Sem perguntas, sem complicações. Sua satisfação é nossa prioridade e o risco é todo nosso!
-          </p>
-        </div>
-      </motion.div>
-    </div>
-  </section>;
+    <div className="container max-w-6xl mx-auto">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">
+        {/* Left Column - Guarantee */}
+        <motion.div initial={{
+          opacity: 0,
+          y: 20
+        }} whileInView={{
+          opacity: 1,
+          y: 0
+        }} viewport={{
+          once: true
+        }} transition={{
+          duration: 0.6,
+          ease
+        }} className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 text-center sm:text-left">
+          <div className="flex-shrink-0">
+            <img 
+              src={garantiaImage} 
+              alt="Selo de garantia incondicional de 7 dias - devolução total do dinheiro" 
+              className="w-28 h-28 sm:w-36 sm:h-36 lg:w-40 lg:h-40 object-contain"
+            />
+          </div>
+          <div>
+            <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-3 sm:mb-4" style={{
+              color: `hsl(${BRAND_TOKENS.foreground})`
+            }}>
+              Garantia Incondicional de 7 Dias
+            </h2>
+            <p style={{
+              color: `hsl(${BRAND_TOKENS.mutedForeground})`
+            }} className="leading-relaxed text-sm sm:text-base">
+              Teste o material por 7 dias. Se não ficar 100% satisfeito, devolvemos seu dinheiro! 
+              Sem perguntas, sem complicações. Sua satisfação é nossa prioridade e o risco é todo nosso!
+            </p>
+          </div>
+        </motion.div>
 
-// Final CTA Section
-const FinalCTASection = () => <section className="py-10 md:py-24 px-4 sm:px-6 overflow-hidden" style={{
-  background: `linear-gradient(135deg, hsl(${BRAND_TOKENS.primary}), hsl(${BRAND_TOKENS.primaryLight}))`
-}}>
-    <div className="container max-w-3xl mx-auto px-0">
-      <motion.div initial={{
-      opacity: 0,
-      scale: 0.95
-    }} whileInView={{
-      opacity: 1,
-      scale: 1
-    }} viewport={{
-      once: true
-    }} transition={{
-      duration: 0.6,
-      ease
-    }}>
-        <BrandCard highlight>
-          <CardContent className="p-5 sm:p-6 md:p-10 lg:p-12 text-center">
-            <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold mb-3 sm:mb-4" style={{
-            color: `hsl(${BRAND_TOKENS.foreground})`
+        {/* Right Column - Não Perca */}
+        <motion.div initial={{
+          opacity: 0,
+          y: 20
+        }} whileInView={{
+          opacity: 1,
+          y: 0
+        }} viewport={{
+          once: true
+        }} transition={{
+          duration: 0.6,
+          delay: 0.1,
+          ease
+        }}>
+          <div className="rounded-2xl p-6 sm:p-8 lg:p-10 text-center" style={{
+            background: `hsl(${BRAND_TOKENS.card})`,
+            boxShadow: BRAND_TOKENS.shadow
           }}>
+            <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-3 sm:mb-4" style={{
+              color: `hsl(${BRAND_TOKENS.foreground})`
+            }}>
               Não Perca Esta Oportunidade!
             </h2>
             <p className="mb-4 sm:mb-6 text-sm sm:text-base" style={{
-            color: `hsl(${BRAND_TOKENS.mutedForeground})`
-          }}>
+              color: `hsl(${BRAND_TOKENS.mutedForeground})`
+            }}>
               Pare de deixar dinheiro na mesa: são mais de 50 benefícios e direitos prontos para você acessar!
             </p>
 
             <div className="flex flex-col sm:flex-row flex-wrap justify-center gap-2 sm:gap-4 mb-6 sm:mb-8 text-xs sm:text-sm">
               <div className="flex items-center justify-center gap-2">
                 <Check className="h-4 w-4 flex-shrink-0" style={{
-                color: `hsl(${BRAND_TOKENS.green})`
-              }} />
+                  color: `hsl(${BRAND_TOKENS.green})`
+                }} />
                 <span style={{
-                color: `hsl(${BRAND_TOKENS.foreground})`
-              }}>Oferta limitada - acaba em breve!</span>
+                  color: `hsl(${BRAND_TOKENS.foreground})`
+                }}>Oferta limitada - acaba em breve!</span>
               </div>
               <div className="flex items-center justify-center gap-2">
                 <Check className="h-4 w-4 flex-shrink-0" style={{
-                color: `hsl(${BRAND_TOKENS.green})`
-              }} />
+                  color: `hsl(${BRAND_TOKENS.green})`
+                }} />
                 <span style={{
-                color: `hsl(${BRAND_TOKENS.foreground})`
-              }}>Garantia incondicional de 7 dias</span>
+                  color: `hsl(${BRAND_TOKENS.foreground})`
+                }}>Garantia incondicional de 7 dias</span>
               </div>
             </div>
 
             <div className="flex justify-center">
-              <CTAButton href={CONFIG.checkoutPremium} section="final-cta" plan="premium">
+              <CTAButton 
+                href={CONFIG.checkoutPremium} 
+                section="final-cta" 
+                plan="premium"
+                aria-label="Garantir minha oferta agora com acesso imediato"
+              >
                 QUERO GARANTIR MINHA OFERTA AGORA!
               </CTAButton>
             </div>
 
             <p className="text-[10px] sm:text-xs mt-4 sm:mt-6" style={{
-            color: `hsl(${BRAND_TOKENS.mutedForeground})`
-          }}>
+              color: `hsl(${BRAND_TOKENS.mutedForeground})`
+            }}>
               Acesso imediato • Pagamento 100% seguro • Garantia de 7 dias
             </p>
-          </CardContent>
-        </BrandCard>
-      </motion.div>
+          </div>
+        </motion.div>
+      </div>
     </div>
   </section>;
 
@@ -1361,8 +1365,7 @@ const MapaDosBeneficios = () => {
       <TestimonialsSection />
       <AboutAuthorSection />
       <FAQSection />
-      <GuaranteeSection />
-      <FinalCTASection />
+      <GuaranteeFinalSection />
       {CONFIG.showStickyCta && <StickyCTA />}
     </BrandThemeWrapper>;
 };
