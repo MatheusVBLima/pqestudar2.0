@@ -1295,7 +1295,7 @@ const GuaranteeFinalSection = () => <section className="py-12 md:py-20 px-4 sm:p
                   color: `hsl(${BRAND_TOKENS.red})`
                 }} aria-hidden="true" />
                 <span style={{
-                  color: `hsl(${BRAND_TOKENS.foreground})`
+                  color: `hsl(${BRAND_TOKENS.red})`
                 }}>Oferta limitada - acaba em breve!</span>
               </li>
               <li className="flex items-center justify-center gap-2" aria-label="Garantia de 7 dias">
