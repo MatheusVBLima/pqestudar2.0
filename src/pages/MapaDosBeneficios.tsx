@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { cn } from "@/lib/utils";
+import garantiaImage from "@/assets/garantia-7-dias.png";
 
 // ============================================
 // BRAND_TOKENS - AJUSTE FÁCIL DE CORES E FONTES
@@ -1236,11 +1237,11 @@ const GuaranteeSection = () => <section className="py-10 md:py-24 px-4 sm:px-6" 
       ease
     }} className="flex flex-col md:flex-row items-center gap-4 sm:gap-6 md:gap-8 text-center md:text-left">
         <div className="flex-shrink-0">
-          <div className="w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 flex items-center justify-center">
-            <Shield className="w-20 h-20 sm:w-28 sm:h-28 md:w-32 md:h-32" style={{
-            color: `hsl(${BRAND_TOKENS.orange})`
-          }} />
-          </div>
+          <img 
+            src={garantiaImage} 
+            alt="Garantia incondicional de 7 dias" 
+            className="w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 object-contain"
+          />
         </div>
         <div>
           <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2 sm:mb-4" style={{
