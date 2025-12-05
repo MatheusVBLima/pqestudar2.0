@@ -858,8 +858,8 @@ const PricingSection = () => {
           </div>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 items-stretch">
-          {/* Basic Plan */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10 items-center lg:items-center">
+          {/* Basic Plan - Smaller on desktop, centered vertically */}
           <motion.div initial={{
           opacity: 0,
           y: 20
@@ -871,9 +871,9 @@ const PricingSection = () => {
         }} transition={{
           duration: 0.5,
           ease
-        }}>
+        }} className="w-full lg:self-center lg:max-w-[480px] lg:mx-auto lg:scale-[0.95] origin-center">
             <BrandCard className="h-full">
-              <CardContent className="p-4 sm:p-6 md:p-8">
+              <CardContent className="p-4 sm:p-6 lg:p-6">
                 <h3 className="text-xl sm:text-2xl font-bold mb-2" style={{
                 color: `hsl(${BRAND_TOKENS.foreground})`
               }}>
@@ -908,7 +908,7 @@ const PricingSection = () => {
             </BrandCard>
           </motion.div>
 
-          {/* Premium Plan */}
+          {/* Premium Plan - Larger on desktop with emphasis */}
           <motion.div initial={{
           opacity: 0,
           y: 20
@@ -921,7 +921,7 @@ const PricingSection = () => {
           duration: 0.5,
           delay: 0.1,
           ease
-        }}>
+        }} className="w-full lg:max-w-[560px] lg:mx-auto lg:scale-[1.02] origin-center">
             <BrandCard highlightGreen className="relative h-full">
               <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 text-white px-3 sm:px-4 py-1 text-xs sm:text-sm whitespace-nowrap" style={{
               background: `hsl(${BRAND_TOKENS.green})`,
@@ -929,13 +929,13 @@ const PricingSection = () => {
             }}>
                 MAIS POPULAR
               </Badge>
-              <CardContent className="p-4 sm:p-6 md:p-8 pt-6 sm:pt-8">
+              <CardContent className="p-4 sm:p-6 lg:p-8 pt-6 sm:pt-8">
                 <p style={{
                 color: `hsl(${BRAND_TOKENS.mutedForeground})`
               }} className="text-[10px] sm:text-xs mb-1 font-bold">
                   +1.253 pessoas escolheram essa oferta
                 </p>
-                <h3 className="text-xl sm:text-2xl font-bold mb-2" style={{
+                <h3 className="text-xl sm:text-2xl lg:text-[1.7rem] font-bold mb-2" style={{
                 color: `hsl(${BRAND_TOKENS.foreground})`
               }}>
                   Plano Premium
