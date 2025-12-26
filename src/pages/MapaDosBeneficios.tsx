@@ -741,13 +741,13 @@ const BonusSection = () => <section className="py-10 md:py-24 px-4 sm:px-6" styl
         delay: index * 0.1,
         ease
       }}>
-            <BrandCard className="overflow-hidden h-full">
-              <div className="h-32 sm:h-40 md:h-48 flex items-center justify-center" style={{
+            <BrandCard className="overflow-hidden h-full flex flex-col">
+              <div className="h-32 sm:h-40 md:h-48 flex items-center justify-center flex-shrink-0" style={{
             background: `linear-gradient(135deg, hsl(${BRAND_TOKENS.primary} / 0.2), hsl(${BRAND_TOKENS.primaryLight} / 0.3))`
           }}>
                 <span className="text-5xl sm:text-6xl">{bonus.icon}</span>
               </div>
-              <CardContent className="p-4 sm:p-5 text-center">
+              <CardContent className="p-4 sm:p-5 text-center flex flex-col flex-1">
                 <span className="text-xl sm:text-2xl mb-2 block">{bonus.icon}</span>
                 <h3 className="font-bold text-base sm:text-lg mb-2" style={{
               color: `hsl(${BRAND_TOKENS.foreground})`
@@ -759,11 +759,13 @@ const BonusSection = () => <section className="py-10 md:py-24 px-4 sm:px-6" styl
             }}>
                   {bonus.description}
                 </p>
-                <p className="font-bold text-sm sm:text-base" style={{
-              color: `hsl(${BRAND_TOKENS.red})`
-            }}>
-                  VALOR: {bonus.value}
-                </p>
+                <div className="mt-auto pt-2">
+                  <p className="font-bold text-sm sm:text-base" style={{
+                color: `hsl(${BRAND_TOKENS.red})`
+              }}>
+                    VALOR: {bonus.value}
+                  </p>
+                </div>
               </CardContent>
             </BrandCard>
           </motion.div>)}
