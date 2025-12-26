@@ -490,15 +490,11 @@ const HeroSection = () => <section className="relative py-10 md:py-20 px-4 sm:px
     </div>
   </section>;
 
-// Container tokens for consistent alignment
-const CONTAINER_MAX_W = "max-w-5xl";
-const CONTAINER_PX = "px-4 sm:px-6 lg:px-8";
-
 // What You'll Receive Section
-const WhatYouReceiveSection = () => <section className="py-10 md:py-24 overflow-x-hidden" style={{
+const WhatYouReceiveSection = () => <section className="py-10 md:py-24 px-4 sm:px-6" style={{
   background: `hsl(${BRAND_TOKENS.background})`
 }}>
-    <div className={`${CONTAINER_MAX_W} ${CONTAINER_PX} mx-auto w-full`}>
+    <div className="container max-w-5xl mx-auto px-0">
       <motion.h2 initial={{
       opacity: 0,
       y: 20
