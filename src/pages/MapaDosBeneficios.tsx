@@ -75,7 +75,7 @@ const CONFIG = {
   videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
   videoPoster: "/placeholder.svg",
   timerEndDate: new Date(new Date().setHours(23, 59, 59, 999)),
-  showStickyCta: true
+  showStickyCta: false
 };
 const PRICES = {
   basicoAntigo: "R$ 47",
