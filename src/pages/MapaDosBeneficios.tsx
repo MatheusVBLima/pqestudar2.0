@@ -341,7 +341,10 @@ const VSL_CONFIG = {
   // Header texts
   headerTitle: "🎁 Você Ganhou um Presente! 🎁",
   headerSub: "⭐ Assista ao vídeo abaixo: ⭐",
-  viewersText: "2 pessoas estão assistindo esse vídeo"
+  viewersText: "2 pessoas estão assistindo esse vídeo",
+  // Card styling
+  cardRadius: "rounded-3xl",
+  cardShadow: "shadow-xl"
 };
 
 // Hero Section
@@ -412,62 +415,56 @@ const HeroSection = () => <section className="relative py-10 md:py-20 px-4 sm:px
       }}>para qualquer cidadão, sem complicação</strong>.
       </motion.p>
 
-      {/* VSL Vertical 9:16 */}
-      <motion.div initial={{
-      opacity: 0,
-      scale: 0.95
-    }} animate={{
-      opacity: 1,
-      scale: 1
-    }} transition={{
-      duration: 0.6,
-      delay: 0.3,
-      ease
-    }} className="flex flex-col items-center mb-6">
-        {/* Video wrapper - 9:16 aspect ratio */}
-        <div 
-          className="w-full sm:w-auto"
-          style={{
-            maxWidth: `${VSL_CONFIG.maxWidthDesktop}px`
-          }}
-        >
+      {/* VSL Card Container */}
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.6, delay: 0.3, ease }}
+        className={`w-full max-w-[640px] mx-auto p-5 lg:p-8 ${VSL_CONFIG.cardRadius} ${VSL_CONFIG.cardShadow} border border-neutral-200/60 overflow-hidden`}
+        style={{ background: '#fff' }}
+      >
+        <div className="flex flex-col items-center space-y-4 lg:space-y-6">
           {/* Header above video */}
-          <h5 className="text-lg md:text-xl font-semibold mb-2 md:mb-3 text-center" style={{
-            color: `hsl(${BRAND_TOKENS.foreground})`
-          }}>
-            {VSL_CONFIG.headerTitle}
-          </h5>
-          <p className="text-sm md:text-base mb-4 text-center" style={{
-            color: `hsl(${BRAND_TOKENS.mutedForeground})`
-          }}>
-            {VSL_CONFIG.headerSub}
-          </p>
+          <div className="text-center">
+            <h5 className="text-lg md:text-xl font-semibold mb-2" style={{
+              color: `hsl(${BRAND_TOKENS.foreground})`
+            }}>
+              {VSL_CONFIG.headerTitle}
+            </h5>
+            <p className="text-sm md:text-base" style={{
+              color: `hsl(${BRAND_TOKENS.mutedForeground})`
+            }}>
+              {VSL_CONFIG.headerSub}
+            </p>
+          </div>
 
-          {/* Player */}
-          <div 
-            className="relative w-full overflow-hidden"
-            style={{
-              aspectRatio: '9 / 16',
-              borderRadius: BRAND_TOKENS.radiusLg,
-              boxShadow: BRAND_TOKENS.shadowLg,
-              background: '#000'
-            }}
-          >
-            <iframe 
-              src={VSL_CONFIG.iframeUrl}
-              title={VSL_CONFIG.title}
-              aria-label={VSL_CONFIG.subtitle}
-              className="absolute inset-0 w-full h-full"
-              allow="autoplay; encrypted-media; picture-in-picture"
-              allowFullScreen
-              loading="lazy"
-              referrerPolicy="strict-origin-when-cross-origin"
-            />
+          {/* Player 9:16 */}
+          <div className="w-full" style={{ maxWidth: `${VSL_CONFIG.maxWidthDesktop}px` }}>
+            <div 
+              className="relative w-full overflow-hidden"
+              style={{
+                aspectRatio: '9 / 16',
+                borderRadius: BRAND_TOKENS.radiusLg,
+                boxShadow: BRAND_TOKENS.shadow,
+                background: '#000'
+              }}
+            >
+              <iframe 
+                src={VSL_CONFIG.iframeUrl}
+                title={VSL_CONFIG.title}
+                aria-label={VSL_CONFIG.subtitle}
+                className="absolute inset-0 w-full h-full"
+                allow="autoplay; encrypted-media; picture-in-picture"
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="strict-origin-when-cross-origin"
+              />
+            </div>
           </div>
 
           {/* Viewers status below video */}
           <div 
-            className="flex items-center justify-center gap-2 mt-3 mb-4"
+            className="flex items-center justify-center gap-2"
             aria-label="2 pessoas assistindo agora"
           >
             <span 
@@ -481,20 +478,14 @@ const HeroSection = () => <section className="relative py-10 md:py-20 px-4 sm:px
               {VSL_CONFIG.viewersText}
             </span>
           </div>
-        </div>
 
-        {/* CTA aligned with video width */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.4, ease }}
-          className="w-full mt-6"
-          style={{ maxWidth: `${VSL_CONFIG.maxWidthDesktop}px` }}
-        >
-          <CTAButton href={VSL_CONFIG.ctaLink} section="hero" plan="premium">
-            {VSL_CONFIG.ctaLabel}
-          </CTAButton>
-        </motion.div>
+          {/* CTA full width inside card */}
+          <div className="w-full" style={{ maxWidth: `${VSL_CONFIG.maxWidthDesktop}px` }}>
+            <CTAButton href={VSL_CONFIG.ctaLink} section="hero" plan="premium">
+              {VSL_CONFIG.ctaLabel}
+            </CTAButton>
+          </div>
+        </div>
       </motion.div>
     </div>
   </section>;
