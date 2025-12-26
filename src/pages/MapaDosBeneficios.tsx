@@ -415,12 +415,12 @@ const HeroSection = () => <section className="relative py-10 md:py-20 px-4 sm:px
       }}>para qualquer cidadão, sem complicação</strong>.
       </motion.p>
 
-      {/* VSL Card Container */}
+      {/* VSL Card Container - alinhado com os cards abaixo (max-w-5xl) */}
       <motion.div 
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.6, delay: 0.3, ease }}
-        className={`w-full max-w-[640px] mx-auto p-5 lg:p-8 ${VSL_CONFIG.cardRadius} ${VSL_CONFIG.cardShadow} border border-neutral-200/60 overflow-hidden`}
+        className={`w-full mx-auto p-5 lg:p-8 ${VSL_CONFIG.cardRadius} ${VSL_CONFIG.cardShadow} border border-neutral-200/60 overflow-hidden`}
         style={{ background: '#fff' }}
       >
         <div className="flex flex-col items-center space-y-4 lg:space-y-6">
