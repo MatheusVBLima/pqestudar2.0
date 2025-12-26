@@ -85,20 +85,20 @@ const PRICES = {
   totalBonus: "R$ 111"
 };
 const BONUS_DATA = [{
-  title: "Guia de Renegociação de Dívidas",
-  description: "Scripts e estratégias para negociar suas dívidas com bancos e financeiras, conseguindo até 90% de desconto.",
-  value: "R$ 37",
-  icon: "📋"
-}, {
-  title: "Kit de Sites para Renda Extra",
-  description: "Uma lista curada com 30 sites confiáveis para você ganhar dinheiro online nas suas horas vagas, como freelancer ou respondendo pesquisas.",
+  title: "Painel de Controle dos Benefícios",
+  description: "Um template de Notion exclusivo para você organizar, priorizar e criar um plano de ação para solicitar cada benefício do guia. Chega de se sentir perdido, assuma o controle.",
   value: "R$ 47",
-  icon: "💰"
+  icon: "🧠"
 }, {
-  title: "Checklist do Imposto de Renda para Iniciantes",
-  description: "O passo a passo para declarar seu Imposto de Renda sem erros e evitar cair na malha fina, mesmo que seja sua primeira vez.",
+  title: "Ebook: Passaporte para o Futuro",
+  description: "Um guia completo com +22 plataformas para você fazer cursos gratuitos com certificados de empresas como Google, Microsoft e de grandes universidades. Turbine seu currículo!",
+  value: "R$ 37",
+  icon: "🎓"
+}, {
+  title: "Gerador de Argumentos",
+  description: "Um PDF com 10 modelos de textos prontos (copia e cola) para você exigir seus direitos em situações reais, seja com bancos, hospitais ou em lojas. Tenha o poder na palma da sua mão.",
   value: "R$ 27",
-  icon: "✅"
+  icon: "💬"
 }];
 const TESTIMONIALS = [{
   name: "Maria S.",
