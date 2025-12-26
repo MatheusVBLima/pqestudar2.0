@@ -337,7 +337,11 @@ const VSL_CONFIG = {
   subtitle: "Vídeo vertical (9:16) com instruções objetivas",
   ctaLabel: "QUERO GARANTIR MINHA OFERTA!",
   ctaLink: CONFIG.checkoutPremium,
-  maxWidthDesktop: 480
+  maxWidthDesktop: 480,
+  // Header texts
+  headerTitle: "🎁 Você Ganhou um Presente! 🎁",
+  headerSub: "⭐ Assista ao vídeo abaixo: ⭐",
+  viewersText: "2 pessoas estão assistindo esse vídeo"
 };
 
 // Hero Section
@@ -427,6 +431,19 @@ const HeroSection = () => <section className="relative py-10 md:py-20 px-4 sm:px
             maxWidth: `${VSL_CONFIG.maxWidthDesktop}px`
           }}
         >
+          {/* Header above video */}
+          <h5 className="text-lg md:text-xl font-semibold mb-2 md:mb-3 text-center" style={{
+            color: `hsl(${BRAND_TOKENS.foreground})`
+          }}>
+            {VSL_CONFIG.headerTitle}
+          </h5>
+          <p className="text-sm md:text-base mb-4 text-center" style={{
+            color: `hsl(${BRAND_TOKENS.mutedForeground})`
+          }}>
+            {VSL_CONFIG.headerSub}
+          </p>
+
+          {/* Player */}
           <div 
             className="relative w-full overflow-hidden"
             style={{
@@ -447,11 +464,23 @@ const HeroSection = () => <section className="relative py-10 md:py-20 px-4 sm:px
               referrerPolicy="strict-origin-when-cross-origin"
             />
           </div>
-          <p className="text-sm mt-3 text-center" style={{
-            color: `hsl(${BRAND_TOKENS.mutedForeground})`
-          }}>
-            {VSL_CONFIG.subtitle}
-          </p>
+
+          {/* Viewers status below video */}
+          <div 
+            className="flex items-center justify-center gap-2 mt-3 mb-4"
+            aria-label="2 pessoas assistindo agora"
+          >
+            <span 
+              className="inline-block w-2 h-2 rounded-full animate-pulse"
+              style={{ background: `hsl(${BRAND_TOKENS.red})` }}
+              aria-hidden="true"
+            />
+            <span className="text-xs md:text-sm" style={{
+              color: `hsl(${BRAND_TOKENS.mutedForeground})`
+            }}>
+              {VSL_CONFIG.viewersText}
+            </span>
+          </div>
         </div>
 
         {/* CTA aligned with video width */}
