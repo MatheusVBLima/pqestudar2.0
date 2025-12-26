@@ -330,6 +330,16 @@ const PriceDisplay = ({
     </span>
   </div>;
 
+// VSL Configuration
+const VSL_CONFIG = {
+  iframeUrl: "https://www.youtube-nocookie.com/embed/3Zj1cADXZVI?rel=0&modestbranding=1&playsinline=1&controls=1&autoplay=1&mute=1",
+  title: "Assista rapidamente e entenda como acessar agora",
+  subtitle: "Vídeo vertical (9:16) com instruções objetivas",
+  ctaLabel: "QUERO GARANTIR MINHA OFERTA!",
+  ctaLink: CONFIG.checkoutPremium,
+  maxWidthDesktop: 480
+};
+
 // Hero Section
 const HeroSection = () => <section className="relative py-10 md:py-20 px-4 sm:px-6" style={{
   background: `linear-gradient(135deg, hsl(${BRAND_TOKENS.muted}), hsl(${BRAND_TOKENS.background}))`
@@ -398,6 +408,7 @@ const HeroSection = () => <section className="relative py-10 md:py-20 px-4 sm:px
       }}>para qualquer cidadão, sem complicação</strong>.
       </motion.p>
 
+      {/* VSL Vertical 9:16 */}
       <motion.div initial={{
       opacity: 0,
       scale: 0.95
@@ -408,34 +419,53 @@ const HeroSection = () => <section className="relative py-10 md:py-20 px-4 sm:px
       duration: 0.6,
       delay: 0.3,
       ease
-    }} className="relative max-w-2xl mx-auto mb-6 overflow-hidden">
-        <div className="aspect-video overflow-hidden bg-black" style={{
-        borderRadius: BRAND_TOKENS.radiusLg,
-        boxShadow: BRAND_TOKENS.shadowLg
-      }}>
-          <iframe src={CONFIG.videoUrl} title="Apresentação das atividades interativas" className="w-full h-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen loading="lazy" />
+    }} className="flex flex-col items-center mb-6">
+        {/* Video wrapper - 9:16 aspect ratio */}
+        <div 
+          className="w-full sm:w-auto"
+          style={{
+            maxWidth: `${VSL_CONFIG.maxWidthDesktop}px`
+          }}
+        >
+          <div 
+            className="relative w-full overflow-hidden"
+            style={{
+              aspectRatio: '9 / 16',
+              borderRadius: BRAND_TOKENS.radiusLg,
+              boxShadow: BRAND_TOKENS.shadowLg,
+              background: '#000'
+            }}
+          >
+            <iframe 
+              src={VSL_CONFIG.iframeUrl}
+              title={VSL_CONFIG.title}
+              aria-label={VSL_CONFIG.subtitle}
+              className="absolute inset-0 w-full h-full"
+              allow="autoplay; encrypted-media; picture-in-picture"
+              allowFullScreen
+              loading="lazy"
+              referrerPolicy="strict-origin-when-cross-origin"
+            />
+          </div>
+          <p className="text-sm mt-3 text-center" style={{
+            color: `hsl(${BRAND_TOKENS.mutedForeground})`
+          }}>
+            {VSL_CONFIG.subtitle}
+          </p>
         </div>
-        <p className="text-sm mt-3" style={{
-        color: `hsl(${BRAND_TOKENS.mutedForeground})`
-      }}>
-          Apresentação das atividades interativas
-        </p>
-      </motion.div>
 
-      <motion.div initial={{
-      opacity: 0,
-      y: 20
-    }} animate={{
-      opacity: 1,
-      y: 0
-    }} transition={{
-      duration: 0.6,
-      delay: 0.4,
-      ease
-    }} className="flex justify-center">
-        <CTAButton href={CONFIG.checkoutPremium} section="hero" plan="premium">
-          QUERO ACESSAR O MAPA SECRETO AGORA!
-        </CTAButton>
+        {/* CTA aligned with video width */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.4, ease }}
+          className="w-full mt-6"
+          style={{ maxWidth: `${VSL_CONFIG.maxWidthDesktop}px` }}
+        >
+          <CTAButton href={VSL_CONFIG.ctaLink} section="hero" plan="premium">
+            {VSL_CONFIG.ctaLabel}
+          </CTAButton>
+        </motion.div>
       </motion.div>
     </div>
   </section>;
