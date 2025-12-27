@@ -107,6 +107,7 @@ const BONUS_DATA: Array<{ title: string; description: string; value: string; ico
   image: bonusGeradorArgumentos
 }];
 import testimonialMaria from "@/assets/testimonial-maria.png";
+import testimonialJoao from "@/assets/testimonial-joao.png";
 
 const TESTIMONIALS = [{
   name: "Maria S.",
@@ -117,7 +118,7 @@ const TESTIMONIALS = [{
   name: "João P.",
   role: "Estudante",
   quote: '"Sempre quis fazer um curso técnico mas não podia pagar. Com o guia, descobri um programa de bolsas de 100% na minha cidade que eu nem sabia que existia. Já estou matriculado!"',
-  avatar: "/placeholder.svg"
+  avatar: testimonialJoao
 }, {
   name: "Carlos A.",
   role: "Autônomo",
