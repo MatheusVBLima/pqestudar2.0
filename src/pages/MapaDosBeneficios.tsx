@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { cn } from "@/lib/utils";
+import YouTubeLoopPlayer from "@/components/ui/youtube-loop-player";
 import garantiaImage from "@/assets/garantia-7-dias.png";
 import bonusPassaporteFuturo from "@/assets/bonus-passaporte-futuro.png";
 import bonusPainelControle from "@/assets/bonus-painel-controle.png";
@@ -333,7 +334,7 @@ const PriceDisplay = ({
 
 // VSL Configuration
 const VSL_CONFIG = {
-  iframeUrl: "https://www.youtube-nocookie.com/embed/3Zj1cADXZVI?rel=0&modestbranding=1&playsinline=1&controls=1&autoplay=1&mute=1",
+  videoId: "3Zj1cADXZVI",
   title: "Assista rapidamente e entenda como acessar agora",
   subtitle: "Vídeo vertical (9:16) com instruções objetivas",
   ctaLabel: "QUERO GARANTIR MINHA OFERTA!",
@@ -453,7 +454,12 @@ const HeroSection = () => <section className="relative py-10 md:py-12 px-4 sm:px
             boxShadow: BRAND_TOKENS.shadow,
             background: '#000'
           }}>
-              <iframe src={VSL_CONFIG.iframeUrl} title={VSL_CONFIG.title} aria-label={VSL_CONFIG.subtitle} className="absolute inset-0 w-full h-full" allow="autoplay; encrypted-media; picture-in-picture" allowFullScreen loading="lazy" referrerPolicy="strict-origin-when-cross-origin" />
+              <YouTubeLoopPlayer
+                videoId={VSL_CONFIG.videoId}
+                title={VSL_CONFIG.title}
+                ariaLabel={VSL_CONFIG.subtitle}
+                className="absolute inset-0 w-full h-full"
+              />
             </div>
           </div>
 
