@@ -73,7 +73,7 @@ type EasingTuple = [number, number, number, number];
 const ease: EasingTuple = [0.16, 1, 0.3, 1];
 const CONFIG = {
   urgencyDate: "30/11/2025",
-  checkoutBasico: "#CHECKOUT_LINK_BASICO",
+  checkoutBasico: "https://pay.cakto.com.br/pme7qh6_673774",
   checkoutPremium: "https://pay.cakto.com.br/acmn9pr_678650",
   videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
   videoPoster: "/placeholder.svg",
