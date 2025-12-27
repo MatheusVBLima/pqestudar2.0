@@ -688,12 +688,6 @@ const WhyChooseSection = () => {
               </BrandCard>
             </motion.div>)}
         </div>
-
-        <div className="flex justify-center">
-          <CTAButton href={CONFIG.checkoutPremium} section="why-choose" plan="premium">
-            QUERO MEUS BENEFÍCIOS AGORA!
-          </CTAButton>
-        </div>
       </div>
     </section>;
 };
