@@ -9,6 +9,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { cn } from "@/lib/utils";
 import garantiaImage from "@/assets/garantia-7-dias.png";
 import bonusPassaporteFuturo from "@/assets/bonus-passaporte-futuro.png";
+import bonusPainelControle from "@/assets/bonus-painel-controle.png";
 
 // ============================================
 // BRAND_TOKENS - AJUSTE FÁCIL DE CORES E FONTES
@@ -89,7 +90,8 @@ const BONUS_DATA: Array<{ title: string; description: string; value: string; ico
   title: "Painel de Controle dos Benefícios",
   description: "Um template de Notion exclusivo para você organizar, priorizar e criar um plano de ação para solicitar cada benefício do guia. Chega de se sentir perdido, assuma o controle.",
   value: "R$ 47",
-  icon: "🧠"
+  icon: "🧠",
+  image: bonusPainelControle
 }, {
   title: "Ebook: Passaporte para o Futuro",
   description: "Um guia completo com +22 plataformas para você fazer cursos gratuitos com certificados de empresas como Google, Microsoft e de grandes universidades. Turbine seu currículo!",
