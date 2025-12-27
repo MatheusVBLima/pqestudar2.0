@@ -74,7 +74,7 @@ const ease: EasingTuple = [0.16, 1, 0.3, 1];
 const CONFIG = {
   urgencyDate: "30/11/2025",
   checkoutBasico: "#CHECKOUT_LINK_BASICO",
-  checkoutPremium: "#CHECKOUT_LINK_PREMIUM",
+  checkoutPremium: "https://pay.cakto.com.br/acmn9pr_678650",
   videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
   videoPoster: "/placeholder.svg",
   timerEndDate: new Date(new Date().setHours(23, 59, 59, 999)),
