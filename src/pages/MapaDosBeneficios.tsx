@@ -485,12 +485,6 @@ const HeroSection = () => <section className="relative py-10 md:py-20 px-4 sm:px
             </span>
           </div>
 
-          {/* CTA full width inside card */}
-          <div className="w-full" style={{ maxWidth: `${VSL_CONFIG.maxWidthDesktop}px` }}>
-            <CTAButton href={VSL_CONFIG.ctaLink} section="hero" plan="premium">
-              {VSL_CONFIG.ctaLabel}
-            </CTAButton>
-          </div>
         </div>
       </motion.div>
     </div>
