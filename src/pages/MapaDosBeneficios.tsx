@@ -823,15 +823,15 @@ const PricingSection = () => {
     text: "Garantia de 7 dias",
     included: true
   }, {
-    text: "BÔNUS: Guia de Renegociação",
+    text: "BÔNUS: Painel de Controle dos Benefícios",
     included: true,
     isBonus: true
   }, {
-    text: "BÔNUS: Kit Renda Extra",
+    text: "BÔNUS: Passaporte para o Futuro",
     included: true,
     isBonus: true
   }, {
-    text: "BÔNUS: Checklist do IR",
+    text: "BÔNUS: Gerador de Argumentos",
     included: true,
     isBonus: true
   }, {
