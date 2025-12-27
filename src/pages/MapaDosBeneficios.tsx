@@ -1072,7 +1072,7 @@ const TestimonialsSection = () => <section className="py-10 md:py-24 px-4 sm:px-
                 <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full mx-auto mb-3 sm:mb-4 overflow-hidden" style={{
               background: `linear-gradient(135deg, hsl(${BRAND_TOKENS.primary}), hsl(${BRAND_TOKENS.primaryLight}))`
             }}>
-                  <img src={testimonial.avatar} alt={`Avatar de ${testimonial.name}`} className="w-full h-full object-cover" loading="lazy" />
+                  <img src={testimonial.avatar} alt={`Avatar de ${testimonial.name}`} className="w-full h-full object-cover object-top" loading="lazy" />
                 </div>
                 <h3 className="font-bold text-sm sm:text-base" style={{
               color: `hsl(${BRAND_TOKENS.foreground})`
