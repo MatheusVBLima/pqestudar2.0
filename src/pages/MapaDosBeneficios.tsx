@@ -108,6 +108,7 @@ const BONUS_DATA: Array<{ title: string; description: string; value: string; ico
 }];
 import testimonialMaria from "@/assets/testimonial-maria.png";
 import testimonialJoao from "@/assets/testimonial-joao.png";
+import testimonialCarlos from "@/assets/testimonial-carlos.png";
 
 const TESTIMONIALS = [{
   name: "Maria S.",
@@ -123,7 +124,7 @@ const TESTIMONIALS = [{
   name: "Carlos A.",
   role: "Autônomo",
   quote: '"Tinha um dinheiro do PIS esquecido há anos e não fazia ideia. O passo a passo do guia foi tão simples que resolvi em 10 minutos pelo celular. Valeu demais!"',
-  avatar: "/placeholder.svg"
+  avatar: testimonialCarlos
 }];
 const FAQ_DATA = [{
   question: "Como vou acessar o material após a compra?",
