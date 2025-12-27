@@ -106,11 +106,13 @@ const BONUS_DATA: Array<{ title: string; description: string; value: string; ico
   icon: "💬",
   image: bonusGeradorArgumentos
 }];
+import testimonialMaria from "@/assets/testimonial-maria.png";
+
 const TESTIMONIALS = [{
   name: "Maria S.",
   role: "Dona de Casa",
   quote: '"Eu nem imaginava que tinha direito à tarifa social de energia. Só com essa dica do Matheus, já economizei o valor do guia em um único mês. Incrível!"',
-  avatar: "/placeholder.svg"
+  avatar: testimonialMaria
 }, {
   name: "João P.",
   role: "Estudante",
