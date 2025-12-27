@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { cn } from "@/lib/utils";
 import garantiaImage from "@/assets/garantia-7-dias.png";
+import bonusPassaporteFuturo from "@/assets/bonus-passaporte-futuro.png";
 
 // ============================================
 // BRAND_TOKENS - AJUSTE FÁCIL DE CORES E FONTES
@@ -84,7 +85,7 @@ const PRICES = {
   premiumAtual: "R$ 27,00",
   totalBonus: "R$ 111"
 };
-const BONUS_DATA = [{
+const BONUS_DATA: Array<{ title: string; description: string; value: string; icon: string; image?: string }> = [{
   title: "Painel de Controle dos Benefícios",
   description: "Um template de Notion exclusivo para você organizar, priorizar e criar um plano de ação para solicitar cada benefício do guia. Chega de se sentir perdido, assuma o controle.",
   value: "R$ 47",
@@ -93,7 +94,8 @@ const BONUS_DATA = [{
   title: "Ebook: Passaporte para o Futuro",
   description: "Um guia completo com +22 plataformas para você fazer cursos gratuitos com certificados de empresas como Google, Microsoft e de grandes universidades. Turbine seu currículo!",
   value: "R$ 37",
-  icon: "🎓"
+  icon: "🎓",
+  image: bonusPassaporteFuturo
 }, {
   title: "Gerador de Argumentos",
   description: "Um PDF com 10 modelos de textos prontos (copia e cola) para você exigir seus direitos em situações reais, seja com bancos, hospitais ou em lojas. Tenha o poder na palma da sua mão.",
@@ -742,10 +744,18 @@ const BonusSection = () => <section className="py-10 md:py-24 px-4 sm:px-6" styl
         ease
       }}>
             <BrandCard className="overflow-hidden h-full flex flex-col">
-              <div className="h-32 sm:h-40 md:h-48 flex items-center justify-center flex-shrink-0" style={{
+              <div className="h-32 sm:h-40 md:h-48 flex items-center justify-center flex-shrink-0 overflow-hidden" style={{
             background: `linear-gradient(135deg, hsl(${BRAND_TOKENS.primary} / 0.2), hsl(${BRAND_TOKENS.primaryLight} / 0.3))`
           }}>
-                <span className="text-5xl sm:text-6xl">{bonus.icon}</span>
+                {bonus.image ? (
+                  <img 
+                    src={bonus.image} 
+                    alt={bonus.title} 
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span className="text-5xl sm:text-6xl">{bonus.icon}</span>
+                )}
               </div>
               <CardContent className="p-4 sm:p-5 text-center flex flex-col flex-1">
                 <span className="text-xl sm:text-2xl mb-2 block">{bonus.icon}</span>
