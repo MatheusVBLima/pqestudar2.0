@@ -354,7 +354,7 @@ const VSL_CONFIG = {
 };
 
 // Hero Section
-const HeroSection = () => <section className="relative py-10 md:py-20 px-4 sm:px-6" style={{
+const HeroSection = () => <section className="relative py-10 md:py-12 px-4 sm:px-6" style={{
   background: `linear-gradient(135deg, hsl(${BRAND_TOKENS.muted}), hsl(${BRAND_TOKENS.background}))`
 }}>
     <div className="container max-w-5xl mx-auto text-center px-0">
@@ -491,7 +491,7 @@ const HeroSection = () => <section className="relative py-10 md:py-20 px-4 sm:px
   </section>;
 
 // What You'll Receive Section
-const WhatYouReceiveSection = () => <section className="py-10 md:py-24 px-4 sm:px-6" style={{
+const WhatYouReceiveSection = () => <section className="py-6 md:py-12 px-4 sm:px-6" style={{
   background: `hsl(${BRAND_TOKENS.background})`
 }}>
     <div className="container max-w-5xl mx-auto px-0">
