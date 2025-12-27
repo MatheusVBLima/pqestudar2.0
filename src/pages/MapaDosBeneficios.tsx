@@ -385,8 +385,7 @@ const HeroSection = () => <section className="relative py-10 md:py-12 px-4 sm:px
         <br />
         <span style={{
         color: `hsl(${BRAND_TOKENS.primary})`
-      }}>Secretos do Governo que Você
-Pode Ter Direito</span>
+      }}>Secretos do Governo que Você<br />Pode Ter Direito</span>
         <br />
         <span>+ Bônus</span>
       </motion.h1>
