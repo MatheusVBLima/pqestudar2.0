@@ -119,20 +119,17 @@ const TESTIMONIALS = [{
   name: "Maria S.",
   role: "Dona de Casa",
   quote: '"Eu nem imaginava que tinha direito à tarifa social de energia. Só com essa dica do Matheus, já economizei o valor do guia em um único mês. Incrível!"',
-  avatar: testimonialMaria,
-  objectPosition: "top"
+  avatar: testimonialMaria
 }, {
   name: "João P.",
   role: "Estudante",
   quote: '"Sempre quis fazer um curso técnico mas não podia pagar. Com o guia, descobri um programa de bolsas de 100% na minha cidade que eu nem sabia que existia. Já estou matriculado!"',
-  avatar: testimonialJoao,
-  objectPosition: "right top"
+  avatar: testimonialJoao
 }, {
   name: "Carlos A.",
   role: "Autônomo",
   quote: '"Tinha um dinheiro do PIS esquecido há anos e não fazia ideia. O passo a passo do guia foi tão simples que resolvi em 10 minutos pelo celular. Valeu demais!"',
-  avatar: testimonialCarlos,
-  objectPosition: "top"
+  avatar: testimonialCarlos
 }];
 const FAQ_DATA = [{
   question: "Como vou acessar o material após a compra?",
@@ -1048,7 +1045,7 @@ const TestimonialsSection = () => <section className="py-10 md:py-24 px-4 sm:px-
                 <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full mx-auto mb-3 sm:mb-4 overflow-hidden" style={{
               background: `linear-gradient(135deg, hsl(${BRAND_TOKENS.primary}), hsl(${BRAND_TOKENS.primaryLight}))`
             }}>
-                  <img src={testimonial.avatar} alt={`Avatar de ${testimonial.name}`} className="w-full h-full object-cover" style={{ objectPosition: testimonial.objectPosition }} loading="lazy" />
+                  <img src={testimonial.avatar} alt={`Avatar de ${testimonial.name}`} className="w-full h-full object-cover object-top" loading="lazy" />
                 </div>
                 <h3 className="font-bold text-sm sm:text-base" style={{
               color: `hsl(${BRAND_TOKENS.foreground})`
