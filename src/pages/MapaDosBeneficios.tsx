@@ -87,7 +87,13 @@ const PRICES = {
   premiumAtual: "R$ 27,00",
   totalBonus: "R$ 111"
 };
-const BONUS_DATA: Array<{ title: string; description: string; value: string; icon: string; image?: string }> = [{
+const BONUS_DATA: Array<{
+  title: string;
+  description: string;
+  value: string;
+  icon: string;
+  image?: string;
+}> = [{
   title: "Painel de Controle dos Benefícios",
   description: "Um template de Notion exclusivo para você organizar, priorizar e criar um plano de ação para solicitar cada benefício do guia. Chega de se sentir perdido, assuma o controle.",
   value: "R$ 47",
@@ -109,7 +115,6 @@ const BONUS_DATA: Array<{ title: string; description: string; value: string; ico
 import testimonialMaria from "@/assets/testimonial-maria.png";
 import testimonialJoao from "@/assets/testimonial-joao.png";
 import testimonialCarlos from "@/assets/testimonial-carlos.png";
-
 const TESTIMONIALS = [{
   name: "Maria S.",
   role: "Dona de Casa",
@@ -234,26 +239,18 @@ const UrgencyBar = ({
     const year = now.getFullYear();
     return `${day}/${month}/${year}`;
   })();
-
-  return (
-    <div 
-      className="sticky z-50 py-2.5 w-full"
-      style={{
-        background: `hsl(${BRAND_TOKENS.red})`,
-        top: 'env(safe-area-inset-top, 0)',
-        paddingLeft: 'max(16px, env(safe-area-inset-left))',
-        paddingRight: 'max(16px, env(safe-area-inset-right))',
-      }}
-      role="status" 
-      aria-live="polite"
-    >
+  return <div className="sticky z-50 py-2.5 w-full" style={{
+    background: `hsl(${BRAND_TOKENS.red})`,
+    top: 'env(safe-area-inset-top, 0)',
+    paddingLeft: 'max(16px, env(safe-area-inset-left))',
+    paddingRight: 'max(16px, env(safe-area-inset-right))'
+  }} role="status" aria-live="polite">
       <div className="flex items-center justify-center gap-1.5 sm:gap-2 text-white font-semibold text-xs sm:text-sm md:text-base text-center whitespace-normal break-words">
         <Flame className="hidden sm:block h-4 w-4 md:h-5 md:w-5 animate-pulse shrink-0" />
         <span className="px-1">🔥 DESCONTO SÓ HOJE NESSA PÁGINA {todayDate} 🔥</span>
         <Flame className="hidden sm:block h-4 w-4 md:h-5 md:w-5 animate-pulse shrink-0" />
       </div>
-    </div>
-  );
+    </div>;
 };
 
 // CTA Button - Verde do PqEstudar
@@ -276,13 +273,7 @@ const CTAButton = ({
 }} whileTap={{
   scale: 0.98
 }} className="w-full max-w-full">
-    <Button asChild size={size} className={cn(
-      "font-bold text-white transition-all duration-300",
-      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
-      "w-full whitespace-normal break-words text-center min-h-[48px] h-auto",
-      size === "lg" && "text-base sm:text-lg px-4 sm:px-8 py-4 sm:py-6",
-      className
-    )} style={{
+    <Button asChild size={size} className={cn("font-bold text-white transition-all duration-300", "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2", "w-full whitespace-normal break-words text-center min-h-[48px] h-auto", size === "lg" && "text-base sm:text-lg px-4 sm:px-8 py-4 sm:py-6", className)} style={{
     background: `hsl(${BRAND_TOKENS.green})`,
     boxShadow: BRAND_TOKENS.shadowLg,
     borderRadius: BRAND_TOKENS.radiusLg
@@ -394,9 +385,8 @@ const HeroSection = () => <section className="relative py-10 md:py-12 px-4 sm:px
         <br />
         <span style={{
         color: `hsl(${BRAND_TOKENS.primary})`
-      }}>
-          Secretos do Governo que Você Pode Ter Direito
-        </span>
+      }}>Secretos do Governo que Você
+Pode Ter Direito</span>
         <br />
         <span>+ Bônus</span>
       </motion.h1>
@@ -426,65 +416,56 @@ const HeroSection = () => <section className="relative py-10 md:py-12 px-4 sm:px
       </motion.p>
 
       {/* VSL Card Container - alinhado com os cards abaixo (max-w-5xl) */}
-      <motion.div 
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.6, delay: 0.3, ease }}
-        className={`w-full mx-auto p-5 lg:p-8 ${VSL_CONFIG.cardRadius} ${VSL_CONFIG.cardShadow} border border-neutral-200/60 overflow-hidden`}
-        style={{ background: '#fff' }}
-      >
+      <motion.div initial={{
+      opacity: 0,
+      scale: 0.95
+    }} animate={{
+      opacity: 1,
+      scale: 1
+    }} transition={{
+      duration: 0.6,
+      delay: 0.3,
+      ease
+    }} className={`w-full mx-auto p-5 lg:p-8 ${VSL_CONFIG.cardRadius} ${VSL_CONFIG.cardShadow} border border-neutral-200/60 overflow-hidden`} style={{
+      background: '#fff'
+    }}>
         <div className="flex flex-col items-center space-y-4 lg:space-y-6">
           {/* Header above video */}
           <div className="text-center">
             <h5 className="text-lg md:text-xl font-semibold mb-2" style={{
-              color: `hsl(${BRAND_TOKENS.foreground})`
-            }}>
+            color: `hsl(${BRAND_TOKENS.foreground})`
+          }}>
               {VSL_CONFIG.headerTitle}
             </h5>
             <p className="text-sm md:text-base" style={{
-              color: `hsl(${BRAND_TOKENS.mutedForeground})`
-            }}>
+            color: `hsl(${BRAND_TOKENS.mutedForeground})`
+          }}>
               {VSL_CONFIG.headerSub}
             </p>
           </div>
 
           {/* Player 9:16 */}
-          <div className="w-full" style={{ maxWidth: `${VSL_CONFIG.maxWidthDesktop}px` }}>
-            <div 
-              className="relative w-full overflow-hidden"
-              style={{
-                aspectRatio: '9 / 16',
-                borderRadius: BRAND_TOKENS.radiusLg,
-                boxShadow: BRAND_TOKENS.shadow,
-                background: '#000'
-              }}
-            >
-              <iframe 
-                src={VSL_CONFIG.iframeUrl}
-                title={VSL_CONFIG.title}
-                aria-label={VSL_CONFIG.subtitle}
-                className="absolute inset-0 w-full h-full"
-                allow="autoplay; encrypted-media; picture-in-picture"
-                allowFullScreen
-                loading="lazy"
-                referrerPolicy="strict-origin-when-cross-origin"
-              />
+          <div className="w-full" style={{
+          maxWidth: `${VSL_CONFIG.maxWidthDesktop}px`
+        }}>
+            <div className="relative w-full overflow-hidden" style={{
+            aspectRatio: '9 / 16',
+            borderRadius: BRAND_TOKENS.radiusLg,
+            boxShadow: BRAND_TOKENS.shadow,
+            background: '#000'
+          }}>
+              <iframe src={VSL_CONFIG.iframeUrl} title={VSL_CONFIG.title} aria-label={VSL_CONFIG.subtitle} className="absolute inset-0 w-full h-full" allow="autoplay; encrypted-media; picture-in-picture" allowFullScreen loading="lazy" referrerPolicy="strict-origin-when-cross-origin" />
             </div>
           </div>
 
           {/* Viewers status below video */}
-          <div 
-            className="flex items-center justify-center gap-2"
-            aria-label="2 pessoas assistindo agora"
-          >
-            <span 
-              className="inline-block w-2 h-2 rounded-full animate-pulse"
-              style={{ background: `hsl(${BRAND_TOKENS.red})` }}
-              aria-hidden="true"
-            />
+          <div className="flex items-center justify-center gap-2" aria-label="2 pessoas assistindo agora">
+            <span className="inline-block w-2 h-2 rounded-full animate-pulse" style={{
+            background: `hsl(${BRAND_TOKENS.red})`
+          }} aria-hidden="true" />
             <span className="text-xs md:text-sm" style={{
-              color: `hsl(${BRAND_TOKENS.mutedForeground})`
-            }}>
+            color: `hsl(${BRAND_TOKENS.mutedForeground})`
+          }}>
               {VSL_CONFIG.viewersText}
             </span>
           </div>
@@ -743,15 +724,7 @@ const BonusSection = () => <section className="py-6 md:py-12 px-4 sm:px-6" style
               <div className="h-32 sm:h-40 md:h-48 flex items-center justify-center flex-shrink-0 overflow-hidden" style={{
             background: `linear-gradient(135deg, hsl(${BRAND_TOKENS.primary} / 0.2), hsl(${BRAND_TOKENS.primaryLight} / 0.3))`
           }}>
-                {bonus.image ? (
-                  <img 
-                    src={bonus.image} 
-                    alt={bonus.title} 
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <span className="text-5xl sm:text-6xl">{bonus.icon}</span>
-                )}
+                {bonus.image ? <img src={bonus.image} alt={bonus.title} className="w-full h-full object-cover" /> : <span className="text-5xl sm:text-6xl">{bonus.icon}</span>}
               </div>
               <CardContent className="p-4 sm:p-5 text-center flex flex-col flex-1">
                 <span className="text-xl sm:text-2xl mb-2 block">{bonus.icon}</span>
@@ -1285,33 +1258,29 @@ const GuaranteeFinalSection = () => <section className="py-12 md:py-20 px-4 sm:p
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center lg:items-center">
         {/* Left Column - Guarantee */}
         <motion.div initial={{
-          opacity: 0,
-          y: 20
-        }} whileInView={{
-          opacity: 1,
-          y: 0
-        }} viewport={{
-          once: true
-        }} transition={{
-          duration: 0.6,
-          ease
-        }} className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 text-center sm:text-left">
+        opacity: 0,
+        y: 20
+      }} whileInView={{
+        opacity: 1,
+        y: 0
+      }} viewport={{
+        once: true
+      }} transition={{
+        duration: 0.6,
+        ease
+      }} className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 text-center sm:text-left">
           <div className="flex-shrink-0">
-            <img 
-              src={garantiaImage} 
-              alt="Selo de garantia incondicional de 7 dias - devolução total do dinheiro" 
-              className="w-28 h-28 sm:w-36 sm:h-36 lg:w-40 lg:h-40 object-contain"
-            />
+            <img src={garantiaImage} alt="Selo de garantia incondicional de 7 dias - devolução total do dinheiro" className="w-28 h-28 sm:w-36 sm:h-36 lg:w-40 lg:h-40 object-contain" />
           </div>
           <div>
             <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-3 sm:mb-4" style={{
-              color: `hsl(${BRAND_TOKENS.foreground})`
-            }}>
+            color: `hsl(${BRAND_TOKENS.foreground})`
+          }}>
               Garantia Incondicional de 7 Dias
             </h2>
             <p style={{
-              color: `hsl(${BRAND_TOKENS.mutedForeground})`
-            }} className="leading-relaxed text-sm sm:text-base">
+            color: `hsl(${BRAND_TOKENS.mutedForeground})`
+          }} className="leading-relaxed text-sm sm:text-base">
               Teste o material por 7 dias. Se não ficar 100% satisfeito, devolvemos seu dinheiro! 
               Sem perguntas, sem complicações. Sua satisfação é nossa prioridade e o risco é todo nosso!
             </p>
@@ -1320,66 +1289,61 @@ const GuaranteeFinalSection = () => <section className="py-12 md:py-20 px-4 sm:p
 
         {/* Right Column - Não Perca */}
         <motion.div initial={{
-          opacity: 0,
-          y: 20
-        }} whileInView={{
-          opacity: 1,
-          y: 0
-        }} viewport={{
-          once: true
-        }} transition={{
-          duration: 0.6,
-          delay: 0.1,
-          ease
-        }}>
+        opacity: 0,
+        y: 20
+      }} whileInView={{
+        opacity: 1,
+        y: 0
+      }} viewport={{
+        once: true
+      }} transition={{
+        duration: 0.6,
+        delay: 0.1,
+        ease
+      }}>
           <div className="rounded-2xl p-6 sm:p-8 lg:p-10 text-center" style={{
-            background: `hsl(${BRAND_TOKENS.card})`,
-            boxShadow: BRAND_TOKENS.shadow
-          }}>
+          background: `hsl(${BRAND_TOKENS.card})`,
+          boxShadow: BRAND_TOKENS.shadow
+        }}>
             <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-3 sm:mb-4" style={{
-              color: `hsl(${BRAND_TOKENS.foreground})`
-            }}>
+            color: `hsl(${BRAND_TOKENS.foreground})`
+          }}>
               Não Perca Esta Oportunidade!
             </h2>
             <p className="mb-4 sm:mb-6 text-sm sm:text-base" style={{
-              color: `hsl(${BRAND_TOKENS.mutedForeground})`
-            }}>
+            color: `hsl(${BRAND_TOKENS.mutedForeground})`
+          }}>
               Pare de deixar dinheiro na mesa: são mais de 50 benefícios e direitos prontos para você acessar!
             </p>
 
             <ul role="list" className="flex flex-col sm:flex-row flex-wrap justify-center gap-3 sm:gap-6 mb-6 sm:mb-8 text-xs sm:text-sm">
               <li className="flex items-center justify-center gap-2" aria-label="Oferta limitada">
                 <Clock className="h-[18px] w-[18px] flex-shrink-0" style={{
-                  color: `hsl(${BRAND_TOKENS.red})`
-                }} aria-hidden="true" />
+                color: `hsl(${BRAND_TOKENS.red})`
+              }} aria-hidden="true" />
                 <span style={{
-                  color: `hsl(${BRAND_TOKENS.red})`
-                }}>Oferta limitada - acaba em breve!</span>
+                color: `hsl(${BRAND_TOKENS.red})`
+              }}>Oferta limitada - acaba em breve!</span>
               </li>
               <li className="flex items-center justify-center gap-2" aria-label="Garantia de 7 dias">
                 <CheckCircle className="h-[18px] w-[18px] flex-shrink-0" style={{
-                  color: `hsl(${BRAND_TOKENS.green})`
-                }} aria-hidden="true" />
+                color: `hsl(${BRAND_TOKENS.green})`
+              }} aria-hidden="true" />
                 <span style={{
-                  color: `hsl(${BRAND_TOKENS.green})`
-                }}>Garantia incondicional de 7 dias</span>
+                color: `hsl(${BRAND_TOKENS.green})`
+              }}>Garantia incondicional de 7 dias</span>
               </li>
             </ul>
 
             <div className="flex justify-center">
-              <CTAButton 
-                href={CONFIG.checkoutPremium} 
-                section="final-cta" 
-                plan="premium"
-                aria-label="Garantir minha oferta agora com acesso imediato"
-              >
+              <CTAButton href={CONFIG.checkoutPremium} section="final-cta" plan="premium" aria-label="Garantir minha oferta agora com acesso imediato">
                 QUERO GARANTIR MINHA OFERTA AGORA!
               </CTAButton>
             </div>
 
             <p className="text-[10px] sm:text-xs mt-4 sm:mt-6" style={{
-              color: `hsl(${BRAND_TOKENS.mutedForeground})`
-            }}>
+            color: `hsl(${BRAND_TOKENS.mutedForeground})`
+          }}>
               Acesso imediato • Pagamento 100% seguro • Garantia de 7 dias
             </p>
           </div>
