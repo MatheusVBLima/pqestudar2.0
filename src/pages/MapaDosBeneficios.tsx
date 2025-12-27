@@ -101,7 +101,7 @@ const BONUS_DATA: Array<{
   icon: "🧠",
   image: bonusPainelControle
 }, {
-  title: "Ebook: Passaporte para o Futuro",
+  title: "Passaporte para o Futuro",
   description: "Um guia completo com +22 plataformas para você fazer cursos gratuitos com certificados de empresas como Google, Microsoft e de grandes universidades. Turbine seu currículo!",
   value: "R$ 37",
   icon: "🎓",
