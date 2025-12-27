@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import garantiaImage from "@/assets/garantia-7-dias.png";
 import bonusPassaporteFuturo from "@/assets/bonus-passaporte-futuro.png";
 import bonusPainelControle from "@/assets/bonus-painel-controle.png";
+import bonusGeradorArgumentos from "@/assets/bonus-gerador-argumentos.png";
 
 // ============================================
 // BRAND_TOKENS - AJUSTE FÁCIL DE CORES E FONTES
@@ -102,7 +103,8 @@ const BONUS_DATA: Array<{ title: string; description: string; value: string; ico
   title: "Gerador de Argumentos",
   description: "Um PDF com 10 modelos de textos prontos (copia e cola) para você exigir seus direitos em situações reais, seja com bancos, hospitais ou em lojas. Tenha o poder na palma da sua mão.",
   value: "R$ 27",
-  icon: "💬"
+  icon: "💬",
+  image: bonusGeradorArgumentos
 }];
 const TESTIMONIALS = [{
   name: "Maria S.",
