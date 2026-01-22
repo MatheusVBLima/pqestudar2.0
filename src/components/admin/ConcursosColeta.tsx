@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useSearchConfig } from "@/hooks/useConcursosAdmin";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import ColetaRunDrillDownSheet from "./ColetaRunDrillDownSheet";
 
 type ColetaMethod = "crawler" | "busca" | "manual";
 type ColetaStatus = "pronto" | "coletando" | "concluido" | "falhou";
@@ -51,21 +52,6 @@ interface ColetaRun {
   total_ignoradas: number;
   total_erros: number;
   status_execucao: string;
-}
-
-interface ColetaRunItem {
-  id: string;
-  url: string;
-  dominio: string;
-  tipo_pagina: string;
-  status: string;
-  motivo_descartar: string | null;
-  metodo_coleta: string;
-  data_coleta: string;
-  ano_alvo: number;
-  texto_bruto: string | null;
-  hash_conteudo: string | null;
-  meta_obs: string | null;
 }
 
 interface ColetaResult {
@@ -124,11 +110,10 @@ export default function ConcursosColeta() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   
-  // History drill-down
+  // History drill-down (now uses Sheet modal)
   const [selectedRunId, setSelectedRunId] = useState<string | null>(null);
+  const [drillDownOpen, setDrillDownOpen] = useState(false);
   const [historyPage, setHistoryPage] = useState(1);
-  const [drillDownPage, setDrillDownPage] = useState(1);
-  const [drillDownFilter, setDrillDownFilter] = useState<{ tipo?: string; status?: string; motivo?: string }>({});
   
   // Collapsible sections
   const [rulesOpen, setRulesOpen] = useState(true);
@@ -207,34 +192,37 @@ export default function ConcursosColeta() {
     }
   });
 
-  // Fetch run items for drill-down
-  const { data: runItems = [], isLoading: loadingItems } = useQuery({
-    queryKey: ["coleta-run-items", selectedRunId, drillDownFilter],
-    queryFn: async () => {
-      if (!selectedRunId) return [];
-      
-      let query = supabase
-        .from("coleta_run_items")
-        .select("*")
-        .eq("run_id", selectedRunId)
-        .order("data_coleta", { ascending: false });
-      
-      if (drillDownFilter.tipo) {
-        query = query.eq("tipo_pagina", drillDownFilter.tipo);
+  // Open drill-down sheet
+  const openDrillDown = useCallback((runId: string) => {
+    setSelectedRunId(runId);
+    setDrillDownOpen(true);
+  }, []);
+
+  // Handle replay from drill-down sheet
+  const handleReplayFromSheet = useCallback((run: ColetaRun) => {
+    setMethod(run.tipo_coleta as ColetaMethod);
+    setSelectedSites(Array.isArray(run.sites_env) ? run.sites_env : []);
+    setAnoAlvo(run.ano_alvo);
+    setSearchQuery(run.tema_consulta || "");
+    if (run.profundidade) setDepth(run.profundidade);
+    if (run.limite_paginas) setPageLimit(run.limite_paginas);
+    if (run.limite_resultados) setSearchLimit(run.limite_resultados);
+    
+    const snapshot = run.filtros_snapshot as Record<string, unknown> | null;
+    if (snapshot) {
+      if (Array.isArray(snapshot.extensoes_bloqueadas)) {
+        setExtensoesBloqueadas(snapshot.extensoes_bloqueadas as string[]);
       }
-      if (drillDownFilter.status) {
-        query = query.eq("status", drillDownFilter.status);
+      if (Array.isArray(snapshot.caminhos_bloqueados)) {
+        setCaminhosBloqueados(snapshot.caminhos_bloqueados as string[]);
       }
-      if (drillDownFilter.motivo) {
-        query = query.eq("motivo_descartar", drillDownFilter.motivo);
+      if (Array.isArray(snapshot.caminhos_permitidos)) {
+        setCaminhosPermitidos(snapshot.caminhos_permitidos as string[]);
       }
-      
-      const { data, error } = await query.limit(100);
-      if (error) throw error;
-      return (data || []) as unknown as ColetaRunItem[];
-    },
-    enabled: !!selectedRunId
-  });
+    }
+    
+    toast.info("Configuração carregada. Clique em 'Executar Coleta' para rodar.");
+  }, []);
 
   // Delete run mutation
   const deleteRunMutation = useMutation({
@@ -387,20 +375,29 @@ export default function ConcursosColeta() {
 
   const replayRun = (run: ColetaRun) => {
     setMethod(run.tipo_coleta as ColetaMethod);
-    setSelectedSites(run.sites_env || []);
+    const sitesEnv = Array.isArray(run.sites_env) ? run.sites_env : [];
+    setSelectedSites(sitesEnv);
     setAnoAlvo(run.ano_alvo);
     setSearchQuery(run.tema_consulta || "");
     if (run.profundidade) setDepth(run.profundidade);
     if (run.limite_paginas) setPageLimit(run.limite_paginas);
     if (run.limite_resultados) setSearchLimit(run.limite_resultados);
     
-    const snapshot = run.filtros_snapshot as Record<string, unknown>;
-    if (snapshot.extensoes_bloqueadas) setExtensoesBloqueadas(snapshot.extensoes_bloqueadas as string[]);
-    if (snapshot.caminhos_bloqueados) setCaminhosBloqueados(snapshot.caminhos_bloqueados as string[]);
-    if (snapshot.caminhos_permitidos) setCaminhosPermitidos(snapshot.caminhos_permitidos as string[]);
+    const snapshot = run.filtros_snapshot as Record<string, unknown> | null;
+    if (snapshot) {
+      if (Array.isArray(snapshot.extensoes_bloqueadas)) {
+        setExtensoesBloqueadas(snapshot.extensoes_bloqueadas as string[]);
+      }
+      if (Array.isArray(snapshot.caminhos_bloqueados)) {
+        setCaminhosBloqueados(snapshot.caminhos_bloqueados as string[]);
+      }
+      if (Array.isArray(snapshot.caminhos_permitidos)) {
+        setCaminhosPermitidos(snapshot.caminhos_permitidos as string[]);
+      }
+    }
     
     toast.info("Configuração carregada. Clique em 'Executar Coleta' para rodar.");
-    setSelectedRunId(null);
+    setDrillDownOpen(false);
   };
 
   const paginatedResults = results.slice(
@@ -415,11 +412,6 @@ export default function ConcursosColeta() {
   );
   const totalHistoryPages = Math.ceil(historyRuns.length / 5);
 
-  const paginatedItems = runItems.slice(
-    (drillDownPage - 1) * itemsPerPage,
-    drillDownPage * itemsPerPage
-  );
-  const totalDrillDownPages = Math.ceil(runItems.length / itemsPerPage);
 
   const getStatusIcon = (s: string) => {
     switch (s) {
@@ -1027,8 +1019,9 @@ export default function ConcursosColeta() {
                                   variant="ghost"
                                   size="icon"
                                   className="h-7 w-7"
-                                  onClick={() => setSelectedRunId(run.id)}
+                                  onClick={() => openDrillDown(run.id)}
                                   title="Ver detalhes"
+                                  aria-label={`Ver detalhes da execução de ${new Date(run.executed_at).toLocaleDateString("pt-BR")}`}
                                 >
                                   <Eye className="h-3 w-3" />
                                 </Button>
@@ -1090,136 +1083,16 @@ export default function ConcursosColeta() {
         </Card>
       </Collapsible>
 
-      {/* Drill-down modal */}
-      {selectedRunId && (
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-          <Card>
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-base">Detalhes da Execução</CardTitle>
-                <Button variant="ghost" size="icon" onClick={() => setSelectedRunId(null)}>
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-              <CardDescription>URLs processadas nesta rodada</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {/* Filters */}
-              <div className="flex flex-wrap gap-2 mb-4">
-                <Select 
-                  value={drillDownFilter.tipo || ""} 
-                  onValueChange={v => setDrillDownFilter(f => ({ ...f, tipo: v || undefined }))}
-                >
-                  <SelectTrigger className="w-32">
-                    <SelectValue placeholder="Tipo" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="">Todos</SelectItem>
-                    <SelectItem value="listagem">Listagem</SelectItem>
-                    <SelectItem value="detalhe">Detalhe</SelectItem>
-                  </SelectContent>
-                </Select>
-                
-                <Select 
-                  value={drillDownFilter.status || ""} 
-                  onValueChange={v => setDrillDownFilter(f => ({ ...f, status: v || undefined }))}
-                >
-                  <SelectTrigger className="w-32">
-                    <SelectValue placeholder="Status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="">Todos</SelectItem>
-                    <SelectItem value="novo">Novo</SelectItem>
-                    <SelectItem value="ignorado">Ignorado</SelectItem>
-                    <SelectItem value="erro">Erro</SelectItem>
-                  </SelectContent>
-                </Select>
-                
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  onClick={() => setDrillDownFilter({})}
-                >
-                  Limpar filtros
-                </Button>
-              </div>
-
-              {loadingItems ? (
-                <div className="flex items-center justify-center py-8">
-                  <Loader2 className="h-6 w-6 animate-spin" />
-                </div>
-              ) : runItems.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-4">
-                  Nenhum item encontrado com esses filtros.
-                </p>
-              ) : (
-                <>
-                  <div className="rounded-md border overflow-hidden">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead className="w-12">Status</TableHead>
-                          <TableHead className="w-16">Tipo</TableHead>
-                          <TableHead>URL</TableHead>
-                          <TableHead className="hidden md:table-cell">Motivo</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {paginatedItems.map((item) => (
-                          <TableRow key={item.id}>
-                            <TableCell>{getStatusIcon(item.status)}</TableCell>
-                            <TableCell>{getTypeBadge(item.tipo_pagina)}</TableCell>
-                            <TableCell className="max-w-[200px] truncate">
-                              <a
-                                href={item.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="hover:underline text-primary flex items-center gap-1"
-                              >
-                                <span className="truncate">{item.url}</span>
-                                <ExternalLink className="h-3 w-3 flex-shrink-0" />
-                              </a>
-                            </TableCell>
-                            <TableCell className="hidden md:table-cell text-sm text-muted-foreground">
-                              {item.motivo_descartar || "-"}
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-
-                  {totalDrillDownPages > 1 && (
-                    <div className="flex items-center justify-between mt-4">
-                      <span className="text-sm text-muted-foreground">
-                        Mostrando {(drillDownPage - 1) * itemsPerPage + 1}–{Math.min(drillDownPage * itemsPerPage, runItems.length)} de {runItems.length}
-                      </span>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setDrillDownPage(p => Math.max(1, p - 1))}
-                          disabled={drillDownPage === 1}
-                        >
-                          Anterior
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setDrillDownPage(p => Math.min(totalDrillDownPages, p + 1))}
-                          disabled={drillDownPage === totalDrillDownPages}
-                        >
-                          Próxima
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-                </>
-              )}
-            </CardContent>
-          </Card>
-        </motion.div>
-      )}
+      {/* Drill-down Sheet modal */}
+      <ColetaRunDrillDownSheet
+        runId={selectedRunId}
+        open={drillDownOpen}
+        onOpenChange={(open) => {
+          setDrillDownOpen(open);
+          if (!open) setSelectedRunId(null);
+        }}
+        onReplay={handleReplayFromSheet}
+      />
 
       {/* Note */}
       <p className="text-xs text-muted-foreground">
