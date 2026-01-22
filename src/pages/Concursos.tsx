@@ -35,6 +35,7 @@ import {
 import { useOportunidades, useOportunidadesAdmin, OportunidadeFilters, Oportunidade } from "@/hooks/useOportunidades";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import OportunidadeModal from "@/components/admin/OportunidadeModal";
+import ConcursosAdminPanel from "@/components/admin/ConcursosAdminPanel";
 
 const SITUACAO_OPTIONS = ["Previsto", "Edital publicado", "Aberto", "Encerrado"];
 const TIPO_OPTIONS = ["Concurso", "Programa educacional", "Processo seletivo"];
@@ -196,6 +197,11 @@ export default function Concursos() {
               </div>
             )}
           </div>
+
+          {/* Admin Panel - Only visible when management mode is ON */}
+          {isAdmin && isManagementMode && (
+            <ConcursosAdminPanel />
+          )}
 
           {/* Filters toggle */}
           <div className="flex items-center gap-2">

@@ -80,6 +80,186 @@ export type Database = {
         }
         Relationships: []
       }
+      concursos_analyzed_urls: {
+        Row: {
+          analyzed_at: string
+          ano: number | null
+          content_hash: string | null
+          created_at: string
+          id: string
+          ignore_reason: string | null
+          ignored: boolean
+          orgao: string | null
+          situacao: string | null
+          tema: string | null
+          tipo: string | null
+          url: string
+          url_hash: string
+        }
+        Insert: {
+          analyzed_at?: string
+          ano?: number | null
+          content_hash?: string | null
+          created_at?: string
+          id?: string
+          ignore_reason?: string | null
+          ignored?: boolean
+          orgao?: string | null
+          situacao?: string | null
+          tema?: string | null
+          tipo?: string | null
+          url: string
+          url_hash: string
+        }
+        Update: {
+          analyzed_at?: string
+          ano?: number | null
+          content_hash?: string | null
+          created_at?: string
+          id?: string
+          ignore_reason?: string | null
+          ignored?: boolean
+          orgao?: string | null
+          situacao?: string | null
+          tema?: string | null
+          tipo?: string | null
+          url?: string
+          url_hash?: string
+        }
+        Relationships: []
+      }
+      concursos_config: {
+        Row: {
+          config_key: string
+          config_value: Json
+          created_at: string
+          id: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          config_key: string
+          config_value?: Json
+          created_at?: string
+          id?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          config_key?: string
+          config_value?: Json
+          created_at?: string
+          id?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
+      concursos_pending_items: {
+        Row: {
+          abrangencia_detectada: string | null
+          ai_engine: string | null
+          ai_executed_at: string | null
+          ai_response: Json | null
+          ano_detectado: number | null
+          banca_detectada: string | null
+          categoria_detectada: string | null
+          collected_at: string
+          confiabilidade: number | null
+          created_at: string
+          curated_at: string | null
+          curated_by: string | null
+          escolaridade_detectada: string | null
+          id: string
+          link_edital: string | null
+          oportunidade_id: string | null
+          orgao_detectado: string | null
+          rejection_reason: string | null
+          resumo_editorial: string | null
+          situacao_detectada: string | null
+          source_domain: string | null
+          source_title: string | null
+          source_url: string
+          status: string
+          tipo_detectado: string | null
+          titulo_sugerido: string | null
+          updated_at: string
+        }
+        Insert: {
+          abrangencia_detectada?: string | null
+          ai_engine?: string | null
+          ai_executed_at?: string | null
+          ai_response?: Json | null
+          ano_detectado?: number | null
+          banca_detectada?: string | null
+          categoria_detectada?: string | null
+          collected_at?: string
+          confiabilidade?: number | null
+          created_at?: string
+          curated_at?: string | null
+          curated_by?: string | null
+          escolaridade_detectada?: string | null
+          id?: string
+          link_edital?: string | null
+          oportunidade_id?: string | null
+          orgao_detectado?: string | null
+          rejection_reason?: string | null
+          resumo_editorial?: string | null
+          situacao_detectada?: string | null
+          source_domain?: string | null
+          source_title?: string | null
+          source_url: string
+          status?: string
+          tipo_detectado?: string | null
+          titulo_sugerido?: string | null
+          updated_at?: string
+        }
+        Update: {
+          abrangencia_detectada?: string | null
+          ai_engine?: string | null
+          ai_executed_at?: string | null
+          ai_response?: Json | null
+          ano_detectado?: number | null
+          banca_detectada?: string | null
+          categoria_detectada?: string | null
+          collected_at?: string
+          confiabilidade?: number | null
+          created_at?: string
+          curated_at?: string | null
+          curated_by?: string | null
+          escolaridade_detectada?: string | null
+          id?: string
+          link_edital?: string | null
+          oportunidade_id?: string | null
+          orgao_detectado?: string | null
+          rejection_reason?: string | null
+          resumo_editorial?: string | null
+          situacao_detectada?: string | null
+          source_domain?: string | null
+          source_title?: string | null
+          source_url?: string
+          status?: string
+          tipo_detectado?: string | null
+          titulo_sugerido?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "concursos_pending_items_oportunidade_id_fkey"
+            columns: ["oportunidade_id"]
+            isOneToOne: false
+            referencedRelation: "oportunidades"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "concursos_pending_items_oportunidade_id_fkey"
+            columns: ["oportunidade_id"]
+            isOneToOne: false
+            referencedRelation: "oportunidades_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       course_suggestions: {
         Row: {
           created_at: string
