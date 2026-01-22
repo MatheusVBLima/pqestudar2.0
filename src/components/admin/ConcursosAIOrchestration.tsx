@@ -1,8 +1,8 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
@@ -12,12 +12,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { RotateCcw, Save, Bot, AlertCircle } from "lucide-react";
+import { RotateCcw, Save, Bot, AlertCircle, CheckCircle2, AlertTriangle, Loader2, Wifi } from "lucide-react";
 import { useAIOrchestrationConfig, AIOrchestrationConfig } from "@/hooks/useConcursosAdmin";
 import { toast } from "sonner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { supabase } from "@/integrations/supabase/client";
 
 const AI_FUNCTIONS = [
   { id: "classify", label: "Classificar conteúdo", description: "Determina categoria e tipo" },
@@ -27,8 +27,18 @@ const AI_FUNCTIONS = [
   { id: "evaluateReliability", label: "Avaliar confiabilidade", description: "Pontua a fonte" },
 ] as const;
 
+interface HealthCheckResult {
+  status: "ok" | "warning" | "error";
+  message: string;
+  hasKey: boolean;
+  model?: string;
+  responseTimeMs?: number;
+}
+
 export default function ConcursosAIOrchestration() {
   const { config, setConfig, resetConfig } = useAIOrchestrationConfig();
+  const [healthStatus, setHealthStatus] = useState<HealthCheckResult | null>(null);
+  const [isChecking, setIsChecking] = useState(false);
 
   const updateConfig = (updates: Partial<AIOrchestrationConfig>) => {
     setConfig({ ...config, ...updates });
@@ -47,8 +57,94 @@ export default function ConcursosAIOrchestration() {
     toast.success("Configurações de IA salvas!");
   };
 
+  const handleTestConnection = async () => {
+    if (config.engine !== "openai") {
+      toast.info("Teste de conexão disponível apenas para ChatGPT (OpenAI)");
+      return;
+    }
+
+    setIsChecking(true);
+    setHealthStatus(null);
+
+    try {
+      const { data: session } = await supabase.auth.getSession();
+      if (!session?.session) {
+        toast.error("Sessão expirada. Faça login novamente.");
+        return;
+      }
+
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/concursos-ai`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${session.session.access_token}`,
+          },
+          body: JSON.stringify({ action: "healthcheck" }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setHealthStatus({
+          status: "error",
+          message: data.error || "Erro na requisição",
+          hasKey: false,
+        });
+        return;
+      }
+
+      setHealthStatus(data);
+
+      if (data.status === "ok") {
+        toast.success(`Conexão OK! Modelo: ${data.model}`);
+      } else if (data.status === "warning") {
+        toast.warning(data.message);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (err) {
+      console.error("Healthcheck error:", err);
+      setHealthStatus({
+        status: "error",
+        message: "Erro ao conectar com o servidor",
+        hasKey: false,
+      });
+      toast.error("Erro ao testar conexão");
+    } finally {
+      setIsChecking(false);
+    }
+  };
+
   const isAIEnabled = config.engine !== "manual";
+  const isOpenAI = config.engine === "openai";
   const hasEnabledFunctions = Object.values(config.enabledFunctions).some(Boolean);
+
+  const getStatusIcon = () => {
+    if (!healthStatus) return null;
+    switch (healthStatus.status) {
+      case "ok":
+        return <CheckCircle2 className="h-4 w-4 text-green-500" />;
+      case "warning":
+        return <AlertTriangle className="h-4 w-4 text-yellow-500" />;
+      case "error":
+        return <AlertCircle className="h-4 w-4 text-red-500" />;
+    }
+  };
+
+  const getStatusColor = () => {
+    if (!healthStatus) return "bg-muted";
+    switch (healthStatus.status) {
+      case "ok":
+        return "bg-green-500/10 border-green-500/30";
+      case "warning":
+        return "bg-yellow-500/10 border-yellow-500/30";
+      case "error":
+        return "bg-red-500/10 border-red-500/30";
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -97,6 +193,54 @@ export default function ConcursosAIOrchestration() {
                 A IA não será utilizada para classificação ou extração de dados.
               </AlertDescription>
             </Alert>
+          )}
+
+          {/* OpenAI-specific: Status & Test Connection */}
+          {isOpenAI && (
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleTestConnection}
+                  disabled={isChecking}
+                >
+                  {isChecking ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Wifi className="h-4 w-4 mr-2" />
+                  )}
+                  Testar conexão
+                </Button>
+
+                {healthStatus && (
+                  <div className={`flex items-center gap-2 px-3 py-1.5 rounded-md border ${getStatusColor()}`}>
+                    {getStatusIcon()}
+                    <span className="text-sm">{healthStatus.message}</span>
+                    {healthStatus.responseTimeMs && (
+                      <Badge variant="outline" className="text-xs">
+                        {healthStatus.responseTimeMs}ms
+                      </Badge>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {healthStatus && !healthStatus.hasKey && (
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>
+                    <strong>Chave ausente</strong> — defina <code>OPENAI_API_KEY</code> no ambiente (Supabase Secrets).
+                  </AlertDescription>
+                </Alert>
+              )}
+
+              {healthStatus?.model && (
+                <p className="text-sm text-muted-foreground">
+                  Modelo configurado: <code className="bg-muted px-1 rounded">{healthStatus.model}</code>
+                </p>
+              )}
+            </div>
           )}
         </CardContent>
       </Card>
@@ -170,7 +314,7 @@ export default function ConcursosAIOrchestration() {
         <CardHeader>
           <CardTitle className="text-base">Limites de Execução</CardTitle>
           <CardDescription>
-            Configure limites para controlar custos e tempo
+            Configure limites para controlar custos e tempo. Limites finais são definidos no servidor (ENV).
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -187,6 +331,7 @@ export default function ConcursosAIOrchestration() {
                 max={4000}
                 disabled={!isAIEnabled}
               />
+              <p className="text-xs text-muted-foreground">Limite ENV: AI_MAX_TOKENS_PER_ITEM</p>
             </div>
 
             <div className="space-y-2">
@@ -201,6 +346,7 @@ export default function ConcursosAIOrchestration() {
                 max={50}
                 disabled={!isAIEnabled}
               />
+              <p className="text-xs text-muted-foreground">Limite ENV: AI_MAX_ITEMS_PER_ROUND</p>
             </div>
 
             <div className="space-y-2">
@@ -216,6 +362,7 @@ export default function ConcursosAIOrchestration() {
                 step={1000}
                 disabled={!isAIEnabled}
               />
+              <p className="text-xs text-muted-foreground">Limite ENV: OPENAI_TIMEOUT_MS</p>
             </div>
           </div>
         </CardContent>

@@ -14,3 +14,9 @@ verify_jwt = true
 
 [functions.auth-resend-confirmation]
 verify_jwt = false
+
+[functions.concursos-ai]
+verify_jwt = false
+
+[functions.admin-oportunidades]
+verify_jwt = false
