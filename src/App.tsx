@@ -39,6 +39,8 @@ import Assine from "./pages/Assine";
 import Ferramentas from "./pages/Ferramentas";
 import Links from "./pages/Links";
 import MapaDosBeneficios from "./pages/MapaDosBeneficios";
+import Concursos from "./pages/Concursos";
+import ConcursoDetalhe from "./pages/ConcursoDetalhe";
 
 const queryClient = new QueryClient();
 
@@ -78,7 +80,8 @@ const AppWithPixel = () => {
       <Route path="/ferramentas" element={<Ferramentas />} />
       <Route path="/links" element={<Links />} />
       <Route path="/mapa-dos-beneficios" element={<MapaDosBeneficios />} />
-      
+      <Route path="/concursos" element={<Concursos />} />
+      <Route path="/concursos/:slug" element={<ConcursoDetalhe />} />
       {/* Bonus Pages - Exact Routes (noindex) */}
       <Route path="/acesso-kit-partida-8h3z" element={<BonusPage />} />
       <Route path="/curadoria-conteudo-ia-k4f9" element={<BonusPage />} />

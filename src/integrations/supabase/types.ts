@@ -237,6 +237,51 @@ export type Database = {
         }
         Relationships: []
       }
+      fontes_oportunidade: {
+        Row: {
+          created_at: string
+          id: string
+          oportunidade_id: string
+          source_date: string | null
+          source_tipo: string
+          source_title: string | null
+          source_url: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          oportunidade_id: string
+          source_date?: string | null
+          source_tipo: string
+          source_title?: string | null
+          source_url: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          oportunidade_id?: string
+          source_date?: string | null
+          source_tipo?: string
+          source_title?: string | null
+          source_url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fontes_oportunidade_oportunidade_id_fkey"
+            columns: ["oportunidade_id"]
+            isOneToOne: false
+            referencedRelation: "oportunidades"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fontes_oportunidade_oportunidade_id_fkey"
+            columns: ["oportunidade_id"]
+            isOneToOne: false
+            referencedRelation: "oportunidades_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       news: {
         Row: {
           author: string | null
@@ -513,6 +558,72 @@ export type Database = {
           subscribed_at?: string
           unsubscribed_at?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      oportunidades: {
+        Row: {
+          abrangencia: string
+          banca: string | null
+          categoria: string
+          created_at: string
+          created_by: string | null
+          data_publicacao: string
+          escolaridade: string
+          id: string
+          link_edital: string | null
+          orgao: string | null
+          publicado: boolean
+          resumo_editorial: string | null
+          situacao: string
+          slug: string
+          tipo: string
+          titulo: string
+          updated_at: string
+          updated_by: string | null
+          visualizacoes: number
+        }
+        Insert: {
+          abrangencia: string
+          banca?: string | null
+          categoria: string
+          created_at?: string
+          created_by?: string | null
+          data_publicacao?: string
+          escolaridade: string
+          id?: string
+          link_edital?: string | null
+          orgao?: string | null
+          publicado?: boolean
+          resumo_editorial?: string | null
+          situacao: string
+          slug: string
+          tipo: string
+          titulo: string
+          updated_at?: string
+          updated_by?: string | null
+          visualizacoes?: number
+        }
+        Update: {
+          abrangencia?: string
+          banca?: string | null
+          categoria?: string
+          created_at?: string
+          created_by?: string | null
+          data_publicacao?: string
+          escolaridade?: string
+          id?: string
+          link_edital?: string | null
+          orgao?: string | null
+          publicado?: boolean
+          resumo_editorial?: string | null
+          situacao?: string
+          slug?: string
+          tipo?: string
+          titulo?: string
+          updated_at?: string
+          updated_by?: string | null
+          visualizacoes?: number
         }
         Relationships: []
       }
@@ -849,6 +960,89 @@ export type Database = {
           upvotes?: number | null
           views?: number | null
           vote_score?: number | null
+        }
+        Relationships: []
+      }
+      fontes_oportunidade_public: {
+        Row: {
+          id: string | null
+          oportunidade_id: string | null
+          source_date: string | null
+          source_tipo: string | null
+          source_title: string | null
+          source_url: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fontes_oportunidade_oportunidade_id_fkey"
+            columns: ["oportunidade_id"]
+            isOneToOne: false
+            referencedRelation: "oportunidades"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fontes_oportunidade_oportunidade_id_fkey"
+            columns: ["oportunidade_id"]
+            isOneToOne: false
+            referencedRelation: "oportunidades_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      oportunidades_public: {
+        Row: {
+          abrangencia: string | null
+          banca: string | null
+          categoria: string | null
+          created_at: string | null
+          data_publicacao: string | null
+          escolaridade: string | null
+          id: string | null
+          link_edital: string | null
+          orgao: string | null
+          resumo_editorial: string | null
+          situacao: string | null
+          slug: string | null
+          tipo: string | null
+          titulo: string | null
+          updated_at: string | null
+          visualizacoes: number | null
+        }
+        Insert: {
+          abrangencia?: string | null
+          banca?: string | null
+          categoria?: string | null
+          created_at?: string | null
+          data_publicacao?: string | null
+          escolaridade?: string | null
+          id?: string | null
+          link_edital?: string | null
+          orgao?: string | null
+          resumo_editorial?: string | null
+          situacao?: string | null
+          slug?: string | null
+          tipo?: string | null
+          titulo?: string | null
+          updated_at?: string | null
+          visualizacoes?: number | null
+        }
+        Update: {
+          abrangencia?: string | null
+          banca?: string | null
+          categoria?: string | null
+          created_at?: string | null
+          data_publicacao?: string | null
+          escolaridade?: string | null
+          id?: string | null
+          link_edital?: string | null
+          orgao?: string | null
+          resumo_editorial?: string | null
+          situacao?: string | null
+          slug?: string | null
+          tipo?: string | null
+          titulo?: string | null
+          updated_at?: string | null
+          visualizacoes?: number | null
         }
         Relationships: []
       }
