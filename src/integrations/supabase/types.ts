@@ -80,6 +80,167 @@ export type Database = {
         }
         Relationships: []
       }
+      coleta_config: {
+        Row: {
+          ano_alvo: number
+          caminhos_bloqueados: Json
+          caminhos_permitidos: Json
+          created_at: string
+          escopo: string
+          extensoes_bloqueadas: Json
+          id: string
+          limite_paginas: number
+          limite_resultados: number
+          profundidade: number
+          tema_consulta: string | null
+          updated_at: string
+        }
+        Insert: {
+          ano_alvo?: number
+          caminhos_bloqueados?: Json
+          caminhos_permitidos?: Json
+          created_at?: string
+          escopo?: string
+          extensoes_bloqueadas?: Json
+          id?: string
+          limite_paginas?: number
+          limite_resultados?: number
+          profundidade?: number
+          tema_consulta?: string | null
+          updated_at?: string
+        }
+        Update: {
+          ano_alvo?: number
+          caminhos_bloqueados?: Json
+          caminhos_permitidos?: Json
+          created_at?: string
+          escopo?: string
+          extensoes_bloqueadas?: Json
+          id?: string
+          limite_paginas?: number
+          limite_resultados?: number
+          profundidade?: number
+          tema_consulta?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      coleta_run_items: {
+        Row: {
+          ano_alvo: number
+          created_at: string
+          data_coleta: string
+          dominio: string
+          hash_conteudo: string | null
+          id: string
+          meta_obs: string | null
+          metodo_coleta: string
+          motivo_descartar: string | null
+          run_id: string
+          status: string
+          texto_bruto: string | null
+          tipo_pagina: string
+          url: string
+        }
+        Insert: {
+          ano_alvo: number
+          created_at?: string
+          data_coleta?: string
+          dominio: string
+          hash_conteudo?: string | null
+          id?: string
+          meta_obs?: string | null
+          metodo_coleta: string
+          motivo_descartar?: string | null
+          run_id: string
+          status?: string
+          texto_bruto?: string | null
+          tipo_pagina?: string
+          url: string
+        }
+        Update: {
+          ano_alvo?: number
+          created_at?: string
+          data_coleta?: string
+          dominio?: string
+          hash_conteudo?: string | null
+          id?: string
+          meta_obs?: string | null
+          metodo_coleta?: string
+          motivo_descartar?: string | null
+          run_id?: string
+          status?: string
+          texto_bruto?: string | null
+          tipo_pagina?: string
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coleta_run_items_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "coleta_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      coleta_runs: {
+        Row: {
+          ano_alvo: number
+          created_at: string
+          executed_at: string
+          filtros_snapshot: Json
+          id: string
+          limite_paginas: number | null
+          limite_resultados: number | null
+          profundidade: number | null
+          sites_env: Json
+          status_execucao: string
+          tema_consulta: string | null
+          tipo_coleta: string
+          total_erros: number
+          total_ignoradas: number
+          total_novas: number
+          total_urls: number
+        }
+        Insert: {
+          ano_alvo: number
+          created_at?: string
+          executed_at?: string
+          filtros_snapshot?: Json
+          id?: string
+          limite_paginas?: number | null
+          limite_resultados?: number | null
+          profundidade?: number | null
+          sites_env?: Json
+          status_execucao?: string
+          tema_consulta?: string | null
+          tipo_coleta: string
+          total_erros?: number
+          total_ignoradas?: number
+          total_novas?: number
+          total_urls?: number
+        }
+        Update: {
+          ano_alvo?: number
+          created_at?: string
+          executed_at?: string
+          filtros_snapshot?: Json
+          id?: string
+          limite_paginas?: number | null
+          limite_resultados?: number | null
+          profundidade?: number | null
+          sites_env?: Json
+          status_execucao?: string
+          tema_consulta?: string | null
+          tipo_coleta?: string
+          total_erros?: number
+          total_ignoradas?: number
+          total_novas?: number
+          total_urls?: number
+        }
+        Relationships: []
+      }
       concursos_analyzed_urls: {
         Row: {
           analyzed_at: string
