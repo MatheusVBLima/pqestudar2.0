@@ -65,6 +65,7 @@ interface ExtendedOportunidade extends Oportunidade {
   meta_title?: string;
   meta_description?: string;
   published_at?: string;
+  escolaridades?: ("Fundamental" | "Médio" | "Superior")[];
   atualizacoes_oportunidade?: Atualizacao[];
 }
 
@@ -88,6 +89,11 @@ function parseContent(content: string): string {
 
 // Generate JSON-LD structured data
 function generateJsonLd(oportunidade: ExtendedOportunidade, canonicalUrl: string) {
+  // Normalize escolaridades for schema
+  const escolaridadesList = oportunidade.escolaridades?.length 
+    ? oportunidade.escolaridades 
+    : [oportunidade.escolaridade];
+
   const baseData = {
     "@context": "https://schema.org",
     "@type": "Article",
@@ -108,6 +114,10 @@ function generateJsonLd(oportunidade: ExtendedOportunidade, canonicalUrl: string
     "author": {
       "@type": "Organization",
       "name": "PqEstudar"
+    },
+    "about": {
+      "@type": "EducationalOccupationalCredential",
+      "educationalLevel": escolaridadesList.join(", "),
     }
   };
 
@@ -527,15 +537,22 @@ export default function ConcursoDetalhe() {
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {/* Escolaridade */}
+                  {/* Escolaridade(s) */}
                   <div className="space-y-1">
                     <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                       Escolaridade
                     </p>
-                    <Badge variant="secondary" className="w-fit">
-                      <GraduationCap className="h-3 w-3 mr-1" />
-                      {oportunidade.escolaridade}
-                    </Badge>
+                    <div className="flex flex-wrap gap-1">
+                      {(oportunidade.escolaridades?.length 
+                        ? oportunidade.escolaridades 
+                        : [oportunidade.escolaridade]
+                      ).map(esc => (
+                        <Badge key={esc} variant="secondary" className="w-fit">
+                          <GraduationCap className="h-3 w-3 mr-1" />
+                          {esc}
+                        </Badge>
+                      ))}
+                    </div>
                   </div>
 
                   {/* Abrangência */}

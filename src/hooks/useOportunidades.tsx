@@ -20,8 +20,9 @@ export interface Oportunidade {
   situacao: "Previsto" | "Edital publicado" | "Aberto" | "Encerrado";
   data_publicacao: string;
   visualizacoes: number;
-  tipo: "Concurso" | "Programa educacional" | "Processo seletivo";
-  escolaridade: "Fundamental" | "Médio" | "Superior";
+  tipo: "Concurso" | "Programa educacional" | "Processo seletivo" | "Processo Seletivo Simplificado";
+  escolaridade: "Fundamental" | "Médio" | "Superior"; // Legacy single field
+  escolaridades?: ("Fundamental" | "Médio" | "Superior")[]; // New multi-select field
   link_edital?: string;
   orgao?: string;
   banca?: string;
@@ -66,7 +67,13 @@ export function useOportunidades(filters?: OportunidadeFilters) {
 
       if (error) throw error;
 
-      let result = (data || []) as unknown as Oportunidade[];
+      let result = ((data || []) as unknown as Oportunidade[]).map(o => ({
+        ...o,
+        // Normalize: ensure escolaridades array exists (backward compat)
+        escolaridades: (o as any).escolaridades?.length 
+          ? (o as any).escolaridades 
+          : (o.escolaridade ? [o.escolaridade] : ["Médio"]),
+      }));
 
       // Apply filters client-side for views
       if (filters?.situacao?.length) {
@@ -76,7 +83,11 @@ export function useOportunidades(filters?: OportunidadeFilters) {
         result = result.filter(o => filters.tipo!.includes(o.tipo));
       }
       if (filters?.escolaridade?.length) {
-        result = result.filter(o => filters.escolaridade!.includes(o.escolaridade));
+        // Multi-select intersection: item has ANY of the selected escolaridades
+        result = result.filter(o => {
+          const itemEscolaridades = o.escolaridades || [o.escolaridade];
+          return filters.escolaridade!.some(e => itemEscolaridades.includes(e));
+        });
       }
       if (filters?.abrangencia?.length) {
         result = result.filter(o => filters.abrangencia!.includes(o.abrangencia));
