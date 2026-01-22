@@ -32,6 +32,48 @@ export type Database = {
         }
         Relationships: []
       }
+      atualizacoes_oportunidade: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          data_atualizacao: string
+          id: string
+          oportunidade_id: string
+          texto: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          data_atualizacao?: string
+          id?: string
+          oportunidade_id: string
+          texto: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          data_atualizacao?: string
+          id?: string
+          oportunidade_id?: string
+          texto?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "atualizacoes_oportunidade_oportunidade_id_fkey"
+            columns: ["oportunidade_id"]
+            isOneToOne: false
+            referencedRelation: "oportunidades"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "atualizacoes_oportunidade_oportunidade_id_fkey"
+            columns: ["oportunidade_id"]
+            isOneToOne: false
+            referencedRelation: "oportunidades_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       brevo_config: {
         Row: {
           allow_resend_welcome: boolean
@@ -955,17 +997,22 @@ export type Database = {
           abrangencia: string
           banca: string | null
           categoria: string
+          conteudo_principal: string | null
           created_at: string
           created_by: string | null
           data_publicacao: string
           escolaridade: string
           id: string
           link_edital: string | null
+          meta_description: string | null
+          meta_title: string | null
           orgao: string | null
           publicado: boolean
+          published_at: string | null
           resumo_editorial: string | null
           situacao: string
           slug: string
+          slug_locked: boolean
           tipo: string
           titulo: string
           updated_at: string
@@ -976,17 +1023,22 @@ export type Database = {
           abrangencia: string
           banca?: string | null
           categoria: string
+          conteudo_principal?: string | null
           created_at?: string
           created_by?: string | null
           data_publicacao?: string
           escolaridade: string
           id?: string
           link_edital?: string | null
+          meta_description?: string | null
+          meta_title?: string | null
           orgao?: string | null
           publicado?: boolean
+          published_at?: string | null
           resumo_editorial?: string | null
           situacao: string
           slug: string
+          slug_locked?: boolean
           tipo: string
           titulo: string
           updated_at?: string
@@ -997,17 +1049,22 @@ export type Database = {
           abrangencia?: string
           banca?: string | null
           categoria?: string
+          conteudo_principal?: string | null
           created_at?: string
           created_by?: string | null
           data_publicacao?: string
           escolaridade?: string
           id?: string
           link_edital?: string | null
+          meta_description?: string | null
+          meta_title?: string | null
           orgao?: string | null
           publicado?: boolean
+          published_at?: string | null
           resumo_editorial?: string | null
           situacao?: string
           slug?: string
+          slug_locked?: boolean
           tipo?: string
           titulo?: string
           updated_at?: string
@@ -1015,6 +1072,42 @@ export type Database = {
           visualizacoes?: number
         }
         Relationships: []
+      }
+      oportunidades_slug_redirects: {
+        Row: {
+          created_at: string
+          id: string
+          old_slug: string
+          oportunidade_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          old_slug: string
+          oportunidade_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          old_slug?: string
+          oportunidade_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "oportunidades_slug_redirects_oportunidade_id_fkey"
+            columns: ["oportunidade_id"]
+            isOneToOne: false
+            referencedRelation: "oportunidades"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "oportunidades_slug_redirects_oportunidade_id_fkey"
+            columns: ["oportunidade_id"]
+            isOneToOne: false
+            referencedRelation: "oportunidades_public"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       partners: {
         Row: {
@@ -1237,6 +1330,31 @@ export type Database = {
         }
         Relationships: []
       }
+      atualizacoes_oportunidade_public: {
+        Row: {
+          created_at: string | null
+          data_atualizacao: string | null
+          id: string | null
+          oportunidade_id: string | null
+          texto: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "atualizacoes_oportunidade_oportunidade_id_fkey"
+            columns: ["oportunidade_id"]
+            isOneToOne: false
+            referencedRelation: "oportunidades"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "atualizacoes_oportunidade_oportunidade_id_fkey"
+            columns: ["oportunidade_id"]
+            isOneToOne: false
+            referencedRelation: "oportunidades_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       course_suggestions_me: {
         Row: {
           created_at: string | null
@@ -1383,12 +1501,16 @@ export type Database = {
           abrangencia: string | null
           banca: string | null
           categoria: string | null
+          conteudo_principal: string | null
           created_at: string | null
           data_publicacao: string | null
           escolaridade: string | null
           id: string | null
           link_edital: string | null
+          meta_description: string | null
+          meta_title: string | null
           orgao: string | null
+          published_at: string | null
           resumo_editorial: string | null
           situacao: string | null
           slug: string | null
@@ -1401,12 +1523,16 @@ export type Database = {
           abrangencia?: string | null
           banca?: string | null
           categoria?: string | null
+          conteudo_principal?: string | null
           created_at?: string | null
           data_publicacao?: string | null
           escolaridade?: string | null
           id?: string | null
           link_edital?: string | null
+          meta_description?: string | null
+          meta_title?: string | null
           orgao?: string | null
+          published_at?: string | null
           resumo_editorial?: string | null
           situacao?: string | null
           slug?: string | null
@@ -1419,12 +1545,16 @@ export type Database = {
           abrangencia?: string | null
           banca?: string | null
           categoria?: string | null
+          conteudo_principal?: string | null
           created_at?: string | null
           data_publicacao?: string | null
           escolaridade?: string | null
           id?: string | null
           link_edital?: string | null
+          meta_description?: string | null
+          meta_title?: string | null
           orgao?: string | null
+          published_at?: string | null
           resumo_editorial?: string | null
           situacao?: string | null
           slug?: string | null

@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { motion } from "framer-motion";
+import { Helmet } from "react-helmet";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { Button } from "@/components/ui/button";
@@ -24,8 +25,13 @@ import {
   Calendar,
   Link as LinkIcon,
   AlertCircle,
+  Clock,
+  ChevronRight,
+  Home,
 } from "lucide-react";
 import { useOportunidades, Oportunidade, FonteOportunidade } from "@/hooks/useOportunidades";
+import { supabase } from "@/integrations/supabase/client";
+import { sanitizeHtml } from "@/lib/utils";
 
 const CATEGORIA_COLORS: Record<string, string> = {
   "Concurso": "bg-blue-500/10 text-blue-500 border-blue-500/20",
@@ -47,12 +53,100 @@ const SOURCE_TIPO_LABELS: Record<string, string> = {
   "outro-oficial": "Outra fonte oficial",
 };
 
+interface Atualizacao {
+  id: string;
+  data_atualizacao: string;
+  texto: string;
+  created_at: string;
+}
+
+interface ExtendedOportunidade extends Oportunidade {
+  conteudo_principal?: string;
+  meta_title?: string;
+  meta_description?: string;
+  published_at?: string;
+  atualizacoes_oportunidade?: Atualizacao[];
+}
+
+// Convert markdown-like headings to HTML
+function parseContent(content: string): string {
+  if (!content) return "";
+  
+  return content
+    // H2 headings
+    .replace(/^## (.+)$/gm, '<h2 class="text-xl font-semibold mt-6 mb-3">$1</h2>')
+    // H3 headings  
+    .replace(/^### (.+)$/gm, '<h3 class="text-lg font-medium mt-4 mb-2">$1</h3>')
+    // Paragraphs (double newlines)
+    .split(/\n\n+/)
+    .map(para => {
+      if (para.startsWith('<h2') || para.startsWith('<h3')) return para;
+      return `<p class="mb-4">${para.replace(/\n/g, '<br/>')}</p>`;
+    })
+    .join('');
+}
+
+// Generate JSON-LD structured data
+function generateJsonLd(oportunidade: ExtendedOportunidade, canonicalUrl: string) {
+  const baseData = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": oportunidade.titulo,
+    "description": oportunidade.meta_description || oportunidade.resumo_editorial,
+    "datePublished": oportunidade.published_at || oportunidade.created_at,
+    "dateModified": oportunidade.updated_at,
+    "inLanguage": "pt-BR",
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": canonicalUrl,
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "PqEstudar",
+      "url": "https://pqestudar.com.br"
+    },
+    "author": {
+      "@type": "Organization",
+      "name": "PqEstudar"
+    }
+  };
+
+  // Add BreadcrumbList
+  const breadcrumbData = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Início",
+        "item": "https://pqestudar.com.br"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Concursos",
+        "item": "https://pqestudar.com.br/concursos"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": oportunidade.titulo,
+        "item": canonicalUrl
+      }
+    ]
+  };
+
+  return [baseData, breadcrumbData];
+}
+
 export default function ConcursoDetalhe() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const { fetchBySlug, incrementViews } = useOportunidades();
   
-  const [oportunidade, setOportunidade] = useState<Oportunidade | null>(null);
+  const [oportunidade, setOportunidade] = useState<ExtendedOportunidade | null>(null);
+  const [atualizacoes, setAtualizacoes] = useState<Atualizacao[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -65,13 +159,45 @@ export default function ConcursoDetalhe() {
       }
 
       try {
-        const data = await fetchBySlug(slug);
+        // Check for redirects first
+        const { data: redirect } = await supabase
+          .from("oportunidades_slug_redirects")
+          .select("oportunidade_id")
+          .eq("old_slug", slug)
+          .single();
+
+        if (redirect) {
+          // Get the current slug for the oportunidade
+          const { data: currentOp } = await supabase
+            .from("oportunidades")
+            .select("slug")
+            .eq("id", redirect.oportunidade_id)
+            .eq("publicado", true)
+            .single();
+
+          if (currentOp) {
+            // Redirect to new slug
+            navigate(`/concursos/${currentOp.slug}`, { replace: true });
+            return;
+          }
+        }
+
+        const data = await fetchBySlug(slug) as ExtendedOportunidade;
         if (!data) {
           setError("Oportunidade não encontrada");
         } else {
           setOportunidade(data);
           // Increment views
           incrementViews(data.id);
+
+          // Fetch atualizacoes
+          const { data: atualizacoesData } = await supabase
+            .from("atualizacoes_oportunidade")
+            .select("*")
+            .eq("oportunidade_id", data.id)
+            .order("data_atualizacao", { ascending: false });
+
+          setAtualizacoes(atualizacoesData || []);
         }
       } catch (e) {
         setError("Erro ao carregar oportunidade");
@@ -81,7 +207,7 @@ export default function ConcursoDetalhe() {
     }
 
     loadOportunidade();
-  }, [slug, fetchBySlug, incrementViews]);
+  }, [slug, fetchBySlug, incrementViews, navigate]);
 
   const handleShare = async () => {
     const url = window.location.href;
@@ -117,6 +243,8 @@ export default function ConcursoDetalhe() {
     }
   };
 
+  const canonicalUrl = `https://pqestudar.com.br/concursos/${slug}`;
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex flex-col bg-background">
@@ -138,6 +266,9 @@ export default function ConcursoDetalhe() {
   if (error || !oportunidade) {
     return (
       <div className="min-h-screen flex flex-col bg-background">
+        <Helmet>
+          <meta name="robots" content="noindex, nofollow" />
+        </Helmet>
         <Navbar />
         <main className="flex-1 container mx-auto px-4 py-16 max-w-4xl text-center">
           <AlertCircle className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
@@ -160,12 +291,61 @@ export default function ConcursoDetalhe() {
   }
 
   const fontes = oportunidade.fontes_oportunidade || [];
+  const metaTitle = oportunidade.meta_title || oportunidade.titulo;
+  const metaDescription = oportunidade.meta_description || oportunidade.resumo_editorial || "";
+  const jsonLdData = generateJsonLd(oportunidade, canonicalUrl);
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
+      {/* SEO Meta Tags */}
+      <Helmet>
+        <title>{metaTitle} | PqEstudar</title>
+        <meta name="description" content={metaDescription.substring(0, 160)} />
+        <link rel="canonical" href={canonicalUrl} />
+        
+        {/* Open Graph */}
+        <meta property="og:title" content={metaTitle} />
+        <meta property="og:description" content={metaDescription.substring(0, 160)} />
+        <meta property="og:url" content={canonicalUrl} />
+        <meta property="og:type" content="article" />
+        <meta property="og:site_name" content="PqEstudar" />
+        
+        {/* Twitter */}
+        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:title" content={metaTitle} />
+        <meta name="twitter:description" content={metaDescription.substring(0, 160)} />
+        
+        {/* JSON-LD Structured Data */}
+        <script type="application/ld+json">
+          {JSON.stringify(jsonLdData)}
+        </script>
+      </Helmet>
+
       <Navbar />
       
       <main className="flex-1 container mx-auto px-4 py-8 max-w-4xl">
+        {/* Breadcrumbs */}
+        <nav aria-label="Breadcrumb" className="mb-6">
+          <ol className="flex items-center gap-2 text-sm text-muted-foreground">
+            <li>
+              <Link to="/" className="hover:text-foreground flex items-center gap-1">
+                <Home className="h-3 w-3" />
+                Início
+              </Link>
+            </li>
+            <ChevronRight className="h-3 w-3" />
+            <li>
+              <Link to="/concursos" className="hover:text-foreground">
+                Concursos
+              </Link>
+            </li>
+            <ChevronRight className="h-3 w-3" />
+            <li className="text-foreground font-medium truncate max-w-[200px]">
+              {oportunidade.titulo}
+            </li>
+          </ol>
+        </nav>
+
         {/* Back button */}
         <Button
           variant="ghost"
@@ -205,9 +385,11 @@ export default function ConcursoDetalhe() {
             <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
               <div className="flex items-center gap-1">
                 <Calendar className="h-4 w-4" />
-                {format(new Date(oportunidade.data_publicacao), "d 'de' MMMM 'de' yyyy", {
-                  locale: ptBR,
-                })}
+                <time dateTime={oportunidade.data_publicacao}>
+                  {format(new Date(oportunidade.data_publicacao), "d 'de' MMMM 'de' yyyy", {
+                    locale: ptBR,
+                  })}
+                </time>
               </div>
               <div className="flex items-center gap-1">
                 <Eye className="h-4 w-4" />
@@ -239,7 +421,7 @@ export default function ConcursoDetalhe() {
 
           <Separator className="my-8" />
 
-          {/* Bloco 1 - Conteúdo Editorial */}
+          {/* Resumo Editorial */}
           <section className="mb-8">
             <Card>
               <CardHeader>
@@ -250,7 +432,7 @@ export default function ConcursoDetalhe() {
               </CardHeader>
               <CardContent className="prose prose-neutral dark:prose-invert max-w-none">
                 {oportunidade.resumo_editorial ? (
-                  <p>{oportunidade.resumo_editorial}</p>
+                  <p className="text-base leading-relaxed">{oportunidade.resumo_editorial}</p>
                 ) : (
                   <p className="text-muted-foreground italic">
                     Informações detalhadas serão adicionadas em breve. Consulte as fontes oficiais abaixo para mais informações.
@@ -276,7 +458,62 @@ export default function ConcursoDetalhe() {
             </Card>
           </section>
 
-          {/* Bloco 2 - Tags/Classificação */}
+          {/* Conteúdo Principal */}
+          {oportunidade.conteudo_principal && (
+            <section className="mb-8">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <FileText className="h-5 w-5" />
+                    Informações Detalhadas
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="prose prose-neutral dark:prose-invert max-w-none">
+                  <div 
+                    dangerouslySetInnerHTML={{ 
+                      __html: sanitizeHtml(parseContent(oportunidade.conteudo_principal)) 
+                    }} 
+                  />
+                </CardContent>
+              </Card>
+            </section>
+          )}
+
+          {/* Atualizações */}
+          {atualizacoes.length > 0 && (
+            <section className="mb-8">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Clock className="h-5 w-5" />
+                    Atualizações
+                  </CardTitle>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Histórico de atualizações desta oportunidade
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-4">
+                    {atualizacoes.map((atualizacao) => (
+                      <li key={atualizacao.id} className="border-l-2 border-primary/30 pl-4">
+                        <time 
+                          dateTime={atualizacao.data_atualizacao}
+                          className="text-sm font-medium text-primary"
+                        >
+                          {format(new Date(atualizacao.data_atualizacao), "d 'de' MMMM 'de' yyyy", {
+                            locale: ptBR,
+                          })}
+                        </time>
+                        <p className="text-sm mt-1">{atualizacao.texto}</p>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            </section>
+          )}
+
+          {/* Tags/Classificação */}
           <section className="mb-8">
             <Card>
               <CardHeader>
@@ -344,7 +581,7 @@ export default function ConcursoDetalhe() {
             </Card>
           </section>
 
-          {/* Bloco 3 - Fontes */}
+          {/* Fontes */}
           <section className="mb-8">
             <Card>
               <CardHeader>
@@ -388,9 +625,12 @@ export default function ConcursoDetalhe() {
                               {SOURCE_TIPO_LABELS[fonte.source_tipo] || fonte.source_tipo}
                             </Badge>
                             {fonte.source_date && (
-                              <span className="text-xs text-muted-foreground">
+                              <time 
+                                dateTime={fonte.source_date}
+                                className="text-xs text-muted-foreground"
+                              >
                                 {format(new Date(fonte.source_date), "dd/MM/yyyy")}
-                              </span>
+                              </time>
                             )}
                           </div>
                         </div>

@@ -14,6 +14,12 @@ interface FonteInput {
   source_date?: string;
 }
 
+interface AtualizacaoInput {
+  id?: string;
+  data_atualizacao: string;
+  texto: string;
+}
+
 interface OportunidadeInput {
   id?: string;
   categoria: "Concurso" | "Políticas Públicas" | "Educação";
@@ -27,9 +33,21 @@ interface OportunidadeInput {
   orgao?: string;
   banca?: string;
   resumo_editorial?: string;
+  conteudo_principal?: string;
+  meta_title?: string;
+  meta_description?: string;
   slug: string;
   publicado?: boolean;
   fontes?: FonteInput[];
+  atualizacoes?: AtualizacaoInput[];
+}
+
+// Count words in text (stripping HTML)
+function countWords(text: string): number {
+  if (!text) return 0;
+  const stripped = text.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+  if (!stripped) return 0;
+  return stripped.split(/\s+/).length;
 }
 
 Deno.serve(async (req) => {
@@ -86,7 +104,7 @@ Deno.serve(async (req) => {
     if (req.method === "GET") {
       const { data, error } = await adminClient
         .from("oportunidades")
-        .select("*, fontes_oportunidade(*)")
+        .select("*, fontes_oportunidade(*), atualizacoes_oportunidade(*)")
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -107,6 +125,14 @@ Deno.serve(async (req) => {
         );
       }
 
+      // Validate title length
+      if (body.titulo.length < 30) {
+        return new Response(
+          JSON.stringify({ error: "Título deve ter pelo menos 30 caracteres" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
       // Validate link_edital requirement
       if ((body.situacao === "Aberto" || body.situacao === "Edital publicado") && !body.link_edital) {
         return new Response(
@@ -123,15 +149,16 @@ Deno.serve(async (req) => {
         );
       }
 
-      // If trying to publish, check fontes
-      if (body.publicado && (!body.fontes || body.fontes.length === 0)) {
-        return new Response(
-          JSON.stringify({ error: "Não é possível publicar sem pelo menos uma fonte oficial" }),
-          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
+      // Publication validations
+      if (body.publicado) {
+        // Check fontes
+        if (!body.fontes || body.fontes.length === 0) {
+          return new Response(
+            JSON.stringify({ error: "Não é possível publicar sem pelo menos uma fonte oficial" }),
+            { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
 
-      if (body.publicado && body.fontes) {
         const hasOfficialSource = body.fontes.some(f => 
           ["oficial", "diario", "banca", "outro-oficial"].includes(f.source_tipo)
         );
@@ -141,15 +168,49 @@ Deno.serve(async (req) => {
             { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
           );
         }
+
+        // Check resumo editorial
+        if (!body.resumo_editorial || body.resumo_editorial.length < 300) {
+          return new Response(
+            JSON.stringify({ error: "Resumo editorial deve ter pelo menos 300 caracteres para publicar" }),
+            { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+
+        // Check conteudo principal word count
+        const wordCount = countWords(body.conteudo_principal || "");
+        if (wordCount < 600) {
+          return new Response(
+            JSON.stringify({ error: `Conteúdo principal deve ter pelo menos 600 palavras para publicar (atual: ${wordCount})` }),
+            { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
       }
 
-      const { fontes, ...oportunidadeData } = body;
+      const { fontes, atualizacoes, ...oportunidadeData } = body;
+
+      // Generate meta fields if not provided
+      let metaTitle = body.meta_title;
+      if (!metaTitle && body.titulo) {
+        metaTitle = body.titulo.length > 65 
+          ? body.titulo.substring(0, 62).replace(/\s+\S*$/, "") + "..."
+          : body.titulo;
+      }
+
+      let metaDescription = body.meta_description;
+      if (!metaDescription && body.resumo_editorial) {
+        metaDescription = body.resumo_editorial.length > 155
+          ? body.resumo_editorial.substring(0, 152).replace(/\s+\S*$/, "") + "..."
+          : body.resumo_editorial;
+      }
 
       // Insert oportunidade (initially unpublished to add fontes first)
       const { data: oportunidade, error: insertError } = await adminClient
         .from("oportunidades")
         .insert({
           ...oportunidadeData,
+          meta_title: metaTitle,
+          meta_description: metaDescription,
           publicado: false, // Start unpublished
           created_by: user.id,
           updated_by: user.id,
@@ -190,11 +251,34 @@ Deno.serve(async (req) => {
         }
       }
 
+      // Insert atualizacoes if provided
+      if (atualizacoes && atualizacoes.length > 0) {
+        const atualizacoesData = atualizacoes.map(a => ({
+          oportunidade_id: oportunidade.id,
+          data_atualizacao: a.data_atualizacao,
+          texto: a.texto,
+          created_by: user.id,
+        }));
+
+        const { error: atualizacoesError } = await adminClient
+          .from("atualizacoes_oportunidade")
+          .insert(atualizacoesData);
+
+        if (atualizacoesError) {
+          console.error("Atualizacoes insert error:", atualizacoesError);
+          // Don't rollback, just log - atualizacoes are optional
+        }
+      }
+
       // Now update to published if requested
       if (body.publicado) {
         const { error: publishError } = await adminClient
           .from("oportunidades")
-          .update({ publicado: true })
+          .update({ 
+            publicado: true,
+            published_at: new Date().toISOString(),
+            slug_locked: true,
+          })
           .eq("id", oportunidade.id);
 
         if (publishError) {
@@ -205,10 +289,10 @@ Deno.serve(async (req) => {
         }
       }
 
-      // Fetch complete record with fontes
+      // Fetch complete record with fontes and atualizacoes
       const { data: completeRecord } = await adminClient
         .from("oportunidades")
-        .select("*, fontes_oportunidade(*)")
+        .select("*, fontes_oportunidade(*), atualizacoes_oportunidade(*)")
         .eq("id", oportunidade.id)
         .single();
 
@@ -229,6 +313,14 @@ Deno.serve(async (req) => {
         );
       }
 
+      // Validate title length
+      if (body.titulo && body.titulo.length < 30) {
+        return new Response(
+          JSON.stringify({ error: "Título deve ter pelo menos 30 caracteres" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
       // Validate link_edital requirement
       if ((body.situacao === "Aberto" || body.situacao === "Edital publicado") && !body.link_edital) {
         return new Response(
@@ -245,9 +337,32 @@ Deno.serve(async (req) => {
         );
       }
 
-      const { fontes, id, ...updateData } = body;
+      // Get existing record to check slug changes
+      const { data: existingRecord } = await adminClient
+        .from("oportunidades")
+        .select("slug, slug_locked, publicado, published_at")
+        .eq("id", body.id)
+        .single();
 
-      // If trying to publish, first check if there will be fontes
+      // Check if slug is being changed on a locked item
+      const isSlugLocked = existingRecord?.slug_locked || existingRecord?.publicado;
+      if (isSlugLocked && body.slug !== existingRecord?.slug) {
+        // Create redirect from old slug to new slug
+        const { error: redirectError } = await adminClient
+          .from("oportunidades_slug_redirects")
+          .insert({
+            oportunidade_id: body.id,
+            old_slug: existingRecord.slug,
+          });
+
+        if (redirectError && !redirectError.message.includes("duplicate")) {
+          console.error("Redirect insert error:", redirectError);
+        }
+      }
+
+      const { fontes, atualizacoes, id, ...updateData } = body;
+
+      // If trying to publish, validate requirements
       if (body.publicado) {
         // Check existing fontes or new fontes
         const { data: existingFontes } = await adminClient
@@ -266,6 +381,38 @@ Deno.serve(async (req) => {
             { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
           );
         }
+
+        // Check resumo editorial
+        if (!body.resumo_editorial || body.resumo_editorial.length < 300) {
+          return new Response(
+            JSON.stringify({ error: "Resumo editorial deve ter pelo menos 300 caracteres para publicar" }),
+            { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+
+        // Check conteudo principal word count
+        const wordCount = countWords(body.conteudo_principal || "");
+        if (wordCount < 600) {
+          return new Response(
+            JSON.stringify({ error: `Conteúdo principal deve ter pelo menos 600 palavras para publicar (atual: ${wordCount})` }),
+            { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+      }
+
+      // Generate meta fields if not provided
+      let metaTitle = body.meta_title;
+      if (!metaTitle && body.titulo) {
+        metaTitle = body.titulo.length > 65 
+          ? body.titulo.substring(0, 62).replace(/\s+\S*$/, "") + "..."
+          : body.titulo;
+      }
+
+      let metaDescription = body.meta_description;
+      if (!metaDescription && body.resumo_editorial) {
+        metaDescription = body.resumo_editorial.length > 155
+          ? body.resumo_editorial.substring(0, 152).replace(/\s+\S*$/, "") + "..."
+          : body.resumo_editorial;
       }
 
       // Update oportunidade (without publicado for now)
@@ -275,6 +422,8 @@ Deno.serve(async (req) => {
         .from("oportunidades")
         .update({
           ...safeUpdateData,
+          meta_title: metaTitle,
+          meta_description: metaDescription,
           updated_by: user.id,
         })
         .eq("id", id);
@@ -319,11 +468,50 @@ Deno.serve(async (req) => {
         }
       }
 
+      // Handle atualizacoes update
+      if (atualizacoes !== undefined) {
+        // Delete existing atualizacoes
+        await adminClient
+          .from("atualizacoes_oportunidade")
+          .delete()
+          .eq("oportunidade_id", id);
+
+        // Insert new atualizacoes
+        if (atualizacoes.length > 0) {
+          const atualizacoesData = atualizacoes.map(a => ({
+            oportunidade_id: id,
+            data_atualizacao: a.data_atualizacao,
+            texto: a.texto,
+            created_by: user.id,
+          }));
+
+          const { error: atualizacoesError } = await adminClient
+            .from("atualizacoes_oportunidade")
+            .insert(atualizacoesData);
+
+          if (atualizacoesError) {
+            console.error("Atualizacoes update error:", atualizacoesError);
+            // Don't fail the request for atualizacoes errors
+          }
+        }
+      }
+
       // Now update publicado status
       if (body.publicado !== undefined) {
+        const updateFields: any = { 
+          publicado: body.publicado,
+          updated_by: user.id,
+        };
+
+        // Set published_at and slug_locked when first publishing
+        if (body.publicado && !existingRecord?.published_at) {
+          updateFields.published_at = new Date().toISOString();
+          updateFields.slug_locked = true;
+        }
+
         const { error: publishError } = await adminClient
           .from("oportunidades")
-          .update({ publicado: body.publicado })
+          .update(updateFields)
           .eq("id", id);
 
         if (publishError) {
@@ -337,7 +525,7 @@ Deno.serve(async (req) => {
       // Fetch updated record
       const { data: updatedRecord } = await adminClient
         .from("oportunidades")
-        .select("*, fontes_oportunidade(*)")
+        .select("*, fontes_oportunidade(*), atualizacoes_oportunidade(*)")
         .eq("id", id)
         .single();
 
@@ -357,7 +545,7 @@ Deno.serve(async (req) => {
         );
       }
 
-      // Fontes will be deleted via CASCADE
+      // Fontes and atualizacoes will be deleted via CASCADE
       const { error: deleteError } = await adminClient
         .from("oportunidades")
         .delete()
@@ -388,14 +576,23 @@ Deno.serve(async (req) => {
         );
       }
 
-      // If trying to publish, check fontes
+      // If trying to publish, check all requirements
       if (publicado === true) {
-        const { data: fontes } = await adminClient
-          .from("fontes_oportunidade")
-          .select("source_tipo")
-          .eq("oportunidade_id", id);
+        const { data: oportunidade } = await adminClient
+          .from("oportunidades")
+          .select("*, fontes_oportunidade(*)")
+          .eq("id", id)
+          .single();
 
-        const hasOfficialSource = fontes?.some(f => 
+        if (!oportunidade) {
+          return new Response(
+            JSON.stringify({ error: "Oportunidade não encontrada" }),
+            { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+
+        const fontes = oportunidade.fontes_oportunidade || [];
+        const hasOfficialSource = fontes.some((f: any) => 
           ["oficial", "diario", "banca", "outro-oficial"].includes(f.source_tipo)
         );
 
@@ -405,11 +602,47 @@ Deno.serve(async (req) => {
             { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
           );
         }
+
+        // Check resumo editorial
+        if (!oportunidade.resumo_editorial || oportunidade.resumo_editorial.length < 300) {
+          return new Response(
+            JSON.stringify({ error: "Resumo editorial deve ter pelo menos 300 caracteres para publicar" }),
+            { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+
+        // Check conteudo principal word count
+        const wordCount = countWords(oportunidade.conteudo_principal || "");
+        if (wordCount < 600) {
+          return new Response(
+            JSON.stringify({ error: `Conteúdo principal deve ter pelo menos 600 palavras para publicar (atual: ${wordCount})` }),
+            { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+      }
+
+      const updateFields: any = { 
+        publicado, 
+        updated_by: user.id 
+      };
+
+      // Set published_at and slug_locked when first publishing
+      if (publicado) {
+        const { data: existingRecord } = await adminClient
+          .from("oportunidades")
+          .select("published_at")
+          .eq("id", id)
+          .single();
+
+        if (!existingRecord?.published_at) {
+          updateFields.published_at = new Date().toISOString();
+          updateFields.slug_locked = true;
+        }
       }
 
       const { error } = await adminClient
         .from("oportunidades")
-        .update({ publicado, updated_by: user.id })
+        .update(updateFields)
         .eq("id", id);
 
       if (error) {
