@@ -18,5 +18,8 @@ verify_jwt = false
 [functions.concursos-ai]
 verify_jwt = false
 
+[functions.concursos-coleta]
+verify_jwt = false
+
 [functions.admin-oportunidades]
 verify_jwt = false

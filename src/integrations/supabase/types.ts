@@ -462,6 +462,54 @@ export type Database = {
           },
         ]
       }
+      itens_brutos: {
+        Row: {
+          ano_alvo: number
+          created_at: string
+          data_coleta: string
+          dominio: string
+          hash_conteudo: string | null
+          id: string
+          meta_obs: string | null
+          metodo_coleta: string
+          motivo_status: string | null
+          status: string
+          texto_bruto: string | null
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          ano_alvo?: number
+          created_at?: string
+          data_coleta?: string
+          dominio: string
+          hash_conteudo?: string | null
+          id?: string
+          meta_obs?: string | null
+          metodo_coleta: string
+          motivo_status?: string | null
+          status?: string
+          texto_bruto?: string | null
+          updated_at?: string
+          url: string
+        }
+        Update: {
+          ano_alvo?: number
+          created_at?: string
+          data_coleta?: string
+          dominio?: string
+          hash_conteudo?: string | null
+          id?: string
+          meta_obs?: string | null
+          metodo_coleta?: string
+          motivo_status?: string | null
+          status?: string
+          texto_bruto?: string | null
+          updated_at?: string
+          url?: string
+        }
+        Relationships: []
+      }
       news: {
         Row: {
           author: string | null

@@ -19,15 +19,17 @@ import {
   Bot,
   ClipboardCheck,
   Settings,
+  Database,
 } from "lucide-react";
 import ConcursosSearchConfig from "./ConcursosSearchConfig";
 import ConcursosAntiRepetition from "./ConcursosAntiRepetition";
 import ConcursosAIOrchestration from "./ConcursosAIOrchestration";
 import ConcursosCuradoria from "./ConcursosCuradoria";
+import ConcursosColeta from "./ConcursosColeta";
 import { usePendingItems } from "@/hooks/useConcursosAdmin";
 
 export default function ConcursosAdminPanel() {
-  const [activeTab, setActiveTab] = useState("curadoria");
+  const [activeTab, setActiveTab] = useState("coleta");
   const { items } = usePendingItems("pending");
   const pendingCount = items.length;
 
@@ -47,6 +49,13 @@ export default function ConcursosAdminPanel() {
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="w-full justify-start rounded-none border-b bg-transparent p-0 h-auto flex-wrap">
+          <TabsTrigger
+            value="coleta"
+            className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3 gap-2"
+          >
+            <Database className="h-4 w-4" />
+            Coleta
+          </TabsTrigger>
           <TabsTrigger
             value="curadoria"
             className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3 gap-2"
@@ -83,6 +92,10 @@ export default function ConcursosAdminPanel() {
         </TabsList>
 
         <div className="p-4">
+          <TabsContent value="coleta" className="mt-0">
+            <ConcursosColeta />
+          </TabsContent>
+
           <TabsContent value="curadoria" className="mt-0">
             <ConcursosCuradoria />
           </TabsContent>
