@@ -28,11 +28,15 @@ interface ColetaRequest {
   ignoreNoDate?: boolean;
   ignoreOutOfYear?: boolean;
   metaObs?: string;
+  extensoesBloqueadas?: string[];
+  caminhosBloqueados?: string[];
+  caminhosPermitidos?: string[];
 }
 
 interface ColetaResult {
   url: string;
   dominio: string;
+  tipo_pagina: "listagem" | "detalhe";
   status: "novo" | "ignorado" | "erro";
   motivo?: string;
   textoLength?: number;
@@ -58,6 +62,48 @@ function extractDomain(url: string): string {
   }
 }
 
+// Check if URL ends with blocked extension
+function isBlockedExtension(url: string, blocked: string[]): boolean {
+  const lowerUrl = url.toLowerCase();
+  return blocked.some(ext => lowerUrl.endsWith(ext.toLowerCase()));
+}
+
+// Check if URL contains blocked path
+function isBlockedPath(url: string, blocked: string[]): boolean {
+  const lowerUrl = url.toLowerCase();
+  return blocked.some(path => lowerUrl.includes(path.toLowerCase()));
+}
+
+// Check if URL contains at least one allowed path (if list is not empty)
+function isAllowedPath(url: string, allowed: string[]): boolean {
+  if (allowed.length === 0) return true; // Empty = allow all
+  const lowerUrl = url.toLowerCase();
+  return allowed.some(path => lowerUrl.includes(path.toLowerCase()));
+}
+
+// Detect page type: listagem vs detalhe
+function detectPageType(html: string, text: string): "listagem" | "detalhe" {
+  const linkCount = (html.match(/<a\s/gi) || []).length;
+  const headingCount = (html.match(/<h[1-6]/gi) || []).length;
+  const paragraphCount = (html.match(/<p/gi) || []).length;
+  
+  // Heuristics for listing pages
+  const listingIndicators = [
+    linkCount > 15,
+    headingCount > 5,
+    text.toLowerCase().includes("previstos"),
+    text.toLowerCase().includes("novos concursos"),
+    text.toLowerCase().includes("confira a lista"),
+    text.toLowerCase().includes("veja todos"),
+    paragraphCount < 3 && linkCount > 10,
+  ];
+  
+  const listingScore = listingIndicators.filter(Boolean).length;
+  
+  // If more than 2 indicators match, it's likely a listing page
+  return listingScore >= 2 ? "listagem" : "detalhe";
+}
+
 // Check if content indicates concluded contest
 function isContentConcluded(text: string): boolean {
   const lowerText = text.toLowerCase();
@@ -70,13 +116,12 @@ function extractYear(text: string): number | null {
   const yearMatches = text.match(/\b(20[2-9]\d)\b/g);
   if (!yearMatches) return null;
   
-  // Find most recent year mentioned
-  const years = yearMatches.map(y => parseInt(y)).filter(y => y >= currentYear - 1 && y <= currentYear + 1);
+  const years = yearMatches.map(y => parseInt(y)).filter(y => y >= currentYear - 1 && y <= currentYear + 2);
   return years.length > 0 ? Math.max(...years) : null;
 }
 
 // Fetch and extract text from URL
-async function fetchPageContent(url: string): Promise<{ text: string; error?: string }> {
+async function fetchPageContent(url: string): Promise<{ html: string; text: string; error?: string }> {
   try {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 15000);
@@ -92,13 +137,13 @@ async function fetchPageContent(url: string): Promise<{ text: string; error?: st
     clearTimeout(timeout);
     
     if (!response.ok) {
-      return { text: "", error: `HTTP ${response.status}` };
+      return { html: "", text: "", error: `HTTP ${response.status}` };
     }
     
     const html = await response.text();
     
     // Basic HTML to text conversion
-    let text = html
+    const text = html
       .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, "")
       .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "")
       .replace(/<[^>]+>/g, " ")
@@ -111,10 +156,10 @@ async function fetchPageContent(url: string): Promise<{ text: string; error?: st
       .replace(/\s+/g, " ")
       .trim();
     
-    return { text };
+    return { html, text };
   } catch (error) {
     const msg = error instanceof Error ? error.message : "Unknown error";
-    return { text: "", error: msg };
+    return { html: "", text: "", error: msg };
   }
 }
 
@@ -188,7 +233,22 @@ serve(async (req) => {
     }
 
     const body: ColetaRequest = await req.json();
-    const { action, sites = [], depth = 1, limit = 20, urls = [], query = "", anoAlvo, ignoreAnalyzed = true, ignoreNoDate = true, ignoreOutOfYear = true, metaObs = "" } = body;
+    const { 
+      action, 
+      sites = [], 
+      depth = 2, 
+      limit = 50, 
+      urls = [], 
+      query = "", 
+      anoAlvo, 
+      ignoreAnalyzed = true, 
+      ignoreNoDate = true, 
+      ignoreOutOfYear = true, 
+      metaObs = "",
+      extensoesBloqueadas = [],
+      caminhosBloqueados = [],
+      caminhosPermitidos = [],
+    } = body;
     
     const targetYear = anoAlvo || new Date().getFullYear();
     const results: ColetaResult[] = [];
@@ -200,11 +260,9 @@ serve(async (req) => {
     if (action === "manual") {
       urlsToProcess = urls.filter(u => u.startsWith("http"));
     } else if (action === "crawler") {
-      // For crawler, start with site homepages and crawl
       const visited = new Set<string>();
       const toVisit: { url: string; currentDepth: number }[] = [];
       
-      // Initialize with site root URLs
       for (const site of sites) {
         const siteUrl = site.startsWith("http") ? site : `https://${site}`;
         toVisit.push({ url: siteUrl, currentDepth: 0 });
@@ -226,7 +284,7 @@ serve(async (req) => {
             const html = await response.text();
             const links = extractLinks(html, url, sites);
             
-            for (const link of links.slice(0, 10)) { // Limit links per page
+            for (const link of links.slice(0, 15)) {
               if (!visited.has(link) && urlsToProcess.length + toVisit.length < limit * 2) {
                 toVisit.push({ url: link, currentDepth: currentDepth + 1 });
               }
@@ -239,14 +297,10 @@ serve(async (req) => {
       
       urlsToProcess = urlsToProcess.slice(0, limit);
     } else if (action === "busca") {
-      // For search, we scan existing content within whitelist domains
-      // Since we can't use Google, we do a basic internal search
-      // This is a simplified approach - in real implementation, you'd have indexed content
       for (const site of sites) {
         const siteUrl = site.startsWith("http") ? site : `https://${site}`;
         urlsToProcess.push(siteUrl);
         
-        // Try common paths that might have relevant content
         const commonPaths = ["/concursos", "/editais", "/selecao", "/processo-seletivo", "/noticias"];
         for (const path of commonPaths) {
           if (urlsToProcess.length < limit) {
@@ -280,116 +334,251 @@ serve(async (req) => {
     
     const hashSet = new Set(existingHashes?.map(h => h.hash_conteudo) || []);
 
-    // Process each URL
+    // Create run record
+    const { data: runData, error: runError } = await supabase
+      .from("coleta_runs")
+      .insert({
+        tipo_coleta: action,
+        sites_env: sites,
+        tema_consulta: query || null,
+        ano_alvo: targetYear,
+        profundidade: action === "crawler" ? depth : null,
+        limite_paginas: action === "crawler" ? limit : null,
+        limite_resultados: action === "busca" ? limit : null,
+        filtros_snapshot: {
+          extensoes_bloqueadas: extensoesBloqueadas,
+          caminhos_bloqueados: caminhosBloqueados,
+          caminhos_permitidos: caminhosPermitidos,
+          ignoreAnalyzed,
+          ignoreNoDate,
+          ignoreOutOfYear,
+        },
+        total_urls: 0,
+        total_novas: 0,
+        total_ignoradas: 0,
+        total_erros: 0,
+        status_execucao: "ok",
+      })
+      .select("id")
+      .single();
+
+    if (runError) {
+      console.error("[Coleta] Failed to create run:", runError);
+      throw new Error("Failed to create run record");
+    }
+
+    const runId = runData.id;
+    let totalNovas = 0;
+    let totalIgnoradas = 0;
+    let totalErros = 0;
+
+    // Process each URL following the PIPELINE ORDER
     for (const url of urlsToProcess) {
-      // Skip if already analyzed
-      if (ignoreAnalyzed && analyzedUrls.has(url)) {
-        results.push({ url, dominio: extractDomain(url), status: "ignorado", motivo: "URL já analisada" });
+      const dominio = extractDomain(url);
+
+      // STEP 1: Block by extension
+      if (isBlockedExtension(url, extensoesBloqueadas)) {
+        results.push({ url, dominio, tipo_pagina: "detalhe", status: "ignorado", motivo: "extensao bloqueada" });
+        totalIgnoradas++;
+        
+        await supabase.from("coleta_run_items").insert({
+          run_id: runId,
+          url,
+          dominio,
+          tipo_pagina: "detalhe",
+          status: "ignorado",
+          motivo_descartar: "extensao bloqueada",
+          metodo_coleta: action,
+          ano_alvo: targetYear,
+        });
+        
         continue;
       }
 
-      const dominio = extractDomain(url);
-      
+      // STEP 2: Block by path
+      if (isBlockedPath(url, caminhosBloqueados)) {
+        results.push({ url, dominio, tipo_pagina: "detalhe", status: "ignorado", motivo: "caminho bloqueado" });
+        totalIgnoradas++;
+        
+        await supabase.from("coleta_run_items").insert({
+          run_id: runId,
+          url,
+          dominio,
+          tipo_pagina: "detalhe",
+          status: "ignorado",
+          motivo_descartar: "caminho bloqueado",
+          metodo_coleta: action,
+          ano_alvo: targetYear,
+        });
+        
+        continue;
+      }
+
+      // Check allowed paths
+      if (!isAllowedPath(url, caminhosPermitidos)) {
+        results.push({ url, dominio, tipo_pagina: "detalhe", status: "ignorado", motivo: "caminho nao permitido" });
+        totalIgnoradas++;
+        
+        await supabase.from("coleta_run_items").insert({
+          run_id: runId,
+          url,
+          dominio,
+          tipo_pagina: "detalhe",
+          status: "ignorado",
+          motivo_descartar: "caminho nao permitido",
+          metodo_coleta: action,
+          ano_alvo: targetYear,
+        });
+        
+        continue;
+      }
+
+      // STEP 3: Already analyzed check
+      if (ignoreAnalyzed && analyzedUrls.has(url)) {
+        results.push({ url, dominio, tipo_pagina: "detalhe", status: "ignorado", motivo: "URL ja analisada" });
+        totalIgnoradas++;
+        
+        await supabase.from("coleta_run_items").insert({
+          run_id: runId,
+          url,
+          dominio,
+          tipo_pagina: "detalhe",
+          status: "ignorado",
+          motivo_descartar: "URL ja analisada",
+          metodo_coleta: action,
+          ano_alvo: targetYear,
+        });
+        
+        continue;
+      }
+
       // Fetch content
-      const { text, error } = await fetchPageContent(url);
+      const { html, text, error } = await fetchPageContent(url);
       
       if (error) {
-        results.push({ url, dominio, status: "erro", motivo: error });
+        results.push({ url, dominio, tipo_pagina: "detalhe", status: "erro", motivo: error });
+        totalErros++;
         
-        // Save error to DB
-        await supabase.from("itens_brutos").upsert({
+        await supabase.from("coleta_run_items").insert({
+          run_id: runId,
           url,
           dominio,
-          texto_bruto: null,
+          tipo_pagina: "detalhe",
+          status: "erro",
+          motivo_descartar: error,
           metodo_coleta: action,
           ano_alvo: targetYear,
-          status: "erro",
-          motivo_status: error,
-          meta_obs: action === "manual" ? metaObs : null,
-        }, { onConflict: "url,ano_alvo" });
+        });
         
         continue;
       }
 
-      // Check minimum content length
-      if (text.length < MIN_CONTENT_LENGTH) {
-        results.push({ url, dominio, status: "ignorado", motivo: "Conteúdo insuficiente" });
+      // STEP 4: Detect page type
+      const tipoPagina = detectPageType(html, text);
+      
+      if (tipoPagina === "listagem") {
+        // Listing pages are NOT saved to itens_brutos, only to run_items
+        results.push({ url, dominio, tipo_pagina: "listagem", status: "ignorado", motivo: "pagina de listagem" });
+        totalIgnoradas++;
         
-        await supabase.from("itens_brutos").upsert({
+        await supabase.from("coleta_run_items").insert({
+          run_id: runId,
           url,
           dominio,
-          texto_bruto: text,
+          tipo_pagina: "listagem",
+          status: "ignorado",
+          motivo_descartar: "pagina de listagem",
           metodo_coleta: action,
           ano_alvo: targetYear,
+        });
+        
+        continue;
+      }
+
+      // STEP 5: Check minimum content length
+      if (text.length < MIN_CONTENT_LENGTH) {
+        results.push({ url, dominio, tipo_pagina: "detalhe", status: "ignorado", motivo: "sem texto relevante" });
+        totalIgnoradas++;
+        
+        await supabase.from("coleta_run_items").insert({
+          run_id: runId,
+          url,
+          dominio,
+          tipo_pagina: "detalhe",
           status: "ignorado",
-          motivo_status: "Conteúdo insuficiente",
-          meta_obs: action === "manual" ? metaObs : null,
-        }, { onConflict: "url,ano_alvo" });
+          motivo_descartar: "sem texto relevante",
+          metodo_coleta: action,
+          ano_alvo: targetYear,
+        });
         
         continue;
       }
 
       // Check for concluded content
       if (isContentConcluded(text)) {
-        results.push({ url, dominio, status: "ignorado", motivo: "Concurso encerrado/concluído" });
+        results.push({ url, dominio, tipo_pagina: "detalhe", status: "ignorado", motivo: "concurso encerrado" });
+        totalIgnoradas++;
         
-        await supabase.from("itens_brutos").upsert({
+        await supabase.from("coleta_run_items").insert({
+          run_id: runId,
           url,
           dominio,
-          texto_bruto: text,
+          tipo_pagina: "detalhe",
+          status: "ignorado",
+          motivo_descartar: "concurso encerrado",
           metodo_coleta: action,
           ano_alvo: targetYear,
-          status: "ignorado",
-          motivo_status: "Concurso encerrado/concluído",
-          meta_obs: action === "manual" ? metaObs : null,
-        }, { onConflict: "url,ano_alvo" });
+        });
         
         continue;
       }
 
-      // Check year if enabled
+      // STEP 6: Check year
       if (ignoreOutOfYear) {
         const detectedYear = extractYear(text);
         if (detectedYear && detectedYear !== targetYear) {
-          results.push({ url, dominio, status: "ignorado", motivo: `Ano ${detectedYear} fora do alvo ${targetYear}` });
+          results.push({ url, dominio, tipo_pagina: "detalhe", status: "ignorado", motivo: `fora do ano alvo (${detectedYear})` });
+          totalIgnoradas++;
           
-          await supabase.from("itens_brutos").upsert({
+          await supabase.from("coleta_run_items").insert({
+            run_id: runId,
             url,
             dominio,
-            texto_bruto: text,
+            tipo_pagina: "detalhe",
+            status: "ignorado",
+            motivo_descartar: `fora do ano alvo (${detectedYear})`,
             metodo_coleta: action,
             ano_alvo: targetYear,
-            status: "ignorado",
-            motivo_status: `Ano ${detectedYear} fora do alvo ${targetYear}`,
-            meta_obs: action === "manual" ? metaObs : null,
-          }, { onConflict: "url,ano_alvo" });
+          });
           
           continue;
         }
       }
 
-      // Check hash dedup
+      // STEP 7: Check hash dedup
       const contentHash = await hashContent(text);
       if (hashSet.has(contentHash)) {
-        results.push({ url, dominio, status: "ignorado", motivo: "Hash duplicado" });
+        results.push({ url, dominio, tipo_pagina: "detalhe", status: "ignorado", motivo: "duplicada" });
+        totalIgnoradas++;
         
-        await supabase.from("itens_brutos").upsert({
+        await supabase.from("coleta_run_items").insert({
+          run_id: runId,
           url,
           dominio,
-          texto_bruto: text,
-          hash_conteudo: contentHash,
+          tipo_pagina: "detalhe",
+          status: "ignorado",
+          motivo_descartar: "duplicada",
           metodo_coleta: action,
           ano_alvo: targetYear,
-          status: "ignorado",
-          motivo_status: "Hash duplicado",
-          meta_obs: action === "manual" ? metaObs : null,
-        }, { onConflict: "url,ano_alvo" });
+          hash_conteudo: contentHash,
+        });
         
         continue;
       }
 
-      // All checks passed - save as new
+      // STEP 8: All checks passed - save as new to itens_brutos
       hashSet.add(contentHash);
+      analyzedUrls.add(url);
       
       const { error: insertError } = await supabase.from("itens_brutos").upsert({
         url,
@@ -404,23 +593,61 @@ serve(async (req) => {
       }, { onConflict: "url,ano_alvo" });
 
       if (insertError) {
-        results.push({ url, dominio, status: "erro", motivo: insertError.message });
+        results.push({ url, dominio, tipo_pagina: "detalhe", status: "erro", motivo: insertError.message });
+        totalErros++;
+        
+        await supabase.from("coleta_run_items").insert({
+          run_id: runId,
+          url,
+          dominio,
+          tipo_pagina: "detalhe",
+          status: "erro",
+          motivo_descartar: insertError.message,
+          metodo_coleta: action,
+          ano_alvo: targetYear,
+        });
       } else {
-        results.push({ url, dominio, status: "novo", textoLength: text.length });
+        results.push({ url, dominio, tipo_pagina: "detalhe", status: "novo", textoLength: text.length });
+        totalNovas++;
+        
+        await supabase.from("coleta_run_items").insert({
+          run_id: runId,
+          url,
+          dominio,
+          tipo_pagina: "detalhe",
+          status: "novo",
+          motivo_descartar: null,
+          metodo_coleta: action,
+          ano_alvo: targetYear,
+          texto_bruto: text,
+          hash_conteudo: contentHash,
+          meta_obs: action === "manual" ? metaObs : null,
+        });
       }
     }
+
+    // Update run with final counts
+    const statusExecucao = totalErros > 0 && totalNovas === 0 ? "erro" : totalErros > 0 ? "parcial" : "ok";
+    
+    await supabase.from("coleta_runs").update({
+      total_urls: results.length,
+      total_novas: totalNovas,
+      total_ignoradas: totalIgnoradas,
+      total_erros: totalErros,
+      status_execucao: statusExecucao,
+    }).eq("id", runId);
 
     // Summary
     const summary = {
       total: results.length,
-      novos: results.filter(r => r.status === "novo").length,
-      ignorados: results.filter(r => r.status === "ignorado").length,
-      erros: results.filter(r => r.status === "erro").length,
+      novos: totalNovas,
+      ignorados: totalIgnoradas,
+      erros: totalErros,
     };
 
     console.debug(`[Coleta] Complete - Total: ${summary.total}, New: ${summary.novos}, Ignored: ${summary.ignorados}, Errors: ${summary.erros}`);
 
-    return new Response(JSON.stringify({ success: true, results, summary }), {
+    return new Response(JSON.stringify({ success: true, results, summary, runId }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
 

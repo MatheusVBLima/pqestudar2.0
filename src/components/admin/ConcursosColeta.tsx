@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,18 +10,68 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Loader2, Globe, Search, FileText, ExternalLink, AlertCircle, CheckCircle2, XCircle } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { 
+  Loader2, Globe, Search, FileText, ExternalLink, AlertCircle, CheckCircle2, XCircle, 
+  ChevronDown, ChevronUp, History, Trash2, RefreshCw, Eye, X, Plus, Settings
+} from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useSearchConfig } from "@/hooks/useConcursosAdmin";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 type ColetaMethod = "crawler" | "busca" | "manual";
 type ColetaStatus = "pronto" | "coletando" | "concluido" | "falhou";
 
+interface ColetaConfig {
+  id: string;
+  tema_consulta: string | null;
+  ano_alvo: number;
+  profundidade: number;
+  limite_paginas: number;
+  limite_resultados: number;
+  extensoes_bloqueadas: string[];
+  caminhos_bloqueados: string[];
+  caminhos_permitidos: string[];
+}
+
+interface ColetaRun {
+  id: string;
+  executed_at: string;
+  tipo_coleta: string;
+  sites_env: string[];
+  tema_consulta: string | null;
+  ano_alvo: number;
+  profundidade: number | null;
+  limite_paginas: number | null;
+  limite_resultados: number | null;
+  filtros_snapshot: Record<string, unknown>;
+  total_urls: number;
+  total_novas: number;
+  total_ignoradas: number;
+  total_erros: number;
+  status_execucao: string;
+}
+
+interface ColetaRunItem {
+  id: string;
+  url: string;
+  dominio: string;
+  tipo_pagina: string;
+  status: string;
+  motivo_descartar: string | null;
+  metodo_coleta: string;
+  data_coleta: string;
+  ano_alvo: number;
+  texto_bruto: string | null;
+  hash_conteudo: string | null;
+  meta_obs: string | null;
+}
+
 interface ColetaResult {
   url: string;
   dominio: string;
+  tipo_pagina: string;
   status: "novo" | "ignorado" | "erro";
   motivo?: string;
   textoLength?: number;
@@ -35,14 +85,24 @@ interface ColetaSummary {
 }
 
 export default function ConcursosColeta() {
+  const queryClient = useQueryClient();
   const { config: searchConfig } = useSearchConfig();
   const [method, setMethod] = useState<ColetaMethod>("crawler");
   const [status, setStatus] = useState<ColetaStatus>("pronto");
   
+  // Config state (loaded from backend)
+  const [configLoaded, setConfigLoaded] = useState(false);
+  const [extensoesBloqueadas, setExtensoesBloqueadas] = useState<string[]>([]);
+  const [caminhosBloqueados, setCaminhosBloqueados] = useState<string[]>([]);
+  const [caminhosPermitidos, setCaminhosPermitidos] = useState<string[]>([]);
+  const [newExtensao, setNewExtensao] = useState("");
+  const [newCaminhoBloq, setNewCaminhoBloq] = useState("");
+  const [newCaminhoPerm, setNewCaminhoPerm] = useState("");
+  
   // Crawler options
   const [selectedSites, setSelectedSites] = useState<string[]>([]);
-  const [depth, setDepth] = useState(1);
-  const [pageLimit, setPageLimit] = useState(20);
+  const [depth, setDepth] = useState(2);
+  const [pageLimit, setPageLimit] = useState(50);
   const [ignoreAnalyzed, setIgnoreAnalyzed] = useState(true);
   const [ignoreNoDate, setIgnoreNoDate] = useState(true);
   const [ignoreOutOfYear, setIgnoreOutOfYear] = useState(true);
@@ -63,19 +123,136 @@ export default function ConcursosColeta() {
   const [summary, setSummary] = useState<ColetaSummary | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+  
+  // History drill-down
+  const [selectedRunId, setSelectedRunId] = useState<string | null>(null);
+  const [historyPage, setHistoryPage] = useState(1);
+  const [drillDownPage, setDrillDownPage] = useState(1);
+  const [drillDownFilter, setDrillDownFilter] = useState<{ tipo?: string; status?: string; motivo?: string }>({});
+  
+  // Collapsible sections
+  const [rulesOpen, setRulesOpen] = useState(true);
+  const [historyOpen, setHistoryOpen] = useState(true);
 
-  // Fetch existing items count
-  const { data: existingCount, refetch: refetchCount } = useQuery({
-    queryKey: ["itens-brutos-count", anoAlvo],
+  // Fetch config from backend
+  const { data: backendConfig, refetch: refetchConfig } = useQuery({
+    queryKey: ["coleta-config"],
     queryFn: async () => {
-      const { count, error } = await supabase
-        .from("itens_brutos")
-        .select("*", { count: "exact", head: true })
-        .eq("ano_alvo", anoAlvo)
-        .eq("status", "novo");
+      const { data, error } = await supabase
+        .from("coleta_config")
+        .select("*")
+        .eq("escopo", "concursos")
+        .single();
       
       if (error) throw error;
-      return count || 0;
+      return data as unknown as ColetaConfig;
+    }
+  });
+
+  // Load config into state
+  useEffect(() => {
+    if (backendConfig && !configLoaded) {
+      setExtensoesBloqueadas(backendConfig.extensoes_bloqueadas || []);
+      setCaminhosBloqueados(backendConfig.caminhos_bloqueados || []);
+      setCaminhosPermitidos(backendConfig.caminhos_permitidos || []);
+      setAnoAlvo(backendConfig.ano_alvo || new Date().getFullYear());
+      setDepth(backendConfig.profundidade || 2);
+      setPageLimit(backendConfig.limite_paginas || 50);
+      setSearchLimit(backendConfig.limite_resultados || 20);
+      setSearchQuery(backendConfig.tema_consulta || "");
+      setConfigLoaded(true);
+    }
+  }, [backendConfig, configLoaded]);
+
+  // Save config mutation
+  const saveConfigMutation = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase
+        .from("coleta_config")
+        .update({
+          extensoes_bloqueadas: extensoesBloqueadas,
+          caminhos_bloqueados: caminhosBloqueados,
+          caminhos_permitidos: caminhosPermitidos,
+          ano_alvo: anoAlvo,
+          profundidade: depth,
+          limite_paginas: pageLimit,
+          limite_resultados: searchLimit,
+          tema_consulta: searchQuery || null,
+        })
+        .eq("escopo", "concursos");
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Configuração salva");
+      refetchConfig();
+    },
+    onError: (err) => {
+      toast.error(err instanceof Error ? err.message : "Erro ao salvar configuração");
+    }
+  });
+
+  // Fetch history runs
+  const { data: historyRuns = [], refetch: refetchHistory } = useQuery({
+    queryKey: ["coleta-runs"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("coleta_runs")
+        .select("*")
+        .order("executed_at", { ascending: false })
+        .limit(50);
+      
+      if (error) throw error;
+      return (data || []) as unknown as ColetaRun[];
+    }
+  });
+
+  // Fetch run items for drill-down
+  const { data: runItems = [], isLoading: loadingItems } = useQuery({
+    queryKey: ["coleta-run-items", selectedRunId, drillDownFilter],
+    queryFn: async () => {
+      if (!selectedRunId) return [];
+      
+      let query = supabase
+        .from("coleta_run_items")
+        .select("*")
+        .eq("run_id", selectedRunId)
+        .order("data_coleta", { ascending: false });
+      
+      if (drillDownFilter.tipo) {
+        query = query.eq("tipo_pagina", drillDownFilter.tipo);
+      }
+      if (drillDownFilter.status) {
+        query = query.eq("status", drillDownFilter.status);
+      }
+      if (drillDownFilter.motivo) {
+        query = query.eq("motivo_descartar", drillDownFilter.motivo);
+      }
+      
+      const { data, error } = await query.limit(100);
+      if (error) throw error;
+      return (data || []) as unknown as ColetaRunItem[];
+    },
+    enabled: !!selectedRunId
+  });
+
+  // Delete run mutation
+  const deleteRunMutation = useMutation({
+    mutationFn: async (runId: string) => {
+      const { error } = await supabase
+        .from("coleta_runs")
+        .delete()
+        .eq("id", runId);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Histórico excluído");
+      refetchHistory();
+      setSelectedRunId(null);
+    },
+    onError: (err) => {
+      toast.error(err instanceof Error ? err.message : "Erro ao excluir histórico");
     }
   });
 
@@ -83,14 +260,28 @@ export default function ConcursosColeta() {
 
   const handleSiteToggle = (site: string) => {
     setSelectedSites(prev => 
-      prev.includes(site) 
-        ? prev.filter(s => s !== site) 
-        : [...prev, site]
+      prev.includes(site) ? prev.filter(s => s !== site) : [...prev, site]
     );
   };
 
   const selectAllSites = () => setSelectedSites([...whitelist]);
   const clearAllSites = () => setSelectedSites([]);
+
+  const addChip = (
+    value: string, 
+    setter: React.Dispatch<React.SetStateAction<string[]>>, 
+    inputSetter: React.Dispatch<React.SetStateAction<string>>
+  ) => {
+    const trimmed = value.trim();
+    if (trimmed) {
+      setter(prev => prev.includes(trimmed) ? prev : [...prev, trimmed]);
+      inputSetter("");
+    }
+  };
+
+  const removeChip = (value: string, setter: React.Dispatch<React.SetStateAction<string[]>>) => {
+    setter(prev => prev.filter(v => v !== value));
+  };
 
   const executeColeta = async () => {
     setStatus("coletando");
@@ -111,6 +302,9 @@ export default function ConcursosColeta() {
         ignoreAnalyzed,
         ignoreNoDate,
         ignoreOutOfYear,
+        extensoesBloqueadas,
+        caminhosBloqueados,
+        caminhosPermitidos,
       };
 
       if (method === "crawler") {
@@ -178,7 +372,8 @@ export default function ConcursosColeta() {
       setResults(data.results || []);
       setSummary(data.summary || null);
       setStatus("concluido");
-      refetchCount();
+      refetchHistory();
+      queryClient.invalidateQueries({ queryKey: ["itens-brutos-count"] });
 
       if (data.summary) {
         toast.success(`Coleta concluída: ${data.summary.novos} novos, ${data.summary.ignorados} ignorados, ${data.summary.erros} erros`);
@@ -190,31 +385,73 @@ export default function ConcursosColeta() {
     }
   };
 
+  const replayRun = (run: ColetaRun) => {
+    setMethod(run.tipo_coleta as ColetaMethod);
+    setSelectedSites(run.sites_env || []);
+    setAnoAlvo(run.ano_alvo);
+    setSearchQuery(run.tema_consulta || "");
+    if (run.profundidade) setDepth(run.profundidade);
+    if (run.limite_paginas) setPageLimit(run.limite_paginas);
+    if (run.limite_resultados) setSearchLimit(run.limite_resultados);
+    
+    const snapshot = run.filtros_snapshot as Record<string, unknown>;
+    if (snapshot.extensoes_bloqueadas) setExtensoesBloqueadas(snapshot.extensoes_bloqueadas as string[]);
+    if (snapshot.caminhos_bloqueados) setCaminhosBloqueados(snapshot.caminhos_bloqueados as string[]);
+    if (snapshot.caminhos_permitidos) setCaminhosPermitidos(snapshot.caminhos_permitidos as string[]);
+    
+    toast.info("Configuração carregada. Clique em 'Executar Coleta' para rodar.");
+    setSelectedRunId(null);
+  };
+
   const paginatedResults = results.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
   const totalPages = Math.ceil(results.length / itemsPerPage);
 
-  const getStatusIcon = (s: "novo" | "ignorado" | "erro") => {
+  const paginatedHistory = historyRuns.slice(
+    (historyPage - 1) * 5,
+    historyPage * 5
+  );
+  const totalHistoryPages = Math.ceil(historyRuns.length / 5);
+
+  const paginatedItems = runItems.slice(
+    (drillDownPage - 1) * itemsPerPage,
+    drillDownPage * itemsPerPage
+  );
+  const totalDrillDownPages = Math.ceil(runItems.length / itemsPerPage);
+
+  const getStatusIcon = (s: string) => {
     switch (s) {
       case "novo": return <CheckCircle2 className="h-4 w-4 text-emerald-500" />;
       case "ignorado": return <AlertCircle className="h-4 w-4 text-amber-500" />;
       case "erro": return <XCircle className="h-4 w-4 text-destructive" />;
+      default: return null;
     }
   };
 
-  const getStatusBadge = (s: "novo" | "ignorado" | "erro") => {
+  const getStatusBadge = (s: string) => {
     switch (s) {
       case "novo": return <Badge variant="default" className="bg-emerald-600">Novo</Badge>;
       case "ignorado": return <Badge variant="secondary">Ignorado</Badge>;
       case "erro": return <Badge variant="destructive">Erro</Badge>;
+      case "ok": return <Badge variant="default" className="bg-emerald-600">OK</Badge>;
+      case "parcial": return <Badge variant="secondary">Parcial</Badge>;
+      default: return <Badge variant="outline">{s}</Badge>;
+    }
+  };
+
+  const getTypeBadge = (t: string) => {
+    switch (t) {
+      case "listagem": return <Badge variant="outline" className="text-xs">Listagem</Badge>;
+      case "detalhe": return <Badge variant="default" className="text-xs">Detalhe</Badge>;
+      default: return <Badge variant="outline" className="text-xs">{t}</Badge>;
     }
   };
 
   return (
     <div className="space-y-6">
-      {/* Header with existing count */}
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-lg font-medium">Coleta de Dados Brutos</h3>
@@ -222,11 +459,16 @@ export default function ConcursosColeta() {
             Entrada de dados ANTES da IA. Não organiza, não publica.
           </p>
         </div>
-        {existingCount !== undefined && (
-          <Badge variant="outline" className="text-base px-3 py-1">
-            {existingCount} itens novos em {anoAlvo}
-          </Badge>
-        )}
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={() => saveConfigMutation.mutate()}
+          disabled={saveConfigMutation.isPending}
+          className="gap-2"
+        >
+          <Settings className="h-4 w-4" />
+          {saveConfigMutation.isPending ? "Salvando..." : "Salvar Config"}
+        </Button>
       </div>
 
       <Separator />
@@ -245,6 +487,130 @@ export default function ConcursosColeta() {
           </SelectContent>
         </Select>
       </div>
+
+      {/* REGRAS DE COLETA (Collapsible) */}
+      <Collapsible open={rulesOpen} onOpenChange={setRulesOpen}>
+        <Card>
+          <CollapsibleTrigger asChild>
+            <CardHeader className="cursor-pointer pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base">Regras de Coleta (Bloqueios)</CardTitle>
+                {rulesOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+              </div>
+              <CardDescription>Extensões e caminhos bloqueados/permitidos (persistente)</CardDescription>
+            </CardHeader>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <CardContent className="space-y-4 pt-0">
+              {/* Extensões Bloqueadas */}
+              <div className="space-y-2">
+                <Label>Extensões Bloqueadas</Label>
+                <div className="flex flex-wrap gap-2 p-3 border rounded-md min-h-[40px] bg-muted/30">
+                  {extensoesBloqueadas.map(ext => (
+                    <Badge key={ext} variant="secondary" className="gap-1">
+                      {ext}
+                      <button onClick={() => removeChip(ext, setExtensoesBloqueadas)}>
+                        <X className="h-3 w-3" />
+                      </button>
+                    </Badge>
+                  ))}
+                </div>
+                <div className="flex gap-2">
+                  <Input
+                    placeholder=".pdf, .doc, etc."
+                    value={newExtensao}
+                    onChange={e => setNewExtensao(e.target.value)}
+                    onKeyDown={e => e.key === "Enter" && addChip(newExtensao, setExtensoesBloqueadas, setNewExtensao)}
+                    className="flex-1"
+                  />
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    onClick={() => addChip(newExtensao, setExtensoesBloqueadas, setNewExtensao)}
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  URLs terminando nessas extensões serão descartadas imediatamente.
+                </p>
+              </div>
+
+              {/* Caminhos Bloqueados */}
+              <div className="space-y-2">
+                <Label>Caminhos Bloqueados</Label>
+                <div className="flex flex-wrap gap-2 p-3 border rounded-md min-h-[40px] bg-muted/30">
+                  {caminhosBloqueados.map(path => (
+                    <Badge key={path} variant="secondary" className="gap-1">
+                      {path}
+                      <button onClick={() => removeChip(path, setCaminhosBloqueados)}>
+                        <X className="h-3 w-3" />
+                      </button>
+                    </Badge>
+                  ))}
+                </div>
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="/wp-content, /assets, etc."
+                    value={newCaminhoBloq}
+                    onChange={e => setNewCaminhoBloq(e.target.value)}
+                    onKeyDown={e => e.key === "Enter" && addChip(newCaminhoBloq, setCaminhosBloqueados, setNewCaminhoBloq)}
+                    className="flex-1"
+                  />
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    onClick={() => addChip(newCaminhoBloq, setCaminhosBloqueados, setNewCaminhoBloq)}
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  URLs contendo esses caminhos serão descartadas.
+                </p>
+              </div>
+
+              {/* Caminhos Permitidos */}
+              <div className="space-y-2">
+                <Label>Caminhos Permitidos (opcional)</Label>
+                <div className="flex flex-wrap gap-2 p-3 border rounded-md min-h-[40px] bg-muted/30">
+                  {caminhosPermitidos.length === 0 ? (
+                    <span className="text-xs text-muted-foreground">Vazio = permite todos os caminhos não bloqueados</span>
+                  ) : (
+                    caminhosPermitidos.map(path => (
+                      <Badge key={path} variant="default" className="gap-1">
+                        {path}
+                        <button onClick={() => removeChip(path, setCaminhosPermitidos)}>
+                          <X className="h-3 w-3" />
+                        </button>
+                      </Badge>
+                    ))
+                  )}
+                </div>
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="/concursos, /editais, etc."
+                    value={newCaminhoPerm}
+                    onChange={e => setNewCaminhoPerm(e.target.value)}
+                    onKeyDown={e => e.key === "Enter" && addChip(newCaminhoPerm, setCaminhosPermitidos, setNewCaminhoPerm)}
+                    className="flex-1"
+                  />
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    onClick={() => addChip(newCaminhoPerm, setCaminhosPermitidos, setNewCaminhoPerm)}
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Se preenchido, a URL deve conter ao menos um desses caminhos.
+                </p>
+              </div>
+            </CardContent>
+          </CollapsibleContent>
+        </Card>
+      </Collapsible>
 
       {/* Method selector */}
       <Card>
@@ -344,7 +710,7 @@ export default function ConcursosColeta() {
                     id="pageLimit"
                     type="number"
                     min={1}
-                    max={100}
+                    max={200}
                     value={pageLimit}
                     onChange={e => setPageLimit(Number(e.target.value))}
                   />
@@ -393,7 +759,7 @@ export default function ConcursosColeta() {
           {method === "busca" && (
             <>
               <div className="space-y-2">
-                <Label htmlFor="searchQuery">Consulta</Label>
+                <Label htmlFor="searchQuery">Consulta (tema)</Label>
                 <Input
                   id="searchQuery"
                   placeholder="Ex: edital 2026 estadual"
@@ -440,7 +806,7 @@ export default function ConcursosColeta() {
                   id="searchLimit"
                   type="number"
                   min={1}
-                  max={50}
+                  max={100}
                   value={searchLimit}
                   onChange={e => setSearchLimit(Number(e.target.value))}
                 />
@@ -492,7 +858,7 @@ export default function ConcursosColeta() {
               Coletando...
             </>
           ) : (
-            "Executar Coleta"
+            <>Executar Coleta ({method})</>
           )}
         </Button>
 
@@ -514,10 +880,7 @@ export default function ConcursosColeta() {
 
       {/* Results */}
       {summary && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-base">Resultados da Rodada</CardTitle>
@@ -540,8 +903,8 @@ export default function ConcursosColeta() {
                       <TableHeader>
                         <TableRow>
                           <TableHead className="w-12">Status</TableHead>
+                          <TableHead className="w-16">Tipo</TableHead>
                           <TableHead>URL</TableHead>
-                          <TableHead className="hidden sm:table-cell">Domínio</TableHead>
                           <TableHead className="hidden md:table-cell">Motivo</TableHead>
                         </TableRow>
                       </TableHeader>
@@ -549,6 +912,7 @@ export default function ConcursosColeta() {
                         {paginatedResults.map((r, i) => (
                           <TableRow key={i}>
                             <TableCell>{getStatusIcon(r.status)}</TableCell>
+                            <TableCell>{getTypeBadge(r.tipo_pagina)}</TableCell>
                             <TableCell className="max-w-[200px] truncate">
                               <a
                                 href={r.url}
@@ -560,9 +924,6 @@ export default function ConcursosColeta() {
                                 <ExternalLink className="h-3 w-3 flex-shrink-0" />
                               </a>
                             </TableCell>
-                            <TableCell className="hidden sm:table-cell">
-                              <Badge variant="outline">{r.dominio}</Badge>
-                            </TableCell>
                             <TableCell className="hidden md:table-cell text-sm text-muted-foreground">
                               {r.motivo || (r.textoLength ? `${r.textoLength} caracteres` : "-")}
                             </TableCell>
@@ -572,7 +933,6 @@ export default function ConcursosColeta() {
                     </Table>
                   </div>
 
-                  {/* Pagination */}
                   {totalPages > 1 && (
                     <div className="flex items-center justify-between mt-4">
                       <span className="text-sm text-muted-foreground">
@@ -605,7 +965,263 @@ export default function ConcursosColeta() {
         </motion.div>
       )}
 
-      {/* Note about curation */}
+      {/* HISTÓRICO DE COLETAS */}
+      <Collapsible open={historyOpen} onOpenChange={setHistoryOpen}>
+        <Card>
+          <CollapsibleTrigger asChild>
+            <CardHeader className="cursor-pointer pb-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <History className="h-4 w-4" />
+                  <CardTitle className="text-base">Histórico de Coletas</CardTitle>
+                </div>
+                {historyOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+              </div>
+              <CardDescription>Execuções anteriores com detalhes e replay</CardDescription>
+            </CardHeader>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <CardContent className="pt-0">
+              {historyRuns.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-4">
+                  Nenhuma coleta realizada ainda.
+                </p>
+              ) : (
+                <>
+                  <div className="rounded-md border overflow-hidden">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Data/Hora</TableHead>
+                          <TableHead>Tipo</TableHead>
+                          <TableHead className="hidden sm:table-cell">Sites</TableHead>
+                          <TableHead className="hidden md:table-cell">Ano</TableHead>
+                          <TableHead>Total</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead className="w-24">Ações</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {paginatedHistory.map((run) => (
+                          <TableRow key={run.id}>
+                            <TableCell className="text-xs">
+                              {new Date(run.executed_at).toLocaleString("pt-BR")}
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="outline">{run.tipo_coleta}</Badge>
+                            </TableCell>
+                            <TableCell className="hidden sm:table-cell text-xs">
+                              {(run.sites_env || []).slice(0, 2).join(", ")}
+                              {(run.sites_env || []).length > 2 && "..."}
+                            </TableCell>
+                            <TableCell className="hidden md:table-cell">{run.ano_alvo}</TableCell>
+                            <TableCell className="text-xs">
+                              <span className="text-emerald-600">{run.total_novas}</span>/
+                              <span className="text-amber-600">{run.total_ignoradas}</span>/
+                              <span className="text-destructive">{run.total_erros}</span>
+                            </TableCell>
+                            <TableCell>{getStatusBadge(run.status_execucao)}</TableCell>
+                            <TableCell>
+                              <div className="flex gap-1">
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-7 w-7"
+                                  onClick={() => setSelectedRunId(run.id)}
+                                  title="Ver detalhes"
+                                >
+                                  <Eye className="h-3 w-3" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-7 w-7"
+                                  onClick={() => replayRun(run)}
+                                  title="Reexecutar com mesmas configs"
+                                >
+                                  <RefreshCw className="h-3 w-3" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-7 w-7 text-destructive"
+                                  onClick={() => deleteRunMutation.mutate(run.id)}
+                                  title="Excluir histórico"
+                                >
+                                  <Trash2 className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+
+                  {totalHistoryPages > 1 && (
+                    <div className="flex items-center justify-between mt-4">
+                      <span className="text-sm text-muted-foreground">
+                        Página {historyPage} de {totalHistoryPages}
+                      </span>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setHistoryPage(p => Math.max(1, p - 1))}
+                          disabled={historyPage === 1}
+                        >
+                          Anterior
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setHistoryPage(p => Math.min(totalHistoryPages, p + 1))}
+                          disabled={historyPage === totalHistoryPages}
+                        >
+                          Próxima
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+            </CardContent>
+          </CollapsibleContent>
+        </Card>
+      </Collapsible>
+
+      {/* Drill-down modal */}
+      {selectedRunId && (
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+          <Card>
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base">Detalhes da Execução</CardTitle>
+                <Button variant="ghost" size="icon" onClick={() => setSelectedRunId(null)}>
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+              <CardDescription>URLs processadas nesta rodada</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {/* Filters */}
+              <div className="flex flex-wrap gap-2 mb-4">
+                <Select 
+                  value={drillDownFilter.tipo || ""} 
+                  onValueChange={v => setDrillDownFilter(f => ({ ...f, tipo: v || undefined }))}
+                >
+                  <SelectTrigger className="w-32">
+                    <SelectValue placeholder="Tipo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">Todos</SelectItem>
+                    <SelectItem value="listagem">Listagem</SelectItem>
+                    <SelectItem value="detalhe">Detalhe</SelectItem>
+                  </SelectContent>
+                </Select>
+                
+                <Select 
+                  value={drillDownFilter.status || ""} 
+                  onValueChange={v => setDrillDownFilter(f => ({ ...f, status: v || undefined }))}
+                >
+                  <SelectTrigger className="w-32">
+                    <SelectValue placeholder="Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">Todos</SelectItem>
+                    <SelectItem value="novo">Novo</SelectItem>
+                    <SelectItem value="ignorado">Ignorado</SelectItem>
+                    <SelectItem value="erro">Erro</SelectItem>
+                  </SelectContent>
+                </Select>
+                
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => setDrillDownFilter({})}
+                >
+                  Limpar filtros
+                </Button>
+              </div>
+
+              {loadingItems ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-6 w-6 animate-spin" />
+                </div>
+              ) : runItems.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-4">
+                  Nenhum item encontrado com esses filtros.
+                </p>
+              ) : (
+                <>
+                  <div className="rounded-md border overflow-hidden">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="w-12">Status</TableHead>
+                          <TableHead className="w-16">Tipo</TableHead>
+                          <TableHead>URL</TableHead>
+                          <TableHead className="hidden md:table-cell">Motivo</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {paginatedItems.map((item) => (
+                          <TableRow key={item.id}>
+                            <TableCell>{getStatusIcon(item.status)}</TableCell>
+                            <TableCell>{getTypeBadge(item.tipo_pagina)}</TableCell>
+                            <TableCell className="max-w-[200px] truncate">
+                              <a
+                                href={item.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="hover:underline text-primary flex items-center gap-1"
+                              >
+                                <span className="truncate">{item.url}</span>
+                                <ExternalLink className="h-3 w-3 flex-shrink-0" />
+                              </a>
+                            </TableCell>
+                            <TableCell className="hidden md:table-cell text-sm text-muted-foreground">
+                              {item.motivo_descartar || "-"}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+
+                  {totalDrillDownPages > 1 && (
+                    <div className="flex items-center justify-between mt-4">
+                      <span className="text-sm text-muted-foreground">
+                        Mostrando {(drillDownPage - 1) * itemsPerPage + 1}–{Math.min(drillDownPage * itemsPerPage, runItems.length)} de {runItems.length}
+                      </span>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setDrillDownPage(p => Math.max(1, p - 1))}
+                          disabled={drillDownPage === 1}
+                        >
+                          Anterior
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setDrillDownPage(p => Math.min(totalDrillDownPages, p + 1))}
+                          disabled={drillDownPage === totalDrillDownPages}
+                        >
+                          Próxima
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
+
+      {/* Note */}
       <p className="text-xs text-muted-foreground">
         Nota: A aba "Coleta" apenas salva matéria-prima. A curadoria, anti-repetição e IA acontecem nas abas dedicadas.
       </p>
