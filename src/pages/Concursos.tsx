@@ -38,7 +38,7 @@ import OportunidadeModal from "@/components/admin/OportunidadeModal";
 import ConcursosAdminPanel from "@/components/admin/ConcursosAdminPanel";
 
 const SITUACAO_OPTIONS = ["Previsto", "Edital publicado", "Aberto", "Encerrado"];
-const TIPO_OPTIONS = ["Concurso", "Programa educacional", "Processo seletivo"];
+const TIPO_OPTIONS = ["Concurso", "Programa educacional", "Processo seletivo", "Processo Seletivo Simplificado"];
 const ESCOLARIDADE_OPTIONS = ["Fundamental", "Médio", "Superior"];
 const ABRANGENCIA_OPTIONS = ["Nacional", "Estadual", "Municipal"];
 const SOURCE_TIPO_OPTIONS = [
@@ -93,7 +93,13 @@ export default function Concursos() {
       filtered = filtered.filter(o => filters.tipo!.includes(o.tipo));
     }
     if (filters.escolaridade?.length) {
-      filtered = filtered.filter(o => filters.escolaridade!.includes(o.escolaridade));
+      // Multi-select intersection: item has ANY of the selected escolaridades
+      filtered = filtered.filter(o => {
+        const itemEscolaridades = (o as any).escolaridades?.length 
+          ? (o as any).escolaridades 
+          : [o.escolaridade];
+        return filters.escolaridade!.some(e => itemEscolaridades.includes(e));
+      });
     }
     if (filters.abrangencia?.length) {
       filtered = filtered.filter(o => filters.abrangencia!.includes(o.abrangencia));

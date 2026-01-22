@@ -27,8 +27,9 @@ interface OportunidadeInput {
   abrangencia: "Nacional" | "Estadual" | "Municipal";
   situacao: "Previsto" | "Edital publicado" | "Aberto" | "Encerrado";
   data_publicacao?: string;
-  tipo: "Concurso" | "Programa educacional" | "Processo seletivo";
-  escolaridade: "Fundamental" | "Médio" | "Superior";
+  tipo: "Concurso" | "Programa educacional" | "Processo seletivo" | "Processo Seletivo Simplificado";
+  escolaridade?: "Fundamental" | "Médio" | "Superior"; // Legacy
+  escolaridades?: ("Fundamental" | "Médio" | "Superior")[]; // New multi-select
   link_edital?: string;
   orgao?: string;
   banca?: string;
@@ -117,10 +118,15 @@ Deno.serve(async (req) => {
     if (req.method === "POST") {
       const body: OportunidadeInput = await req.json();
 
+      // Normalize escolaridades: prefer array, fallback to legacy field
+      const escolaridades = body.escolaridades?.length 
+        ? body.escolaridades 
+        : (body.escolaridade ? [body.escolaridade] : null);
+
       // Validate required fields
-      if (!body.titulo || !body.slug || !body.categoria || !body.tipo || !body.escolaridade || !body.abrangencia || !body.situacao) {
+      if (!body.titulo || !body.slug || !body.categoria || !body.tipo || !escolaridades?.length || !body.abrangencia || !body.situacao) {
         return new Response(
-          JSON.stringify({ error: "Campos obrigatórios faltando: titulo, slug, categoria, tipo, escolaridade, abrangencia, situacao" }),
+          JSON.stringify({ error: "Campos obrigatórios faltando: titulo, slug, categoria, tipo, escolaridades, abrangencia, situacao" }),
           { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }

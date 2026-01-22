@@ -106,8 +106,8 @@ const formSchema = z.object({
     .min(3, "Slug deve ter pelo menos 3 caracteres")
     .regex(/^[a-z0-9-]+$/, "Slug deve conter apenas letras minúsculas, números e hífens"),
   categoria: z.enum(["Concurso", "Políticas Públicas", "Educação"]),
-  tipo: z.enum(["Concurso", "Programa educacional", "Processo seletivo"]),
-  escolaridade: z.enum(["Fundamental", "Médio", "Superior"]),
+  tipo: z.enum(["Concurso", "Programa educacional", "Processo seletivo", "Processo Seletivo Simplificado"]),
+  escolaridades: z.array(z.enum(["Fundamental", "Médio", "Superior"])).min(1, "Selecione pelo menos uma escolaridade"),
   abrangencia: z.enum(["Nacional", "Estadual", "Municipal"]),
   situacao: z.enum(["Previsto", "Edital publicado", "Aberto", "Encerrado"]),
   link_edital: z.string().url("URL inválida").optional().or(z.literal("")),
@@ -241,7 +241,7 @@ export default function OportunidadeModal({
       slug: "",
       categoria: "Concurso",
       tipo: "Concurso",
-      escolaridade: "Médio",
+      escolaridades: ["Médio"],
       abrangencia: "Nacional",
       situacao: "Previsto",
       link_edital: "",
@@ -270,12 +270,19 @@ export default function OportunidadeModal({
 
   useEffect(() => {
     if (editingItem) {
+      // Normalize escolaridades: use new array if present, else convert legacy field
+      const itemWithExt = editingItem as any;
+      const escolaridadesValue: ("Fundamental" | "Médio" | "Superior")[] = 
+        itemWithExt.escolaridades?.length 
+          ? itemWithExt.escolaridades 
+          : itemWithExt.escolaridade ? [itemWithExt.escolaridade] : ["Médio"];
+      
       form.reset({
         titulo: editingItem.titulo,
         slug: editingItem.slug,
         categoria: editingItem.categoria,
-        tipo: editingItem.tipo,
-        escolaridade: editingItem.escolaridade,
+        tipo: editingItem.tipo as "Concurso" | "Programa educacional" | "Processo seletivo" | "Processo Seletivo Simplificado",
+        escolaridades: escolaridadesValue,
         abrangencia: editingItem.abrangencia,
         situacao: editingItem.situacao,
         link_edital: editingItem.link_edital || "",
@@ -304,7 +311,7 @@ export default function OportunidadeModal({
         slug: "",
         categoria: "Concurso",
         tipo: "Concurso",
-        escolaridade: "Médio",
+        escolaridades: ["Médio"],
         abrangencia: "Nacional",
         situacao: "Previsto",
         link_edital: "",
@@ -380,7 +387,8 @@ export default function OportunidadeModal({
         slug: data.slug,
         categoria: data.categoria,
         tipo: data.tipo,
-        escolaridade: data.escolaridade,
+        escolaridades: data.escolaridades, // New array field
+        escolaridade: data.escolaridades[0], // Legacy compatibility
         abrangencia: data.abrangencia,
         situacao: data.situacao,
         publicado: data.publicado,
@@ -561,6 +569,7 @@ export default function OportunidadeModal({
                         <SelectItem value="Concurso">Concurso</SelectItem>
                         <SelectItem value="Programa educacional">Programa educacional</SelectItem>
                         <SelectItem value="Processo seletivo">Processo seletivo</SelectItem>
+                        <SelectItem value="Processo Seletivo Simplificado">Processo Seletivo Simplificado</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -570,22 +579,54 @@ export default function OportunidadeModal({
 
               <FormField
                 control={form.control}
-                name="escolaridade"
+                name="escolaridades"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Escolaridade *</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="Fundamental">Fundamental</SelectItem>
-                        <SelectItem value="Médio">Médio</SelectItem>
-                        <SelectItem value="Superior">Superior</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <div className="flex flex-wrap gap-2">
+                      {(["Fundamental", "Médio", "Superior"] as const).map(option => {
+                        const isSelected = field.value?.includes(option);
+                        return (
+                          <Badge
+                            key={option}
+                            variant="outline"
+                            className={`cursor-pointer transition-colors px-3 py-1 ${
+                              isSelected ? "bg-primary text-primary-foreground border-primary" : "hover:bg-muted"
+                            }`}
+                            onClick={() => {
+                              if (isSelected) {
+                                // Remove only if there will be at least 1 remaining
+                                if ((field.value?.length || 0) > 1) {
+                                  field.onChange(field.value?.filter(v => v !== option));
+                                }
+                              } else {
+                                field.onChange([...(field.value || []), option]);
+                              }
+                            }}
+                            role="checkbox"
+                            aria-checked={isSelected}
+                            tabIndex={0}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" || e.key === " ") {
+                                e.preventDefault();
+                                if (isSelected) {
+                                  if ((field.value?.length || 0) > 1) {
+                                    field.onChange(field.value?.filter(v => v !== option));
+                                  }
+                                } else {
+                                  field.onChange([...(field.value || []), option]);
+                                }
+                              }
+                            }}
+                          >
+                            {option}
+                          </Badge>
+                        );
+                      })}
+                    </div>
+                    <FormDescription className="text-xs">
+                      Selecione uma ou mais escolaridades
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
