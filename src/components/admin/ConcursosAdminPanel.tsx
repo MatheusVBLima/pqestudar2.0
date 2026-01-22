@@ -6,12 +6,6 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import {
   Search,
@@ -26,6 +20,7 @@ import ConcursosAntiRepetition from "./ConcursosAntiRepetition";
 import ConcursosAIOrchestration from "./ConcursosAIOrchestration";
 import ConcursosCuradoria from "./ConcursosCuradoria";
 import ConcursosColeta from "./ConcursosColeta";
+import ConcursosAdminErrorBoundary from "./ConcursosAdminErrorBoundary";
 import { usePendingItems } from "@/hooks/useConcursosAdmin";
 
 export default function ConcursosAdminPanel() {
@@ -91,27 +86,29 @@ export default function ConcursosAdminPanel() {
           </TabsTrigger>
         </TabsList>
 
-        <div className="p-4">
-          <TabsContent value="coleta" className="mt-0">
-            <ConcursosColeta />
-          </TabsContent>
+        <ConcursosAdminErrorBoundary>
+          <div className="p-4">
+            <TabsContent value="coleta" className="mt-0">
+              <ConcursosColeta />
+            </TabsContent>
 
-          <TabsContent value="curadoria" className="mt-0">
-            <ConcursosCuradoria />
-          </TabsContent>
+            <TabsContent value="curadoria" className="mt-0">
+              <ConcursosCuradoria />
+            </TabsContent>
 
-          <TabsContent value="busca" className="mt-0">
-            <ConcursosSearchConfig />
-          </TabsContent>
+            <TabsContent value="busca" className="mt-0">
+              <ConcursosSearchConfig />
+            </TabsContent>
 
-          <TabsContent value="anti-repeticao" className="mt-0">
-            <ConcursosAntiRepetition />
-          </TabsContent>
+            <TabsContent value="anti-repeticao" className="mt-0">
+              <ConcursosAntiRepetition />
+            </TabsContent>
 
-          <TabsContent value="ia" className="mt-0">
-            <ConcursosAIOrchestration />
-          </TabsContent>
-        </div>
+            <TabsContent value="ia" className="mt-0">
+              <ConcursosAIOrchestration />
+            </TabsContent>
+          </div>
+        </ConcursosAdminErrorBoundary>
       </Tabs>
     </motion.div>
   );
