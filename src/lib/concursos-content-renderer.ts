@@ -64,6 +64,7 @@ renderer.hr = () => {
 marked.use({ renderer, gfm: true, breaks: true });
 
 // DOMPurify configuration - whitelist approach for security
+// Includes emphasis tags (strong, em, b, i) for Markdown rendering
 const PURIFY_CONFIG = {
   ALLOWED_TAGS: [
     "h2", "h3", "h4", "h5", "h6", 
@@ -81,7 +82,9 @@ const PURIFY_CONFIG = {
   ],
   ALLOW_DATA_ATTR: true,
   // Add hooks to normalize external links
-  ADD_ATTR: ["target", "rel"],
+  ADD_ATTR: ["target", "rel"] as string[],
+  // Remove style attributes and event handlers for security
+  FORBID_ATTR: ["style", "onclick", "onmouseover", "onerror", "onload"] as string[],
 };
 
 // Setup DOMPurify hook to enforce external link security

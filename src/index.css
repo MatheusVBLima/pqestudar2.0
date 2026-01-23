@@ -242,4 +242,19 @@ All colors MUST be HSL.
     max-width: 100vw;
     overflow-x: hidden;
   }
+
+  /* Markdown emphasis styles for /concursos rich content */
+  .prose strong,
+  .prose b {
+    @apply font-bold;
+  }
+
+  .prose em,
+  .prose i {
+    @apply italic;
+  }
+
+  .prose hr {
+    @apply my-6 border-border;
+  }
 }
