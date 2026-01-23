@@ -1002,6 +1002,7 @@ export type Database = {
           created_by: string | null
           data_publicacao: string
           escolaridade: string
+          escolaridades: string[]
           id: string
           link_edital: string | null
           meta_description: string | null
@@ -1028,6 +1029,7 @@ export type Database = {
           created_by?: string | null
           data_publicacao?: string
           escolaridade: string
+          escolaridades?: string[]
           id?: string
           link_edital?: string | null
           meta_description?: string | null
@@ -1054,6 +1056,7 @@ export type Database = {
           created_by?: string | null
           data_publicacao?: string
           escolaridade?: string
+          escolaridades?: string[]
           id?: string
           link_edital?: string | null
           meta_description?: string | null
@@ -1505,6 +1508,7 @@ export type Database = {
           created_at: string | null
           data_publicacao: string | null
           escolaridade: string | null
+          escolaridades: string[] | null
           id: string | null
           link_edital: string | null
           meta_description: string | null
@@ -1527,6 +1531,7 @@ export type Database = {
           created_at?: string | null
           data_publicacao?: string | null
           escolaridade?: string | null
+          escolaridades?: string[] | null
           id?: string | null
           link_edital?: string | null
           meta_description?: string | null
@@ -1549,6 +1554,7 @@ export type Database = {
           created_at?: string | null
           data_publicacao?: string | null
           escolaridade?: string | null
+          escolaridades?: string[] | null
           id?: string | null
           link_edital?: string | null
           meta_description?: string | null

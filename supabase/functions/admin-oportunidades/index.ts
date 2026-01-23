@@ -119,39 +119,75 @@ Deno.serve(async (req) => {
       const body: OportunidadeInput = await req.json();
 
       // Normalize escolaridades: prefer array, fallback to legacy field
-      const escolaridades = body.escolaridades?.length 
+      const escolaridadesArr = body.escolaridades?.length 
         ? body.escolaridades 
-        : (body.escolaridade ? [body.escolaridade] : null);
+        : (body.escolaridade ? [body.escolaridade] : []);
 
-      // Validate required fields
-      if (!body.titulo || !body.slug || !body.categoria || !body.tipo || !escolaridades?.length || !body.abrangencia || !body.situacao) {
+      // Validate allowed escolaridades values
+      const allowedEscolaridades = ["Fundamental", "Médio", "Superior"];
+      const invalidEscolaridades = escolaridadesArr.filter(e => !allowedEscolaridades.includes(e));
+      if (invalidEscolaridades.length > 0) {
         return new Response(
-          JSON.stringify({ error: "Campos obrigatórios faltando: titulo, slug, categoria, tipo, escolaridades, abrangencia, situacao" }),
-          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          JSON.stringify({ 
+            error: "Valores de escolaridade inválidos", 
+            errors: { escolaridades: `Valores inválidos: ${invalidEscolaridades.join(", ")}. Permitidos: ${allowedEscolaridades.join(", ")}` }
+          }),
+          { status: 422, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Validate required fields with specific field errors
+      const fieldErrors: Record<string, string> = {};
+      if (!body.titulo) fieldErrors.titulo = "Título é obrigatório";
+      if (!body.slug) fieldErrors.slug = "Slug é obrigatório";
+      if (!body.categoria) fieldErrors.categoria = "Categoria é obrigatória";
+      if (!body.tipo) fieldErrors.tipo = "Tipo é obrigatório";
+      if (!escolaridadesArr.length) fieldErrors.escolaridades = "Selecione pelo menos uma escolaridade";
+      if (!body.abrangencia) fieldErrors.abrangencia = "Abrangência é obrigatória";
+      if (!body.situacao) fieldErrors.situacao = "Situação é obrigatória";
+
+      if (Object.keys(fieldErrors).length > 0) {
+        return new Response(
+          JSON.stringify({ error: "Campos obrigatórios faltando", errors: fieldErrors }),
+          { status: 422, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
 
       // Validate title length
       if (body.titulo.length < 30) {
         return new Response(
-          JSON.stringify({ error: "Título deve ter pelo menos 30 caracteres" }),
-          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          JSON.stringify({ error: "Título deve ter pelo menos 30 caracteres", errors: { titulo: "Mínimo 30 caracteres" } }),
+          { status: 422, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
 
       // Validate link_edital requirement
       if ((body.situacao === "Aberto" || body.situacao === "Edital publicado") && !body.link_edital) {
         return new Response(
-          JSON.stringify({ error: "Link do edital é obrigatório quando a situação é 'Aberto' ou 'Edital publicado'" }),
-          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          JSON.stringify({ error: "Link do edital é obrigatório quando a situação é 'Aberto' ou 'Edital publicado'", errors: { link_edital: "Obrigatório para esta situação" } }),
+          { status: 422, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
 
       // Validate URL format
       if (body.link_edital && !/^https?:\/\//.test(body.link_edital)) {
         return new Response(
-          JSON.stringify({ error: "Link do edital deve ser uma URL válida (http:// ou https://)" }),
-          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          JSON.stringify({ error: "Link do edital deve ser uma URL válida", errors: { link_edital: "URL inválida (use http:// ou https://)" } }),
+          { status: 422, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Check slug uniqueness
+      const { data: existingSlug } = await adminClient
+        .from("oportunidades")
+        .select("id")
+        .eq("slug", body.slug)
+        .maybeSingle();
+
+      if (existingSlug) {
+        return new Response(
+          JSON.stringify({ error: "Slug já existe", errors: { slug: "Este slug já está em uso" } }),
+          { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
 
@@ -160,8 +196,8 @@ Deno.serve(async (req) => {
         // Check fontes
         if (!body.fontes || body.fontes.length === 0) {
           return new Response(
-            JSON.stringify({ error: "Não é possível publicar sem pelo menos uma fonte oficial" }),
-            { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            JSON.stringify({ error: "Não é possível publicar sem pelo menos uma fonte oficial", errors: { fontes: "Adicione pelo menos uma fonte" } }),
+            { status: 422, headers: { ...corsHeaders, "Content-Type": "application/json" } }
           );
         }
 
@@ -170,16 +206,16 @@ Deno.serve(async (req) => {
         );
         if (!hasOfficialSource) {
           return new Response(
-            JSON.stringify({ error: "Não é possível publicar sem pelo menos uma fonte oficial (oficial, diário, banca ou outro-oficial)" }),
-            { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            JSON.stringify({ error: "Não é possível publicar sem pelo menos uma fonte oficial (oficial, diário, banca ou outro-oficial)", errors: { fontes: "Fonte oficial obrigatória" } }),
+            { status: 422, headers: { ...corsHeaders, "Content-Type": "application/json" } }
           );
         }
 
         // Check resumo editorial
         if (!body.resumo_editorial || body.resumo_editorial.length < 300) {
           return new Response(
-            JSON.stringify({ error: "Resumo editorial deve ter pelo menos 300 caracteres para publicar" }),
-            { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            JSON.stringify({ error: "Resumo editorial deve ter pelo menos 300 caracteres para publicar", errors: { resumo_editorial: "Mínimo 300 caracteres" } }),
+            { status: 422, headers: { ...corsHeaders, "Content-Type": "application/json" } }
           );
         }
 
@@ -187,13 +223,13 @@ Deno.serve(async (req) => {
         const wordCount = countWords(body.conteudo_principal || "");
         if (wordCount < 600) {
           return new Response(
-            JSON.stringify({ error: `Conteúdo principal deve ter pelo menos 600 palavras para publicar (atual: ${wordCount})` }),
-            { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            JSON.stringify({ error: `Conteúdo principal deve ter pelo menos 600 palavras para publicar (atual: ${wordCount})`, errors: { conteudo_principal: `Mínimo 600 palavras (atual: ${wordCount})` } }),
+            { status: 422, headers: { ...corsHeaders, "Content-Type": "application/json" } }
           );
         }
       }
 
-      const { fontes, atualizacoes, ...oportunidadeData } = body;
+      const { fontes, atualizacoes, escolaridade: _legacyEsc, escolaridades: _inputEsc, ...oportunidadeData } = body;
 
       // Generate meta fields if not provided
       let metaTitle = body.meta_title;
@@ -210,11 +246,13 @@ Deno.serve(async (req) => {
           : body.resumo_editorial;
       }
 
-      // Insert oportunidade (initially unpublished to add fontes first)
+      // Insert oportunidade with escolaridades array (initially unpublished to add fontes first)
       const { data: oportunidade, error: insertError } = await adminClient
         .from("oportunidades")
         .insert({
           ...oportunidadeData,
+          escolaridades: escolaridadesArr,
+          escolaridade: escolaridadesArr[0] || null, // Keep legacy field populated
           meta_title: metaTitle,
           meta_description: metaDescription,
           publicado: false, // Start unpublished
@@ -226,9 +264,16 @@ Deno.serve(async (req) => {
 
       if (insertError) {
         console.error("Insert error:", insertError);
+        // Check for specific error types
+        if (insertError.message.includes("duplicate")) {
+          return new Response(
+            JSON.stringify({ error: "Registro duplicado", errors: { slug: "Conflito de dados" } }),
+            { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
         return new Response(
           JSON.stringify({ error: insertError.message }),
-          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          { status: 422, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
 
@@ -314,32 +359,52 @@ Deno.serve(async (req) => {
 
       if (!body.id) {
         return new Response(
-          JSON.stringify({ error: "ID é obrigatório para atualização" }),
-          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          JSON.stringify({ error: "ID é obrigatório para atualização", errors: { id: "Campo obrigatório" } }),
+          { status: 422, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
+      }
+
+      // Normalize escolaridades: prefer array, fallback to legacy field
+      const escolaridadesArr = body.escolaridades?.length 
+        ? body.escolaridades 
+        : (body.escolaridade ? [body.escolaridade] : null);
+
+      // Validate allowed escolaridades values if provided
+      if (escolaridadesArr) {
+        const allowedEscolaridades = ["Fundamental", "Médio", "Superior"];
+        const invalidEscolaridades = escolaridadesArr.filter(e => !allowedEscolaridades.includes(e));
+        if (invalidEscolaridades.length > 0) {
+          return new Response(
+            JSON.stringify({ 
+              error: "Valores de escolaridade inválidos", 
+              errors: { escolaridades: `Valores inválidos: ${invalidEscolaridades.join(", ")}` }
+            }),
+            { status: 422, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
       }
 
       // Validate title length
       if (body.titulo && body.titulo.length < 30) {
         return new Response(
-          JSON.stringify({ error: "Título deve ter pelo menos 30 caracteres" }),
-          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          JSON.stringify({ error: "Título deve ter pelo menos 30 caracteres", errors: { titulo: "Mínimo 30 caracteres" } }),
+          { status: 422, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
 
       // Validate link_edital requirement
       if ((body.situacao === "Aberto" || body.situacao === "Edital publicado") && !body.link_edital) {
         return new Response(
-          JSON.stringify({ error: "Link do edital é obrigatório quando a situação é 'Aberto' ou 'Edital publicado'" }),
-          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          JSON.stringify({ error: "Link do edital é obrigatório quando a situação é 'Aberto' ou 'Edital publicado'", errors: { link_edital: "Obrigatório para esta situação" } }),
+          { status: 422, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
 
       // Validate URL format
       if (body.link_edital && !/^https?:\/\//.test(body.link_edital)) {
         return new Response(
-          JSON.stringify({ error: "Link do edital deve ser uma URL válida (http:// ou https://)" }),
-          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          JSON.stringify({ error: "Link do edital deve ser uma URL válida", errors: { link_edital: "URL inválida" } }),
+          { status: 422, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
 
@@ -353,6 +418,21 @@ Deno.serve(async (req) => {
       // Check if slug is being changed on a locked item
       const isSlugLocked = existingRecord?.slug_locked || existingRecord?.publicado;
       if (isSlugLocked && body.slug !== existingRecord?.slug) {
+        // Check if new slug is unique
+        const { data: slugConflict } = await adminClient
+          .from("oportunidades")
+          .select("id")
+          .eq("slug", body.slug)
+          .neq("id", body.id)
+          .maybeSingle();
+
+        if (slugConflict) {
+          return new Response(
+            JSON.stringify({ error: "Slug já existe", errors: { slug: "Este slug já está em uso" } }),
+            { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+
         // Create redirect from old slug to new slug
         const { error: redirectError } = await adminClient
           .from("oportunidades_slug_redirects")
@@ -366,7 +446,7 @@ Deno.serve(async (req) => {
         }
       }
 
-      const { fontes, atualizacoes, id, ...updateData } = body;
+      const { fontes, atualizacoes, id, escolaridade: _legacyEsc, escolaridades: _inputEsc, ...updateData } = body;
 
       // If trying to publish, validate requirements
       if (body.publicado) {
@@ -383,16 +463,16 @@ Deno.serve(async (req) => {
 
         if (!hasOfficialSource) {
           return new Response(
-            JSON.stringify({ error: "Não é possível publicar sem pelo menos uma fonte oficial (oficial, diário, banca ou outro-oficial)" }),
-            { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            JSON.stringify({ error: "Não é possível publicar sem pelo menos uma fonte oficial", errors: { fontes: "Fonte oficial obrigatória" } }),
+            { status: 422, headers: { ...corsHeaders, "Content-Type": "application/json" } }
           );
         }
 
         // Check resumo editorial
         if (!body.resumo_editorial || body.resumo_editorial.length < 300) {
           return new Response(
-            JSON.stringify({ error: "Resumo editorial deve ter pelo menos 300 caracteres para publicar" }),
-            { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            JSON.stringify({ error: "Resumo editorial deve ter pelo menos 300 caracteres para publicar", errors: { resumo_editorial: "Mínimo 300 caracteres" } }),
+            { status: 422, headers: { ...corsHeaders, "Content-Type": "application/json" } }
           );
         }
 
@@ -400,8 +480,8 @@ Deno.serve(async (req) => {
         const wordCount = countWords(body.conteudo_principal || "");
         if (wordCount < 600) {
           return new Response(
-            JSON.stringify({ error: `Conteúdo principal deve ter pelo menos 600 palavras para publicar (atual: ${wordCount})` }),
-            { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            JSON.stringify({ error: `Conteúdo principal deve ter pelo menos 600 palavras para publicar (atual: ${wordCount})`, errors: { conteudo_principal: `Mínimo 600 palavras (atual: ${wordCount})` } }),
+            { status: 422, headers: { ...corsHeaders, "Content-Type": "application/json" } }
           );
         }
       }
@@ -424,21 +504,35 @@ Deno.serve(async (req) => {
       // Update oportunidade (without publicado for now)
       const { publicado, ...safeUpdateData } = updateData;
       
+      // Build update object with escolaridades if provided
+      const updateObj: any = {
+        ...safeUpdateData,
+        meta_title: metaTitle,
+        meta_description: metaDescription,
+        updated_by: user.id,
+      };
+
+      if (escolaridadesArr) {
+        updateObj.escolaridades = escolaridadesArr;
+        updateObj.escolaridade = escolaridadesArr[0] || null; // Keep legacy field
+      }
+
       const { error: updateError } = await adminClient
         .from("oportunidades")
-        .update({
-          ...safeUpdateData,
-          meta_title: metaTitle,
-          meta_description: metaDescription,
-          updated_by: user.id,
-        })
+        .update(updateObj)
         .eq("id", id);
 
       if (updateError) {
         console.error("Update error:", updateError);
+        if (updateError.message.includes("duplicate")) {
+          return new Response(
+            JSON.stringify({ error: "Conflito de dados", errors: { slug: "Slug já existe" } }),
+            { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
         return new Response(
           JSON.stringify({ error: updateError.message }),
-          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          { status: 422, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
 
