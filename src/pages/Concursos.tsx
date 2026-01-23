@@ -11,13 +11,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Eye,
   Share2,
@@ -28,14 +22,16 @@ import {
   FileText,
   Globe,
   MapPin,
-  GraduationCap,
-  Briefcase,
-  Building2,
+  Trash2,
+  RotateCcw,
+  AlertTriangle,
 } from "lucide-react";
 import { useOportunidades, useOportunidadesAdmin, OportunidadeFilters, Oportunidade } from "@/hooks/useOportunidades";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import OportunidadeModal from "@/components/admin/OportunidadeModal";
 import ConcursosAdminPanel from "@/components/admin/ConcursosAdminPanel";
+import TrashConfirmDialog from "@/components/admin/TrashConfirmDialog";
+import { toast } from "sonner";
 
 const SITUACAO_OPTIONS = ["Previsto", "Edital publicado", "Aberto", "Encerrado"];
 const TIPO_OPTIONS = ["Concurso", "Programa educacional", "Processo seletivo", "Processo Seletivo Simplificado"];
@@ -68,13 +64,22 @@ export default function Concursos() {
   const [showFilters, setShowFilters] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<Oportunidade | null>(null);
+  
+  // Trash state
+  const [adminTab, setAdminTab] = useState<"ativo" | "lixeira">("ativo");
+  const [trashDialogOpen, setTrashDialogOpen] = useState(false);
+  const [trashDialogMode, setTrashDialogMode] = useState<"trash" | "purge" | "restore">("trash");
+  const [trashDialogItem, setTrashDialogItem] = useState<Oportunidade | null>(null);
 
   // Filters state
   const [filters, setFilters] = useState<OportunidadeFilters>({});
 
   // Use appropriate hook based on mode
   const publicQuery = useOportunidades(filters);
-  const adminQuery = useOportunidadesAdmin();
+  const adminQueryAtivo = useOportunidadesAdmin("ativo");
+  const adminQueryLixeira = useOportunidadesAdmin("lixeira");
+
+  const adminQuery = adminTab === "lixeira" ? adminQueryLixeira : adminQueryAtivo;
 
   const { oportunidades, isLoading, refetch } = isManagementMode && isAdmin
     ? adminQuery
@@ -163,6 +168,61 @@ export default function Concursos() {
     }
   };
 
+  // Trash handlers
+  const handleTrash = (item: Oportunidade) => {
+    setTrashDialogItem(item);
+    setTrashDialogMode("trash");
+    setTrashDialogOpen(true);
+  };
+
+  const handleRestore = (item: Oportunidade) => {
+    setTrashDialogItem(item);
+    setTrashDialogMode("restore");
+    setTrashDialogOpen(true);
+  };
+
+  const handlePurge = (item: Oportunidade) => {
+    setTrashDialogItem(item);
+    setTrashDialogMode("purge");
+    setTrashDialogOpen(true);
+  };
+
+  const handleTrashConfirm = async () => {
+    if (!trashDialogItem) return;
+
+    try {
+      if (trashDialogMode === "trash" && adminQuery.trashOportunidade) {
+        await adminQuery.trashOportunidade(trashDialogItem.id);
+        toast.success("Item enviado para a lixeira", {
+          action: {
+            label: "Desfazer",
+            onClick: async () => {
+              if (adminQueryLixeira.restoreOportunidade) {
+                await adminQueryLixeira.restoreOportunidade(trashDialogItem.id);
+              }
+            },
+          },
+          duration: 10000, // 10 seconds to undo
+        });
+      } else if (trashDialogMode === "restore" && adminQuery.restoreOportunidade) {
+        await adminQuery.restoreOportunidade(trashDialogItem.id);
+      } else if (trashDialogMode === "purge" && adminQuery.purgeOportunidade) {
+        await adminQuery.purgeOportunidade(trashDialogItem.id);
+      }
+
+      // Refresh both lists
+      adminQueryAtivo.refetch();
+      adminQueryLixeira.refetch();
+    } catch (error) {
+      // Error already handled by mutation
+    } finally {
+      setTrashDialogOpen(false);
+      setTrashDialogItem(null);
+    }
+  };
+
+  const trashCount = adminQueryLixeira.oportunidades?.length || 0;
+
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Navbar />
@@ -207,6 +267,31 @@ export default function Concursos() {
           {/* Admin Panel - Only visible when management mode is ON */}
           {isAdmin && isManagementMode && (
             <ConcursosAdminPanel />
+          )}
+
+          {/* Admin Tabs (Ativos / Lixeira) - Only in management mode */}
+          {isAdmin && isManagementMode && (
+            <div className="mb-4">
+              <Tabs value={adminTab} onValueChange={(v) => setAdminTab(v as "ativo" | "lixeira")}>
+                <TabsList>
+                  <TabsTrigger value="ativo">
+                    Ativos
+                    <Badge variant="secondary" className="ml-2">
+                      {adminQueryAtivo.oportunidades?.length || 0}
+                    </Badge>
+                  </TabsTrigger>
+                  <TabsTrigger value="lixeira" className="gap-2">
+                    <Trash2 className="h-4 w-4" />
+                    Lixeira
+                    {trashCount > 0 && (
+                      <Badge variant="destructive" className="ml-1">
+                        {trashCount}
+                      </Badge>
+                    )}
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </div>
           )}
 
           {/* Filters toggle */}
@@ -371,15 +456,29 @@ export default function Concursos() {
           </div>
         ) : displayedOportunidades.length === 0 ? (
           <div className="text-center py-16">
-            <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-medium text-foreground mb-2">
-              Nenhuma oportunidade encontrada
-            </h3>
-            <p className="text-muted-foreground">
-              {hasActiveFilters
-                ? "Tente ajustar os filtros para ver mais resultados."
-                : "Novas oportunidades serão publicadas em breve."}
-            </p>
+            {adminTab === "lixeira" && isManagementMode ? (
+              <>
+                <Trash2 className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                <h3 className="text-lg font-medium text-foreground mb-2">
+                  Lixeira vazia
+                </h3>
+                <p className="text-muted-foreground">
+                  Não há itens na lixeira.
+                </p>
+              </>
+            ) : (
+              <>
+                <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                <h3 className="text-lg font-medium text-foreground mb-2">
+                  Nenhuma oportunidade encontrada
+                </h3>
+                <p className="text-muted-foreground">
+                  {hasActiveFilters
+                    ? "Tente ajustar os filtros para ver mais resultados."
+                    : "Novas oportunidades serão publicadas em breve."}
+                </p>
+              </>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -395,8 +494,12 @@ export default function Concursos() {
                   onShare={() => handleShare(item)}
                   onView={() => navigate(`/concursos/${item.slug}`)}
                   isManagementMode={isManagementMode && isAdmin}
+                  isTrashMode={adminTab === "lixeira"}
                   onEdit={() => handleEdit(item)}
                   onTogglePublicado={() => handleTogglePublicado(item)}
+                  onTrash={() => handleTrash(item)}
+                  onRestore={() => handleRestore(item)}
+                  onPurge={() => handlePurge(item)}
                 />
               </motion.div>
             ))}
@@ -418,6 +521,23 @@ export default function Concursos() {
           }}
         />
       )}
+
+      {/* Trash Confirm Dialog */}
+      <TrashConfirmDialog
+        open={trashDialogOpen}
+        onClose={() => {
+          setTrashDialogOpen(false);
+          setTrashDialogItem(null);
+        }}
+        onConfirm={handleTrashConfirm}
+        title={trashDialogItem?.titulo || ""}
+        mode={trashDialogMode}
+        isLoading={
+          adminQuery.isTrashing || 
+          adminQuery.isRestoring || 
+          adminQuery.isPurging
+        }
+      />
     </div>
   );
 }
@@ -428,8 +548,12 @@ interface OportunidadeCardProps {
   onShare: () => void;
   onView: () => void;
   isManagementMode?: boolean;
+  isTrashMode?: boolean;
   onEdit?: () => void;
   onTogglePublicado?: () => void;
+  onTrash?: () => void;
+  onRestore?: () => void;
+  onPurge?: () => void;
 }
 
 function OportunidadeCard({
@@ -437,19 +561,40 @@ function OportunidadeCard({
   onShare,
   onView,
   isManagementMode,
+  isTrashMode,
   onEdit,
   onTogglePublicado,
+  onTrash,
+  onRestore,
+  onPurge,
 }: OportunidadeCardProps) {
+  const isInTrash = item.status_admin === "lixeira" || isTrashMode;
+
   return (
-    <Card className={`h-full flex flex-col transition-shadow hover:shadow-md ${!item.publicado ? "opacity-60 border-dashed" : ""}`}>
+    <Card className={`h-full flex flex-col transition-shadow hover:shadow-md ${
+      isInTrash 
+        ? "opacity-70 border-destructive/30 bg-destructive/5" 
+        : !item.publicado 
+          ? "opacity-60 border-dashed" 
+          : ""
+    }`}>
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-2">
-          <Badge
-            variant="outline"
-            className={CATEGORIA_COLORS[item.categoria] || ""}
-          >
-            {item.categoria}
-          </Badge>
+          <div className="flex flex-wrap gap-1">
+            <Badge
+              variant="outline"
+              className={CATEGORIA_COLORS[item.categoria] || ""}
+            >
+              {item.categoria}
+            </Badge>
+            
+            {isInTrash && (
+              <Badge variant="destructive" className="gap-1">
+                <Trash2 className="h-3 w-3" />
+                Excluído
+              </Badge>
+            )}
+          </div>
           
           <div className="flex items-center gap-1 text-xs text-muted-foreground">
             <Eye className="h-3 w-3" />
@@ -461,10 +606,16 @@ function OportunidadeCard({
           {item.titulo}
         </h3>
         
-        {!item.publicado && isManagementMode && (
+        {!item.publicado && isManagementMode && !isInTrash && (
           <Badge variant="secondary" className="w-fit">
             Não publicado
           </Badge>
+        )}
+
+        {isInTrash && item.deleted_at && (
+          <p className="text-xs text-muted-foreground">
+            Excluído em {format(new Date(item.deleted_at), "d 'de' MMM 'de' yyyy", { locale: ptBR })}
+          </p>
         )}
       </CardHeader>
 
@@ -498,38 +649,76 @@ function OportunidadeCard({
           </Badge>
         </div>
 
-        {/* Actions */}
-        <div className="mt-auto pt-4 border-t flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onShare}
-            className="shrink-0"
-          >
-            <Share2 className="h-4 w-4" />
-          </Button>
-          
-          <Button
-            onClick={onView}
-            className="flex-1 gap-2"
-          >
-            Ver página completa
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </div>
+        {/* Actions for non-trash items */}
+        {!isTrashMode && (
+          <>
+            <div className="mt-auto pt-4 border-t flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={onShare}
+                className="shrink-0"
+              >
+                <Share2 className="h-4 w-4" />
+              </Button>
+              
+              <Button
+                onClick={onView}
+                className="flex-1 gap-2"
+              >
+                Ver página completa
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
 
-        {/* Admin actions */}
-        {isManagementMode && (
-          <div className="mt-3 pt-3 border-t flex items-center justify-between">
-            <Button variant="outline" size="sm" onClick={onEdit}>
-              Editar
-            </Button>
-            <Button
-              variant={item.publicado ? "secondary" : "default"}
-              size="sm"
-              onClick={onTogglePublicado}
+            {/* Admin actions for active items */}
+            {isManagementMode && (
+              <div className="mt-3 pt-3 border-t flex items-center justify-between">
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" onClick={onEdit}>
+                    Editar
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={onTrash}
+                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+                <Button
+                  variant={item.publicado ? "secondary" : "default"}
+                  size="sm"
+                  onClick={onTogglePublicado}
+                >
+                  {item.publicado ? "Despublicar" : "Publicar"}
+                </Button>
+              </div>
+            )}
+          </>
+        )}
+
+        {/* Trash mode actions */}
+        {isTrashMode && isManagementMode && (
+          <div className="mt-auto pt-4 border-t flex items-center gap-2">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={onRestore}
+              className="flex-1 gap-2"
             >
-              {item.publicado ? "Despublicar" : "Publicar"}
+              <RotateCcw className="h-4 w-4" />
+              Restaurar
+            </Button>
+            <Button 
+              variant="destructive" 
+              size="sm" 
+              onClick={onPurge}
+              className="gap-2"
+            >
+              <Trash2 className="h-4 w-4" />
+              Excluir Definitivamente
             </Button>
           </div>
         )}

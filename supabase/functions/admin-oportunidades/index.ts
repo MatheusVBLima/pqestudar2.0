@@ -75,6 +75,28 @@ function countMarkdownWords(markdown: string): number {
   return plainText.split(/\s+/).length;
 }
 
+// Helper to log audit events
+async function logAudit(
+  adminClient: any,
+  oportunidadeId: string,
+  action: "trash" | "restore" | "purge",
+  actor: string,
+  actorEmail: string | null,
+  payload: Record<string, any> = {}
+) {
+  try {
+    await adminClient.from("oportunidades_audit").insert({
+      oportunidade_id: oportunidadeId,
+      action,
+      actor,
+      actor_email: actorEmail,
+      payload,
+    });
+  } catch (e) {
+    console.error("Audit log error:", e);
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -125,12 +147,214 @@ Deno.serve(async (req) => {
     const url = new URL(req.url);
     const action = url.searchParams.get("action");
 
+    // ==================== TRASH ACTION ====================
+    if (action === "trash") {
+      const { id } = await req.json();
+      
+      if (!id) {
+        return new Response(
+          JSON.stringify({ error: "ID é obrigatório" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Get current record
+      const { data: oportunidade, error: fetchError } = await adminClient
+        .from("oportunidades")
+        .select("*")
+        .eq("id", id)
+        .single();
+
+      if (fetchError || !oportunidade) {
+        return new Response(
+          JSON.stringify({ error: "Oportunidade não encontrada" }),
+          { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      if (oportunidade.status_admin === "lixeira") {
+        return new Response(
+          JSON.stringify({ error: "Item já está na lixeira" }),
+          { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Soft delete: set status to lixeira, unpublish
+      const { error: updateError } = await adminClient
+        .from("oportunidades")
+        .update({
+          status_admin: "lixeira",
+          deleted_at: new Date().toISOString(),
+          deleted_by: user.id,
+          publicado: false,
+          updated_by: user.id,
+        })
+        .eq("id", id);
+
+      if (updateError) {
+        return new Response(
+          JSON.stringify({ error: updateError.message }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Log audit
+      await logAudit(adminClient, id, "trash", user.id, user.email || null, {
+        titulo: oportunidade.titulo,
+        publicado_antes: oportunidade.publicado,
+        situacao: oportunidade.situacao,
+      });
+
+      return new Response(
+        JSON.stringify({ success: true, message: "Item enviado para a lixeira" }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // ==================== RESTORE ACTION ====================
+    if (action === "restore") {
+      const { id } = await req.json();
+      
+      if (!id) {
+        return new Response(
+          JSON.stringify({ error: "ID é obrigatório" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Get current record
+      const { data: oportunidade, error: fetchError } = await adminClient
+        .from("oportunidades")
+        .select("*")
+        .eq("id", id)
+        .single();
+
+      if (fetchError || !oportunidade) {
+        return new Response(
+          JSON.stringify({ error: "Oportunidade não encontrada" }),
+          { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      if (oportunidade.status_admin !== "lixeira") {
+        return new Response(
+          JSON.stringify({ error: "Item não está na lixeira" }),
+          { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Restore: set status to ativo, clear deleted fields
+      // Note: Does NOT republish - stays as draft
+      const { error: updateError } = await adminClient
+        .from("oportunidades")
+        .update({
+          status_admin: "ativo",
+          deleted_at: null,
+          deleted_by: null,
+          updated_by: user.id,
+        })
+        .eq("id", id);
+
+      if (updateError) {
+        return new Response(
+          JSON.stringify({ error: updateError.message }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Log audit
+      await logAudit(adminClient, id, "restore", user.id, user.email || null, {
+        titulo: oportunidade.titulo,
+        deleted_at: oportunidade.deleted_at,
+      });
+
+      return new Response(
+        JSON.stringify({ success: true, message: "Item restaurado com sucesso" }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // ==================== PURGE (HARD DELETE) ACTION ====================
+    if (action === "purge") {
+      const { id } = await req.json();
+      
+      if (!id) {
+        return new Response(
+          JSON.stringify({ error: "ID é obrigatório" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Get current record
+      const { data: oportunidade, error: fetchError } = await adminClient
+        .from("oportunidades")
+        .select("*")
+        .eq("id", id)
+        .single();
+
+      if (fetchError || !oportunidade) {
+        return new Response(
+          JSON.stringify({ error: "Oportunidade não encontrada" }),
+          { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Only allow purge if in lixeira
+      if (oportunidade.status_admin !== "lixeira") {
+        return new Response(
+          JSON.stringify({ error: "Apenas itens na lixeira podem ser excluídos definitivamente" }),
+          { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Log audit BEFORE deletion
+      await logAudit(adminClient, id, "purge", user.id, user.email || null, {
+        titulo: oportunidade.titulo,
+        slug: oportunidade.slug,
+        categoria: oportunidade.categoria,
+        tipo: oportunidade.tipo,
+        situacao: oportunidade.situacao,
+        deleted_at: oportunidade.deleted_at,
+      });
+
+      // Delete related records (fontes, atualizacoes - cascade should handle this but be explicit)
+      await adminClient.from("fontes_oportunidade").delete().eq("oportunidade_id", id);
+      await adminClient.from("atualizacoes_oportunidade").delete().eq("oportunidade_id", id);
+      await adminClient.from("oportunidades_slug_redirects").delete().eq("oportunidade_id", id);
+
+      // Hard delete the oportunidade
+      const { error: deleteError } = await adminClient
+        .from("oportunidades")
+        .delete()
+        .eq("id", id);
+
+      if (deleteError) {
+        return new Response(
+          JSON.stringify({ error: deleteError.message }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      return new Response(
+        JSON.stringify({ success: true, message: "Item excluído definitivamente" }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     // GET - List all oportunidades (including unpublished for admin)
     if (req.method === "GET") {
-      const { data, error } = await adminClient
+      const statusFilter = url.searchParams.get("status"); // 'ativo', 'lixeira', or null for all
+      
+      let query = adminClient
         .from("oportunidades")
         .select("*, fontes_oportunidade(*), atualizacoes_oportunidade(*)")
         .order("created_at", { ascending: false });
+
+      if (statusFilter) {
+        query = query.eq("status_admin", statusFilter);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
       return new Response(JSON.stringify(data), {
@@ -284,6 +508,7 @@ Deno.serve(async (req) => {
           meta_title: metaTitle,
           meta_description: metaDescription,
           publicado: false, // Start unpublished
+          status_admin: "ativo", // Always start as active
           created_by: user.id,
           updated_by: user.id,
         })
@@ -439,9 +664,17 @@ Deno.serve(async (req) => {
       // Get existing record to check slug changes
       const { data: existingRecord } = await adminClient
         .from("oportunidades")
-        .select("slug, slug_locked, publicado, published_at")
+        .select("slug, slug_locked, publicado, published_at, status_admin")
         .eq("id", body.id)
         .single();
+
+      // Cannot update items in trash
+      if (existingRecord?.status_admin === "lixeira") {
+        return new Response(
+          JSON.stringify({ error: "Não é possível editar itens na lixeira. Restaure-o primeiro." }),
+          { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
 
       // Check if slug is being changed on a locked item
       const isSlugLocked = existingRecord?.slug_locked || existingRecord?.publicado;
@@ -666,7 +899,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    // DELETE - Delete oportunidade
+    // DELETE - Legacy delete (redirects to purge if in trash, otherwise returns error)
     if (req.method === "DELETE") {
       const id = url.searchParams.get("id");
       
@@ -676,6 +909,39 @@ Deno.serve(async (req) => {
           { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
+
+      // Get current record
+      const { data: oportunidade, error: fetchError } = await adminClient
+        .from("oportunidades")
+        .select("status_admin, titulo, slug")
+        .eq("id", id)
+        .single();
+
+      if (fetchError || !oportunidade) {
+        return new Response(
+          JSON.stringify({ error: "Oportunidade não encontrada" }),
+          { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // If not in trash, return error - must use trash action first
+      if (oportunidade.status_admin !== "lixeira") {
+        return new Response(
+          JSON.stringify({ error: "Para excluir, envie primeiro para a lixeira usando a ação 'trash'" }),
+          { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Log audit BEFORE deletion
+      await logAudit(adminClient, id, "purge", user.id, user.email || null, {
+        titulo: oportunidade.titulo,
+        slug: oportunidade.slug,
+      });
+
+      // Delete related records
+      await adminClient.from("fontes_oportunidade").delete().eq("oportunidade_id", id);
+      await adminClient.from("atualizacoes_oportunidade").delete().eq("oportunidade_id", id);
+      await adminClient.from("oportunidades_slug_redirects").delete().eq("oportunidade_id", id);
 
       // Fontes and atualizacoes will be deleted via CASCADE
       const { error: deleteError } = await adminClient
@@ -691,7 +957,7 @@ Deno.serve(async (req) => {
         );
       }
 
-      return new Response(JSON.stringify({ success: true }), {
+      return new Response(JSON.stringify({ success: true, message: "Item excluído definitivamente" }), {
         status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -705,6 +971,20 @@ Deno.serve(async (req) => {
         return new Response(
           JSON.stringify({ error: "ID é obrigatório" }),
           { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Check if in trash
+      const { data: checkRecord } = await adminClient
+        .from("oportunidades")
+        .select("status_admin")
+        .eq("id", id)
+        .single();
+
+      if (checkRecord?.status_admin === "lixeira") {
+        return new Response(
+          JSON.stringify({ error: "Não é possível publicar itens na lixeira. Restaure-o primeiro." }),
+          { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
 
@@ -744,7 +1024,8 @@ Deno.serve(async (req) => {
         }
 
         // Check conteudo principal word count
-        const wordCount = countWords(oportunidade.conteudo_principal || "");
+        const contentToCount = oportunidade.conteudo_markdown || oportunidade.conteudo_principal || "";
+        const wordCount = countMarkdownWords(contentToCount);
         if (wordCount < 600) {
           return new Response(
             JSON.stringify({ error: `Conteúdo principal deve ter pelo menos 600 palavras para publicar (atual: ${wordCount})` }),

@@ -32,6 +32,10 @@ export interface Oportunidade {
   created_at: string;
   updated_at: string;
   fontes_oportunidade?: FonteOportunidade[];
+  // Trash fields
+  status_admin?: "ativo" | "lixeira";
+  deleted_at?: string | null;
+  deleted_by?: string | null;
 }
 
 export interface OportunidadeFilters {
@@ -42,7 +46,7 @@ export interface OportunidadeFilters {
   source_tipo?: string[];
 }
 
-export type OportunidadeInput = Omit<Oportunidade, "id" | "visualizacoes" | "created_at" | "updated_at" | "fontes_oportunidade"> & {
+export type OportunidadeInput = Omit<Oportunidade, "id" | "visualizacoes" | "created_at" | "updated_at" | "fontes_oportunidade" | "status_admin" | "deleted_at" | "deleted_by"> & {
   id?: string;
   fontes?: FonteOportunidade[];
 };
@@ -135,7 +139,7 @@ export function useOportunidades(filters?: OportunidadeFilters) {
   };
 }
 
-export function useOportunidadesAdmin() {
+export function useOportunidadesAdmin(statusFilter?: "ativo" | "lixeira") {
   const queryClient = useQueryClient();
 
   // Fetch all oportunidades (including unpublished) for admin
@@ -145,18 +149,27 @@ export function useOportunidadesAdmin() {
     error,
     refetch,
   } = useQuery({
-    queryKey: ["oportunidades-admin"],
+    queryKey: ["oportunidades-admin", statusFilter],
     queryFn: async () => {
       const { data: session } = await supabase.auth.getSession();
       if (!session?.session?.access_token) {
         throw new Error("Not authenticated");
       }
 
-      const { data, error } = await supabase.functions.invoke("admin-oportunidades", {
+      const url = statusFilter 
+        ? `https://omkxiomwzbykmqttfozi.supabase.co/functions/v1/admin-oportunidades?status=${statusFilter}`
+        : `https://omkxiomwzbykmqttfozi.supabase.co/functions/v1/admin-oportunidades`;
+
+      const response = await fetch(url, {
         method: "GET",
+        headers: {
+          Authorization: `Bearer ${session.session.access_token}`,
+          "Content-Type": "application/json",
+        },
       });
 
-      if (error) throw error;
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Erro ao buscar oportunidades");
       return data as Oportunidade[];
     },
   });
@@ -205,18 +218,97 @@ export function useOportunidadesAdmin() {
     },
   });
 
-  // Delete oportunidade
+  // Trash oportunidade (soft delete)
+  const trashMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const response = await fetch(
+        `https://omkxiomwzbykmqttfozi.supabase.co/functions/v1/admin-oportunidades?action=trash`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ id }),
+        }
+      );
+
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "Erro ao enviar para lixeira");
+      return result;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["oportunidades-admin"] });
+      queryClient.invalidateQueries({ queryKey: ["oportunidades-public"] });
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Erro ao enviar para lixeira");
+    },
+  });
+
+  // Restore oportunidade
+  const restoreMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const response = await fetch(
+        `https://omkxiomwzbykmqttfozi.supabase.co/functions/v1/admin-oportunidades?action=restore`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ id }),
+        }
+      );
+
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "Erro ao restaurar");
+      return result;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["oportunidades-admin"] });
+      queryClient.invalidateQueries({ queryKey: ["oportunidades-public"] });
+      toast.success("Item restaurado com sucesso!");
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Erro ao restaurar");
+    },
+  });
+
+  // Purge oportunidade (hard delete)
+  const purgeMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const response = await fetch(
+        `https://omkxiomwzbykmqttfozi.supabase.co/functions/v1/admin-oportunidades?action=purge`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ id }),
+        }
+      );
+
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "Erro ao excluir definitivamente");
+      return result;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["oportunidades-admin"] });
+      queryClient.invalidateQueries({ queryKey: ["oportunidades-public"] });
+      toast.success("Item excluído definitivamente!");
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Erro ao excluir definitivamente");
+    },
+  });
+
+  // Delete oportunidade (legacy - now requires trash first)
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const { data, error } = await supabase.functions.invoke("admin-oportunidades", {
-        method: "DELETE",
-        body: {},
-        headers: {},
-      });
-
-      // Use query param for delete
       const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL || "https://omkxiomwzbykmqttfozi.supabase.co"}/functions/v1/admin-oportunidades?id=${id}`,
+        `https://omkxiomwzbykmqttfozi.supabase.co/functions/v1/admin-oportunidades?id=${id}`,
         {
           method: "DELETE",
           headers: {
@@ -233,7 +325,7 @@ export function useOportunidadesAdmin() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["oportunidades-admin"] });
       queryClient.invalidateQueries({ queryKey: ["oportunidades-public"] });
-      toast.success("Oportunidade excluída com sucesso!");
+      toast.success("Oportunidade excluída!");
     },
     onError: (error: Error) => {
       toast.error(error.message || "Erro ao excluir oportunidade");
@@ -277,9 +369,15 @@ export function useOportunidadesAdmin() {
     createOportunidade: createMutation.mutateAsync,
     updateOportunidade: updateMutation.mutateAsync,
     deleteOportunidade: deleteMutation.mutateAsync,
+    trashOportunidade: trashMutation.mutateAsync,
+    restoreOportunidade: restoreMutation.mutateAsync,
+    purgeOportunidade: purgeMutation.mutateAsync,
     togglePublicado: togglePublicadoMutation.mutateAsync,
     isCreating: createMutation.isPending,
     isUpdating: updateMutation.isPending,
     isDeleting: deleteMutation.isPending,
+    isTrashing: trashMutation.isPending,
+    isRestoring: restoreMutation.isPending,
+    isPurging: purgeMutation.isPending,
   };
 }
