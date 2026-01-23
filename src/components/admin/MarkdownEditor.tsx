@@ -306,10 +306,13 @@ export default function MarkdownEditor({
       <p className="text-xs text-muted-foreground flex items-start gap-1">
         <Info className="h-3 w-3 mt-0.5 shrink-0 text-primary/60" />
         <span>
-          Use <code className="bg-muted px-1 rounded">##</code> para H2 e <code className="bg-muted px-1 rounded">###</code> para H3; 
-          listas com <code className="bg-muted px-1 rounded">-</code>, <code className="bg-muted px-1 rounded">*</code>, <code className="bg-muted px-1 rounded">1.</code>; 
-          links <code className="bg-muted px-1 rounded">[texto](url)</code>. 
-          Ao colar HTML, será convertido automaticamente para Markdown.
+          Use <code className="bg-muted px-1 rounded">**texto**</code> ou <code className="bg-muted px-1 rounded">__texto__</code> para <strong>negrito</strong>, 
+          e <code className="bg-muted px-1 rounded">*texto*</code> ou <code className="bg-muted px-1 rounded">_texto_</code> para <em>itálico</em>. 
+          Títulos: <code className="bg-muted px-1 rounded">##</code> (H2), <code className="bg-muted px-1 rounded">###</code> (H3). 
+          Listas: <code className="bg-muted px-1 rounded">-</code> ou <code className="bg-muted px-1 rounded">1.</code>. 
+          Links: <code className="bg-muted px-1 rounded">[texto](url)</code>. 
+          Linha horizontal: <code className="bg-muted px-1 rounded">---</code>. 
+          HTML colado é convertido automaticamente.
         </span>
       </p>
     </div>
