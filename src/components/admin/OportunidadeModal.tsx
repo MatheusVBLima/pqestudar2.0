@@ -50,6 +50,7 @@ import {
 } from "lucide-react";
 import { useOportunidadesAdmin, Oportunidade, FonteOportunidade } from "@/hooks/useOportunidades";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import MarkdownEditor, { countMarkdownWords, markdownToHtml } from "./MarkdownEditor";
 
 // Stopwords to remove from slug
 const STOPWORDS = ["de", "da", "do", "das", "dos", "para", "e", "a", "o", "em", "um", "uma", "com", "por", "ao", "aos", "no", "na", "nos", "nas"];
@@ -74,12 +75,9 @@ function generateSlug(title: string): string {
   return words.join("-").replace(/-+/g, "-").slice(0, 100);
 }
 
+// Use markdown word count for validation
 function countWords(text: string): number {
-  if (!text) return 0;
-  // Strip HTML tags and count words
-  const stripped = text.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
-  if (!stripped) return 0;
-  return stripped.split(/\s+/).length;
+  return countMarkdownWords(text);
 }
 
 function isGenericTitle(title: string): boolean {
@@ -113,10 +111,8 @@ const formSchema = z.object({
   link_edital: z.string().url("URL inválida").optional().or(z.literal("")),
   orgao: z.string().optional(),
   banca: z.string().optional(),
-  resumo_editorial: z.string()
-    .min(300, "Resumo deve ter pelo menos 300 caracteres")
-    .optional()
-    .or(z.literal("")),
+  resumo_editorial: z.string().optional().or(z.literal("")),
+  conteudo_markdown: z.string().optional(),
   conteudo_principal: z.string().optional(),
   meta_title: z.string().max(70, "Meta título muito longo").optional(),
   meta_description: z.string().max(160, "Meta descrição muito longa").optional(),
@@ -165,14 +161,15 @@ const formSchema = z.object({
 ).refine(
   (data) => {
     if (data.publicado) {
-      const wordCount = countWords(data.conteudo_principal || "");
+      // Use conteudo_markdown for word count
+      const wordCount = countWords(data.conteudo_markdown || data.conteudo_principal || "");
       return wordCount >= 600;
     }
     return true;
   },
   {
     message: "Conteúdo principal deve ter pelo menos 600 palavras para publicar",
-    path: ["conteudo_principal"],
+    path: ["conteudo_markdown"],
   }
 );
 
@@ -248,6 +245,7 @@ export default function OportunidadeModal({
       orgao: "",
       banca: "",
       resumo_editorial: "",
+      conteudo_markdown: "",
       conteudo_principal: "",
       meta_title: "",
       meta_description: "",
@@ -277,6 +275,9 @@ export default function OportunidadeModal({
           ? itemWithExt.escolaridades 
           : itemWithExt.escolaridade ? [itemWithExt.escolaridade] : ["Médio"];
       
+      // Load conteudo_markdown preferring it over conteudo_principal
+      const conteudoMarkdown = itemWithExt.conteudo_markdown || itemWithExt.conteudo_principal || "";
+      
       form.reset({
         titulo: editingItem.titulo,
         slug: editingItem.slug,
@@ -289,9 +290,10 @@ export default function OportunidadeModal({
         orgao: editingItem.orgao || "",
         banca: editingItem.banca || "",
         resumo_editorial: editingItem.resumo_editorial || "",
-        conteudo_principal: (editingItem as any).conteudo_principal || "",
-        meta_title: (editingItem as any).meta_title || "",
-        meta_description: (editingItem as any).meta_description || "",
+        conteudo_markdown: conteudoMarkdown,
+        conteudo_principal: itemWithExt.conteudo_principal || "",
+        meta_title: itemWithExt.meta_title || "",
+        meta_description: itemWithExt.meta_description || "",
         data_publicacao: editingItem.data_publicacao?.split("T")[0] || new Date().toISOString().split("T")[0],
         publicado: editingItem.publicado,
         fontes: editingItem.fontes_oportunidade?.map(f => ({
@@ -300,7 +302,7 @@ export default function OportunidadeModal({
           source_tipo: f.source_tipo,
           source_date: f.source_date?.split("T")[0] || "",
         })) || [],
-        atualizacoes: (editingItem as any).atualizacoes_oportunidade?.map((a: any) => ({
+        atualizacoes: itemWithExt.atualizacoes_oportunidade?.map((a: any) => ({
           data_atualizacao: a.data_atualizacao?.split("T")[0] || "",
           texto: a.texto || "",
         })) || [],
@@ -318,6 +320,7 @@ export default function OportunidadeModal({
         orgao: "",
         banca: "",
         resumo_editorial: "",
+        conteudo_markdown: "",
         conteudo_principal: "",
         meta_title: "",
         meta_description: "",
@@ -341,13 +344,13 @@ export default function OportunidadeModal({
 
   // Watch fields for counters
   const resumoEditorial = form.watch("resumo_editorial") || "";
-  const conteudoPrincipal = form.watch("conteudo_principal") || "";
+  const conteudoMarkdown = form.watch("conteudo_markdown") || "";
   const metaTitle = form.watch("meta_title") || "";
   const metaDescription = form.watch("meta_description") || "";
   const publicado = form.watch("publicado");
   
   const resumoCharCount = resumoEditorial.length;
-  const conteudoWordCount = countWords(conteudoPrincipal);
+  const conteudoWordCount = countWords(conteudoMarkdown);
   const titleCharCount = titulo.length;
   
   // Title warnings
@@ -382,6 +385,9 @@ export default function OportunidadeModal({
           : data.resumo_editorial;
       }
 
+      // Generate HTML from markdown
+      const conteudoHtml = data.conteudo_markdown ? markdownToHtml(data.conteudo_markdown) : undefined;
+
       const payload = {
         titulo: data.titulo,
         slug: data.slug,
@@ -397,7 +403,9 @@ export default function OportunidadeModal({
         orgao: data.orgao || undefined,
         banca: data.banca || undefined,
         resumo_editorial: data.resumo_editorial || undefined,
-        conteudo_principal: data.conteudo_principal || undefined,
+        conteudo_markdown: data.conteudo_markdown || undefined,
+        conteudo_html: conteudoHtml,
+        conteudo_principal: data.conteudo_markdown || data.conteudo_principal || undefined, // Legacy
         meta_title: finalMetaTitle || undefined,
         meta_description: finalMetaDescription || undefined,
         data_publicacao: data.data_publicacao ? new Date(data.data_publicacao).toISOString() : new Date().toISOString(),
@@ -798,11 +806,13 @@ export default function OportunidadeModal({
               <CollapsibleContent className="pt-4">
                 <FormField
                   control={form.control}
-                  name="conteudo_principal"
+                  name="conteudo_markdown"
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
-                        <Textarea
+                        <MarkdownEditor
+                          value={field.value || ""}
+                          onChange={field.onChange}
                           placeholder={`## Sobre o concurso
 
 Descreva aqui as informações gerais sobre o concurso, incluindo histórico e contexto.
@@ -826,17 +836,10 @@ Qual o status mais recente do concurso.
 ## O que já se sabe oficialmente
 
 Informações confirmadas por fontes oficiais.`}
+                          minWords={publicado ? 600 : 0}
                           rows={16}
-                          className="font-mono text-sm"
-                          {...field}
                         />
                       </FormControl>
-                      <div className="flex items-center justify-between">
-                        <SeoHint>
-                          Conteúdo completo (mín. 600 palavras). Use subtítulos H2/H3 (## ou ###) para organizar seções.
-                        </SeoHint>
-                        <Counter current={conteudoWordCount} min={600} type="words" />
-                      </div>
                       <FormMessage />
                     </FormItem>
                   )}

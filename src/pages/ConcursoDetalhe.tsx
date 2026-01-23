@@ -62,6 +62,8 @@ interface Atualizacao {
 
 interface ExtendedOportunidade extends Oportunidade {
   conteudo_principal?: string;
+  conteudo_markdown?: string;
+  conteudo_html?: string;
   meta_title?: string;
   meta_description?: string;
   published_at?: string;
@@ -69,7 +71,7 @@ interface ExtendedOportunidade extends Oportunidade {
   atualizacoes_oportunidade?: Atualizacao[];
 }
 
-// Convert markdown-like headings to HTML
+// Fallback: Convert markdown-like headings to HTML (used only if conteudo_html is empty)
 function parseContent(content: string): string {
   if (!content) return "";
   
@@ -469,7 +471,7 @@ export default function ConcursoDetalhe() {
           </section>
 
           {/* Conteúdo Principal */}
-          {oportunidade.conteudo_principal && (
+          {(oportunidade.conteudo_html || oportunidade.conteudo_markdown || oportunidade.conteudo_principal) && (
             <section className="mb-8">
               <Card>
                 <CardHeader>
@@ -481,7 +483,10 @@ export default function ConcursoDetalhe() {
                 <CardContent className="prose prose-neutral dark:prose-invert max-w-none">
                   <div 
                     dangerouslySetInnerHTML={{ 
-                      __html: sanitizeHtml(parseContent(oportunidade.conteudo_principal)) 
+                      __html: sanitizeHtml(
+                        oportunidade.conteudo_html || 
+                        parseContent(oportunidade.conteudo_markdown || oportunidade.conteudo_principal || "")
+                      ) 
                     }} 
                   />
                 </CardContent>
