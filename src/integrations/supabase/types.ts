@@ -997,6 +997,8 @@ export type Database = {
           abrangencia: string
           banca: string | null
           categoria: string
+          conteudo_html: string | null
+          conteudo_markdown: string | null
           conteudo_principal: string | null
           created_at: string
           created_by: string | null
@@ -1024,6 +1026,8 @@ export type Database = {
           abrangencia: string
           banca?: string | null
           categoria: string
+          conteudo_html?: string | null
+          conteudo_markdown?: string | null
           conteudo_principal?: string | null
           created_at?: string
           created_by?: string | null
@@ -1051,6 +1055,8 @@ export type Database = {
           abrangencia?: string
           banca?: string | null
           categoria?: string
+          conteudo_html?: string | null
+          conteudo_markdown?: string | null
           conteudo_principal?: string | null
           created_at?: string
           created_by?: string | null
@@ -1504,6 +1510,8 @@ export type Database = {
           abrangencia: string | null
           banca: string | null
           categoria: string | null
+          conteudo_html: string | null
+          conteudo_markdown: string | null
           conteudo_principal: string | null
           created_at: string | null
           data_publicacao: string | null
@@ -1527,6 +1535,8 @@ export type Database = {
           abrangencia?: string | null
           banca?: string | null
           categoria?: string | null
+          conteudo_html?: string | null
+          conteudo_markdown?: string | null
           conteudo_principal?: string | null
           created_at?: string | null
           data_publicacao?: string | null
@@ -1550,6 +1560,8 @@ export type Database = {
           abrangencia?: string | null
           banca?: string | null
           categoria?: string | null
+          conteudo_html?: string | null
+          conteudo_markdown?: string | null
           conteudo_principal?: string | null
           created_at?: string | null
           data_publicacao?: string | null

@@ -34,7 +34,9 @@ interface OportunidadeInput {
   orgao?: string;
   banca?: string;
   resumo_editorial?: string;
-  conteudo_principal?: string;
+  conteudo_principal?: string; // Legacy
+  conteudo_markdown?: string;  // New: raw markdown
+  conteudo_html?: string;      // New: pre-rendered HTML
   meta_title?: string;
   meta_description?: string;
   slug: string;
@@ -43,12 +45,34 @@ interface OportunidadeInput {
   atualizacoes?: AtualizacaoInput[];
 }
 
-// Count words in text (stripping HTML)
-function countWords(text: string): number {
-  if (!text) return 0;
-  const stripped = text.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
-  if (!stripped) return 0;
-  return stripped.split(/\s+/).length;
+// Count words in markdown text (stripping syntax)
+function countMarkdownWords(markdown: string): number {
+  if (!markdown) return 0;
+  
+  // Remove markdown syntax for accurate word count
+  const plainText = markdown
+    // Remove headers
+    .replace(/^#{1,6}\s+/gm, "")
+    // Remove bold/italic
+    .replace(/\*\*([^*]+)\*\*/g, "$1")
+    .replace(/\*([^*]+)\*/g, "$1")
+    .replace(/__([^_]+)__/g, "$1")
+    .replace(/_([^_]+)_/g, "$1")
+    // Remove links but keep text
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+    // Remove code blocks
+    .replace(/```[\s\S]*?```/g, "")
+    .replace(/`([^`]+)`/g, "$1")
+    // Remove horizontal rules
+    .replace(/^-{3,}$/gm, "")
+    // Remove HTML tags
+    .replace(/<[^>]*>/g, " ")
+    // Clean whitespace
+    .replace(/\s+/g, " ")
+    .trim();
+  
+  if (!plainText) return 0;
+  return plainText.split(/\s+/).length;
 }
 
 Deno.serve(async (req) => {
@@ -219,17 +243,18 @@ Deno.serve(async (req) => {
           );
         }
 
-        // Check conteudo principal word count
-        const wordCount = countWords(body.conteudo_principal || "");
+        // Check conteudo word count (prefer markdown, fallback to principal)
+        const contentToCount = body.conteudo_markdown || body.conteudo_principal || "";
+        const wordCount = countMarkdownWords(contentToCount);
         if (wordCount < 600) {
           return new Response(
-            JSON.stringify({ error: `Conteúdo principal deve ter pelo menos 600 palavras para publicar (atual: ${wordCount})`, errors: { conteudo_principal: `Mínimo 600 palavras (atual: ${wordCount})` } }),
+            JSON.stringify({ error: `Conteúdo principal deve ter pelo menos 600 palavras para publicar (atual: ${wordCount})`, errors: { conteudo_markdown: `Mínimo 600 palavras (atual: ${wordCount})` } }),
             { status: 422, headers: { ...corsHeaders, "Content-Type": "application/json" } }
           );
         }
       }
 
-      const { fontes, atualizacoes, escolaridade: _legacyEsc, escolaridades: _inputEsc, ...oportunidadeData } = body;
+      const { fontes, atualizacoes, escolaridade: _legacyEsc, escolaridades: _inputEsc, conteudo_html: _html, ...oportunidadeData } = body;
 
       // Generate meta fields if not provided
       let metaTitle = body.meta_title;
@@ -253,6 +278,9 @@ Deno.serve(async (req) => {
           ...oportunidadeData,
           escolaridades: escolaridadesArr,
           escolaridade: escolaridadesArr[0] || null, // Keep legacy field populated
+          conteudo_markdown: body.conteudo_markdown || null,
+          conteudo_html: body.conteudo_html || null,
+          conteudo_principal: body.conteudo_markdown || body.conteudo_principal || null, // Legacy
           meta_title: metaTitle,
           meta_description: metaDescription,
           publicado: false, // Start unpublished
@@ -476,11 +504,12 @@ Deno.serve(async (req) => {
           );
         }
 
-        // Check conteudo principal word count
-        const wordCount = countWords(body.conteudo_principal || "");
+        // Check conteudo word count (prefer markdown, fallback to principal)
+        const contentToCount = body.conteudo_markdown || body.conteudo_principal || "";
+        const wordCount = countMarkdownWords(contentToCount);
         if (wordCount < 600) {
           return new Response(
-            JSON.stringify({ error: `Conteúdo principal deve ter pelo menos 600 palavras para publicar (atual: ${wordCount})`, errors: { conteudo_principal: `Mínimo 600 palavras (atual: ${wordCount})` } }),
+            JSON.stringify({ error: `Conteúdo principal deve ter pelo menos 600 palavras para publicar (atual: ${wordCount})`, errors: { conteudo_markdown: `Mínimo 600 palavras (atual: ${wordCount})` } }),
             { status: 422, headers: { ...corsHeaders, "Content-Type": "application/json" } }
           );
         }
@@ -502,7 +531,7 @@ Deno.serve(async (req) => {
       }
 
       // Update oportunidade (without publicado for now)
-      const { publicado, ...safeUpdateData } = updateData;
+      const { publicado, conteudo_html: _html, ...safeUpdateData } = updateData;
       
       // Build update object with escolaridades if provided
       const updateObj: any = {
@@ -510,6 +539,9 @@ Deno.serve(async (req) => {
         meta_title: metaTitle,
         meta_description: metaDescription,
         updated_by: user.id,
+        conteudo_markdown: body.conteudo_markdown || null,
+        conteudo_html: body.conteudo_html || null,
+        conteudo_principal: body.conteudo_markdown || body.conteudo_principal || null,
       };
 
       if (escolaridadesArr) {
