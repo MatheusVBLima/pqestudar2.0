@@ -30,6 +30,7 @@ import {
   Home,
 } from "lucide-react";
 import { useOportunidades, Oportunidade, FonteOportunidade } from "@/hooks/useOportunidades";
+import { useOportunidadeViewTracker } from "@/hooks/useOportunidadeViews";
 import { supabase } from "@/integrations/supabase/client";
 import { renderRichContentConcursos, renderUpdateText } from "@/lib/concursos-content-renderer";
 
@@ -69,6 +70,7 @@ interface ExtendedOportunidade extends Oportunidade {
   published_at?: string;
   escolaridades?: ("Fundamental" | "Médio" | "Superior")[];
   atualizacoes_oportunidade?: Atualizacao[];
+  views_total?: number;
 }
 
 // Content rendering is now handled by renderRichContentConcursos from concursos-content-renderer
@@ -139,12 +141,18 @@ function generateJsonLd(oportunidade: ExtendedOportunidade, canonicalUrl: string
 export default function ConcursoDetalhe() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
-  const { fetchBySlug, incrementViews } = useOportunidades();
+  const { fetchBySlug } = useOportunidades();
   
   const [oportunidade, setOportunidade] = useState<ExtendedOportunidade | null>(null);
   const [atualizacoes, setAtualizacoes] = useState<Atualizacao[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // View tracking hook - tracks after 6s on visible page
+  const { viewsTotal } = useOportunidadeViewTracker(
+    oportunidade?.id,
+    oportunidade?.views_total || oportunidade?.visualizacoes || 0
+  );
 
   useEffect(() => {
     async function loadOportunidade() {
@@ -183,8 +191,7 @@ export default function ConcursoDetalhe() {
           setError("Oportunidade não encontrada");
         } else {
           setOportunidade(data);
-          // Increment views
-          incrementViews(data.id);
+          // View tracking is now handled by useOportunidadeViewTracker hook
 
           // Fetch atualizacoes
           const { data: atualizacoesData } = await supabase
@@ -203,7 +210,7 @@ export default function ConcursoDetalhe() {
     }
 
     loadOportunidade();
-  }, [slug, fetchBySlug, incrementViews, navigate]);
+  }, [slug, fetchBySlug, navigate]);
 
   const handleShare = async () => {
     const url = window.location.href;
@@ -389,7 +396,7 @@ export default function ConcursoDetalhe() {
               </div>
               <div className="flex items-center gap-1">
                 <Eye className="h-4 w-4" />
-                {oportunidade.visualizacoes.toLocaleString("pt-BR")} visualizações
+                {viewsTotal.toLocaleString("pt-BR")} visualizações
               </div>
               <Button variant="ghost" size="sm" onClick={handleShare}>
                 <Share2 className="h-4 w-4 mr-1" />
