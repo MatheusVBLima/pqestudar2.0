@@ -65,7 +65,7 @@ export function useOportunidades(filters?: OportunidadeFilters) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("oportunidades")
-        .select("*")
+        .select("*, views_total")
         .eq("publicado", true)
         .order("data_publicacao", { ascending: false });
 
@@ -124,9 +124,11 @@ export function useOportunidades(filters?: OportunidadeFilters) {
     } as Oportunidade;
   }, []);
 
-  // Increment views (silent, no auth required)
+  // Increment views is now handled by useOportunidadeViewTracker hook
+  // Keep this stub for backward compatibility
   const incrementViews = useCallback(async (_id: string) => {
-    // Silent - view tracking would need a dedicated endpoint
+    // View tracking is now handled by useOportunidadeViewTracker in ConcursoDetalhe
+    // This stub is kept for backward compatibility
   }, []);
 
   return {

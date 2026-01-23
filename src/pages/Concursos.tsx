@@ -598,7 +598,7 @@ function OportunidadeCard({
           
           <div className="flex items-center gap-1 text-xs text-muted-foreground">
             <Eye className="h-3 w-3" />
-            {item.visualizacoes.toLocaleString("pt-BR")}
+            {((item as any).views_total ?? item.visualizacoes).toLocaleString("pt-BR")}
           </div>
         </div>
         

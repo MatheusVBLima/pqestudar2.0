@@ -14,6 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_audit: {
+        Row: {
+          acao: string
+          created_at: string | null
+          id: number
+          oportunidade_id: string | null
+          payload: Json | null
+          user_email: string | null
+          user_id: string
+        }
+        Insert: {
+          acao: string
+          created_at?: string | null
+          id?: never
+          oportunidade_id?: string | null
+          payload?: Json | null
+          user_email?: string | null
+          user_id: string
+        }
+        Update: {
+          acao?: string
+          created_at?: string | null
+          id?: never
+          oportunidade_id?: string | null
+          payload?: Json | null
+          user_email?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_audit_oportunidade_id_fkey"
+            columns: ["oportunidade_id"]
+            isOneToOne: false
+            referencedRelation: "oportunidades"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "admin_audit_oportunidade_id_fkey"
+            columns: ["oportunidade_id"]
+            isOneToOne: false
+            referencedRelation: "oportunidades_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       anonymous_course_suggestions_rate_limit: {
         Row: {
           created_at: string | null
@@ -992,6 +1037,87 @@ export type Database = {
         }
         Relationships: []
       }
+      oportunidade_view_fingerprints: {
+        Row: {
+          created_at: string | null
+          dia: string
+          fp: string
+          id: number
+          oportunidade_id: string
+          ua: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          dia: string
+          fp: string
+          id?: never
+          oportunidade_id: string
+          ua?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          dia?: string
+          fp?: string
+          id?: never
+          oportunidade_id?: string
+          ua?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "oportunidade_view_fingerprints_oportunidade_id_fkey"
+            columns: ["oportunidade_id"]
+            isOneToOne: false
+            referencedRelation: "oportunidades"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "oportunidade_view_fingerprints_oportunidade_id_fkey"
+            columns: ["oportunidade_id"]
+            isOneToOne: false
+            referencedRelation: "oportunidades_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      oportunidade_views: {
+        Row: {
+          created_at: string | null
+          dia: string
+          id: number
+          oportunidade_id: string
+          total: number
+        }
+        Insert: {
+          created_at?: string | null
+          dia: string
+          id?: never
+          oportunidade_id: string
+          total?: number
+        }
+        Update: {
+          created_at?: string | null
+          dia?: string
+          id?: never
+          oportunidade_id?: string
+          total?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "oportunidade_views_oportunidade_id_fkey"
+            columns: ["oportunidade_id"]
+            isOneToOne: false
+            referencedRelation: "oportunidades"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "oportunidade_views_oportunidade_id_fkey"
+            columns: ["oportunidade_id"]
+            isOneToOne: false
+            referencedRelation: "oportunidades_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       oportunidades: {
         Row: {
           abrangencia: string
@@ -1023,6 +1149,7 @@ export type Database = {
           titulo: string
           updated_at: string
           updated_by: string | null
+          views_total: number
           visualizacoes: number
         }
         Insert: {
@@ -1055,6 +1182,7 @@ export type Database = {
           titulo: string
           updated_at?: string
           updated_by?: string | null
+          views_total?: number
           visualizacoes?: number
         }
         Update: {
@@ -1087,6 +1215,7 @@ export type Database = {
           titulo?: string
           updated_at?: string
           updated_by?: string | null
+          views_total?: number
           visualizacoes?: number
         }
         Relationships: []
@@ -1697,6 +1826,7 @@ export type Database = {
       cleanup_newsletter_rate_limit: { Args: never; Returns: undefined }
       cleanup_newsletter_rate_limit_30d: { Args: never; Returns: undefined }
       cleanup_old_rate_limit_entries: { Args: never; Returns: undefined }
+      cleanup_old_view_fingerprints: { Args: never; Returns: undefined }
       get_brevo_config: {
         Args: never
         Returns: {
