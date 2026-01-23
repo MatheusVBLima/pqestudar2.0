@@ -31,7 +31,7 @@ import {
 } from "lucide-react";
 import { useOportunidades, Oportunidade, FonteOportunidade } from "@/hooks/useOportunidades";
 import { supabase } from "@/integrations/supabase/client";
-import { sanitizeHtml } from "@/lib/utils";
+import { renderRichContentConcursos, renderUpdateText } from "@/lib/concursos-content-renderer";
 
 const CATEGORIA_COLORS: Record<string, string> = {
   "Concurso": "bg-blue-500/10 text-blue-500 border-blue-500/20",
@@ -71,23 +71,7 @@ interface ExtendedOportunidade extends Oportunidade {
   atualizacoes_oportunidade?: Atualizacao[];
 }
 
-// Fallback: Convert markdown-like headings to HTML (used only if conteudo_html is empty)
-function parseContent(content: string): string {
-  if (!content) return "";
-  
-  return content
-    // H2 headings
-    .replace(/^## (.+)$/gm, '<h2 class="text-xl font-semibold mt-6 mb-3">$1</h2>')
-    // H3 headings  
-    .replace(/^### (.+)$/gm, '<h3 class="text-lg font-medium mt-4 mb-2">$1</h3>')
-    // Paragraphs (double newlines)
-    .split(/\n\n+/)
-    .map(para => {
-      if (para.startsWith('<h2') || para.startsWith('<h3')) return para;
-      return `<p class="mb-4">${para.replace(/\n/g, '<br/>')}</p>`;
-    })
-    .join('');
-}
+// Content rendering is now handled by renderRichContentConcursos from concursos-content-renderer
 
 // Generate JSON-LD structured data
 function generateJsonLd(oportunidade: ExtendedOportunidade, canonicalUrl: string) {
@@ -483,9 +467,10 @@ export default function ConcursoDetalhe() {
                 <CardContent className="prose prose-neutral dark:prose-invert max-w-none">
                   <div 
                     dangerouslySetInnerHTML={{ 
-                      __html: sanitizeHtml(
+                      __html: renderRichContentConcursos(
                         oportunidade.conteudo_html || 
-                        parseContent(oportunidade.conteudo_markdown || oportunidade.conteudo_principal || "")
+                        oportunidade.conteudo_markdown || 
+                        oportunidade.conteudo_principal
                       ) 
                     }} 
                   />
@@ -519,7 +504,10 @@ export default function ConcursoDetalhe() {
                             locale: ptBR,
                           })}
                         </time>
-                        <p className="text-sm mt-1">{atualizacao.texto}</p>
+                        <div 
+                          className="text-sm mt-1 prose prose-sm prose-neutral dark:prose-invert max-w-none"
+                          dangerouslySetInnerHTML={{ __html: renderUpdateText(atualizacao.texto) }}
+                        />
                       </li>
                     ))}
                   </ul>
