@@ -1003,6 +1003,8 @@ export type Database = {
           created_at: string
           created_by: string | null
           data_publicacao: string
+          deleted_at: string | null
+          deleted_by: string | null
           escolaridade: string
           escolaridades: string[]
           id: string
@@ -1016,6 +1018,7 @@ export type Database = {
           situacao: string
           slug: string
           slug_locked: boolean
+          status_admin: string
           tipo: string
           titulo: string
           updated_at: string
@@ -1032,6 +1035,8 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           data_publicacao?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
           escolaridade: string
           escolaridades?: string[]
           id?: string
@@ -1045,6 +1050,7 @@ export type Database = {
           situacao: string
           slug: string
           slug_locked?: boolean
+          status_admin?: string
           tipo: string
           titulo: string
           updated_at?: string
@@ -1061,6 +1067,8 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           data_publicacao?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
           escolaridade?: string
           escolaridades?: string[]
           id?: string
@@ -1074,11 +1082,42 @@ export type Database = {
           situacao?: string
           slug?: string
           slug_locked?: boolean
+          status_admin?: string
           tipo?: string
           titulo?: string
           updated_at?: string
           updated_by?: string | null
           visualizacoes?: number
+        }
+        Relationships: []
+      }
+      oportunidades_audit: {
+        Row: {
+          action: string
+          actor: string
+          actor_email: string | null
+          created_at: string
+          id: string
+          oportunidade_id: string
+          payload: Json | null
+        }
+        Insert: {
+          action: string
+          actor: string
+          actor_email?: string | null
+          created_at?: string
+          id?: string
+          oportunidade_id: string
+          payload?: Json | null
+        }
+        Update: {
+          action?: string
+          actor?: string
+          actor_email?: string | null
+          created_at?: string
+          id?: string
+          oportunidade_id?: string
+          payload?: Json | null
         }
         Relationships: []
       }
