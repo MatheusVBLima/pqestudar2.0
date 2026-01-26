@@ -4,15 +4,16 @@
  * 
  * Pipeline:
  * 1. Detect if content is HTML or Markdown
- * 2. If Markdown → convert to HTML using markdown-it (html:false, linkify:true)
+ * 2. If Markdown → convert to HTML using markdown-it with GFM tables (html:false, linkify:true)
  * 3. Sanitize with sanitize-html (whitelist approach)
- * 4. Return safe HTML for dangerouslySetInnerHTML
+ * 4. Wrap tables for responsive scroll
+ * 5. Return safe HTML for dangerouslySetInnerHTML
  */
 
 import MarkdownIt from "markdown-it";
 import sanitizeHtmlLib from "sanitize-html";
 
-// Configure markdown-it: disable raw HTML, enable linkify
+// Configure markdown-it with GFM tables enabled (built-in)
 const md = new MarkdownIt({
   html: false,        // Disable raw HTML input for security
   linkify: true,      // Auto-convert URLs to links
@@ -20,7 +21,7 @@ const md = new MarkdownIt({
   typographer: false, // Disable smart quotes/dashes
 });
 
-// sanitize-html configuration - strict whitelist
+// sanitize-html configuration - strict whitelist with GFM tables
 const SANITIZE_CONFIG: sanitizeHtmlLib.IOptions = {
   allowedTags: [
     "p", "br", "hr",
@@ -30,10 +31,19 @@ const SANITIZE_CONFIG: sanitizeHtmlLib.IOptions = {
     "a",
     "blockquote",
     "code", "pre",
+    // GFM table tags
+    "table", "thead", "tbody", "tr", "th", "td",
   ],
   allowedAttributes: {
     a: ["href", "target", "rel", "title"],
+    th: ["align", "style"],
+    td: ["align", "style"],
     "*": ["class"],
+  },
+  // Allow only text-align style for table cells
+  allowedStyles: {
+    th: { "text-align": [/^left$/, /^right$/, /^center$/] },
+    td: { "text-align": [/^left$/, /^right$/, /^center$/] },
   },
   // Enforce secure link attributes
   transformTags: {
@@ -93,6 +103,29 @@ const SANITIZE_CONFIG: sanitizeHtmlLib.IOptions = {
       tagName: "hr",
       attribs: { class: "my-6 border-border" },
     }),
+    // Table styling
+    table: () => ({
+      tagName: "table",
+      attribs: { class: "concursos-table w-full border-collapse my-4 text-sm" },
+    }),
+    thead: () => ({
+      tagName: "thead",
+      attribs: { class: "bg-muted/50" },
+    }),
+    th: (tagName, attribs) => ({
+      tagName: "th",
+      attribs: { 
+        ...attribs,
+        class: "border border-border px-3 py-2 font-semibold text-left",
+      },
+    }),
+    td: (tagName, attribs) => ({
+      tagName: "td",
+      attribs: { 
+        ...attribs,
+        class: "border border-border px-3 py-2 align-top",
+      },
+    }),
   },
   // Remove all other tags
   disallowedTagsMode: "discard",
@@ -103,12 +136,12 @@ const SANITIZE_CONFIG: sanitizeHtmlLib.IOptions = {
  */
 function hasSignificantHtml(content: string): boolean {
   if (!content) return false;
-  // Match opening tags like <h2>, <p>, <div> etc. (not just &lt; entities)
-  return /<\s*(?:h[1-6]|p|div|ul|ol|li|a|strong|em|b|i|blockquote|br|hr|pre|code|span)\b[^>]*>/i.test(content);
+  // Match opening tags like <h2>, <p>, <div>, <table> etc. (not just &lt; entities)
+  return /<\s*(?:h[1-6]|p|div|ul|ol|li|a|strong|em|b|i|blockquote|br|hr|pre|code|span|table|thead|tbody|tr|th|td)\b[^>]*>/i.test(content);
 }
 
 /**
- * Convert Markdown to HTML using markdown-it
+ * Convert Markdown to HTML using markdown-it (GFM tables enabled by default)
  */
 function markdownToHtml(markdown: string): string {
   if (!markdown) return "";
@@ -124,11 +157,27 @@ function sanitize(html: string): string {
 }
 
 /**
+ * Wrap tables in a responsive scroll container for mobile
+ */
+function wrapTablesForResponsive(html: string): string {
+  if (!html) return "";
+  // Wrap each <table> in a scrollable div
+  return html.replace(
+    /<table([^>]*)>/g,
+    '<div class="concursos-table-wrap overflow-x-auto -mx-1 px-1 my-4"><table$1>'
+  ).replace(
+    /<\/table>/g,
+    '</table></div>'
+  );
+}
+
+/**
  * Main render function for /concursos rich content.
  * Unified function that handles both legacy HTML and Markdown content.
  * 
  * - If content starts with < (HTML) → sanitize only
  * - If content is Markdown → convert to HTML then sanitize
+ * - Wrap tables for responsive scroll
  * 
  * @param content The raw content (HTML or Markdown)
  * @returns Safe HTML string for dangerouslySetInnerHTML
@@ -139,15 +188,19 @@ export function renderRichContentConcursos(content: string | null | undefined): 
   const trimmed = content.trim();
   if (!trimmed) return "";
   
+  let html: string;
+  
   // Detect if content is already HTML (starts with < or has significant HTML tags)
   if (trimmed.startsWith("<") || hasSignificantHtml(trimmed)) {
     // Already HTML - just sanitize for compatibility with legacy records
-    return sanitize(trimmed);
+    html = sanitize(trimmed);
+  } else {
+    // Markdown content - convert then sanitize
+    html = sanitize(markdownToHtml(trimmed));
   }
   
-  // Markdown content - convert then sanitize
-  const html = markdownToHtml(trimmed);
-  return sanitize(html);
+  // Wrap tables for responsive scroll
+  return wrapTablesForResponsive(html);
 }
 
 /**
@@ -165,4 +218,4 @@ export function renderUpdateText(text: string | null | undefined): string {
 }
 
 // Re-export for convenience
-export { hasSignificantHtml, markdownToHtml, sanitize };
+export { hasSignificantHtml, markdownToHtml, sanitize, wrapTablesForResponsive };
