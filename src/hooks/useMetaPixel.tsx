@@ -4,10 +4,9 @@ import { useCookieConsent } from './useCookieConsent';
 import { 
   META_PIXEL_ID, 
   CURRENCY, 
-  ROUTE_LANDING, 
-  ROUTE_THANKYOU, 
   GET_ORDER_VALUE,
-  PIXEL_DEBUG 
+  PIXEL_DEBUG,
+  PIXEL_DISABLED
 } from '@/config/metaPixel';
 
 // Extend window for Meta Pixel
@@ -47,90 +46,46 @@ const debounce = (key: string, delay: number = 1000): boolean => {
 export const useMetaPixel = () => {
   const location = useLocation();
   const { consentData } = useCookieConsent();
-  const pixelLoadedRef = useRef(false);
-  const scriptInjectedRef = useRef(false);
+  const initializedRef = useRef(false);
 
   // Check if marketing consent is granted
   const hasMarketingConsent = consentData.preferences.marketing;
+  
+  // Check if pixel is ready (loaded from index.html)
+  const isPixelReady = typeof window !== 'undefined' && typeof window.fbq === 'function';
 
-  // Initialize Meta Pixel script
+  // Mark as initialized on first render (pixel is loaded globally in index.html)
   useEffect(() => {
-    if (scriptInjectedRef.current) return;
-    
-    // Skip if no valid pixel ID
-    if (!META_PIXEL_ID || META_PIXEL_ID === "COLE_SEU_ID_AQUI") {
-      pixelLog('Pixel ID not configured, skipping initialization');
+    if (PIXEL_DISABLED) {
+      pixelLog('Pixel disabled via environment variable');
       return;
     }
-
-    // Initialize fbq function
-    const initFbq = () => {
-      if (window.fbq) return;
-      
-      const n: any = (window.fbq = function (...args: any[]) {
-        n.callMethod ? n.callMethod.apply(n, args) : n.queue.push(args);
-      });
-      
-      if (!window._fbq) window._fbq = n;
-      n.push = n;
-      n.loaded = true;
-      n.version = '2.0';
-      n.queue = [];
-    };
-
-    initFbq();
-
-    // Inject the script
-    const script = document.createElement('script');
-    script.async = true;
-    script.src = `https://connect.facebook.net/en_US/fbevents.js`;
     
-    script.onload = () => {
-      // Initialize pixel
-      window.fbq('init', META_PIXEL_ID);
-      pixelLog('Pixel initialized', META_PIXEL_ID);
-      pixelLoadedRef.current = true;
-      
-      // Fire initial PageView
-      window.fbq('track', 'PageView');
+    if (!initializedRef.current && isPixelReady) {
+      initializedRef.current = true;
       sessionFlags.lastPageView = location.pathname;
-      pixelLog('PageView', location.pathname);
-    };
+      pixelLog('Pixel ready (loaded from index.html)', META_PIXEL_ID);
+    }
+  }, [isPixelReady, location.pathname]);
 
-    script.onerror = () => {
-      console.error('[PIXEL] Failed to load Meta Pixel script');
-    };
-
-    document.head.appendChild(script);
-
-    // Add noscript fallback
-    const noscript = document.createElement('noscript');
-    const img = document.createElement('img');
-    img.height = 1;
-    img.width = 1;
-    img.style.display = 'none';
-    img.src = `https://www.facebook.com/tr?id=${META_PIXEL_ID}&ev=PageView&noscript=1`;
-    noscript.appendChild(img);
-    document.body.appendChild(noscript);
-
-    scriptInjectedRef.current = true;
-  }, []);
-
-  // Track PageView on route changes (SPA)
+  // Track PageView on route changes (SPA navigation)
   useEffect(() => {
-    if (!window.fbq || !pixelLoadedRef.current) return;
+    if (PIXEL_DISABLED || !isPixelReady) return;
     
     // Avoid duplicate PageView for same path
     if (sessionFlags.lastPageView === location.pathname) return;
     
-    window.fbq('track', 'PageView');
-    sessionFlags.lastPageView = location.pathname;
-    pixelLog('PageView', location.pathname);
-  }, [location.pathname]);
+    // Only track if consent is granted (or if no consent required)
+    if (hasMarketingConsent) {
+      window.fbq('track', 'PageView');
+      sessionFlags.lastPageView = location.pathname;
+      pixelLog('PageView (SPA)', location.pathname);
+    }
+  }, [location.pathname, hasMarketingConsent, isPixelReady]);
 
   // Track ViewContent (for landing/VSL)
   const trackViewContent = useCallback((contentName: string = 'Landing VSL', contentCategory: string = 'Oferta') => {
-    if (!window.fbq || !hasMarketingConsent) return;
+    if (PIXEL_DISABLED || !isPixelReady || !hasMarketingConsent) return;
     if (sessionFlags.viewContentFired) return;
     
     window.fbq('track', 'ViewContent', {
@@ -145,7 +100,7 @@ export const useMetaPixel = () => {
 
   // Track Lead (for CTA clicks)
   const trackLead = useCallback((contentName: string = 'CTA Hero') => {
-    if (!window.fbq || !hasMarketingConsent) return;
+    if (PIXEL_DISABLED || !isPixelReady || !hasMarketingConsent) return;
     if (!debounce('lead')) return;
     
     window.fbq('track', 'Lead', {
@@ -158,7 +113,7 @@ export const useMetaPixel = () => {
 
   // Track InitiateCheckout (for plan buttons)
   const trackInitiateCheckout = useCallback((plan: 'Basico' | 'Premium') => {
-    if (!window.fbq || !hasMarketingConsent) return;
+    if (PIXEL_DISABLED || !isPixelReady || !hasMarketingConsent) return;
     if (!debounce(`checkout-${plan}`)) return;
     
     window.fbq('track', 'InitiateCheckout', { plan });
@@ -167,7 +122,7 @@ export const useMetaPixel = () => {
 
   // Track Purchase (for thank you page)
   const trackPurchase = useCallback((value?: number) => {
-    if (!window.fbq || !hasMarketingConsent) return;
+    if (PIXEL_DISABLED || !isPixelReady || !hasMarketingConsent) return;
     if (sessionFlags.purchaseFired) return;
     
     const orderValue = value ?? GET_ORDER_VALUE();
@@ -186,11 +141,11 @@ export const useMetaPixel = () => {
 
   // Custom event tracking
   const trackCustomEvent = useCallback((eventName: string, params?: Record<string, any>) => {
-    if (!window.fbq || !hasMarketingConsent) return;
+    if (PIXEL_DISABLED || !isPixelReady || !hasMarketingConsent) return;
     
     window.fbq('trackCustom', eventName, params);
     pixelLog(`Custom: ${eventName}`, params);
-  }, [hasMarketingConsent]);
+  }, [hasMarketingConsent, isPixelReady]);
 
   return {
     trackViewContent,
@@ -198,7 +153,7 @@ export const useMetaPixel = () => {
     trackInitiateCheckout,
     trackPurchase,
     trackCustomEvent,
-    isReady: pixelLoadedRef.current,
+    isReady: isPixelReady && !PIXEL_DISABLED,
     hasConsent: hasMarketingConsent,
   };
 };
