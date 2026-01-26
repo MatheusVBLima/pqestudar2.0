@@ -61,23 +61,76 @@ renderer.hr = () => {
   return `<hr class="my-6 border-border" />`;
 };
 
+// Custom table renderer for GFM tables
+renderer.table = (token: Tokens.Table) => {
+  const headerCells = token.header.map((cell, i) => {
+    const align = token.align[i];
+    const style = align ? ` style="text-align:${align}"` : "";
+    return `<th class="border border-border px-3 py-2 font-semibold text-left"${style}>${cell.text}</th>`;
+  }).join("");
+  
+  const bodyRows = token.rows.map(row => {
+    const cells = row.map((cell, i) => {
+      const align = token.align[i];
+      const style = align ? ` style="text-align:${align}"` : "";
+      return `<td class="border border-border px-3 py-2 align-top"${style}>${cell.text}</td>`;
+    }).join("");
+    return `<tr>${cells}</tr>`;
+  }).join("");
+  
+  return `<div class="concursos-table-wrap overflow-x-auto -mx-1 px-1 my-4">
+    <table class="concursos-table w-full border-collapse text-sm">
+      <thead class="bg-muted/50"><tr>${headerCells}</tr></thead>
+      <tbody>${bodyRows}</tbody>
+    </table>
+  </div>`;
+};
+
 marked.use({ renderer, gfm: true, breaks: true });
 
-// Configure Turndown for HTML to Markdown
+// Configure Turndown for HTML to Markdown (with table support)
 const turndownService = new TurndownService({
   headingStyle: "atx",
   bulletListMarker: "-",
   codeBlockStyle: "fenced",
 });
 
-// DOMPurify configuration
+// Add table rule for Turndown (HTML → Markdown)
+turndownService.addRule("table", {
+  filter: "table",
+  replacement: function (content, node) {
+    const table = node as HTMLTableElement;
+    const rows = Array.from(table.rows);
+    if (rows.length === 0) return "";
+    
+    const headerRow = rows[0];
+    const headerCells = Array.from(headerRow.cells).map(cell => cell.textContent?.trim() || "");
+    const separator = headerCells.map(() => "---");
+    
+    const bodyRows = rows.slice(1).map(row => {
+      return Array.from(row.cells).map(cell => cell.textContent?.trim() || "");
+    });
+    
+    let md = "| " + headerCells.join(" | ") + " |\n";
+    md += "| " + separator.join(" | ") + " |\n";
+    bodyRows.forEach(row => {
+      md += "| " + row.join(" | ") + " |\n";
+    });
+    
+    return "\n" + md + "\n";
+  }
+});
+
+// DOMPurify configuration (with table tags)
 const purifyConfig = {
   ALLOWED_TAGS: [
     "h2", "h3", "h4", "h5", "h6", "p", "br", "hr",
     "ul", "ol", "li", "a", "strong", "em", "b", "i",
-    "code", "pre", "blockquote", "span"
+    "code", "pre", "blockquote", "span", "div",
+    // GFM table tags
+    "table", "thead", "tbody", "tr", "th", "td"
   ],
-  ALLOWED_ATTR: ["href", "target", "rel", "class"],
+  ALLOWED_ATTR: ["href", "target", "rel", "class", "style"],
   ALLOW_DATA_ATTR: false,
 };
 
@@ -306,13 +359,15 @@ export default function MarkdownEditor({
       <p className="text-xs text-muted-foreground flex items-start gap-1">
         <Info className="h-3 w-3 mt-0.5 shrink-0 text-primary/60" />
         <span>
-          Use <code className="bg-muted px-1 rounded">**texto**</code> ou <code className="bg-muted px-1 rounded">__texto__</code> para <strong>negrito</strong>, 
-          e <code className="bg-muted px-1 rounded">*texto*</code> ou <code className="bg-muted px-1 rounded">_texto_</code> para <em>itálico</em>. 
-          Títulos: <code className="bg-muted px-1 rounded">##</code> (H2), <code className="bg-muted px-1 rounded">###</code> (H3). 
-          Listas: <code className="bg-muted px-1 rounded">-</code> ou <code className="bg-muted px-1 rounded">1.</code>. 
-          Links: <code className="bg-muted px-1 rounded">[texto](url)</code>. 
-          Linha horizontal: <code className="bg-muted px-1 rounded">---</code>. 
-          HTML colado é convertido automaticamente.
+          <strong>Markdown (GFM):</strong>{" "}
+          <code className="bg-muted px-1 rounded">**negrito**</code>,{" "}
+          <code className="bg-muted px-1 rounded">*itálico*</code>,{" "}
+          <code className="bg-muted px-1 rounded">##</code> (H2),{" "}
+          <code className="bg-muted px-1 rounded">###</code> (H3),{" "}
+          <code className="bg-muted px-1 rounded">-</code> (lista),{" "}
+          <code className="bg-muted px-1 rounded">[texto](url)</code>,{" "}
+          <code className="bg-muted px-1 rounded">---</code> (linha).{" "}
+          <strong>Tabelas:</strong> <code className="bg-muted px-1 rounded">| col1 | col2 |</code> com linha separadora <code className="bg-muted px-1 rounded">|---|---|</code>.
         </span>
       </p>
     </div>

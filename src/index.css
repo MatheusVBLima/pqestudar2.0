@@ -257,4 +257,30 @@ All colors MUST be HSL.
   .prose hr {
     @apply my-6 border-border;
   }
+
+  /* GFM Table styles for /concursos (scoped) */
+  .concursos-table-wrap {
+    @apply overflow-x-auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .concursos-table {
+    @apply w-full border-collapse text-sm;
+  }
+
+  .concursos-table thead {
+    @apply bg-muted/50;
+  }
+
+  .concursos-table th {
+    @apply border border-border px-3 py-2 font-semibold text-left;
+  }
+
+  .concursos-table td {
+    @apply border border-border px-3 py-2 align-top;
+  }
+
+  .concursos-table tr:hover {
+    @apply bg-muted/30;
+  }
 }
