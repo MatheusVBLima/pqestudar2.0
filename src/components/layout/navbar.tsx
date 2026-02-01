@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Home, HelpCircle, Search, BookOpen, Bell, User, Menu, Heart, Newspaper, Trophy, LogOut } from "lucide-react";
+import { Home, BookOpen, Menu, LogOut, User } from "lucide-react";
 import { NotificationDropdown } from "@/components/ui/notification-dropdown";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -12,6 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export function Navbar() {
   const navigate = useNavigate();
@@ -36,6 +37,27 @@ export function Navbar() {
     await signOut();
     toast.success('Logout realizado com sucesso!');
     handleNavigation('/');
+  };
+
+  // Get user initials for avatar fallback
+  const getUserInitials = () => {
+    if (user?.user_metadata?.full_name) {
+      return user.user_metadata.full_name
+        .split(' ')
+        .map((n: string) => n[0])
+        .join('')
+        .toUpperCase()
+        .slice(0, 2);
+    }
+    if (user?.email) {
+      return user.email[0].toUpperCase();
+    }
+    return 'U';
+  };
+
+  // Get user display name
+  const getUserDisplayName = () => {
+    return user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Usuário';
   };
 
   return (
@@ -73,7 +95,7 @@ export function Navbar() {
             </Button>
           </div>
 
-          {/* Navigation Links */}
+          {/* Navigation Links - Desktop */}
           <div className="hidden md:flex items-center space-x-2">
             <Button
               variant="ghost"
@@ -104,32 +126,128 @@ export function Navbar() {
             </Button>
 
             {user && <NotificationDropdown />}
+
+            {/* Auth Button / User Menu - Desktop */}
+            {!loading && (
+              <>
+                {!user ? (
+                  <Button
+                    variant="default"
+                    size="sm"
+                    onClick={() => handleNavigation("/login")}
+                    aria-label="Entrar"
+                  >
+                    Entrar
+                  </Button>
+                ) : (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="relative h-9 w-9 rounded-full p-0"
+                        aria-label="Menu do usuário"
+                        aria-haspopup="menu"
+                      >
+                        <Avatar className="h-8 w-8">
+                          <AvatarImage 
+                            src={user.user_metadata?.avatar_url} 
+                            alt={getUserDisplayName()} 
+                          />
+                          <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+                            {getUserInitials()}
+                          </AvatarFallback>
+                        </Avatar>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-56 bg-popover">
+                      <div className="flex items-center justify-start gap-2 p-2">
+                        <div className="flex flex-col space-y-1 leading-none">
+                          <p className="font-medium text-sm">{getUserDisplayName()}</p>
+                          <p className="text-xs text-muted-foreground">{user.email}</p>
+                        </div>
+                      </div>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem 
+                        onClick={handleSignOut}
+                        className="text-destructive focus:text-destructive cursor-pointer"
+                      >
+                        <LogOut className="h-4 w-4 mr-2" />
+                        Sair
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
+              </>
+            )}
           </div>
 
-          {/* User Menu & Mobile Menu */}
-          <div className="flex items-center space-x-2">
-            {/* Mobile Menu */}
-            <div className="md:hidden">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm">
-                    <Menu className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuItem onClick={() => handleNavigation("/")}>
-                    <Home className="h-4 w-4 mr-2" />
-                    Início
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleNavigation("/ferramentas")}>
-                    Ferramentas
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleNavigation("/sobre")}>
-                    Sobre
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
+          {/* Mobile Menu */}
+          <div className="md:hidden flex items-center space-x-2">
+            {user && <NotificationDropdown />}
+            
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" aria-label="Menu de navegação">
+                  <Menu className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56 bg-popover">
+                <DropdownMenuItem onClick={() => handleNavigation("/")}>
+                  <Home className="h-4 w-4 mr-2" />
+                  Início
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleNavigation("/ferramentas")}>
+                  Ferramentas
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleNavigation("/sobre")}>
+                  Sobre
+                </DropdownMenuItem>
+                
+                <DropdownMenuSeparator />
+                
+                {/* Auth section in mobile menu */}
+                {!loading && (
+                  <>
+                    {!user ? (
+                      <DropdownMenuItem 
+                        onClick={() => handleNavigation("/login")}
+                        className="text-primary font-medium"
+                      >
+                        <User className="h-4 w-4 mr-2" />
+                        Entrar
+                      </DropdownMenuItem>
+                    ) : (
+                      <>
+                        <div className="flex items-center gap-2 p-2">
+                          <Avatar className="h-8 w-8">
+                            <AvatarImage 
+                              src={user.user_metadata?.avatar_url} 
+                              alt={getUserDisplayName()} 
+                            />
+                            <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+                              {getUserInitials()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex flex-col space-y-0.5 leading-none">
+                            <p className="font-medium text-sm">{getUserDisplayName()}</p>
+                            <p className="text-xs text-muted-foreground truncate max-w-[160px]">{user.email}</p>
+                          </div>
+                        </div>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem 
+                          onClick={handleSignOut}
+                          className="text-destructive focus:text-destructive cursor-pointer"
+                        >
+                          <LogOut className="h-4 w-4 mr-2" />
+                          Sair
+                        </DropdownMenuItem>
+                      </>
+                    )}
+                  </>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </div>
