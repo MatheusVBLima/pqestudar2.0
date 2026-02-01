@@ -1325,6 +1325,42 @@ export type Database = {
         }
         Relationships: []
       }
+      saved_tools: {
+        Row: {
+          created_at: string
+          id: string
+          tool_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          tool_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          tool_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "saved_tools_tool_id_fkey"
+            columns: ["tool_id"]
+            isOneToOne: false
+            referencedRelation: "tools"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "saved_tools_tool_id_fkey"
+            columns: ["tool_id"]
+            isOneToOne: false
+            referencedRelation: "tools_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tools: {
         Row: {
           attachment_url: string | null

@@ -31,6 +31,7 @@ import { Footer } from "@/components/layout/footer";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { useTools, Tool, UseToolsOptions } from "@/hooks/useTools";
 import { ToolModal } from "@/components/admin/ToolModal";
+import { SaveToolButton } from "@/components/ui/save-tool-button";
 import {
   Pagination,
   PaginationContent,
@@ -312,36 +313,34 @@ function SortableToolCard({
                 </Badge>
               ))}
             </div>
-            {(() => {
-              const attachmentUrl = (tool as any).attachment_url;
-              const hasAttachment = attachmentUrl && attachmentUrl.trim();
-              const linkUrl = hasAttachment ? attachmentUrl : tool.url;
-              const buttonText = hasAttachment ? "Fazer download" : "Acessar";
-              const ariaLabel = hasAttachment 
-                ? `Fazer download de ${tool.name}` 
-                : `Acessar ${tool.name}`;
+            <div className="flex gap-2">
+              {(() => {
+                const attachmentUrl = (tool as any).attachment_url;
+                const hasAttachment = attachmentUrl && attachmentUrl.trim();
+                const linkUrl = hasAttachment ? attachmentUrl : tool.url;
+                const buttonText = hasAttachment ? "Fazer download" : "Acessar";
+                const ariaLabel = hasAttachment 
+                  ? `Fazer download de ${tool.name}` 
+                  : `Acessar ${tool.name}`;
 
-              // Log de debug
-              if (hasAttachment) {
-                console.log(`[Ferramentas] Botão: 'Fazer download' ->`, attachmentUrl);
-              } else {
-                console.log(`[Ferramentas] Botão: 'Acessar' ->`, tool.url);
-              }
-
-              return linkUrl ? (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full"
-                  onClick={() => window.open(linkUrl, '_blank', 'noopener,noreferrer')}
-                  aria-label={ariaLabel}
-                  title={ariaLabel}
-                  data-evt={hasAttachment ? "download_tool" : "access_tool"}
-                >
-                  {buttonText}
-                </Button>
-              ) : null;
-            })()}
+                return linkUrl ? (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => window.open(linkUrl, '_blank', 'noopener,noreferrer')}
+                    aria-label={ariaLabel}
+                    title={ariaLabel}
+                    data-evt={hasAttachment ? "download_tool" : "access_tool"}
+                  >
+                    {buttonText}
+                  </Button>
+                ) : null;
+              })()}
+              {!isManagementMode && (
+                <SaveToolButton toolId={tool.id} toolName={tool.name} />
+              )}
+            </div>
           </div>
         </CardContent>
       </Card>

@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Home, BookOpen, Menu, LogOut, User } from "lucide-react";
+import { Home, BookOpen, Menu, LogOut, User, Bookmark } from "lucide-react";
 import { NotificationDropdown } from "@/components/ui/notification-dropdown";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -180,6 +180,14 @@ export function Navbar() {
                       </div>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem 
+                        onClick={() => handleNavigation("/ferramentas/salvos")}
+                        className="cursor-pointer"
+                      >
+                        <Bookmark className="h-4 w-4 mr-2" />
+                        Salvos
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem 
                         onClick={handleSignOut}
                         className="text-destructive focus:text-destructive cursor-pointer"
                       >
@@ -252,6 +260,14 @@ export function Navbar() {
                             <p className="text-xs text-muted-foreground truncate max-w-[160px]">{user.email}</p>
                           </div>
                         </div>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem 
+                          onClick={() => handleNavigation("/ferramentas/salvos")}
+                          className="cursor-pointer"
+                        >
+                          <Bookmark className="h-4 w-4 mr-2" />
+                          Salvos
+                        </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem 
                           onClick={handleSignOut}
