@@ -119,6 +119,17 @@ export function Navbar() {
             <Button
               variant="ghost"
               size="sm"
+              onClick={() => handleNavigation("/concursos")}
+              className={`hover:bg-accent ${location.pathname.startsWith("/concursos") ? "bg-accent text-accent-foreground" : ""}`}
+              aria-label="Ir para Concursos"
+              aria-current={location.pathname.startsWith("/concursos") ? "page" : undefined}
+            >
+              Concursos
+            </Button>
+
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={() => handleNavigation("/sobre")}
               className={`hover:bg-accent ${location.pathname === "/sobre" ? "bg-accent text-accent-foreground" : ""}`}
             >
@@ -199,6 +210,13 @@ export function Navbar() {
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => handleNavigation("/ferramentas")}>
                   Ferramentas
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => handleNavigation("/concursos")}
+                  aria-label="Ir para Concursos"
+                  aria-current={location.pathname.startsWith("/concursos") ? "page" : undefined}
+                >
+                  Concursos
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => handleNavigation("/sobre")}>
                   Sobre
