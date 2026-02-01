@@ -31,6 +31,7 @@ import { useUserRoles } from "@/hooks/useUserRoles";
 import OportunidadeModal from "@/components/admin/OportunidadeModal";
 import ConcursosAdminPanel from "@/components/admin/ConcursosAdminPanel";
 import TrashConfirmDialog from "@/components/admin/TrashConfirmDialog";
+import { SaveContestButton } from "@/components/ui/save-contest-button";
 import { toast } from "sonner";
 
 const SITUACAO_OPTIONS = ["Previsto", "Edital publicado", "Aberto", "Encerrado"];
@@ -658,9 +659,24 @@ function OportunidadeCard({
                 size="icon"
                 onClick={onShare}
                 className="shrink-0"
+                aria-label="Compartilhar"
               >
                 <Share2 className="h-4 w-4" />
               </Button>
+              
+              <SaveContestButton
+                contestId={item.id}
+                contestTitle={item.titulo}
+                metadata={{
+                  title: item.titulo,
+                  slug: item.slug,
+                  orgao: item.orgao || undefined,
+                  banca: item.banca || undefined,
+                  situacao: item.situacao,
+                  abrangencia: item.abrangencia,
+                }}
+                variant="icon"
+              />
               
               <Button
                 onClick={onView}
