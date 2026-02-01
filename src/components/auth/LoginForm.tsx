@@ -128,13 +128,19 @@ export function LoginForm({ onSwitchToSignUp }: LoginFormProps) {
 
   return (
     <Card className="w-full max-w-md">
-      <CardHeader>
+      <CardHeader className="text-center">
+        {/* Logo */}
+        <div className="flex justify-center mb-4">
+          <span className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+            PqEstudar?
+          </span>
+        </div>
         <CardTitle>Entrar</CardTitle>
         <CardDescription>
           Acesse com Google para continuar
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex flex-col items-center">
         <Button
           type="button"
           variant="outline"
@@ -154,6 +160,9 @@ export function LoginForm({ onSwitchToSignUp }: LoginFormProps) {
             </>
           )}
         </Button>
+        <p className="text-xs text-muted-foreground text-center mt-4">
+          Nenhuma senha é armazenada.
+        </p>
       </CardContent>
     </Card>
   )
