@@ -2,31 +2,33 @@ import { Bookmark } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import { useSavedTools } from "@/hooks/useSavedTools";
+import { useSavedItems, SavedItemMetadata } from "@/hooks/useSavedItems";
 import { cn } from "@/lib/utils";
 
 interface SaveToolButtonProps {
   toolId: string;
   toolName: string;
+  metadata?: SavedItemMetadata;
   className?: string;
 }
 
-export function SaveToolButton({ toolId, toolName, className }: SaveToolButtonProps) {
+export function SaveToolButton({ toolId, toolName, metadata, className }: SaveToolButtonProps) {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { isSaved, toggleSave, isToggling } = useSavedTools();
+  const { isSaved, toggleSave, isToggling } = useSavedItems();
 
-  const saved = isSaved(toolId);
-  const toggling = isToggling(toolId);
+  const saved = isSaved('tool', toolId);
+  const toggling = isToggling('tool', toolId);
 
-  const handleClick = async () => {
+  const handleClick = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    
     if (!user) {
-      // Redirect to login if not authenticated
       navigate("/login");
       return;
     }
 
-    await toggleSave(toolId);
+    await toggleSave('tool', toolId, metadata);
   };
 
   return (
