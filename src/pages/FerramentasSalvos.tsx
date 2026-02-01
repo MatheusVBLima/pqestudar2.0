@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet";
 import { motion } from "framer-motion";
@@ -9,13 +9,18 @@ import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { useAuth } from "@/hooks/useAuth";
 import { useSavedItems } from "@/hooks/useSavedItems";
-import { SavedToolsSection } from "@/components/saved/SavedToolsSection";
-import { SavedContestsSection } from "@/components/saved/SavedContestsSection";
+import { SavedAccordion } from "@/components/saved/SavedAccordion";
+import { SavedToolsPanel } from "@/components/saved/SavedToolsPanel";
+import { SavedContestsPanel } from "@/components/saved/SavedContestsPanel";
 
 export default function FerramentasSalvos() {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const { savedItems, loading, fetchSavedItems, getSavedByType } = useSavedItems();
+  
+  // Lazy load triggers
+  const [toolsExpanded, setToolsExpanded] = useState(false);
+  const [contestsExpanded, setContestsExpanded] = useState(false);
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -33,6 +38,14 @@ export default function FerramentasSalvos() {
 
   const savedTools = getSavedByType('tool');
   const savedContests = getSavedByType('contest');
+
+  const handleToolsExpand = useCallback(() => {
+    setToolsExpanded(true);
+  }, []);
+
+  const handleContestsExpand = useCallback(() => {
+    setContestsExpanded(true);
+  }, []);
 
   // Show loading while checking auth
   if (authLoading) {
@@ -67,8 +80,8 @@ export default function FerramentasSalvos() {
 
         <main className="flex-1">
           {/* Hero Section */}
-          <section className="pt-24 pb-12 px-4 sm:px-6 lg:px-8">
-            <div className="container max-w-7xl mx-auto">
+          <section className="pt-24 pb-8 px-4 sm:px-6 lg:px-8">
+            <div className="container max-w-5xl mx-auto">
               <div className="flex items-center gap-4 mb-6">
                 <Button
                   variant="ghost"
@@ -84,59 +97,61 @@ export default function FerramentasSalvos() {
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
+                transition={{ duration: 0.4 }}
               >
-                <div className="flex items-center gap-3 mb-4">
-                  <Bookmark className="h-8 w-8 text-primary" />
-                  <h1 className="text-3xl sm:text-4xl font-bold text-foreground">
+                <div className="flex items-center gap-3 mb-2">
+                  <Bookmark className="h-7 w-7 text-primary" />
+                  <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
                     Salvos
                   </h1>
                 </div>
-                <p className="text-lg text-muted-foreground">
+                <p className="text-muted-foreground">
                   Seus itens salvos em um só lugar.
                 </p>
               </motion.div>
             </div>
           </section>
 
-          {/* Sections */}
+          {/* Accordion Sections */}
           <section className="pb-24 px-4 sm:px-6 lg:px-8">
-            <div className="container max-w-7xl mx-auto space-y-16">
+            <div className="container max-w-5xl mx-auto">
               {loading ? (
-                <div className="space-y-16">
-                  {/* Tools skeleton */}
-                  <div>
-                    <Skeleton className="h-8 w-48 mb-6" />
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {[1, 2, 3].map((i) => (
-                        <Skeleton key={`tool-${i}`} className="h-64 rounded-lg" />
-                      ))}
+                <div className="space-y-4">
+                  {[1, 2].map((i) => (
+                    <div key={i} className="rounded-lg border bg-card p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <Skeleton className="h-5 w-5 rounded" />
+                          <Skeleton className="h-5 w-40" />
+                        </div>
+                        <Skeleton className="h-5 w-5" />
+                      </div>
                     </div>
-                  </div>
-                  {/* Contests skeleton */}
-                  <div>
-                    <Skeleton className="h-8 w-48 mb-6" />
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {[1, 2, 3].map((i) => (
-                        <Skeleton key={`contest-${i}`} className="h-48 rounded-lg" />
-                      ))}
-                    </div>
-                  </div>
+                  ))}
                 </div>
               ) : (
-                <>
-                  {/* Ferramentas Salvas Section */}
-                  <SavedToolsSection 
-                    savedItems={savedTools} 
-                    onRefresh={fetchSavedItems}
-                  />
-
-                  {/* Concursos Salvos Section */}
-                  <SavedContestsSection 
-                    savedItems={savedContests} 
-                    onRefresh={fetchSavedItems}
-                  />
-                </>
+                <SavedAccordion
+                  toolsCount={savedTools.length}
+                  contestsCount={savedContests.length}
+                  toolsContent={
+                    <SavedToolsPanel
+                      savedItems={savedTools}
+                      onRefresh={fetchSavedItems}
+                      shouldLoad={toolsExpanded}
+                    />
+                  }
+                  contestsContent={
+                    <SavedContestsPanel
+                      savedItems={savedContests}
+                      onRefresh={fetchSavedItems}
+                      shouldLoad={contestsExpanded}
+                    />
+                  }
+                  toolsLoading={false}
+                  contestsLoading={false}
+                  onToolsExpand={handleToolsExpand}
+                  onContestsExpand={handleContestsExpand}
+                />
               )}
             </div>
           </section>
