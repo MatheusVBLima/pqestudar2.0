@@ -37,6 +37,7 @@ import KitAceleracao from "./pages/KitAceleracao";
 import Parceiros from "./pages/Parceiros";
 import Assine from "./pages/Assine";
 import Ferramentas from "./pages/Ferramentas";
+import FerramentasSalvos from "./pages/FerramentasSalvos";
 import Links from "./pages/Links";
 import MapaDosBeneficios from "./pages/MapaDosBeneficios";
 import Concursos from "./pages/Concursos";
@@ -78,6 +79,7 @@ const AppWithPixel = () => {
       <Route path="/parceiros" element={<Parceiros />} />
       <Route path="/assine" element={<Assine />} />
       <Route path="/ferramentas" element={<Ferramentas />} />
+      <Route path="/ferramentas/salvos" element={<FerramentasSalvos />} />
       <Route path="/links" element={<Links />} />
       <Route path="/mapa-dos-beneficios" element={<MapaDosBeneficios />} />
       <Route path="/concursos" element={<Concursos />} />
