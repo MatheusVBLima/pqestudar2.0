@@ -130,7 +130,7 @@ export function SavedAccordion({
   const sections: AccordionSection[] = [
     {
       id: "ferramentas",
-      title: `Ferramentas salvas (${toolsCount})`,
+      title: "Ferramentas salvas",
       icon: <Wrench className="h-5 w-5" />,
       count: toolsCount,
       children: toolsContent,
@@ -138,7 +138,7 @@ export function SavedAccordion({
     },
     {
       id: "concursos",
-      title: `Concursos salvos (${contestsCount})`,
+      title: "Concursos salvos",
       icon: <FileText className="h-5 w-5" />,
       count: contestsCount,
       children: contestsContent,
