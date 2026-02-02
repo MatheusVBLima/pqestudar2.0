@@ -1381,6 +1381,13 @@ const MapaDosBeneficios = () => {
         <title>Oferta Especial: O Mapa dos Benefícios Ocultos</title>
         <meta name="description" content="Descubra mais de 50 benefícios, auxílios e direitos que você pode ter acesso agora. Guia completo com passo a passo para cada programa do governo." />
         <meta name="robots" content="index, follow" />
+        <script
+          src="https://cdn.utmify.com.br/scripts/utms/latest.js"
+          data-utmify-prevent-xcod-sck
+          data-utmify-prevent-subids
+          async
+          defer
+        />
       </Helmet>
 
       <UrgencyBar />
