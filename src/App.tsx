@@ -24,8 +24,6 @@ import Privacidade from "./pages/Privacidade";
 import FAQ from "./pages/FAQ";
 
 import ConfiguracoesCookies from "./pages/ConfiguracoesCookies";
-import Notificacoes from "./pages/Notificacoes";
-import ProgramasBeneficios from "./pages/ProgramasBeneficios";
 
 import Login from "./pages/Login";
 import { ResetPassword } from "./pages/ResetPassword";
@@ -68,8 +66,6 @@ const AppWithPixel = () => {
       <Route path="/faq" element={<FAQ />} />
       
       <Route path="/configuracoes-cookies" element={<ConfiguracoesCookies />} />
-      <Route path="/notificacoes" element={<Notificacoes />} />
-      <Route path="/programas-beneficios" element={<ProgramasBeneficios />} />
       
       <Route path="/login" element={<Login />} />
       <Route path="/reset-password" element={<ResetPassword />} />
