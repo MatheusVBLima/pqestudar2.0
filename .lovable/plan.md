@@ -1,63 +1,95 @@
 
-## Plano: Adicionar script UTMify no HEAD da rota /mapa-dos-beneficios
 
-### Objetivo
-Adicionar o script de rastreamento de UTMs do UTMify no `<head>` da página `/mapa-dos-beneficios`, usando o `react-helmet` já existente no projeto.
+# Plano: Adicionar link "Curadorias" no menu do usuário
 
----
-
-### Arquivo a modificar
-- `src/pages/MapaDosBeneficios.tsx`
+## Resumo
+Adicionar um item de menu "Curadorias" no dropdown do usuário autenticado, posicionado logo abaixo de "Salvos". Este link será visível **apenas para usuários admin**.
 
 ---
 
-### Implementação
+## Alterações
 
-Vou adicionar uma tag `<script>` dentro do componente `<Helmet>` existente (linhas 1380-1384):
+### Arquivo: `src/components/layout/navbar.tsx`
 
-**Antes:**
+**1. Importar o hook e ícone necessários:**
+- Importar `useUserRoles` de `@/hooks/useUserRoles`
+- Importar ícone `LayoutList` (ou `Layers`) de `lucide-react` para representar curadorias
+
+**2. Usar o hook no componente:**
 ```tsx
-<Helmet>
-  <title>Oferta Especial: O Mapa dos Benefícios Ocultos</title>
-  <meta name="description" content="..." />
-  <meta name="robots" content="index, follow" />
-</Helmet>
+const { isAdmin } = useUserRoles();
 ```
 
-**Depois:**
+**3. Desktop - Adicionar item no dropdown do usuário (após "Salvos", linha ~191):**
 ```tsx
-<Helmet>
-  <title>Oferta Especial: O Mapa dos Benefícios Ocultos</title>
-  <meta name="description" content="..." />
-  <meta name="robots" content="index, follow" />
-  <script
-    src="https://cdn.utmify.com.br/scripts/utms/latest.js"
-    data-utmify-prevent-xcod-sck
-    data-utmify-prevent-subids
-    async
-    defer
-  />
-</Helmet>
+<DropdownMenuItem 
+  onClick={() => handleNavigation("/ferramentas/salvos")}
+  className="cursor-pointer"
+>
+  <Bookmark className="h-4 w-4 mr-2" />
+  Salvos
+</DropdownMenuItem>
+
+{/* NOVO: Link para Curadorias (apenas admin) */}
+{isAdmin && (
+  <DropdownMenuItem 
+    onClick={() => handleNavigation("/admin/curadorias")}
+    className="cursor-pointer"
+  >
+    <LayoutList className="h-4 w-4 mr-2" />
+    Curadorias
+  </DropdownMenuItem>
+)}
+
+<DropdownMenuSeparator />
+```
+
+**4. Mobile - Adicionar item no menu mobile (após "Salvos", linha ~276):**
+```tsx
+<DropdownMenuItem 
+  onClick={() => handleNavigation("/ferramentas/salvos")}
+  className="cursor-pointer"
+>
+  <Bookmark className="h-4 w-4 mr-2" />
+  Salvos
+</DropdownMenuItem>
+
+{/* NOVO: Link para Curadorias (apenas admin) */}
+{isAdmin && (
+  <DropdownMenuItem 
+    onClick={() => handleNavigation("/admin/curadorias")}
+    className="cursor-pointer"
+  >
+    <LayoutList className="h-4 w-4 mr-2" />
+    Curadorias
+  </DropdownMenuItem>
+)}
+
+<DropdownMenuSeparator />
 ```
 
 ---
 
-### Detalhes técnicos
-- O `react-helmet` injeta elementos no `<head>` do documento
-- Atributos `async` e `defer` garantem carregamento não-bloqueante
-- Os data-attributes `data-utmify-prevent-xcod-sck` e `data-utmify-prevent-subids` serão preservados conforme enviado
-- **Nenhum outro script/pixel será alterado ou removido** (Meta Pixel, Google Analytics continuam intactos)
+## Detalhes Técnicos
+
+| Aspecto | Detalhe |
+|---------|---------|
+| Hook utilizado | `useUserRoles` (já existe no projeto) |
+| Ícone | `LayoutList` do lucide-react |
+| Rota destino | `/admin/curadorias` |
+| Visibilidade | Apenas quando `isAdmin === true` |
+| Posição | Logo abaixo de "Salvos", antes do separador |
 
 ---
 
-### Escopo
-- ✅ Apenas a rota `/mapa-dos-beneficios` será modificada
-- ✅ Script inserido no HEAD via react-helmet
-- ✅ Não afeta outras rotas, layout global, ou tracking existente
+## Arquivos Alterados
+- `src/components/layout/navbar.tsx` (único arquivo)
 
 ---
 
-### Validação
-1. Inspecionar a página `/mapa-dos-beneficios` no navegador
-2. Verificar que o `<script>` aparece no `<head>` com os atributos corretos
-3. Confirmar que UTMs são capturados pelo UTMify (verificar console/network)
+## Garantias de Escopo
+- Nenhuma rota será criada ou modificada
+- Nenhuma página será alterada
+- Nenhum componente fora do navbar será tocado
+- A lógica de autenticação permanece intacta
+
