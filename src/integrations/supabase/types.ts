@@ -665,6 +665,88 @@ export type Database = {
         }
         Relationships: []
       }
+      curation_page_items: {
+        Row: {
+          created_at: string
+          id: string
+          order: number
+          page_id: string
+          tool_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          order?: number
+          page_id: string
+          tool_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          order?: number
+          page_id?: string
+          tool_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "curation_page_items_page_id_fkey"
+            columns: ["page_id"]
+            isOneToOne: false
+            referencedRelation: "curation_pages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "curation_page_items_tool_id_fkey"
+            columns: ["tool_id"]
+            isOneToOne: false
+            referencedRelation: "tools"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "curation_page_items_tool_id_fkey"
+            columns: ["tool_id"]
+            isOneToOne: false
+            referencedRelation: "tools_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      curation_pages: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          published_at: string | null
+          slug: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          published_at?: string | null
+          slug: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          published_at?: string | null
+          slug?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       fontes_oportunidade: {
         Row: {
           created_at: string
