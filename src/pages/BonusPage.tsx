@@ -2,13 +2,11 @@ import { useEffect, useState } from "react";
 import { useParams, Navigate, useLocation } from "react-router-dom";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { ExternalLink } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { BonusPage as BonusPageType } from "@/hooks/useBonusPages";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { Helmet } from "react-helmet";
+import { BonusToolCard } from "@/components/ui/bonus-tool-card";
 const BonusPage = () => {
   const {
     slug: paramSlug
@@ -85,27 +83,18 @@ const BonusPage = () => {
 
             {/* Tools Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {page.cards.map((tool, index) => <Card key={index} className="group hover:shadow-lg transition-all duration-300 border-2 hover:border-primary/20">
-                  <CardContent className="p-6 space-y-4">
-                    {tool.logoUrl && <div className="flex items-center justify-center h-16">
-                        <img src={tool.logoUrl} alt={tool.logoAlt} className="max-h-full max-w-full object-contain" />
-                      </div>}
-                    
-                    <div className="space-y-2">
-                      <h4 className="font-semibold text-lg">{tool.toolTitle}</h4>
-                      <p className="text-sm text-muted-foreground leading-relaxed">
-                        {tool.toolDescription}
-                      </p>
-                    </div>
-
-                    {tool.toolLink && <Button asChild className="w-full group-hover:scale-105 transition-transform">
-                        <a href={tool.toolLink} target="_blank" rel="noopener noreferrer" aria-label={`Acessar ${tool.toolTitle} em nova aba`}>
-                          Acessar Ferramenta
-                          <ExternalLink className="ml-2 h-4 w-4" />
-                        </a>
-                      </Button>}
-                  </CardContent>
-                </Card>)}
+              {page.cards.map((tool, index) => (
+                <BonusToolCard
+                  key={index}
+                  id={`bonus-${page.slug}-${index}`}
+                  logoUrl={tool.logoUrl}
+                  logoAlt={tool.logoAlt}
+                  title={tool.toolTitle}
+                  description={tool.toolDescription}
+                  tags={tool.tags || []}
+                  url={tool.toolLink}
+                />
+              ))}
             </div>
           </div>
         </main>
