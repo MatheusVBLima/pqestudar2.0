@@ -8,6 +8,7 @@ export interface BonusTool {
   toolTitle: string;
   toolDescription: string;
   toolLink: string;
+  tags?: string[];
 }
 
 export interface BonusPage {
