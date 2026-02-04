@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Home, BookOpen, Menu, LogOut, User, Bookmark, Wrench, ScrollText, Info } from "lucide-react";
+import { Home, BookOpen, Menu, LogOut, User, Bookmark, Wrench, ScrollText, Info, LayoutList } from "lucide-react";
+import { useUserRoles } from "@/hooks/useUserRoles";
 import { NotificationDropdown } from "@/components/ui/notification-dropdown";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -19,6 +20,7 @@ export function Navbar() {
   const location = useLocation();
   const isHomePage = location.pathname === "/";
   const { user, signOut, loading } = useAuth();
+  const { isAdmin } = useUserRoles();
   const [isClicked, setIsClicked] = useState(false);
 
   // Detecta se está no subdomínio kit
@@ -189,6 +191,15 @@ export function Navbar() {
                         <Bookmark className="h-4 w-4 mr-2" />
                         Salvos
                       </DropdownMenuItem>
+                      {isAdmin && (
+                        <DropdownMenuItem 
+                          onClick={() => handleNavigation("/admin/curadorias")}
+                          className="cursor-pointer"
+                        >
+                          <LayoutList className="h-4 w-4 mr-2" />
+                          Curadorias
+                        </DropdownMenuItem>
+                      )}
                       <DropdownMenuSeparator />
                       <DropdownMenuItem 
                         onClick={handleSignOut}
@@ -274,6 +285,15 @@ export function Navbar() {
                           <Bookmark className="h-4 w-4 mr-2" />
                           Salvos
                         </DropdownMenuItem>
+                        {isAdmin && (
+                          <DropdownMenuItem 
+                            onClick={() => handleNavigation("/admin/curadorias")}
+                            className="cursor-pointer"
+                          >
+                            <LayoutList className="h-4 w-4 mr-2" />
+                            Curadorias
+                          </DropdownMenuItem>
+                        )}
                         <DropdownMenuSeparator />
                         <DropdownMenuItem 
                           onClick={handleSignOut}
