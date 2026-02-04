@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Home, BookOpen, Menu, LogOut, User, Bookmark } from "lucide-react";
+import { Home, BookOpen, Menu, LogOut, User, Bookmark, Wrench, ScrollText, Info } from "lucide-react";
 import { NotificationDropdown } from "@/components/ui/notification-dropdown";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -113,6 +113,7 @@ export function Navbar() {
               onClick={() => handleNavigation("/ferramentas")}
               className={`hover:bg-accent ${location.pathname === "/ferramentas" ? "bg-accent text-accent-foreground" : ""}`}
             >
+              <Wrench className="h-4 w-4 mr-2" aria-hidden="true" />
               Ferramentas
             </Button>
 
@@ -124,6 +125,7 @@ export function Navbar() {
               aria-label="Ir para Concursos"
               aria-current={location.pathname.startsWith("/concursos") ? "page" : undefined}
             >
+              <ScrollText className="h-4 w-4 mr-2" aria-hidden="true" />
               Concursos
             </Button>
 
@@ -133,6 +135,7 @@ export function Navbar() {
               onClick={() => handleNavigation("/sobre")}
               className={`hover:bg-accent ${location.pathname === "/sobre" ? "bg-accent text-accent-foreground" : ""}`}
             >
+              <Info className="h-4 w-4 mr-2" aria-hidden="true" />
               Sobre
             </Button>
 
@@ -217,6 +220,7 @@ export function Navbar() {
                   Início
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => handleNavigation("/ferramentas")}>
+                  <Wrench className="h-4 w-4 mr-2" aria-hidden="true" />
                   Ferramentas
                 </DropdownMenuItem>
                 <DropdownMenuItem 
@@ -224,9 +228,11 @@ export function Navbar() {
                   aria-label="Ir para Concursos"
                   aria-current={location.pathname.startsWith("/concursos") ? "page" : undefined}
                 >
+                  <ScrollText className="h-4 w-4 mr-2" aria-hidden="true" />
                   Concursos
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => handleNavigation("/sobre")}>
+                  <Info className="h-4 w-4 mr-2" aria-hidden="true" />
                   Sobre
                 </DropdownMenuItem>
                 
