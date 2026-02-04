@@ -40,6 +40,9 @@ import Links from "./pages/Links";
 import MapaDosBeneficios from "./pages/MapaDosBeneficios";
 import Concursos from "./pages/Concursos";
 import ConcursoDetalhe from "./pages/ConcursoDetalhe";
+import CuradoriaPublic from "./pages/CuradoriaPublic";
+import AdminCuradoriasLista from "./pages/AdminCuradoriasLista";
+import AdminCuradoriasForm from "./pages/AdminCuradoriasForm";
 
 const queryClient = new QueryClient();
 
@@ -80,6 +83,13 @@ const AppWithPixel = () => {
       <Route path="/mapa-dos-beneficios" element={<MapaDosBeneficios />} />
       <Route path="/concursos" element={<Concursos />} />
       <Route path="/concursos/:slug" element={<ConcursoDetalhe />} />
+      
+      {/* Curadoria Dinâmica */}
+      <Route path="/curadoria/:slug" element={<CuradoriaPublic />} />
+      <Route path="/admin/curadorias" element={<AdminCuradoriasLista />} />
+      <Route path="/admin/curadorias/new" element={<AdminCuradoriasForm />} />
+      <Route path="/admin/curadorias/:id" element={<AdminCuradoriasForm />} />
+      
       {/* Bonus Pages - Exact Routes (noindex) */}
       <Route path="/acesso-kit-partida-8h3z" element={<BonusPage />} />
       <Route path="/curadoria-conteudo-ia-k4f9" element={<BonusPage />} />
