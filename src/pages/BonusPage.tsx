@@ -9,35 +9,34 @@ import { supabase } from "@/integrations/supabase/client";
 import { BonusPage as BonusPageType } from "@/hooks/useBonusPages";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { Helmet } from "react-helmet";
-
 const BonusPage = () => {
-  const { slug: paramSlug } = useParams<{ slug: string }>();
+  const {
+    slug: paramSlug
+  } = useParams<{
+    slug: string;
+  }>();
   const location = useLocation();
   const [page, setPage] = useState<BonusPageType | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
-  const { isAdmin } = useUserRoles();
-
+  const {
+    isAdmin
+  } = useUserRoles();
   useEffect(() => {
     const fetchPage = async () => {
       // Use location.pathname for exact routes, or construct from param for dynamic routes
       const slugToFetch = paramSlug ? `/${paramSlug}` : location.pathname;
-      
       if (!slugToFetch) {
         setNotFound(true);
         setLoading(false);
         return;
       }
-
       try {
-        const { data, error } = await supabase
-          .from('newsletter_bonus_pages')
-          .select('*')
-          .eq('slug', slugToFetch)
-          .maybeSingle();
-
+        const {
+          data,
+          error
+        } = await supabase.from('newsletter_bonus_pages').select('*').eq('slug', slugToFetch).maybeSingle();
         if (error) throw error;
-
         if (!data) {
           setNotFound(true);
         } else if (data.status === 'hidden' && !isAdmin) {
@@ -52,24 +51,17 @@ const BonusPage = () => {
         setLoading(false);
       }
     };
-
     fetchPage();
   }, [paramSlug, location.pathname, isAdmin]);
-
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
+    return <div className="min-h-screen flex items-center justify-center">
         <div className="text-muted-foreground">Carregando...</div>
-      </div>
-    );
+      </div>;
   }
-
   if (notFound || !page) {
     return <Navigate to="/404" replace />;
   }
-
-  return (
-    <>
+  return <>
       <Helmet>
         <title>{page.title} – PqEstudar</title>
         <meta name="robots" content="noindex, nofollow" />
@@ -83,7 +75,7 @@ const BonusPage = () => {
           <div className="max-w-5xl mx-auto space-y-12">
             {/* Hero Section */}
             <div className="text-center space-y-4">
-              <h1 className="text-4xl md:text-5xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+              <h1 className="text-4xl md:text-5xl font-bold bg-gradient-primary bg-clip-text text-transparent py-[10px]">
                 {page.title}
               </h1>
               <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">
@@ -93,21 +85,11 @@ const BonusPage = () => {
 
             {/* Tools Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {page.cards.map((tool, index) => (
-                <Card 
-                  key={index}
-                  className="group hover:shadow-lg transition-all duration-300 border-2 hover:border-primary/20"
-                >
+              {page.cards.map((tool, index) => <Card key={index} className="group hover:shadow-lg transition-all duration-300 border-2 hover:border-primary/20">
                   <CardContent className="p-6 space-y-4">
-                    {tool.logoUrl && (
-                      <div className="flex items-center justify-center h-16">
-                        <img
-                          src={tool.logoUrl}
-                          alt={tool.logoAlt}
-                          className="max-h-full max-w-full object-contain"
-                        />
-                      </div>
-                    )}
+                    {tool.logoUrl && <div className="flex items-center justify-center h-16">
+                        <img src={tool.logoUrl} alt={tool.logoAlt} className="max-h-full max-w-full object-contain" />
+                      </div>}
                     
                     <div className="space-y-2">
                       <h4 className="font-semibold text-lg">{tool.toolTitle}</h4>
@@ -116,33 +98,20 @@ const BonusPage = () => {
                       </p>
                     </div>
 
-                    {tool.toolLink && (
-                      <Button
-                        asChild
-                        className="w-full group-hover:scale-105 transition-transform"
-                      >
-                        <a
-                          href={tool.toolLink}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          aria-label={`Acessar ${tool.toolTitle} em nova aba`}
-                        >
+                    {tool.toolLink && <Button asChild className="w-full group-hover:scale-105 transition-transform">
+                        <a href={tool.toolLink} target="_blank" rel="noopener noreferrer" aria-label={`Acessar ${tool.toolTitle} em nova aba`}>
                           Acessar Ferramenta
                           <ExternalLink className="ml-2 h-4 w-4" />
                         </a>
-                      </Button>
-                    )}
+                      </Button>}
                   </CardContent>
-                </Card>
-              ))}
+                </Card>)}
             </div>
           </div>
         </main>
 
         <Footer />
       </div>
-    </>
-  );
+    </>;
 };
-
 export default BonusPage;
