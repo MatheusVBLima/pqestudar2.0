@@ -134,28 +134,32 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Calculate subscription end date based on plan type
-    const startsAt = now;
-    let endsAt: Date;
-    
-    switch (tokenData.plan_type) {
-      case 'monthly':
-        endsAt = new Date(startsAt);
-        endsAt.setDate(endsAt.getDate() + 30);
-        break;
-      case 'annual':
-        endsAt = new Date(startsAt);
-        endsAt.setDate(endsAt.getDate() + 365);
-        break;
-      case 'trial_30d':
-        endsAt = new Date(startsAt);
-        endsAt.setDate(endsAt.getDate() + 30);
-        break;
-      default:
-        return new Response(
-          JSON.stringify({ error: 'Tipo de plano inválido no token.' }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+    // Helper function to add plan duration
+    // Using simple day-based calculation: monthly = +30d, annual = +365d, trial_30d = +30d
+    const addPlanDuration = (baseDate: Date, planType: string): Date => {
+      const result = new Date(baseDate);
+      switch (planType) {
+        case 'monthly':
+          result.setDate(result.getDate() + 30);
+          break;
+        case 'annual':
+          result.setDate(result.getDate() + 365);
+          break;
+        case 'trial_30d':
+          result.setDate(result.getDate() + 30);
+          break;
+        default:
+          throw new Error('Invalid plan type');
+      }
+      return result;
+    };
+
+    // Validate plan type
+    if (!['monthly', 'annual', 'trial_30d'].includes(tokenData.plan_type)) {
+      return new Response(
+        JSON.stringify({ error: 'Tipo de plano inválido no token.' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     // Start transaction-like operations
@@ -181,7 +185,7 @@ Deno.serve(async (req) => {
     // 2. Check if user already has a subscription
     const { data: existingSub, error: subCheckError } = await supabaseAdmin
       .from('subscriptions')
-      .select('id, ends_at, status')
+      .select('id, ends_at, status, starts_at')
       .eq('user_id', user.id)
       .single();
 
@@ -192,27 +196,20 @@ Deno.serve(async (req) => {
 
     if (existingSub) {
       // Update existing subscription
-      // If current subscription is still active, extend it
       const currentEndsAt = new Date(existingSub.ends_at);
+      const isActiveAndNotExpired = existingSub.status === 'active' && currentEndsAt > now;
+      
+      let newStartsAt: string;
       let newEndsAt: Date;
       
-      if (existingSub.status === 'active' && currentEndsAt > now) {
-        // Extend from current end date
-        newEndsAt = new Date(currentEndsAt);
-        switch (tokenData.plan_type) {
-          case 'monthly':
-            newEndsAt.setDate(newEndsAt.getDate() + 30);
-            break;
-          case 'annual':
-            newEndsAt.setDate(newEndsAt.getDate() + 365);
-            break;
-          case 'trial_30d':
-            newEndsAt.setDate(newEndsAt.getDate() + 30);
-            break;
-        }
+      if (isActiveAndNotExpired) {
+        // Keep the original starts_at, extend ends_at from current end date
+        newStartsAt = existingSub.starts_at;
+        newEndsAt = addPlanDuration(currentEndsAt, tokenData.plan_type);
       } else {
-        // Start fresh from now
-        newEndsAt = endsAt;
+        // Subscription is expired/inactive - start fresh from now
+        newStartsAt = now.toISOString();
+        newEndsAt = addPlanDuration(now, tokenData.plan_type);
       }
 
       const { error: updateSubError } = await supabaseAdmin
@@ -220,9 +217,7 @@ Deno.serve(async (req) => {
         .update({
           status: 'active',
           plan_type: tokenData.plan_type,
-          starts_at: existingSub.status === 'active' && currentEndsAt > now 
-            ? existingSub.ends_at // Keep original start as reference
-            : startsAt.toISOString(),
+          starts_at: newStartsAt,
           ends_at: newEndsAt.toISOString(),
         })
         .eq('id', existingSub.id);
@@ -241,7 +236,7 @@ Deno.serve(async (req) => {
         );
       }
 
-      console.log(`Updated subscription for user ${user.id}, ends at ${newEndsAt.toISOString()}`);
+      console.log(`Updated subscription for user ${user.id}, starts_at=${newStartsAt}, ends_at=${newEndsAt.toISOString()}`);
 
       return new Response(
         JSON.stringify({
@@ -249,22 +244,25 @@ Deno.serve(async (req) => {
           message: 'Assinatura ativada com sucesso!',
           subscription: {
             plan_type: tokenData.plan_type,
-            starts_at: startsAt.toISOString(),
+            starts_at: newStartsAt,
             ends_at: newEndsAt.toISOString(),
           },
         }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     } else {
-      // Create new subscription
+      // Create new subscription - start from now
+      const newStartsAt = now.toISOString();
+      const newEndsAt = addPlanDuration(now, tokenData.plan_type);
+
       const { error: createSubError } = await supabaseAdmin
         .from('subscriptions')
         .insert({
           user_id: user.id,
           status: 'active',
           plan_type: tokenData.plan_type,
-          starts_at: startsAt.toISOString(),
-          ends_at: endsAt.toISOString(),
+          starts_at: newStartsAt,
+          ends_at: newEndsAt.toISOString(),
         });
 
       if (createSubError) {
@@ -281,7 +279,7 @@ Deno.serve(async (req) => {
         );
       }
 
-      console.log(`Created subscription for user ${user.id}, ends at ${endsAt.toISOString()}`);
+      console.log(`Created subscription for user ${user.id}, starts_at=${newStartsAt}, ends_at=${newEndsAt.toISOString()}`);
 
       return new Response(
         JSON.stringify({
@@ -289,8 +287,8 @@ Deno.serve(async (req) => {
           message: 'Assinatura ativada com sucesso!',
           subscription: {
             plan_type: tokenData.plan_type,
-            starts_at: startsAt.toISOString(),
-            ends_at: endsAt.toISOString(),
+            starts_at: newStartsAt,
+            ends_at: newEndsAt.toISOString(),
           },
         }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
