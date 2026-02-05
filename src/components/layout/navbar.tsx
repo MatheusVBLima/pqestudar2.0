@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Home, BookOpen, Menu, LogOut, User, Bookmark, Wrench, ScrollText, Info, LayoutList, Crown } from "lucide-react";
+import { Home, BookOpen, Menu, LogOut, User, Bookmark, Wrench, ScrollText, Info, LayoutList, Crown, Settings } from "lucide-react";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { NotificationDropdown } from "@/components/ui/notification-dropdown";
 import { useAuth } from "@/hooks/useAuth";
@@ -201,6 +201,13 @@ export function Navbar() {
                             Curadorias
                           </DropdownMenuItem>
                           <DropdownMenuItem 
+                            onClick={() => handleNavigation("/admin/premium")}
+                            className="cursor-pointer"
+                          >
+                            <Settings className="h-4 w-4 mr-2" />
+                            Painel Premium
+                          </DropdownMenuItem>
+                          <DropdownMenuItem 
                             onClick={() => handleNavigation("/premium")}
                             className="cursor-pointer"
                           >
@@ -302,6 +309,13 @@ export function Navbar() {
                             >
                               <LayoutList className="h-4 w-4 mr-2" />
                               Curadorias
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              onClick={() => handleNavigation("/admin/premium")}
+                              className="cursor-pointer"
+                            >
+                              <Settings className="h-4 w-4 mr-2" />
+                              Painel Premium
                             </DropdownMenuItem>
                             <DropdownMenuItem 
                               onClick={() => handleNavigation("/premium")}
