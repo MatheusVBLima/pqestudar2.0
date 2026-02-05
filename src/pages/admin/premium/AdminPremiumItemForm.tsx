@@ -24,6 +24,7 @@ interface PremiumItemForm {
   external_url: string;
   tags: string;
   status: 'draft' | 'published';
+  sort_order: number;
 }
 
 const AdminPremiumItemForm = () => {
@@ -44,6 +45,7 @@ const AdminPremiumItemForm = () => {
     external_url: '',
     tags: '',
     status: 'draft',
+    sort_order: 0,
   });
 
   useEffect(() => {
@@ -72,6 +74,7 @@ const AdminPremiumItemForm = () => {
         external_url: data.external_url || '',
         tags: (data.tags || []).join(', '),
         status: data.status,
+        sort_order: data.sort_order || 0,
       });
     } catch (err) {
       console.error('Error fetching item:', err);
@@ -142,6 +145,7 @@ const AdminPremiumItemForm = () => {
         external_url: form.external_url.trim() || null,
         tags,
         status: form.status,
+        sort_order: form.sort_order,
         published_at: form.status === 'published' ? new Date().toISOString() : null,
         updated_by: user?.id,
       };
@@ -321,14 +325,30 @@ const AdminPremiumItemForm = () => {
                 </div>
               </div>
 
-              <div>
-                <Label htmlFor="tags">Tags (separadas por vírgula)</Label>
-                <Input
-                  id="tags"
-                  value={form.tags}
-                  onChange={(e) => setForm(prev => ({ ...prev, tags: e.target.value }))}
-                  placeholder="React, JavaScript, Frontend"
-                />
+              <div className="grid gap-4 md:grid-cols-2">
+                <div>
+                  <Label htmlFor="tags">Tags (separadas por vírgula)</Label>
+                  <Input
+                    id="tags"
+                    value={form.tags}
+                    onChange={(e) => setForm(prev => ({ ...prev, tags: e.target.value }))}
+                    placeholder="React, JavaScript, Frontend"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="sort_order">Ordem de exibição</Label>
+                  <Input
+                    id="sort_order"
+                    type="number"
+                    value={form.sort_order}
+                    onChange={(e) => setForm(prev => ({ ...prev, sort_order: parseInt(e.target.value) || 0 }))}
+                    placeholder="0"
+                  />
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Menor número = aparece primeiro
+                  </p>
+                </div>
               </div>
 
               <div className="flex gap-4">

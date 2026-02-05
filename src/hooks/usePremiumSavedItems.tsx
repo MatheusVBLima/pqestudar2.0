@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { toast } from '@/hooks/use-toast';
@@ -10,6 +11,8 @@ export interface PremiumSavedMetadata {
 
 export const usePremiumSavedItems = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
   const [loadingIds, setLoadingIds] = useState<Set<string>>(new Set());
 
@@ -46,12 +49,9 @@ export const usePremiumSavedItems = () => {
     itemId: string,
     metadata?: PremiumSavedMetadata
   ): Promise<boolean> => {
+    // If user is not logged in, redirect to /login with return URL
     if (!user) {
-      toast({
-        title: 'Login necessário',
-        description: 'Faça login para salvar itens.',
-        variant: 'destructive',
-      });
+      navigate('/login', { state: { from: location } });
       return false;
     }
 
