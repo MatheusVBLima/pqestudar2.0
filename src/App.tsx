@@ -44,6 +44,26 @@ import CuradoriaPublic from "./pages/CuradoriaPublic";
 import AdminCuradoriasLista from "./pages/AdminCuradoriasLista";
 import AdminCuradoriasForm from "./pages/AdminCuradoriasForm";
 
+// Premium imports
+import { RequireActiveSubscription } from "@/components/premium/RequireActiveSubscription";
+import { RequirePremiumAdmin } from "@/components/premium/RequirePremiumAdmin";
+import PremiumHome from "./pages/premium/PremiumHome";
+import PremiumUpgrade from "./pages/premium/PremiumUpgrade";
+import PremiumRedeem from "./pages/premium/PremiumRedeem";
+import PremiumCourses from "./pages/premium/PremiumCourses";
+import PremiumJobs from "./pages/premium/PremiumJobs";
+import PremiumUpdates from "./pages/premium/PremiumUpdates";
+import PremiumUpdateDetail from "./pages/premium/PremiumUpdateDetail";
+import PremiumSaved from "./pages/premium/PremiumSaved";
+import PremiumCurationPage from "./pages/premium/PremiumCurationPage";
+
+// Admin Premium imports
+import AdminPremiumDashboard from "./pages/admin/premium/AdminPremiumDashboard";
+import AdminPremiumItems from "./pages/admin/premium/AdminPremiumItems";
+import AdminPremiumItemForm from "./pages/admin/premium/AdminPremiumItemForm";
+import AdminPremiumTokens from "./pages/admin/premium/AdminPremiumTokens";
+import AdminPremiumUsers from "./pages/admin/premium/AdminPremiumUsers";
+
 const queryClient = new QueryClient();
 
 // Inner component that uses hooks requiring Router context
@@ -89,6 +109,26 @@ const AppWithPixel = () => {
       <Route path="/admin/curadorias" element={<AdminCuradoriasLista />} />
       <Route path="/admin/curadorias/new" element={<AdminCuradoriasForm />} />
       <Route path="/admin/curadorias/:id" element={<AdminCuradoriasForm />} />
+      
+      {/* Premium Routes - Public */}
+      <Route path="/premium/upgrade" element={<PremiumUpgrade />} />
+      <Route path="/premium/resgatar" element={<PremiumRedeem />} />
+      
+      {/* Premium Routes - Protected by subscription */}
+      <Route path="/premium" element={<RequireActiveSubscription><PremiumHome /></RequireActiveSubscription>} />
+      <Route path="/premium/cursos" element={<RequireActiveSubscription><PremiumCourses /></RequireActiveSubscription>} />
+      <Route path="/premium/vagas" element={<RequireActiveSubscription><PremiumJobs /></RequireActiveSubscription>} />
+      <Route path="/premium/atualizacoes" element={<RequireActiveSubscription><PremiumUpdates /></RequireActiveSubscription>} />
+      <Route path="/premium/atualizacoes/:slug" element={<RequireActiveSubscription><PremiumUpdateDetail /></RequireActiveSubscription>} />
+      <Route path="/premium/salvos" element={<RequireActiveSubscription><PremiumSaved /></RequireActiveSubscription>} />
+      <Route path="/premium/p/:slug" element={<RequireActiveSubscription><PremiumCurationPage /></RequireActiveSubscription>} />
+      
+      {/* Admin Premium Routes */}
+      <Route path="/admin/premium" element={<RequirePremiumAdmin><AdminPremiumDashboard /></RequirePremiumAdmin>} />
+      <Route path="/admin/premium/itens" element={<RequirePremiumAdmin><AdminPremiumItems /></RequirePremiumAdmin>} />
+      <Route path="/admin/premium/itens/:id" element={<RequirePremiumAdmin><AdminPremiumItemForm /></RequirePremiumAdmin>} />
+      <Route path="/admin/premium/tokens" element={<RequirePremiumAdmin><AdminPremiumTokens /></RequirePremiumAdmin>} />
+      <Route path="/admin/premium/usuarios" element={<RequirePremiumAdmin><AdminPremiumUsers /></RequirePremiumAdmin>} />
       
       {/* Bonus Pages - Exact Routes (noindex) */}
       <Route path="/acesso-kit-partida-8h3z" element={<BonusPage />} />

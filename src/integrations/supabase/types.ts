@@ -1407,6 +1407,177 @@ export type Database = {
         }
         Relationships: []
       }
+      premium_items: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description_full: string | null
+          description_short: string | null
+          external_url: string | null
+          id: string
+          item_type: Database["public"]["Enums"]["premium_item_type"]
+          logo_url: string | null
+          published_at: string | null
+          slug: string
+          sort_order: number
+          status: Database["public"]["Enums"]["content_status"]
+          tags: string[] | null
+          title: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description_full?: string | null
+          description_short?: string | null
+          external_url?: string | null
+          id?: string
+          item_type: Database["public"]["Enums"]["premium_item_type"]
+          logo_url?: string | null
+          published_at?: string | null
+          slug: string
+          sort_order?: number
+          status?: Database["public"]["Enums"]["content_status"]
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description_full?: string | null
+          description_short?: string | null
+          external_url?: string | null
+          id?: string
+          item_type?: Database["public"]["Enums"]["premium_item_type"]
+          logo_url?: string | null
+          published_at?: string | null
+          slug?: string
+          sort_order?: number
+          status?: Database["public"]["Enums"]["content_status"]
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
+      premium_page_items: {
+        Row: {
+          created_at: string
+          id: string
+          item_id: string
+          page_id: string
+          sort_order: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          item_id: string
+          page_id: string
+          sort_order?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          item_id?: string
+          page_id?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "premium_page_items_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "premium_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "premium_page_items_page_id_fkey"
+            columns: ["page_id"]
+            isOneToOne: false
+            referencedRelation: "premium_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      premium_pages: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          published_at: string | null
+          slug: string
+          status: Database["public"]["Enums"]["content_status"]
+          title: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          published_at?: string | null
+          slug: string
+          status?: Database["public"]["Enums"]["content_status"]
+          title: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          published_at?: string | null
+          slug?: string
+          status?: Database["public"]["Enums"]["content_status"]
+          title?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
+      redeem_tokens: {
+        Row: {
+          buyer_email: string | null
+          created_at: string
+          expires_at: string
+          id: string
+          plan_type: Database["public"]["Enums"]["subscription_plan_type"]
+          status: Database["public"]["Enums"]["redeem_token_status"]
+          token: string
+          used_at: string | null
+          used_by_user_id: string | null
+        }
+        Insert: {
+          buyer_email?: string | null
+          created_at?: string
+          expires_at: string
+          id?: string
+          plan_type: Database["public"]["Enums"]["subscription_plan_type"]
+          status?: Database["public"]["Enums"]["redeem_token_status"]
+          token: string
+          used_at?: string | null
+          used_by_user_id?: string | null
+        }
+        Update: {
+          buyer_email?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          plan_type?: Database["public"]["Enums"]["subscription_plan_type"]
+          status?: Database["public"]["Enums"]["redeem_token_status"]
+          token?: string
+          used_at?: string | null
+          used_by_user_id?: string | null
+        }
+        Relationships: []
+      }
       saved_items: {
         Row: {
           created_at: string
@@ -1469,6 +1640,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      subscriptions: {
+        Row: {
+          created_at: string
+          ends_at: string
+          id: string
+          plan_type: Database["public"]["Enums"]["subscription_plan_type"]
+          starts_at: string
+          status: Database["public"]["Enums"]["subscription_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          ends_at: string
+          id?: string
+          plan_type: Database["public"]["Enums"]["subscription_plan_type"]
+          starts_at?: string
+          status?: Database["public"]["Enums"]["subscription_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          ends_at?: string
+          id?: string
+          plan_type?: Database["public"]["Enums"]["subscription_plan_type"]
+          starts_at?: string
+          status?: Database["public"]["Enums"]["subscription_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       tools: {
         Row: {
@@ -1539,6 +1743,90 @@ export type Database = {
           role?: Database["public"]["Enums"]["app_role"]
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      weekly_update_items: {
+        Row: {
+          created_at: string
+          id: string
+          item_id: string
+          section: string
+          sort_order: number
+          update_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          item_id: string
+          section: string
+          sort_order?: number
+          update_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          item_id?: string
+          section?: string
+          sort_order?: number
+          update_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "weekly_update_items_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "premium_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "weekly_update_items_update_id_fkey"
+            columns: ["update_id"]
+            isOneToOne: false
+            referencedRelation: "weekly_updates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      weekly_updates: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          highlight: string | null
+          id: string
+          intro: string | null
+          published_at: string | null
+          slug: string
+          status: Database["public"]["Enums"]["content_status"]
+          title: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          highlight?: string | null
+          id?: string
+          intro?: string | null
+          published_at?: string | null
+          slug: string
+          status?: Database["public"]["Enums"]["content_status"]
+          title: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          highlight?: string | null
+          id?: string
+          intro?: string | null
+          published_at?: string | null
+          slug?: string
+          status?: Database["public"]["Enums"]["content_status"]
+          title?: string
+          updated_at?: string
+          updated_by?: string | null
         }
         Relationships: []
       }
@@ -1986,6 +2274,7 @@ export type Database = {
           webhook_url: string
         }[]
       }
+      has_active_subscription: { Args: never; Returns: boolean }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -1997,7 +2286,12 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
+      content_status: "draft" | "published"
       course_badge: "trending" | "popular" | "community"
+      premium_item_type: "course" | "job"
+      redeem_token_status: "new" | "used" | "expired" | "revoked"
+      subscription_plan_type: "monthly" | "annual" | "trial_30d"
+      subscription_status: "active" | "inactive" | "expired" | "canceled"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -2126,7 +2420,12 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "moderator", "user"],
+      content_status: ["draft", "published"],
       course_badge: ["trending", "popular", "community"],
+      premium_item_type: ["course", "job"],
+      redeem_token_status: ["new", "used", "expired", "revoked"],
+      subscription_plan_type: ["monthly", "annual", "trial_30d"],
+      subscription_status: ["active", "inactive", "expired", "canceled"],
     },
   },
 } as const
