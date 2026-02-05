@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Home, BookOpen, Menu, LogOut, User, Bookmark, Wrench, ScrollText, Info, LayoutList } from "lucide-react";
+import { Home, BookOpen, Menu, LogOut, User, Bookmark, Wrench, ScrollText, Info, LayoutList, Crown } from "lucide-react";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { NotificationDropdown } from "@/components/ui/notification-dropdown";
 import { useAuth } from "@/hooks/useAuth";
@@ -192,13 +192,22 @@ export function Navbar() {
                         Salvos
                       </DropdownMenuItem>
                       {isAdmin && (
-                        <DropdownMenuItem 
-                          onClick={() => handleNavigation("/admin/curadorias")}
-                          className="cursor-pointer"
-                        >
-                          <LayoutList className="h-4 w-4 mr-2" />
-                          Curadorias
-                        </DropdownMenuItem>
+                        <>
+                          <DropdownMenuItem 
+                            onClick={() => handleNavigation("/admin/curadorias")}
+                            className="cursor-pointer"
+                          >
+                            <LayoutList className="h-4 w-4 mr-2" />
+                            Curadorias
+                          </DropdownMenuItem>
+                          <DropdownMenuItem 
+                            onClick={() => handleNavigation("/premium")}
+                            className="cursor-pointer"
+                          >
+                            <Crown className="h-4 w-4 mr-2" />
+                            Área Premium
+                          </DropdownMenuItem>
+                        </>
                       )}
                       <DropdownMenuSeparator />
                       <DropdownMenuItem 
@@ -286,13 +295,22 @@ export function Navbar() {
                           Salvos
                         </DropdownMenuItem>
                         {isAdmin && (
-                          <DropdownMenuItem 
-                            onClick={() => handleNavigation("/admin/curadorias")}
-                            className="cursor-pointer"
-                          >
-                            <LayoutList className="h-4 w-4 mr-2" />
-                            Curadorias
-                          </DropdownMenuItem>
+                          <>
+                            <DropdownMenuItem 
+                              onClick={() => handleNavigation("/admin/curadorias")}
+                              className="cursor-pointer"
+                            >
+                              <LayoutList className="h-4 w-4 mr-2" />
+                              Curadorias
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              onClick={() => handleNavigation("/premium")}
+                              className="cursor-pointer"
+                            >
+                              <Crown className="h-4 w-4 mr-2" />
+                              Área Premium
+                            </DropdownMenuItem>
+                          </>
                         )}
                         <DropdownMenuSeparator />
                         <DropdownMenuItem 

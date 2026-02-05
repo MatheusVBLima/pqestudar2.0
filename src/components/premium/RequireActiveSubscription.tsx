@@ -1,6 +1,7 @@
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useSubscription } from '@/hooks/useSubscription';
+import { useUserRoles } from '@/hooks/useUserRoles';
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface RequireActiveSubscriptionProps {
@@ -10,10 +11,11 @@ interface RequireActiveSubscriptionProps {
 export function RequireActiveSubscription({ children }: RequireActiveSubscriptionProps) {
   const { user, loading: authLoading } = useAuth();
   const { isActive, loading: subLoading } = useSubscription();
+  const { isAdmin, loading: rolesLoading } = useUserRoles();
   const location = useLocation();
 
   // Show skeleton while loading
-  if (authLoading || subLoading) {
+  if (authLoading || subLoading || rolesLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="w-full max-w-md space-y-4 p-8">
@@ -28,6 +30,11 @@ export function RequireActiveSubscription({ children }: RequireActiveSubscriptio
   // Not logged in -> redirect to login with return URL
   if (!user) {
     return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  // Admin always has access (bypass subscription check)
+  if (isAdmin) {
+    return <>{children}</>;
   }
 
   // Not active subscriber -> redirect to upgrade page
