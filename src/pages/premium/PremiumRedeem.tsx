@@ -43,7 +43,9 @@ const PremiumRedeem = () => {
     setLoading(true);
 
     try {
-      const result = await redeemToken(token.trim());
+      // Normalize token: trim whitespace and convert to uppercase
+      const normalizedToken = token.trim().toUpperCase();
+      const result = await redeemToken(normalizedToken);
       
       if (result.success) {
         setSuccess(true);

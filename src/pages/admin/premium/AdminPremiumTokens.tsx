@@ -55,6 +55,8 @@ const AdminPremiumTokens = () => {
     }
   };
 
+  // Generate token in uppercase format with hyphens (e.g., RNT1-VT2N-NM8E-SJ9X)
+  // This format must match the normalization in the Edge Function
   const generateToken = () => {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     let token = '';
@@ -62,7 +64,8 @@ const AdminPremiumTokens = () => {
       if (i > 0 && i % 4 === 0) token += '-';
       token += chars.charAt(Math.floor(Math.random() * chars.length));
     }
-    return token;
+    // Return already uppercase (chars are uppercase, but be explicit)
+    return token.toUpperCase();
   };
 
   const handleCreateToken = async (planType: 'monthly' | 'annual' | 'trial_30d') => {
