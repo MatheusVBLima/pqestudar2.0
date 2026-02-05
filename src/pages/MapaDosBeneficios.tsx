@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Helmet } from "react-helmet";
 import { motion, AnimatePresence } from "framer-motion";
 import { Flame, CheckCircle, X, FileText, Users, Award, RefreshCw, Heart, Gift, Check, Shield, ChevronDown, Clock, Volume2 } from "lucide-react";
@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { cn } from "@/lib/utils";
-import YouTubeLoopPlayer from "@/components/ui/youtube-loop-player";
+import YouTubeLoopPlayer, { YouTubeLoopPlayerRef } from "@/components/ui/youtube-loop-player";
 import garantiaImage from "@/assets/garantia-7-dias.png";
 import bonusPassaporteFuturo from "@/assets/bonus-passaporte-futuro.png";
 import bonusPainelControle from "@/assets/bonus-painel-controle.png";
@@ -345,6 +345,7 @@ const VSLWithSoundHint = ({
   className?: string;
 }) => {
   const [showSoundHint, setShowSoundHint] = useState(true);
+  const playerRef = useRef<YouTubeLoopPlayerRef>(null);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -353,9 +354,16 @@ const VSLWithSoundHint = ({
     return () => clearTimeout(timer);
   }, []);
 
+  // Handler para ativar som ao clicar no hint
+  const handleActivateSound = () => {
+    playerRef.current?.unMute();
+    setShowSoundHint(false);
+  };
+
   return (
     <>
       <YouTubeLoopPlayer
+        ref={playerRef}
         videoId={videoId}
         title={title}
         ariaLabel={ariaLabel}
@@ -370,10 +378,14 @@ const VSLWithSoundHint = ({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
             transition={{ duration: 0.2 }}
-            className="pointer-events-none absolute z-20 top-3 left-1/2 -translate-x-1/2 md:left-auto md:translate-x-0 md:right-4 md:top-4"
+            className="absolute z-20 top-3 left-1/2 -translate-x-1/2 md:left-auto md:translate-x-0 md:right-4 md:top-4"
             aria-live="polite"
           >
-            <div className="inline-flex items-center gap-1.5 rounded-full bg-white/90 backdrop-blur-sm px-3 py-1.5 shadow-md ring-1 ring-black/5">
+            <button
+              onClick={handleActivateSound}
+              className="inline-flex items-center gap-1.5 rounded-full bg-white/90 backdrop-blur-sm px-3 py-1.5 shadow-md ring-1 ring-black/5 cursor-pointer hover:bg-white transition-colors"
+              aria-label="Ativar som do vídeo"
+            >
               <motion.span
                 animate={{ scale: [1, 1.15, 1] }}
                 transition={{ duration: 0.8, repeat: Infinity, ease: "easeInOut" }}
@@ -382,7 +394,7 @@ const VSLWithSoundHint = ({
                 <Volume2 className="h-4 w-4 text-foreground" />
               </motion.span>
               <span className="text-sm font-medium text-foreground">Ative o som</span>
-            </div>
+            </button>
           </motion.div>
         )}
       </AnimatePresence>

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useCallback } from "react";
+import React, { useEffect, useRef, useCallback, forwardRef, useImperativeHandle } from "react";
 
 // Declaração de tipos para a YouTube IFrame API
 declare global {
@@ -32,6 +32,9 @@ interface YTPlayer {
   pauseVideo: () => void;
   seekTo: (seconds: number, allowSeekAhead?: boolean) => void;
   destroy: () => void;
+  unMute: () => void;
+  mute: () => void;
+  isMuted: () => boolean;
 }
 
 interface YouTubeLoopPlayerProps {
@@ -40,6 +43,11 @@ interface YouTubeLoopPlayerProps {
   ariaLabel?: string;
   className?: string;
   style?: React.CSSProperties;
+}
+
+export interface YouTubeLoopPlayerRef {
+  unMute: () => void;
+  mute: () => void;
 }
 
 /**
@@ -56,16 +64,22 @@ interface YouTubeLoopPlayerProps {
  * - autoplay=1: autoplay
  * - mute=1: mudo (necessário para autoplay)
  */
-const YouTubeLoopPlayer: React.FC<YouTubeLoopPlayerProps> = ({
-  videoId,
-  title = "Vídeo",
-  ariaLabel,
-  className,
-  style,
-}) => {
+const YouTubeLoopPlayer = forwardRef<YouTubeLoopPlayerRef, YouTubeLoopPlayerProps>(
+  ({ videoId, title = "Vídeo", ariaLabel, className, style }, ref) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<YTPlayer | null>(null);
   const isApiLoadedRef = useRef(false);
+
+  // Expor métodos via ref para controle externo
+  useImperativeHandle(ref, () => ({
+    unMute: () => {
+      playerRef.current?.unMute();
+      playerRef.current?.playVideo();
+    },
+    mute: () => {
+      playerRef.current?.mute();
+    },
+  }));
 
   const initializePlayer = useCallback(() => {
     if (!containerRef.current || !window.YT || playerRef.current) return;
@@ -139,6 +153,9 @@ const YouTubeLoopPlayer: React.FC<YouTubeLoopPlayerProps> = ({
       role="region"
     />
   );
-};
+  }
+);
+
+YouTubeLoopPlayer.displayName = "YouTubeLoopPlayer";
 
 export default YouTubeLoopPlayer;
