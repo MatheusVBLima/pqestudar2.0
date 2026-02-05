@@ -66,8 +66,7 @@ export interface YouTubeLoopPlayerRef {
  */
 const YouTubeLoopPlayer = forwardRef<YouTubeLoopPlayerRef, YouTubeLoopPlayerProps>(
   ({ videoId, title = "Vídeo", ariaLabel, className, style }, ref) => {
-  const wrapperRef = useRef<HTMLDivElement>(null);
-  const playerContainerId = useRef(`yt-player-${Math.random().toString(36).substr(2, 9)}`);
+  const containerRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<YTPlayer | null>(null);
   const isApiLoadedRef = useRef(false);
 
@@ -83,20 +82,9 @@ const YouTubeLoopPlayer = forwardRef<YouTubeLoopPlayerRef, YouTubeLoopPlayerProp
   }));
 
   const initializePlayer = useCallback(() => {
-    if (!wrapperRef.current || !window.YT || playerRef.current) return;
-    
-    // Criar um elemento interno que a API do YouTube vai substituir
-    // Isso evita que o React perca controle do DOM
-    const existingContainer = document.getElementById(playerContainerId.current);
-    if (existingContainer) {
-      existingContainer.remove();
-    }
-    
-    const playerContainer = document.createElement('div');
-    playerContainer.id = playerContainerId.current;
-    wrapperRef.current.appendChild(playerContainer);
+    if (!containerRef.current || !window.YT || playerRef.current) return;
 
-    playerRef.current = new window.YT.Player(playerContainerId.current, {
+    playerRef.current = new window.YT.Player(containerRef.current, {
       videoId,
       playerVars: {
         rel: 0, // Sem recomendados no fim
@@ -152,25 +140,18 @@ const YouTubeLoopPlayer = forwardRef<YouTubeLoopPlayerRef, YouTubeLoopPlayerProp
         playerRef.current.destroy();
         playerRef.current = null;
       }
-      // Limpar o container criado manualmente
-      const existingContainer = document.getElementById(playerContainerId.current);
-      if (existingContainer) {
-        existingContainer.remove();
-      }
     };
   }, [initializePlayer]);
 
   return (
     <div
-      ref={wrapperRef}
+      ref={containerRef}
       className={className}
       style={style}
       title={title}
       aria-label={ariaLabel || title}
       role="region"
-    >
-      {/* O container do player será criado dinamicamente para evitar conflitos com o React DOM */}
-    </div>
+    />
   );
   }
 );
