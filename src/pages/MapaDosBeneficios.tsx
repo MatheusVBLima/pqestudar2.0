@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Helmet } from "react-helmet";
-import { motion } from "framer-motion";
-import { Flame, CheckCircle, X, FileText, Users, Award, RefreshCw, Heart, Gift, Check, Shield, ChevronDown, Clock } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Flame, CheckCircle, X, FileText, Users, Award, RefreshCw, Heart, Gift, Check, Shield, ChevronDown, Clock, Volume2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -332,6 +332,64 @@ const PriceDisplay = ({
     </span>
   </div>;
 
+// VSL com Hint de Som - wrapper que adiciona dica visual temporária
+const VSLWithSoundHint = ({
+  videoId,
+  title,
+  ariaLabel,
+  className,
+}: {
+  videoId: string;
+  title: string;
+  ariaLabel: string;
+  className?: string;
+}) => {
+  const [showSoundHint, setShowSoundHint] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowSoundHint(false);
+    }, 2500);
+    return () => clearTimeout(timer);
+  }, []);
+
+  return (
+    <>
+      <YouTubeLoopPlayer
+        videoId={videoId}
+        title={title}
+        ariaLabel={ariaLabel}
+        className={className}
+      />
+      
+      {/* Hint temporário "Ative o som" */}
+      <AnimatePresence>
+        {showSoundHint && (
+          <motion.div
+            initial={{ opacity: 0, y: -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.2 }}
+            className="pointer-events-none absolute z-20 top-3 left-1/2 -translate-x-1/2 md:left-auto md:translate-x-0 md:right-4 md:top-4"
+            aria-live="polite"
+          >
+            <div className="inline-flex items-center gap-1.5 rounded-full bg-white/90 backdrop-blur-sm px-3 py-1.5 shadow-md ring-1 ring-black/5">
+              <motion.span
+                animate={{ scale: [1, 1.15, 1] }}
+                transition={{ duration: 0.8, repeat: Infinity, ease: "easeInOut" }}
+                aria-hidden="true"
+              >
+                <Volume2 className="h-4 w-4 text-foreground" />
+              </motion.span>
+              <span className="text-sm font-medium text-foreground">Ative o som</span>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
+  );
+};
+
 // VSL Configuration
 const VSL_CONFIG = {
   videoId: "3Zj1cADXZVI",
@@ -454,7 +512,7 @@ const HeroSection = () => <section className="relative py-10 md:py-12 px-4 sm:px
             boxShadow: BRAND_TOKENS.shadow,
             background: '#000'
           }}>
-              <YouTubeLoopPlayer
+              <VSLWithSoundHint
                 videoId={VSL_CONFIG.videoId}
                 title={VSL_CONFIG.title}
                 ariaLabel={VSL_CONFIG.subtitle}
