@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Home, BookOpen, Menu, LogOut, User, Bookmark, Wrench, ScrollText, Info, LayoutList, Crown, Settings } from "lucide-react";
 import { useUserRoles } from "@/hooks/useUserRoles";
+import { useSubscription } from "@/hooks/useSubscription";
 import { NotificationDropdown } from "@/components/ui/notification-dropdown";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -21,7 +22,11 @@ export function Navbar() {
   const isHomePage = location.pathname === "/";
   const { user, signOut, loading } = useAuth();
   const { isAdmin } = useUserRoles();
+  const { isActive } = useSubscription();
   const [isClicked, setIsClicked] = useState(false);
+  
+  // Show premium area for admins OR active subscribers
+  const showPremiumArea = isAdmin || isActive();
 
   // Detecta se está no subdomínio kit
   const isOnKitSubdomain = window.location.hostname.startsWith("kit.");
@@ -207,14 +212,16 @@ export function Navbar() {
                             <Settings className="h-4 w-4 mr-2" />
                             Painel Premium
                           </DropdownMenuItem>
-                          <DropdownMenuItem 
-                            onClick={() => handleNavigation("/premium")}
-                            className="cursor-pointer"
-                          >
-                            <Crown className="h-4 w-4 mr-2" />
-                            Área Premium
-                          </DropdownMenuItem>
                         </>
+                      )}
+                      {showPremiumArea && (
+                        <DropdownMenuItem 
+                          onClick={() => handleNavigation("/premium")}
+                          className="cursor-pointer"
+                        >
+                          <Crown className="h-4 w-4 mr-2" />
+                          Área Premium
+                        </DropdownMenuItem>
                       )}
                       <DropdownMenuSeparator />
                       <DropdownMenuItem 
@@ -317,14 +324,16 @@ export function Navbar() {
                               <Settings className="h-4 w-4 mr-2" />
                               Painel Premium
                             </DropdownMenuItem>
-                            <DropdownMenuItem 
-                              onClick={() => handleNavigation("/premium")}
-                              className="cursor-pointer"
-                            >
-                              <Crown className="h-4 w-4 mr-2" />
-                              Área Premium
-                            </DropdownMenuItem>
                           </>
+                        )}
+                        {showPremiumArea && (
+                          <DropdownMenuItem 
+                            onClick={() => handleNavigation("/premium")}
+                            className="cursor-pointer"
+                          >
+                            <Crown className="h-4 w-4 mr-2" />
+                            Área Premium
+                          </DropdownMenuItem>
                         )}
                         <DropdownMenuSeparator />
                         <DropdownMenuItem 
