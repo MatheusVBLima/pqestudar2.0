@@ -65,7 +65,17 @@ import AdminPremiumItemForm from "./pages/admin/premium/AdminPremiumItemForm";
 import AdminPremiumTokens from "./pages/admin/premium/AdminPremiumTokens";
 import AdminPremiumUsers from "./pages/admin/premium/AdminPremiumUsers";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000,
+      gcTime: 30 * 60 * 1000,
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: true,
+      retry: 2,
+    },
+  },
+});
 
 // Inner component that uses hooks requiring Router context
 const AppWithPixel = () => {

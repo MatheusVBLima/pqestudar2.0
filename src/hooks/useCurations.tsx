@@ -99,6 +99,9 @@ export const useCurationBySlug = (slug: string) => {
 export const useCurationsList = (filters?: { status?: string; search?: string }) => {
   return useQuery({
     queryKey: curationKeys.list(filters),
+    staleTime: 0,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
     queryFn: async () => {
       let query = supabase
         .from('curation_pages')
@@ -124,6 +127,9 @@ export const useCurationsList = (filters?: { status?: string; search?: string })
 export const useCurationById = (id: string) => {
   return useQuery({
     queryKey: curationKeys.detail(id),
+    staleTime: 0,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
     queryFn: async () => {
       // Buscar página
       const { data: page, error: pageError } = await supabase
