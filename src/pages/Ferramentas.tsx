@@ -563,10 +563,10 @@ export default function Ferramentas() {
   const pageStart = (currentPage - 1) * 12 + 1;
   const pageEnd = Math.min(currentPage * 12, total);
 
-  // Show skeleton count and filters
-  const showFilters = !loading && !isManagementMode && allTags.length > 0;
-  const showCount = !loading && localTools.length > 0;
-  const showPagination = !loading && !isManagementMode && totalPages > 1;
+  // Filters and pagination stay static — only the grid shows loading
+  const showFilters = !isManagementMode && CATEGORIES.length > 0;
+  const showCount = total > 0;
+  const showPagination = !isManagementMode && totalPages > 1;
 
   return (
     <>
@@ -758,7 +758,7 @@ export default function Ferramentas() {
                   </div>
 
                   {/* Pool de Tags */}
-                  {allTags.length > 0 ? (
+                  {availableTags.length > 0 ? (
                     <div
                       className="flex flex-wrap gap-2 mb-4"
                       role="list"
@@ -793,7 +793,7 @@ export default function Ferramentas() {
                     </div>
                   ) : (
                     <p className="text-sm text-muted-foreground">
-                      Sem categorias cadastradas
+                      Todas as categorias selecionadas
                     </p>
                   )}
 
