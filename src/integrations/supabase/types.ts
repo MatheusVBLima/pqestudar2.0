@@ -59,6 +59,42 @@ export type Database = {
           },
         ]
       }
+      analytics_events: {
+        Row: {
+          created_at: string
+          entity_id: string | null
+          entity_type: string | null
+          event_name: string
+          id: string
+          meta: Json | null
+          path: string | null
+          session_id: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string | null
+          event_name: string
+          id?: string
+          meta?: Json | null
+          path?: string | null
+          session_id: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string | null
+          event_name?: string
+          id?: string
+          meta?: Json | null
+          path?: string | null
+          session_id?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       anonymous_course_suggestions_rate_limit: {
         Row: {
           created_at: string | null
@@ -2255,6 +2291,34 @@ export type Database = {
       }
     }
     Functions: {
+      analytics_concurso_avg_read: {
+        Args: { end_at: string; start_at: string }
+        Returns: {
+          avg_read_seconds: number
+          concurso_label: string
+          entity_id: string
+          total_sessions: number
+        }[]
+      }
+      analytics_concurso_event_counts: {
+        Args: { end_at: string; start_at: string }
+        Returns: {
+          concurso_label: string
+          edital_clicks: number
+          entity_id: string
+          opens: number
+          saves: number
+          shares: number
+        }[]
+      }
+      analytics_top_tools: {
+        Args: { end_at: string; start_at: string }
+        Returns: {
+          click_count: number
+          entity_id: string
+          tool_label: string
+        }[]
+      }
       cleanup_newsletter_events_180d: { Args: never; Returns: undefined }
       cleanup_newsletter_rate_limit: { Args: never; Returns: undefined }
       cleanup_newsletter_rate_limit_30d: { Args: never; Returns: undefined }
