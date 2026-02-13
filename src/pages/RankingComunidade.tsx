@@ -1,4 +1,4 @@
-import { Navbar } from "@/components/layout/navbar";
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { AchievementBadge } from "@/components/ui/achievement-badge";
@@ -38,7 +38,7 @@ const RankingComunidade = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
+      
       
       <main className="container mx-auto px-4 py-8">
         {/* Header */}

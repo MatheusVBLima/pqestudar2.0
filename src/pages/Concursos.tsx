@@ -3,8 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Navbar } from "@/components/layout/navbar";
-import { Footer } from "@/components/layout/footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -226,7 +224,7 @@ export default function Concursos() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      <Navbar />
+      
       
       <main className="flex-1 container mx-auto px-4 py-8 max-w-7xl">
         {/* Header */}
@@ -508,7 +506,7 @@ export default function Concursos() {
         )}
       </main>
 
-      <Footer />
+      
 
       {/* Admin Modal */}
       {isAdmin && (

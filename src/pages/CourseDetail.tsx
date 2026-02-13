@@ -2,7 +2,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Navbar } from "@/components/layout/navbar";
+
 import { ArrowLeft, Clock, Users, Star, Play, BookOpen, CheckCircle, Download, Heart } from "lucide-react";
 import { useState } from "react";
 
@@ -43,7 +43,6 @@ export default function CourseDetail() {
   if (!course) {
     return (
       <div className="min-h-screen bg-background">
-        <Navbar />
         <div className="container mx-auto px-4 py-12 text-center">
           <h1 className="text-2xl font-bold mb-4">Curso não encontrado</h1>
           <Button onClick={() => navigate("/explorar-cursos")}>
@@ -60,7 +59,7 @@ export default function CourseDetail() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
+      
       
       {/* Hero Section */}
       <div className="bg-gradient-hero py-16">

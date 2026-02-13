@@ -5,8 +5,6 @@ import { motion } from "framer-motion";
 import { Bookmark, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Navbar } from "@/components/layout/navbar";
-import { Footer } from "@/components/layout/footer";
 import { useAuth } from "@/hooks/useAuth";
 import { useSavedItems } from "@/hooks/useSavedItems";
 import { SavedAccordion } from "@/components/saved/SavedAccordion";
@@ -51,11 +49,9 @@ export default function FerramentasSalvos() {
   if (authLoading) {
     return (
       <div className="min-h-screen flex flex-col bg-background">
-        <Navbar />
         <main className="flex-1 flex items-center justify-center">
           <div className="animate-pulse text-muted-foreground">Carregando...</div>
         </main>
-        <Footer />
       </div>
     );
   }
@@ -76,7 +72,7 @@ export default function FerramentasSalvos() {
       </Helmet>
 
       <div className="min-h-screen flex flex-col bg-background">
-        <Navbar />
+        
 
         <main className="flex-1">
           {/* Hero Section */}
@@ -157,7 +153,7 @@ export default function FerramentasSalvos() {
           </section>
         </main>
 
-        <Footer />
+        
       </div>
     </>
   );

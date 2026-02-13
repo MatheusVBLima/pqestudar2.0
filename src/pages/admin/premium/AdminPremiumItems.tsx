@@ -1,7 +1,5 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Navbar } from '@/components/layout/navbar';
-import { Footer } from '@/components/layout/footer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -129,7 +127,6 @@ const AdminPremiumItems = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex flex-col">
-        <Navbar />
         <main className="flex-1 container max-w-6xl mx-auto px-4 py-8">
           <Skeleton className="h-10 w-64 mb-6" />
           <div className="space-y-4">
@@ -138,14 +135,13 @@ const AdminPremiumItems = () => {
             ))}
           </div>
         </main>
-        <Footer />
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <Navbar />
+      
       
       <main className="flex-1 container max-w-6xl mx-auto px-4 py-8">
         <Link 
@@ -265,7 +261,7 @@ const AdminPremiumItems = () => {
         )}
       </main>
 
-      <Footer />
+      
     </div>
   );
 };

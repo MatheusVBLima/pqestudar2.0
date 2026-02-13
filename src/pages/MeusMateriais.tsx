@@ -1,6 +1,4 @@
 import { useState } from "react";
-import { Navbar } from "@/components/layout/navbar";
-import { Footer } from "@/components/layout/footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -201,7 +199,7 @@ const MeusMateriais = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Navbar />
+      
       <main className="flex-1 container mx-auto px-4 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">Meus Materiais</h1>
@@ -343,7 +341,7 @@ const MeusMateriais = () => {
           </TabsContent>
         </Tabs>
       </main>
-      <Footer />
+      
     </div>
   );
 };

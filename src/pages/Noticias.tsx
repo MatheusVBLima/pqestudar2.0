@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Navbar } from "@/components/layout/navbar";
+
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -448,7 +448,7 @@ const Noticias = () => {
 
   return (
     <div className="min-h-screen bg-background overflow-x-hidden w-full">
-      <Navbar />
+      
 
       <main className="container mx-auto px-4 py-8 max-w-7xl w-full">
         {/* Admin Controls - Only visible to admins */}

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Navbar } from "@/components/layout/navbar";
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,7 +37,6 @@ const MeuPerfil = () => {
   if (!userProfile) {
     return (
       <div className="min-h-screen bg-background">
-        <Navbar />
         <main className="container mx-auto px-4 py-8">
           <p>Carregando perfil...</p>
         </main>
@@ -172,7 +171,7 @@ const MeuPerfil = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
+      
       
       <main className="container mx-auto px-4 py-8">
         {/* Header */}

@@ -1,6 +1,4 @@
 import { useState, useEffect } from 'react';
-import { Navbar } from '@/components/layout/navbar';
-import { Footer } from '@/components/layout/footer';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -77,7 +75,6 @@ const PremiumCourses = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex flex-col">
-        <Navbar />
         <main className="flex-1 container max-w-6xl mx-auto px-4 py-8">
           <Skeleton className="h-10 w-64 mb-6" />
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -86,14 +83,13 @@ const PremiumCourses = () => {
             ))}
           </div>
         </main>
-        <Footer />
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <Navbar />
+      
       
       <main className="flex-1 container max-w-6xl mx-auto px-4 py-8">
         <div className="flex items-center gap-3 mb-6">
@@ -217,7 +213,7 @@ const PremiumCourses = () => {
         )}
       </main>
 
-      <Footer />
+      
     </div>
   );
 };

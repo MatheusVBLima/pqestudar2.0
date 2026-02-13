@@ -1,5 +1,3 @@
-import { Navbar } from "@/components/layout/navbar";
-import { Footer } from "@/components/layout/footer";
 import { useEffect, useState, useRef } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -291,7 +289,7 @@ const Termos = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Navbar />
+      
       
       {/* Hero Premium */}
       <section className="relative bg-gradient-to-br from-primary/10 via-background to-background border-b overflow-hidden">
@@ -529,7 +527,7 @@ const Termos = () => {
         </div>
       </main>
 
-      <Footer />
+      
     </div>
   );
 };

@@ -1,5 +1,3 @@
-import { Navbar } from "@/components/layout/navbar";
-import { Footer } from "@/components/layout/footer";
 import {
   Shield,
   Search,
@@ -403,7 +401,7 @@ const Privacidade = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Navbar />
+      
 
       {/* Hero Section */}
       <section className="relative bg-gradient-to-br from-primary/10 via-background to-accent/10 py-16 md:py-24">
@@ -897,7 +895,7 @@ const Privacidade = () => {
         </div>
       </main>
 
-      <Footer />
+      
     </div>
   );
 };

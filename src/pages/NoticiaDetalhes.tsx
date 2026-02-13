@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { Navbar } from "@/components/layout/navbar";
+
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -198,7 +198,6 @@ const NoticiaDetalhes = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
-        <Navbar />
         <div className="container mx-auto px-4 py-8 text-center">
           <div className="animate-pulse">
             <div className="h-8 bg-muted rounded w-1/4 mx-auto mb-4"></div>
@@ -212,7 +211,6 @@ const NoticiaDetalhes = () => {
   if (!noticia) {
     return (
       <div className="min-h-screen bg-background">
-        <Navbar />
         <div className="container mx-auto px-4 py-8 text-center">
           <h1 className="text-2xl font-bold mb-4">Notícia não encontrada</h1>
           <Button onClick={() => navigate("/noticias")}>
@@ -278,7 +276,7 @@ const NoticiaDetalhes = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
+      
 
       <main className="container mx-auto px-4 py-8 max-w-4xl">
         {/* Botão Voltar */}
