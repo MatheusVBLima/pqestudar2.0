@@ -18,73 +18,66 @@ const PremiumUpgrade = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <Navbar />
-      
-      <main className="flex-1 container max-w-4xl mx-auto px-4 py-12">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center p-4 bg-primary/10 rounded-full mb-4">
-            <Lock className="h-8 w-8 text-primary" />
-          </div>
-          
-          <h1 className="text-3xl font-bold mb-4">
-            {subscription ? 'Sua assinatura expirou' : 'Acesso exclusivo para assinantes'}
-          </h1>
-          
-          <p className="text-muted-foreground max-w-lg mx-auto">
-            {subscription 
-              ? `Seu plano ${getPlanName()} não está mais ativo. Renove para continuar acessando o conteúdo premium.`
-              : 'A Área Premium oferece conteúdo exclusivo para impulsionar sua carreira.'
-            }
-          </p>
+    <main className="flex-1 container max-w-4xl mx-auto px-4 py-12">
+      <div className="text-center mb-8">
+        <div className="inline-flex items-center justify-center p-4 bg-primary/10 rounded-full mb-4">
+          <Lock className="h-8 w-8 text-primary" />
+        </div>
+        
+        <h1 className="text-3xl font-bold mb-4">
+          {subscription ? 'Sua assinatura expirou' : 'Acesso exclusivo para assinantes'}
+        </h1>
+        
+        <p className="text-muted-foreground max-w-lg mx-auto">
+          {subscription 
+            ? `Seu plano ${getPlanName()} não está mais ativo. Renove para continuar acessando o conteúdo premium.`
+            : 'A Área Premium oferece conteúdo exclusivo para impulsionar sua carreira.'
+          }
+        </p>
+      </div>
+
+      <Card className="mb-8">
+        <CardHeader className="text-center pb-2">
+          <Crown className="h-10 w-10 text-primary mx-auto mb-2" />
+          <CardTitle>Benefícios Premium</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ul className="space-y-3">
+            {benefits.map((benefit, index) => (
+              <li key={index} className="flex items-center gap-3">
+                <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0" />
+                <span>{benefit}</span>
+              </li>
+            ))}
+          </ul>
+        </CardContent>
+      </Card>
+
+      <div className="flex flex-col items-center gap-4">
+        <Button size="lg" className="w-full max-w-sm" asChild>
+          <a href="https://pqestudar.com/assinar" target="_blank" rel="noopener noreferrer">
+            Quero assinar agora
+            <ArrowRight className="ml-2 h-4 w-4" />
+          </a>
+        </Button>
+
+        <div className="text-center text-sm text-muted-foreground">
+          <p>Já tem um código de acesso?</p>
+          <Link to="/premium/resgatar" className="text-primary hover:underline">
+            Resgatar código
+          </Link>
         </div>
 
-        <Card className="mb-8">
-          <CardHeader className="text-center pb-2">
-            <Crown className="h-10 w-10 text-primary mx-auto mb-2" />
-            <CardTitle>Benefícios Premium</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-3">
-              {benefits.map((benefit, index) => (
-                <li key={index} className="flex items-center gap-3">
-                  <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0" />
-                  <span>{benefit}</span>
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
-
-        <div className="flex flex-col items-center gap-4">
-          {/* Link externo para compra - placeholder */}
-          <Button size="lg" className="w-full max-w-sm" asChild>
-            <a href="https://pqestudar.com/assinar" target="_blank" rel="noopener noreferrer">
-              Quero assinar agora
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </a>
-          </Button>
-
-          <div className="text-center text-sm text-muted-foreground">
-            <p>Já tem um código de acesso?</p>
-            <Link to="/premium/resgatar" className="text-primary hover:underline">
-              Resgatar código
+        {!user && (
+          <div className="text-center text-sm text-muted-foreground mt-4">
+            <p>Já é assinante?</p>
+            <Link to="/login" className="text-primary hover:underline">
+              Faça login
             </Link>
           </div>
-
-          {!user && (
-            <div className="text-center text-sm text-muted-foreground mt-4">
-              <p>Já é assinante?</p>
-              <Link to="/login" className="text-primary hover:underline">
-                Faça login
-              </Link>
-            </div>
-          )}
-        </div>
-      </main>
-
-      <Footer />
-    </div>
+        )}
+      </div>
+    </main>
   );
 };
 

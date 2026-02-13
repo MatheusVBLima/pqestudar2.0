@@ -98,35 +98,28 @@ const PremiumUpdateDetail = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex flex-col">
-        <main className="flex-1 container max-w-4xl mx-auto px-4 py-8">
-          <Skeleton className="h-10 w-64 mb-6" />
-          <Skeleton className="h-24 mb-8" />
-          <Skeleton className="h-64" />
-        </main>
-        <Footer />
-      </div>
+      <main className="flex-1 container max-w-4xl mx-auto px-4 py-8">
+        <Skeleton className="h-10 w-64 mb-6" />
+        <Skeleton className="h-24 mb-8" />
+        <Skeleton className="h-64" />
+      </main>
     );
   }
 
   if (!update) {
     return (
-      <div className="min-h-screen bg-background flex flex-col">
-        <Navbar />
-        <main className="flex-1 container max-w-4xl mx-auto px-4 py-8">
-          <div className="text-center py-12">
-            <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <p className="text-muted-foreground mb-4">Atualização não encontrada.</p>
-            <Button asChild>
-              <Link to="/premium/atualizacoes">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Voltar para atualizações
-              </Link>
-            </Button>
-          </div>
-        </main>
-        <Footer />
-      </div>
+      <main className="flex-1 container max-w-4xl mx-auto px-4 py-8">
+        <div className="text-center py-12">
+          <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+          <p className="text-muted-foreground mb-4">Atualização não encontrada.</p>
+          <Button asChild>
+            <Link to="/premium/atualizacoes">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Voltar para atualizações
+            </Link>
+          </Button>
+        </div>
+      </main>
     );
   }
 
@@ -200,78 +193,68 @@ const PremiumUpdateDetail = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <Navbar />
-      
-      <main className="flex-1 container max-w-4xl mx-auto px-4 py-8">
-        {/* Back link */}
-        <Link 
-          to="/premium/atualizacoes" 
-          className="inline-flex items-center text-muted-foreground hover:text-foreground mb-6"
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Voltar para atualizações
-        </Link>
+    <main className="flex-1 container max-w-4xl mx-auto px-4 py-8">
+      {/* Back link */}
+      <Link 
+        to="/premium/atualizacoes" 
+        className="inline-flex items-center text-muted-foreground hover:text-foreground mb-6"
+      >
+        <ArrowLeft className="mr-2 h-4 w-4" />
+        Voltar para atualizações
+      </Link>
 
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">{update.title}</h1>
-          {update.published_at && (
-            <p className="text-muted-foreground">
-              {format(new Date(update.published_at), "d 'de' MMMM 'de' yyyy", { locale: ptBR })}
-            </p>
-          )}
+      {/* Header */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold mb-2">{update.title}</h1>
+        {update.published_at && (
+          <p className="text-muted-foreground">
+            {format(new Date(update.published_at), "d 'de' MMMM 'de' yyyy", { locale: ptBR })}
+          </p>
+        )}
+      </div>
+
+      {update.highlight && (
+        <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 mb-8">
+          <p className="text-primary font-medium">{update.highlight}</p>
         </div>
+      )}
 
-        {/* Highlight */}
-        {update.highlight && (
-          <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 mb-8">
-            <p className="text-primary font-medium">{update.highlight}</p>
+      {update.intro && (
+        <p className="text-lg text-muted-foreground mb-8">{update.intro}</p>
+      )}
+
+      {courses.length > 0 && (
+        <section className="mb-12">
+          <div className="flex items-center gap-2 mb-4">
+            <BookOpen className="h-6 w-6 text-blue-500" />
+            <h2 className="text-2xl font-semibold">Cursos Adicionados</h2>
           </div>
-        )}
-
-        {/* Intro */}
-        {update.intro && (
-          <p className="text-lg text-muted-foreground mb-8">{update.intro}</p>
-        )}
-
-        {/* Courses Section */}
-        {courses.length > 0 && (
-          <section className="mb-12">
-            <div className="flex items-center gap-2 mb-4">
-              <BookOpen className="h-6 w-6 text-blue-500" />
-              <h2 className="text-2xl font-semibold">Cursos Adicionados</h2>
-            </div>
-            <div className="grid gap-6 md:grid-cols-2">
-              {courses.map(renderItemCard)}
-            </div>
-          </section>
-        )}
-
-        {/* Jobs Section */}
-        {jobs.length > 0 && (
-          <section className="mb-12">
-            <div className="flex items-center gap-2 mb-4">
-              <Briefcase className="h-6 w-6 text-green-500" />
-              <h2 className="text-2xl font-semibold">Vagas Adicionadas</h2>
-            </div>
-            <div className="grid gap-6 md:grid-cols-2">
-              {jobs.map(renderItemCard)}
-            </div>
-          </section>
-        )}
-
-        {courses.length === 0 && jobs.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-muted-foreground">
-              Esta atualização ainda não possui itens.
-            </p>
+          <div className="grid gap-6 md:grid-cols-2">
+            {courses.map(renderItemCard)}
           </div>
-        )}
-      </main>
+        </section>
+      )}
 
-      <Footer />
-    </div>
+      {jobs.length > 0 && (
+        <section className="mb-12">
+          <div className="flex items-center gap-2 mb-4">
+            <Briefcase className="h-6 w-6 text-green-500" />
+            <h2 className="text-2xl font-semibold">Vagas Adicionadas</h2>
+          </div>
+          <div className="grid gap-6 md:grid-cols-2">
+            {jobs.map(renderItemCard)}
+          </div>
+        </section>
+      )}
+
+      {courses.length === 0 && jobs.length === 0 && (
+        <div className="text-center py-12">
+          <p className="text-muted-foreground">
+            Esta atualização ainda não possui itens.
+          </p>
+        </div>
+      )}
+    </main>
   );
 };
 
