@@ -161,7 +161,7 @@ export function Navbar() {
                     Entrar
                   </Button>
                 ) : (
-                  <DropdownMenu>
+                  <DropdownMenu modal={false}>
                     <DropdownMenuTrigger asChild>
                       <Button
                         variant="ghost"
@@ -242,7 +242,7 @@ export function Navbar() {
           <div className="md:hidden flex items-center space-x-2">
             {user && <NotificationDropdown />}
             
-            <DropdownMenu>
+            <DropdownMenu modal={false}>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm" aria-label="Menu de navegação">
                   <Menu className="h-4 w-4" />

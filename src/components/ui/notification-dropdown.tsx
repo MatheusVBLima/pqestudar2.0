@@ -122,7 +122,7 @@ export const NotificationDropdown = () => {
   } = useNotifications();
 
   return (
-    <DropdownMenu>
+    <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="sm" className="hover:bg-accent relative">
           <Bell className="h-4 w-4" />
