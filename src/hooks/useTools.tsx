@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { toast } from '@/hooks/use-toast';
@@ -34,81 +34,81 @@ export interface ToolsResult {
   totalPages: number;
 }
 
+// --- Fetch functions ---
+
+async function fetchPublicTools(page: number, pageSize: number, tags: string[]) {
+  let query = supabase
+    .from('tools_public')
+    .select('*', { count: 'exact' });
+
+  if (tags.length > 0) {
+    query = query.overlaps('tags', tags);
+  }
+
+  const from = (page - 1) * pageSize;
+  const to = from + pageSize - 1;
+
+  const { data, error, count } = await query
+    .order('sort_order', { ascending: true })
+    .range(from, to);
+
+  if (error) throw error;
+  return { tools: (data || []) as Tool[], total: count || 0 };
+}
+
+async function fetchAdminTools() {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) throw new Error('Admin access requires authentication');
+
+  const { data, error } = await supabase.functions.invoke('admin-tools', {
+    body: { action: 'list' }
+  });
+
+  if (error) throw error;
+  return (data || []) as Tool[];
+}
+
+// --- Hook ---
+
 export const useTools = (options: UseToolsOptions = {}) => {
   const { includeInvisible = false, page = 1, pageSize = 12, tags = [] } = options;
   const { user } = useAuth();
-  const [tools, setTools] = useState<Tool[]>([]);
-  const [total, setTotal] = useState(0);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
 
-  const fetchTools = async () => {
-    try {
-      setLoading(true);
-      
-      if (includeInvisible) {
-        // Admin mode: busca via edge function com service role
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) throw new Error('Admin access requires authentication');
-        
-        const { data, error } = await supabase.functions.invoke('admin-tools', {
-          body: { action: 'list' }
-        });
-        
-        if (error) throw error;
-        
-        // Apply tag filter if provided
-        let filteredData = data || [];
-        if (tags.length > 0) {
-          filteredData = filteredData.filter((tool: Tool) => 
-            tool.tags.some(tag => tags.includes(tag))
-          );
-        }
-        
-        setTotal(filteredData.length);
-        setTools(filteredData);
-      } else {
-        // Public mode: usa VIEW 'tools_public' com paginação
-        let query = supabase
-          .from('tools_public')
-          .select('*', { count: 'exact' });
+  const sortedTagsString = [...tags].sort().join(',');
 
-        // Apply tag filter if provided
-        if (tags.length > 0) {
-          query = query.overlaps('tags', tags);
-        }
+  // Public query
+  const publicQuery = useQuery({
+    queryKey: ['tools_public', page, pageSize, sortedTagsString],
+    queryFn: () => fetchPublicTools(page, pageSize, tags),
+    enabled: !includeInvisible,
+    placeholderData: keepPreviousData,
+  });
 
-        // Get total count first
-        const { count } = await query;
-        setTotal(count || 0);
+  // Admin query (strict overrides)
+  const adminQuery = useQuery({
+    queryKey: ['tools_admin'],
+    queryFn: fetchAdminTools,
+    enabled: includeInvisible,
+    staleTime: 0,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
+  });
 
-        // Apply pagination
-        const from = (page - 1) * pageSize;
-        const to = from + pageSize - 1;
+  // Derive values based on mode
+  const isAdmin = includeInvisible;
+  const tools = isAdmin ? (adminQuery.data || []) : (publicQuery.data?.tools || []);
+  const total = isAdmin ? (adminQuery.data?.length || 0) : (publicQuery.data?.total || 0);
+  const loading = isAdmin ? adminQuery.isLoading : publicQuery.isLoading;
+  const totalPages = Math.ceil(total / pageSize);
 
-        const { data, error } = await query
-          .order('sort_order', { ascending: true })
-          .range(from, to);
-
-        if (error) throw error;
-        
-        setTools(data || []);
-      }
-    } catch (error: any) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('Erro ao buscar ferramentas:', error);
-      }
-      
-      if (includeInvisible) {
-        toast({
-          title: "Erro",
-          description: "Não foi possível carregar as ferramentas.",
-          variant: "destructive"
-        });
-      }
-    } finally {
-      setLoading(false);
-    }
+  // --- Invalidation helper ---
+  const invalidateAll = () => {
+    queryClient.invalidateQueries({ queryKey: ['tools_public'] });
+    queryClient.invalidateQueries({ queryKey: ['tools_admin'] });
   };
+
+  // --- Mutations ---
 
   const addTool = async (tool: Omit<Tool, 'id' | 'created_at' | 'updated_at' | 'created_by' | 'updated_by' | 'sort_order'>) => {
     try {
@@ -116,41 +116,22 @@ export const useTools = (options: UseToolsOptions = {}) => {
       if (!session) throw new Error('Usuário não autenticado');
 
       const { data, error } = await supabase.functions.invoke('admin-tools', {
-        body: {
-          action: 'create',
-          data: tool
-        }
+        body: { action: 'create', data: tool }
       });
 
       if (error) {
-        // Log detalhado em dev
         if (process.env.NODE_ENV === 'development') {
-          console.error('[useTools] Edge function error:', {
-            url: 'admin-tools',
-            method: 'POST',
-            status: error.status,
-            body: error
-          });
+          console.error('[useTools] Edge function error:', { url: 'admin-tools', method: 'POST', status: error.status, body: error });
         }
         throw error;
       }
 
-      await fetchTools();
-      toast({
-        title: "Sucesso",
-        description: "Ferramenta adicionada com sucesso!"
-      });
-      
+      invalidateAll();
+      toast({ title: "Sucesso", description: "Ferramenta adicionada com sucesso!" });
       return { data, error: null };
     } catch (err: any) {
-      // Extrair mensagem do JSON se disponível
       const message = err?.context?.message || err?.message || "Não foi possível adicionar a ferramenta.";
-      
-      toast({
-        title: "Erro",
-        description: message,
-        variant: "destructive"
-      });
+      toast({ title: "Erro", description: message, variant: "destructive" });
       return { data: null, error: err.message };
     }
   };
@@ -161,41 +142,22 @@ export const useTools = (options: UseToolsOptions = {}) => {
       if (!session) throw new Error('Usuário não autenticado');
 
       const { data, error } = await supabase.functions.invoke('admin-tools', {
-        body: {
-          action: 'update',
-          data: { id, ...updates }
-        }
+        body: { action: 'update', data: { id, ...updates } }
       });
 
       if (error) {
-        // Log detalhado em dev
         if (process.env.NODE_ENV === 'development') {
-          console.error('[useTools] Edge function error:', {
-            url: 'admin-tools',
-            method: 'PATCH',
-            status: error.status,
-            body: error
-          });
+          console.error('[useTools] Edge function error:', { url: 'admin-tools', method: 'PATCH', status: error.status, body: error });
         }
         throw error;
       }
 
-      await fetchTools();
-      toast({
-        title: "Sucesso",
-        description: "Ferramenta atualizada com sucesso!"
-      });
-      
+      invalidateAll();
+      toast({ title: "Sucesso", description: "Ferramenta atualizada com sucesso!" });
       return { data, error: null };
     } catch (err: any) {
-      // Extrair mensagem do JSON se disponível
       const message = err?.context?.message || err?.message || "Não foi possível atualizar a ferramenta.";
-      
-      toast({
-        title: "Erro",
-        description: message,
-        variant: "destructive"
-      });
+      toast({ title: "Erro", description: message, variant: "destructive" });
       return { data: null, error: err.message };
     }
   };
@@ -206,41 +168,22 @@ export const useTools = (options: UseToolsOptions = {}) => {
       if (!session) throw new Error('Usuário não autenticado');
 
       const { error } = await supabase.functions.invoke('admin-tools', {
-        body: {
-          action: 'delete',
-          data: { id }
-        }
+        body: { action: 'delete', data: { id } }
       });
 
       if (error) {
-        // Log detalhado em dev
         if (process.env.NODE_ENV === 'development') {
-          console.error('[useTools] Edge function error:', {
-            url: 'admin-tools',
-            method: 'DELETE',
-            status: error.status,
-            body: error
-          });
+          console.error('[useTools] Edge function error:', { url: 'admin-tools', method: 'DELETE', status: error.status, body: error });
         }
         throw error;
       }
 
-      await fetchTools();
-      toast({
-        title: "Sucesso",
-        description: "Ferramenta removida com sucesso!"
-      });
-      
+      invalidateAll();
+      toast({ title: "Sucesso", description: "Ferramenta removida com sucesso!" });
       return { error: null };
     } catch (err: any) {
-      // Extrair mensagem do JSON se disponível
       const message = err?.context?.message || err?.message || "Não foi possível remover a ferramenta.";
-      
-      toast({
-        title: "Erro",
-        description: message,
-        variant: "destructive"
-      });
+      toast({ title: "Erro", description: message, variant: "destructive" });
       return { error: err.message };
     }
   };
@@ -256,9 +199,9 @@ export const useTools = (options: UseToolsOptions = {}) => {
       items: reorderedTools.map((t, idx) => ({ id: t.id, name: t.name, newOrder: idx }))
     });
 
-    // Atualizar UI otimisticamente
-    const previousTools = [...tools];
-    setTools(reorderedTools);
+    // Optimistic update on admin cache
+    const previousAdmin = queryClient.getQueryData<Tool[]>(['tools_admin']);
+    queryClient.setQueryData(['tools_admin'], reorderedTools);
 
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -267,21 +210,13 @@ export const useTools = (options: UseToolsOptions = {}) => {
       const { error } = await supabase.functions.invoke('admin-tools', {
         body: {
           action: 'reorder',
-          data: { 
-            tools: reorderedTools.map((t, index) => ({ id: t.id, sort_order: index }))
-          }
+          data: { tools: reorderedTools.map((t, index) => ({ id: t.id, sort_order: index })) }
         }
       });
 
       if (error) {
-        // Log detalhado em dev
         if (process.env.NODE_ENV === 'development') {
-          console.error('[useTools] Edge function error:', {
-            url: 'admin-tools',
-            method: 'PATCH',
-            status: error.status,
-            body: error
-          });
+          console.error('[useTools] Edge function error:', { url: 'admin-tools', method: 'PATCH', status: error.status, body: error });
         }
         throw error;
       }
@@ -289,40 +224,24 @@ export const useTools = (options: UseToolsOptions = {}) => {
       const duration = Date.now() - startTime;
       console.log('[Tools Reorder] Success', { duration: `${duration}ms` });
 
-      await fetchTools();
-      toast({
-        title: "Ordem atualizada",
-        description: "A ordem das ferramentas foi salva com sucesso."
-      });
-
+      invalidateAll();
+      toast({ title: "Ordem atualizada", description: "A ordem das ferramentas foi salva com sucesso." });
       return { error: null };
     } catch (err: any) {
-      console.error('[Tools Reorder] Error', { 
-        error: err.message, 
-        duration: `${Date.now() - startTime}ms` 
-      });
+      console.error('[Tools Reorder] Error', { error: err.message, duration: `${Date.now() - startTime}ms` });
 
-      // Reverter para ordem anterior
-      setTools(previousTools);
+      // Rollback
+      if (previousAdmin) {
+        queryClient.setQueryData(['tools_admin'], previousAdmin);
+      }
 
-      // Extrair mensagem do JSON se disponível
       const message = err?.context?.message || err?.message || "Não foi possível salvar a nova ordem. Tente novamente.";
-
-      toast({
-        title: "Erro ao salvar ordem",
-        description: message,
-        variant: "destructive"
-      });
-
+      toast({ title: "Erro ao salvar ordem", description: message, variant: "destructive" });
       return { error: err.message };
     }
   };
 
-  useEffect(() => {
-    fetchTools();
-  }, [includeInvisible, page, pageSize, JSON.stringify(tags)]);
-
-  const totalPages = Math.ceil(total / pageSize);
+  const refetch = isAdmin ? adminQuery.refetch : publicQuery.refetch;
 
   return {
     tools,
@@ -336,6 +255,6 @@ export const useTools = (options: UseToolsOptions = {}) => {
     deleteTool,
     toggleVisible,
     reorderTools,
-    refetch: fetchTools
+    refetch,
   };
 };

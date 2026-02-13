@@ -152,6 +152,9 @@ export function useOportunidadesAdmin(statusFilter?: "ativo" | "lixeira") {
     refetch,
   } = useQuery({
     queryKey: ["oportunidades-admin", statusFilter],
+    staleTime: 0,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
     queryFn: async () => {
       const { data: session } = await supabase.auth.getSession();
       if (!session?.session?.access_token) {
