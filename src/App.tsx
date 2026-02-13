@@ -15,7 +15,7 @@ import CourseDetail from "./pages/CourseDetail";
 import Noticias from "./pages/Noticias";
 import NoticiaDetalhes from "./pages/NoticiaDetalhes";
 
-import Suporte from "./pages/Suporte";
+
 import MeuPerfil from "./pages/MeuPerfil";
 import MeusMateriais from "./pages/MeusMateriais";
 import RankingComunidade from "./pages/RankingComunidade";
@@ -27,17 +27,17 @@ import FAQ from "./pages/FAQ";
 import ConfiguracoesCookies from "./pages/ConfiguracoesCookies";
 
 import Login from "./pages/Login";
-import { ResetPassword } from "./pages/ResetPassword";
+
 import AdminCourses from "./pages/AdminCourses";
 import AdminBonusPages from "./pages/AdminBonusPages";
 import BonusPage from "./pages/BonusPage";
 import NotFound from "./pages/NotFound";
 import KitAceleracao from "./pages/KitAceleracao";
-import Parceiros from "./pages/Parceiros";
+
 import Assine from "./pages/Assine";
 import Ferramentas from "./pages/Ferramentas";
 import FerramentasSalvos from "./pages/FerramentasSalvos";
-import Links from "./pages/Links";
+
 import MapaDosBeneficios from "./pages/MapaDosBeneficios";
 import Concursos from "./pages/Concursos";
 import ConcursoDetalhe from "./pages/ConcursoDetalhe";
@@ -86,8 +86,6 @@ const AppWithPixel = () => {
     <Routes>
       {/* Standalone pages (no shared Navbar/Footer) */}
       <Route path="/login" element={<Login />} />
-      <Route path="/reset-password" element={<ResetPassword />} />
-      <Route path="/links" element={<Links />} />
       <Route path="/assine" element={<Assine />} />
       <Route path="/mapa-dos-beneficios" element={<MapaDosBeneficios />} />
 
@@ -102,7 +100,7 @@ const AppWithPixel = () => {
         <Route path="/meus-materiais" element={<MeusMateriais />} />
         <Route path="/meu-perfil" element={<MeuPerfil />} />
         <Route path="/ranking-comunidade" element={<RankingComunidade />} />
-        <Route path="/suporte" element={<Suporte />} />
+        
         <Route path="/sobre" element={<Sobre />} />
         <Route path="/termos" element={<Termos />} />
         <Route path="/privacidade" element={<Privacidade />} />
@@ -113,7 +111,7 @@ const AppWithPixel = () => {
         <Route path="/admin/cursos" element={<AdminCourses />} />
         <Route path="/admin/bonus" element={<AdminBonusPages />} />
         <Route path="/kit" element={<KitAceleracao />} />
-        <Route path="/parceiros" element={<Parceiros />} />
+        
         <Route path="/ferramentas" element={<Ferramentas />} />
         <Route path="/ferramentas/salvos" element={<FerramentasSalvos />} />
         <Route path="/concursos" element={<Concursos />} />
