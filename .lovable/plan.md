@@ -1,186 +1,124 @@
+```md
+# Plano: Migrar useTools para React Query + defaults globais de cache (com ajustes de refetch)
 
-# Plano: Tornar o hint "Ative o som" clicável
+## Confirmações dos 4 pontos (mantidas)
 
-## Resumo
-Modificar o componente `VSLWithSoundHint` na página `/mapa-dos-beneficios` para que o hint seja clicável. Ao clicar, o som do vídeo será ativado e o hint desaparecerá imediatamente.
+1. **Versão TanStack Query**: o projeto usa `@tanstack/react-query ^5.83.0` — **v5 confirmada**, portanto `gcTime` é o campo correto.
 
----
+2. **queryKey estável**: tags serão ordenadas (`[...tags].sort().join(',')`) antes de compor a key. O hook atual não tem `search`, então a key será: `['tools_public', page, pageSize, sortedTagsString]` para público e `['tools_admin']` para admin.
 
-## Desafio Técnico
+3. **Sem skeleton ao voltar**: usaremos `isLoading` (false quando há cache) para skeleton, e `placeholderData: keepPreviousData` para paginação. `isFetching` não afetará a UI.
 
-O `YouTubeLoopPlayer` atual **não expõe controle externo** do player (como `unMute()`). Para resolver isso, vou:
-
-1. **Modificar o `YouTubeLoopPlayer`** para aceitar um `ref` que exponha o método `unMute()`
-2. **Atualizar o `VSLWithSoundHint`** para usar esse ref e ativar o som ao clicar no hint
+4. **Invalidation por prefixo**: todas as mutations invalidarão `{ queryKey: ['tools_public'] }` e `{ queryKey: ['tools_admin'] }` (prefix match por padrão no v5).
 
 ---
 
-## Alterações
+## Ajustes adicionais (importante para não “congelar” dados stale)
 
-### 1. Arquivo: `src/components/ui/youtube-loop-player.tsx`
+### 5) **Não usar `refetchOnMount: false` no default global**
+Com `staleTime` de 5 minutos, já teremos cache imediato ao voltar rapidamente.
+Se mantivermos **`refetchOnMount: false` + `refetchOnWindowFocus: false`**, quando o dado ficar stale, ele pode **não atualizar ao remontar**, e o usuário pode ficar vendo dado antigo até uma invalidação ocorrer.
 
-**Adicionar suporte a `ref` com `forwardRef` e `useImperativeHandle`:**
+✅ Portanto, no default global:
+- **Remover `refetchOnMount`** (deixar comportamento padrão)
+  **ou**
+- Definir `refetchOnMount: true`
 
-```tsx
-// Expor interface do ref
-export interface YouTubeLoopPlayerRef {
-  unMute: () => void;
-  mute: () => void;
-}
+**Escolha recomendada:** **remover `refetchOnMount` do default** (menos agressivo e mais seguro).
 
-// Interface YTPlayer - adicionar métodos de som
-interface YTPlayer {
-  playVideo: () => void;
-  pauseVideo: () => void;
-  seekTo: (seconds: number, allowSeekAhead?: boolean) => void;
-  destroy: () => void;
-  unMute: () => void;  // NOVO
-  mute: () => void;    // NOVO
-}
+---
 
-// Converter para forwardRef
-const YouTubeLoopPlayer = React.forwardRef<YouTubeLoopPlayerRef, YouTubeLoopPlayerProps>(
-  ({ videoId, title, ariaLabel, className, style }, ref) => {
-    // ... código existente ...
+## Arquivos a alterar
 
-    // Expor métodos via ref
-    useImperativeHandle(ref, () => ({
-      unMute: () => {
-        playerRef.current?.unMute();
-        playerRef.current?.playVideo();
-      },
-      mute: () => {
-        playerRef.current?.mute();
-      },
-    }));
+### 1. `src/App.tsx` (linha 68)
 
-    // ... resto do código ...
-  }
-);
+Adicionar `defaultOptions` ao `QueryClient`:
+
+```ts
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000,
+      gcTime: 30 * 60 * 1000,
+      refetchOnWindowFocus: false,
+      // refetchOnMount: REMOVIDO (ou usar true) para não travar atualização quando stale
+      refetchOnReconnect: true,
+      retry: 2,
+    },
+  },
+});
+
 ```
 
-### 2. Arquivo: `src/pages/MapaDosBeneficios.tsx`
+> Observação: manter `refetchOnWindowFocus: false` é ok para reduzir ruído; a atualização quando stale ocorrerá no mount (comportamento padrão) e também em ações que invalidem cache.
 
-**Atualizar `VSLWithSoundHint` para usar o ref e tornar o hint clicável:**
+---
 
-```tsx
-import { useRef } from "react";
-import YouTubeLoopPlayer, { YouTubeLoopPlayerRef } from "@/components/ui/youtube-loop-player";
+### 2. `src/hooks/useTools.tsx` (reescrita completa)
 
-const VSLWithSoundHint = ({ videoId, title, ariaLabel, className }) => {
-  const [showSoundHint, setShowSoundHint] = useState(true);
-  const playerRef = useRef<YouTubeLoopPlayerRef>(null);
+Migrar de `useState/useEffect` para `useQuery` + `useQueryClient`:
 
-  useEffect(() => {
-    const timer = setTimeout(() => setShowSoundHint(false), 2500);
-    return () => clearTimeout(timer);
-  }, []);
+- **Leitura pública**: `useQuery` com key `['tools_public', page, pageSize, sortedTags]`, `placeholderData: keepPreviousData`
+- **Leitura admin**: `useQuery` com key `['tools_admin']`, overrides estritos (`staleTime: 0, refetchOnMount: true, refetchOnWindowFocus: true`)
+- **Mutations** (add/update/delete/toggleVisible/reorder): funções async que chamam edge function e depois `queryClient.invalidateQueries({ queryKey: ['tools_public'] })` + `['tools_admin']`
+- **Reorder**: manter optimistic update via `queryClient.setQueryData` com rollback
+- **Interface pública mantida**: `tools, total, loading, page, pageSize, totalPages, addTool, updateTool, deleteTool, toggleVisible, reorderTools, refetch`
+- `loading` mapeado para `isLoading` (false quando cache existe)
 
-  // Handler para ativar som (ao clicar no hint)
-  const handleActivateSound = () => {
-    playerRef.current?.unMute();
-    setShowSoundHint(false);
-  };
+#### Checks adicionais (para evitar fetch indevido/erros)
 
-  return (
-    <>
-      <YouTubeLoopPlayer
-        ref={playerRef}  // NOVO: ref para controle
-        videoId={videoId}
-        title={title}
-        ariaLabel={ariaLabel}
-        className={className}
-      />
-      
-      <AnimatePresence>
-        {showSoundHint && (
-          <motion.div
-            // ... animações existentes ...
-            className="absolute z-20 top-3 left-1/2 -translate-x-1/2 md:left-auto md:translate-x-0 md:right-4 md:top-4"
-            // REMOVIDO: pointer-events-none
-          >
-            <button
-              onClick={handleActivateSound}
-              className="inline-flex items-center gap-1.5 rounded-full bg-white/90 backdrop-blur-sm px-3 py-1.5 shadow-md ring-1 ring-black/5 cursor-pointer hover:bg-white transition-colors"
-              aria-label="Ativar som do vídeo"
-            >
-              <motion.span
-                animate={{ scale: [1, 1.15, 1] }}
-                transition={{ duration: 0.8, repeat: Infinity, ease: "easeInOut" }}
-                aria-hidden="true"
-              >
-                <Volume2 className="h-4 w-4 text-foreground" />
-              </motion.span>
-              <span className="text-sm font-medium text-foreground">Ative o som</span>
-            </button>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </>
-  );
-};
+- Garantir que query **admin** rode apenas quando estiver em modo admin e com permissão (usar `enabled` conforme o modo).
+- Se a área admin tiver paginação/filtros no futuro, considerar key admin mais específica; se não tiver, `['tools_admin']` está ok.
+
+---
+
+### 3. `src/hooks/useConcursosAdmin.tsx`
+
+Adicionar overrides nas queries `concursos-pending-items` e `concursos-analyzed-urls`:
+
+```ts
+staleTime: 0,
+refetchOnMount: true,
+refetchOnWindowFocus: true,
+
 ```
 
 ---
 
-## Detalhes Técnicos
+### 4. `src/hooks/useOportunidades.tsx`
 
-| Aspecto | Detalhe |
-|---------|---------|
-| Arquivos alterados | `youtube-loop-player.tsx`, `MapaDosBeneficios.tsx` |
-| Padrão usado | `forwardRef` + `useImperativeHandle` para expor API |
-| Métodos expostos | `unMute()`, `mute()` |
-| Elemento clicável | `<button>` com semântica correta |
-| Acessibilidade | `aria-label="Ativar som do vídeo"` |
-| Hover state | `hover:bg-white` para feedback visual |
+Adicionar overrides na query `oportunidades-admin`:
 
----
+```ts
+staleTime: 0,
+refetchOnMount: true,
+refetchOnWindowFocus: true,
 
-## Fluxo de Funcionamento
-
-```text
-┌─────────────────────────────────────────────────────────┐
-│  Página carrega                                         │
-│       ↓                                                 │
-│  Vídeo inicia MUDO (autoplay)                          │
-│       ↓                                                 │
-│  Hint "Ative o som" aparece (fade-in)                  │
-│       ↓                                                 │
-│  ┌─────────────────────────────────────────────────┐   │
-│  │  CAMINHO A: Usuário clica no hint               │   │
-│  │       ↓                                         │   │
-│  │  playerRef.unMute() → Som ativado               │   │
-│  │       ↓                                         │   │
-│  │  Hint some imediatamente (fade-out)             │   │
-│  └─────────────────────────────────────────────────┘   │
-│                                                         │
-│  ┌─────────────────────────────────────────────────┐   │
-│  │  CAMINHO B: Usuário não interage                │   │
-│  │       ↓                                         │   │
-│  │  setTimeout (2.5s)                              │   │
-│  │       ↓                                         │   │
-│  │  Hint some automaticamente (fade-out)           │   │
-│  └─────────────────────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────┘
 ```
 
----
-
-## Critérios de Aceite
-
-- [ ] Ao abrir `/mapa-dos-beneficios`, o hint aparece sobre o vídeo
-- [ ] Clicar no hint ativa o som do vídeo imediatamente
-- [ ] Clicar no hint faz o hint desaparecer instantaneamente
-- [ ] Se não clicar, o hint some sozinho após 2.5s
-- [ ] O ícone continua animando enquanto visível
-- [ ] Nenhuma outra rota foi afetada
-- [ ] O `YouTubeLoopPlayer` continua funcionando normalmente em outros contextos
+A query pública `oportunidades-public` herda defaults globais (5min stale).
 
 ---
 
-## Garantias de Escopo
+### 5. `src/hooks/useCurations.tsx`
 
-- O player existente não perde funcionalidades
-- A API exposta é **opcional** (componentes que não usam ref não são afetados)
-- Apenas 2 arquivos são modificados
-- Sem novas dependências
+Adicionar overrides nas queries admin (`curationKeys.list` e `curationKeys.detail`):
+
+```ts
+staleTime: 0,
+refetchOnMount: true,
+refetchOnWindowFocus: true,
+
+```
+
+A query pública `curationKeys.bySlug` herda defaults globais.
+
+---
+
+## Resultado esperado
+
+- `/ferramentas`: primeira visita faz fetch normal com skeleton. Navegar para outra página e voltar em menos de 5 minutos mostra dados do cache instantaneamente (sem skeleton).
+- Quando o cache ficar stale (após 5 min), ao voltar para a rota, a lista **continua aparecendo** (sem skeleton) e atualiza em background quando necessário.
+- Paginação e filtros: transição suave com `keepPreviousData`, sem piscar.
+- Admin/premium: continuam com refetch estrito (staleTime 0, refetchOnMount true, refetchOnWindowFocus true).
+- Nenhuma mudança de UI, rotas, layout ou lógica de negócio.
