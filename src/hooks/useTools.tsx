@@ -1,4 +1,4 @@
-import { useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { toast } from '@/hooks/use-toast';
@@ -82,7 +82,7 @@ export const useTools = (options: UseToolsOptions = {}) => {
     queryKey: ['tools_public', page, pageSize, sortedTagsString],
     queryFn: () => fetchPublicTools(page, pageSize, tags),
     enabled: !includeInvisible,
-    placeholderData: keepPreviousData,
+    placeholderData: (prev) => prev,
   });
 
   // Admin query (strict overrides)
