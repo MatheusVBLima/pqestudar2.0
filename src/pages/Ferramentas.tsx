@@ -59,6 +59,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { toast } from "@/hooks/use-toast";
+import { useAnalyticsTracker } from "@/hooks/useAnalyticsTracker";
 
 // Categorias disponíveis
 const CATEGORIES = [
@@ -189,6 +190,7 @@ function SortableToolCard({
   toggleVisible: (id: string, state: boolean) => void; 
   setDeleteTool: (t: Tool) => void; 
 }) {
+  const { track } = useAnalyticsTracker();
   const {
     attributes,
     listeners,
@@ -326,7 +328,17 @@ function SortableToolCard({
                     variant="outline"
                     size="sm"
                     className="flex-1"
-                    onClick={() => window.open(linkUrl, '_blank', 'noopener,noreferrer')}
+                    onClick={() => {
+                      const evtName = hasAttachment ? 'tool_card_click' : 'tool_outbound_click';
+                      track({
+                        event_name: evtName,
+                        entity_type: 'tool',
+                        entity_id: tool.id,
+                        path: '/ferramentas',
+                        meta: { tool_slug: tool.name, tool_tags: tool.tags },
+                      });
+                      window.open(linkUrl, '_blank', 'noopener,noreferrer');
+                    }}
                     aria-label={ariaLabel}
                     title={ariaLabel}
                     data-evt={hasAttachment ? "download_tool" : "access_tool"}
