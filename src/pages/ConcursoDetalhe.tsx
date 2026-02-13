@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import { useOportunidades, Oportunidade, FonteOportunidade } from "@/hooks/useOportunidades";
 import { useOportunidadeViewTracker } from "@/hooks/useOportunidadeViews";
+import { useConcursoReadTracker } from "@/hooks/useAnalyticsTracker";
 import { supabase } from "@/integrations/supabase/client";
 import { renderRichContentConcursos, renderUpdateText } from "@/lib/concursos-content-renderer";
 
@@ -152,6 +153,9 @@ export default function ConcursoDetalhe() {
     oportunidade?.views_total || oportunidade?.visualizacoes || 0
   );
 
+  // Analytics tracking (heartbeat, scroll depth, events)
+  const { trackEvent } = useConcursoReadTracker(oportunidade?.id, slug);
+
   useEffect(() => {
     async function loadOportunidade() {
       if (!slug) {
@@ -211,6 +215,7 @@ export default function ConcursoDetalhe() {
   }, [slug, fetchBySlug, navigate]);
 
   const handleShare = async () => {
+    trackEvent('concurso_share_click');
     const url = window.location.href;
     
     if (navigator.share) {
@@ -401,7 +406,7 @@ export default function ConcursoDetalhe() {
             {/* Edital link */}
             {oportunidade.link_edital && (
               <div className="mt-6">
-                <Button asChild size="lg">
+                <Button asChild size="lg" onClick={() => trackEvent('concurso_editais_click')}>
                   <a
                     href={oportunidade.link_edital}
                     target="_blank"

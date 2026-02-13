@@ -79,7 +79,7 @@ export type Database = {
           id?: string
           meta?: Json | null
           path?: string | null
-          session_id: string
+          session_id?: string
           user_id?: string | null
         }
         Update: {
