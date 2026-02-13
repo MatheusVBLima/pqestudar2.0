@@ -44,6 +44,7 @@ import ConcursoDetalhe from "./pages/ConcursoDetalhe";
 import CuradoriaPublic from "./pages/CuradoriaPublic";
 import AdminCuradoriasLista from "./pages/AdminCuradoriasLista";
 import AdminCuradoriasForm from "./pages/AdminCuradoriasForm";
+import AdminAnalytics from "./pages/admin/Analytics";
 
 // Premium imports
 import { RequireActiveSubscription } from "@/components/premium/RequireActiveSubscription";
@@ -110,6 +111,7 @@ const AppWithPixel = () => {
         
         <Route path="/admin/cursos" element={<AdminCourses />} />
         <Route path="/admin/bonus" element={<AdminBonusPages />} />
+        <Route path="/admin/analytics" element={<AdminAnalytics />} />
         <Route path="/kit" element={<KitAceleracao />} />
         
         <Route path="/ferramentas" element={<Ferramentas />} />
