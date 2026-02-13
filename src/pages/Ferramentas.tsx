@@ -26,8 +26,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Navbar } from "@/components/layout/navbar";
-import { Footer } from "@/components/layout/footer";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { useTools, Tool, UseToolsOptions } from "@/hooks/useTools";
 import { ToolModal } from "@/components/admin/ToolModal";
@@ -579,7 +577,7 @@ export default function Ferramentas() {
       </Helmet>
 
       <div className="min-h-screen flex flex-col bg-background">
-        <Navbar />
+        
 
         <main className="flex-1">
           {/* Hero Section */}
@@ -983,7 +981,7 @@ export default function Ferramentas() {
           )}
         </main>
 
-        <Footer />
+        
       </div>
 
       {/* Modais */}

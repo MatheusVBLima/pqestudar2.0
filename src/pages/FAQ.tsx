@@ -1,5 +1,3 @@
-import { Navbar } from "@/components/layout/navbar";
-import { Footer } from "@/components/layout/footer";
 import { HelpCircle, ChevronDown } from "lucide-react";
 import {
   Accordion,
@@ -64,7 +62,7 @@ const FAQ = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Navbar />
+      
       <main className="flex-1">
         <div className="container mx-auto px-4 py-16 max-w-4xl">
           <div className="text-center mb-12">
@@ -116,7 +114,7 @@ const FAQ = () => {
           </div>
         </div>
       </main>
-      <Footer />
+      
     </div>
   );
 };

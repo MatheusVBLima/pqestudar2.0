@@ -1,7 +1,5 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Navbar } from '@/components/layout/navbar';
-import { Footer } from '@/components/layout/footer';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -80,7 +78,6 @@ const PremiumRedeem = () => {
   if (!authLoading && user && isActive()) {
     return (
       <div className="min-h-screen bg-background flex flex-col">
-        <Navbar />
         <main className="flex-1 container max-w-lg mx-auto px-4 py-12">
           <Card>
             <CardHeader className="text-center">
@@ -97,7 +94,6 @@ const PremiumRedeem = () => {
             </CardContent>
           </Card>
         </main>
-        <Footer />
       </div>
     );
   }
@@ -105,7 +101,6 @@ const PremiumRedeem = () => {
   if (success) {
     return (
       <div className="min-h-screen bg-background flex flex-col">
-        <Navbar />
         <main className="flex-1 container max-w-lg mx-auto px-4 py-12">
           <Card>
             <CardHeader className="text-center">
@@ -120,14 +115,13 @@ const PremiumRedeem = () => {
             </CardContent>
           </Card>
         </main>
-        <Footer />
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <Navbar />
+      
       
       <main className="flex-1 container max-w-lg mx-auto px-4 py-12">
         <Card>
@@ -179,7 +173,7 @@ const PremiumRedeem = () => {
         </Card>
       </main>
 
-      <Footer />
+      
     </div>
   );
 };

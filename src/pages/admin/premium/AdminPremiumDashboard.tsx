@@ -1,6 +1,4 @@
 import { Link } from 'react-router-dom';
-import { Navbar } from '@/components/layout/navbar';
-import { Footer } from '@/components/layout/footer';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Crown, BookOpen, Briefcase, Calendar, LayoutGrid, Users, Ticket, ArrowRight } from 'lucide-react';
 
@@ -45,7 +43,7 @@ const AdminPremiumDashboard = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <Navbar />
+      
       
       <main className="flex-1 container max-w-6xl mx-auto px-4 py-8">
         <div className="flex items-center gap-3 mb-8">
@@ -78,7 +76,7 @@ const AdminPremiumDashboard = () => {
         </div>
       </main>
 
-      <Footer />
+      
     </div>
   );
 };

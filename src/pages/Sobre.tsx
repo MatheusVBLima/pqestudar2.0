@@ -1,5 +1,3 @@
-import { Navbar } from "@/components/layout/navbar";
-import { Footer } from "@/components/layout/footer";
 import { useEffect } from "react";
 import { motion } from "framer-motion";
 import sobreImage from "@/assets/sobre-matheus-new.png";
@@ -27,9 +25,7 @@ const Sobre = () => {
       }
     };
   }, []);
-  return <div className="min-h-screen flex flex-col">
-      <Navbar />
-      
+  return <>
       {/* Hero Split-Screen */}
       <section className="relative overflow-hidden">
         <div className="grid lg:grid-cols-2 min-h-[600px] lg:min-h-[700px]">
@@ -76,8 +72,6 @@ const Sobre = () => {
 
       {/* Redes Sociais */}
       <AboutSocialLinks />
-
-      <Footer />
-    </div>;
+    </>;
 };
 export default Sobre;

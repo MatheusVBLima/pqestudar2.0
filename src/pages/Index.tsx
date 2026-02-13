@@ -2,9 +2,6 @@ import { Helmet } from "react-helmet";
 import { HeroSection } from "@/components/sections/hero-section";
 import { SocialProofSection } from "@/components/sections/social-proof-section";
 
-import { Navbar } from "@/components/layout/navbar";
-import { Footer } from "@/components/layout/footer";
-
 const Index = () => {
   const siteUrl = window.location.origin;
 
@@ -21,7 +18,7 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col overflow-x-hidden w-full">
+    <>
       <Helmet>
         <title>PqEstudar: Os Segredos da Internet, Revelados.</title>
         <meta 
@@ -33,13 +30,11 @@ const Index = () => {
         </script>
       </Helmet>
 
-      <Navbar />
       <main className="flex-1">
         <HeroSection />
         <SocialProofSection />
       </main>
-      <Footer isHomePage />
-    </div>
+    </>
   );
 };
 

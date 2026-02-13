@@ -4,8 +4,6 @@ import { motion } from "framer-motion";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Navbar } from "@/components/layout/navbar";
-import { Footer } from "@/components/layout/footer";
 import { SaveToolButton } from "@/components/ui/save-tool-button";
 import { useCurationBySlug } from "@/hooks/useCurations";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -89,7 +87,6 @@ export default function CuradoriaPublic() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex flex-col bg-background">
-        <Navbar />
         <main className="flex-1 container mx-auto px-4 py-12">
           <Skeleton className="h-10 w-1/3 mb-4" />
           <Skeleton className="h-6 w-2/3 mb-8" />
@@ -99,7 +96,6 @@ export default function CuradoriaPublic() {
             ))}
           </div>
         </main>
-        <Footer />
       </div>
     );
   }
@@ -111,7 +107,6 @@ export default function CuradoriaPublic() {
           <title>Página não encontrada | Pq Estudar</title>
           <meta name="robots" content="noindex" />
         </Helmet>
-        <Navbar />
         <main className="flex-1 container mx-auto px-4 py-12 flex flex-col items-center justify-center text-center">
           <h1 className="text-4xl font-bold mb-4">Curadoria não encontrada</h1>
           <p className="text-muted-foreground mb-8">
@@ -122,7 +117,6 @@ export default function CuradoriaPublic() {
             Voltar para Ferramentas
           </Button>
         </main>
-        <Footer />
       </div>
     );
   }
@@ -133,7 +127,7 @@ export default function CuradoriaPublic() {
         <title>{curation.title} | Pq Estudar</title>
         <meta name="description" content={curation.description || `Curadoria de ferramentas: ${curation.title}`} />
       </Helmet>
-      <Navbar />
+      
       <main className="flex-1 container mx-auto px-4 py-12">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -180,7 +174,7 @@ export default function CuradoriaPublic() {
           )}
         </motion.div>
       </main>
-      <Footer />
+      
     </div>
   );
 }

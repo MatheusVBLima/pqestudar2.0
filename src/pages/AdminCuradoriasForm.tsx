@@ -18,8 +18,6 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Navbar } from "@/components/layout/navbar";
-import { Footer } from "@/components/layout/footer";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { useTools, Tool } from "@/hooks/useTools";
 import {
@@ -266,7 +264,6 @@ export default function AdminCuradoriasForm() {
   if (loadingRoles || (isEditing && loadingCuration)) {
     return (
       <div className="min-h-screen flex flex-col bg-background">
-        <Navbar />
         <main className="flex-1 container mx-auto px-4 py-8">
           <Skeleton className="h-10 w-1/3 mb-8" />
           <div className="grid lg:grid-cols-2 gap-8">
@@ -278,7 +275,6 @@ export default function AdminCuradoriasForm() {
             <Skeleton className="h-96 w-full" />
           </div>
         </main>
-        <Footer />
       </div>
     );
   }
@@ -289,7 +285,7 @@ export default function AdminCuradoriasForm() {
         <title>{isEditing ? "Editar Curadoria" : "Nova Curadoria"} | Admin</title>
         <meta name="robots" content="noindex, nofollow" />
       </Helmet>
-      <Navbar />
+      
       <main className="flex-1 container mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">
@@ -482,7 +478,7 @@ export default function AdminCuradoriasForm() {
           </div>
         </div>
       </main>
-      <Footer />
+      
     </div>
   );
 }

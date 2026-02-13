@@ -1,7 +1,5 @@
 import { useEffect, useState } from "react";
 import { useParams, Navigate, useLocation } from "react-router-dom";
-import { Navbar } from "@/components/layout/navbar";
-import { Footer } from "@/components/layout/footer";
 import { supabase } from "@/integrations/supabase/client";
 import { BonusPage as BonusPageType } from "@/hooks/useBonusPages";
 import { useUserRoles } from "@/hooks/useUserRoles";
@@ -67,7 +65,7 @@ const BonusPage = () => {
       </Helmet>
 
       <div className="min-h-screen flex flex-col">
-        <Navbar />
+        
         
         <main className="flex-1 container mx-auto px-4 py-12">
           <div className="max-w-5xl mx-auto space-y-12">
@@ -99,7 +97,7 @@ const BonusPage = () => {
           </div>
         </main>
 
-        <Footer />
+        
       </div>
     </>;
 };

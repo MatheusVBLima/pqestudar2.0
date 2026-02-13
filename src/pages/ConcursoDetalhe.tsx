@@ -4,8 +4,6 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { motion } from "framer-motion";
 import { Helmet } from "react-helmet";
-import { Navbar } from "@/components/layout/navbar";
-import { Footer } from "@/components/layout/footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -251,7 +249,6 @@ export default function ConcursoDetalhe() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex flex-col bg-background">
-        <Navbar />
         <main className="flex-1 container mx-auto px-4 py-8 max-w-4xl">
           <Skeleton className="h-8 w-32 mb-8" />
           <Skeleton className="h-12 w-3/4 mb-4" />
@@ -261,7 +258,6 @@ export default function ConcursoDetalhe() {
             <Skeleton className="h-32 w-full" />
           </div>
         </main>
-        <Footer />
       </div>
     );
   }
@@ -272,7 +268,6 @@ export default function ConcursoDetalhe() {
         <Helmet>
           <meta name="robots" content="noindex, nofollow" />
         </Helmet>
-        <Navbar />
         <main className="flex-1 container mx-auto px-4 py-16 max-w-4xl text-center">
           <AlertCircle className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
           <h1 className="text-2xl font-bold mb-2">
@@ -288,7 +283,6 @@ export default function ConcursoDetalhe() {
             </Link>
           </Button>
         </main>
-        <Footer />
       </div>
     );
   }
@@ -324,7 +318,7 @@ export default function ConcursoDetalhe() {
         </script>
       </Helmet>
 
-      <Navbar />
+      
       
       <main className="flex-1 container mx-auto px-4 py-8 max-w-4xl">
         {/* Breadcrumbs */}
@@ -675,7 +669,7 @@ export default function ConcursoDetalhe() {
         </motion.article>
       </main>
 
-      <Footer />
+      
     </div>
   );
 }

@@ -55,8 +55,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Navbar } from "@/components/layout/navbar";
-import { Footer } from "@/components/layout/footer";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { useCurationsList, useCurationMutations, CurationPage } from "@/hooks/useCurations";
 import { toast } from "@/hooks/use-toast";
@@ -117,7 +115,7 @@ export default function AdminCuradoriasLista() {
         <title>Gerenciar Curadorias | Admin</title>
         <meta name="robots" content="noindex, nofollow" />
       </Helmet>
-      <Navbar />
+      
       <main className="flex-1 container mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
@@ -280,7 +278,7 @@ export default function AdminCuradoriasLista() {
           </div>
         )}
       </main>
-      <Footer />
+      
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>

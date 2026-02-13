@@ -1,6 +1,4 @@
 import { useState, useEffect } from "react";
-import { Navbar } from "@/components/layout/navbar";
-import { Footer } from "@/components/layout/footer";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { Navigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
@@ -205,7 +203,7 @@ const AdminBrevo = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Navbar />
+      
       <main className="flex-1 container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-3xl font-bold mb-2">Configuração Brevo</h1>
@@ -425,7 +423,7 @@ const AdminBrevo = () => {
           </Tabs>
         </div>
       </main>
-      <Footer />
+      
     </div>
   );
 };

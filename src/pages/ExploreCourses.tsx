@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, Filter, BookOpen, Clock, Users, Star, TrendingUp, Eye, MoreHorizontal, Bell, BellOff, Settings, Gift, Presentation, ChevronDown, ChevronUp } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { Navbar } from "@/components/layout/navbar";
+
 import { CourseCard } from "@/components/ui/course-card";
 import { useCourses } from "@/hooks/useCourses";
 import { useAuth } from "@/hooks/useAuth";
@@ -204,7 +204,7 @@ export default function ExploreCourses() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
+      
       
       {/* Header */}
       <div className="bg-gradient-hero py-20">

@@ -1,6 +1,4 @@
 import { Link } from 'react-router-dom';
-import { Navbar } from '@/components/layout/navbar';
-import { Footer } from '@/components/layout/footer';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useSubscription } from '@/hooks/useSubscription';
@@ -42,7 +40,7 @@ const PremiumHome = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <Navbar />
+      
       
       <main className="flex-1 container max-w-6xl mx-auto px-4 py-8">
         {/* Header */}
@@ -95,7 +93,7 @@ const PremiumHome = () => {
         </div>
       </main>
 
-      <Footer />
+      
     </div>
   );
 };
