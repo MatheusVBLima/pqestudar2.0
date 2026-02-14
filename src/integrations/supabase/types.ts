@@ -828,6 +828,83 @@ export type Database = {
           },
         ]
       }
+      insights_audit_findings: {
+        Row: {
+          audit_type: string
+          created_at: string
+          id: string
+          issues: Json
+          path: string
+          raw: Json
+          run_id: string
+          score: number
+          url: string
+        }
+        Insert: {
+          audit_type: string
+          created_at?: string
+          id?: string
+          issues?: Json
+          path: string
+          raw?: Json
+          run_id: string
+          score?: number
+          url: string
+        }
+        Update: {
+          audit_type?: string
+          created_at?: string
+          id?: string
+          issues?: Json
+          path?: string
+          raw?: Json
+          run_id?: string
+          score?: number
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "insights_audit_findings_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "insights_audit_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      insights_audit_runs: {
+        Row: {
+          audit_type: string
+          created_at: string
+          finished_at: string | null
+          id: string
+          scheduled_for: string | null
+          started_at: string | null
+          status: string
+          summary: Json | null
+        }
+        Insert: {
+          audit_type: string
+          created_at?: string
+          finished_at?: string | null
+          id?: string
+          scheduled_for?: string | null
+          started_at?: string | null
+          status?: string
+          summary?: Json | null
+        }
+        Update: {
+          audit_type?: string
+          created_at?: string
+          finished_at?: string | null
+          id?: string
+          scheduled_for?: string | null
+          started_at?: string | null
+          status?: string
+          summary?: Json | null
+        }
+        Relationships: []
+      }
       itens_brutos: {
         Row: {
           ano_alvo: number

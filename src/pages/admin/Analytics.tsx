@@ -7,6 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BarChart3 } from "lucide-react";
 import SeoAuditSection from "@/components/admin/SeoAuditSection";
+import CopywritingAuditSection from "@/components/admin/CopywritingAuditSection";
 import {
   Table,
   TableBody,
@@ -218,6 +219,8 @@ export default function AdminAnalytics() {
       </Section>
       {/* SEO Audit */}
       <SeoAuditSection />
+      {/* Copywriting Audit */}
+      <CopywritingAuditSection />
     </main>
   );
 }
