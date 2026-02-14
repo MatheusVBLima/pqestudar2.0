@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BarChart3 } from "lucide-react";
+import SeoAuditSection from "@/components/admin/SeoAuditSection";
 import {
   Table,
   TableBody,
@@ -215,6 +216,8 @@ export default function AdminAnalytics() {
           </TableBody>
         </Table>
       </Section>
+      {/* SEO Audit */}
+      <SeoAuditSection />
     </main>
   );
 }
