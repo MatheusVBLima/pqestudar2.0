@@ -35,3 +35,6 @@ verify_jwt = false
 
 [functions.seo-audit-run]
 verify_jwt = false
+
+[functions.insights-copywriting-audit]
+verify_jwt = false
