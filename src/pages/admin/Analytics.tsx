@@ -3,9 +3,18 @@ import { useUserRoles } from "@/hooks/useUserRoles";
 import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BarChart3 } from "lucide-react";
+
+const INSIGHTS_QUERY_OPTS = {
+  staleTime: 10 * 60 * 1000,
+  gcTime: 30 * 60 * 1000,
+  refetchOnMount: false as const,
+  refetchOnWindowFocus: false as const,
+  refetchOnReconnect: false as const,
+  placeholderData: keepPreviousData,
+};
 import SeoAuditSection from "@/components/admin/SeoAuditSection";
 import CopywritingAuditSection from "@/components/admin/CopywritingAuditSection";
 import {
@@ -74,8 +83,7 @@ export default function AdminAnalytics() {
       return data as { entity_id: string; tool_label: string; click_count: number }[];
     },
     enabled: isAdmin,
-    staleTime: 0,
-    refetchOnMount: true,
+    ...INSIGHTS_QUERY_OPTS,
   });
 
   const avgRead = useQuery({
@@ -89,8 +97,7 @@ export default function AdminAnalytics() {
       return data as { entity_id: string; concurso_label: string; avg_read_seconds: number; total_sessions: number }[];
     },
     enabled: isAdmin,
-    staleTime: 0,
-    refetchOnMount: true,
+    ...INSIGHTS_QUERY_OPTS,
   });
 
   const eventCounts = useQuery({
@@ -104,8 +111,7 @@ export default function AdminAnalytics() {
       return data as { entity_id: string; concurso_label: string; opens: number; edital_clicks: number; saves: number; shares: number }[];
     },
     enabled: isAdmin,
-    staleTime: 0,
-    refetchOnMount: true,
+    ...INSIGHTS_QUERY_OPTS,
   });
 
   // Guard: loading

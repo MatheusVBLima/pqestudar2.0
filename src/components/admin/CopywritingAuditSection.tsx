@@ -1,5 +1,14 @@
 import { useState, useMemo } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
+
+const INSIGHTS_CACHE = {
+  staleTime: 10 * 60 * 1000,
+  gcTime: 30 * 60 * 1000,
+  refetchOnMount: false as const,
+  refetchOnWindowFocus: false as const,
+  refetchOnReconnect: false as const,
+  placeholderData: keepPreviousData,
+};
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -101,6 +110,7 @@ export default function CopywritingAuditSection() {
       if (error) throw error;
       return data as AuditRun[];
     },
+    ...INSIGHTS_CACHE,
   });
 
   const runs = runsQuery.data || [];
@@ -120,6 +130,7 @@ export default function CopywritingAuditSection() {
       return data as unknown as Finding[];
     },
     enabled: !!activeRunId,
+    ...INSIGHTS_CACHE,
   });
 
   // Compare
@@ -136,6 +147,7 @@ export default function CopywritingAuditSection() {
       return data as unknown as Finding[];
     },
     enabled: !!compareRunId,
+    ...INSIGHTS_CACHE,
   });
 
   // All issues flattened
@@ -195,7 +207,7 @@ export default function CopywritingAuditSection() {
 
   // ─── Render ───
 
-  if (runsQuery.isLoading) {
+  if (runsQuery.isLoading && !runsQuery.data) {
     return (
       <section className="space-y-4">
         <Skeleton className="h-8 w-48" />
