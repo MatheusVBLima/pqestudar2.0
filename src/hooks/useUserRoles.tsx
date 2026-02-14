@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 
@@ -12,70 +12,47 @@ export interface UserRole {
   updated_at: string;
 }
 
+const ADMIN_CACHE = {
+  staleTime: 10 * 60 * 1000,
+  gcTime: 30 * 60 * 1000,
+  refetchOnMount: false as const,
+  refetchOnWindowFocus: false as const,
+  refetchOnReconnect: false as const,
+  retry: 0,
+};
+
 export const useUserRoles = () => {
   const { user } = useAuth();
-  const [userRoles, setUserRoles] = useState<UserRole[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(false);
 
-  const fetchUserRoles = async () => {
-    if (!user) {
-      setUserRoles([]);
-      setIsAdmin(false);
-      setLoading(false);
-      return;
-    }
-
-    try {
-      setLoading(true);
-      
-      // Use edge function for server-side admin check (não consulta user_roles diretamente)
-      const { data: adminData, error: adminError } = await supabase.functions.invoke('check-admin');
-
-      if (adminError) {
-        console.error('Error checking admin status:', adminError);
-        setIsAdmin(false);
-      } else {
-        setIsAdmin(adminData?.isAdmin || false);
+  const adminQuery = useQuery({
+    queryKey: ['check-admin', user?.id ?? 'anon'],
+    queryFn: async () => {
+      if (!user) return { isAdmin: false };
+      const { data, error } = await supabase.functions.invoke('check-admin');
+      if (error) {
+        console.error('Error checking admin status:', error);
+        return { isAdmin: false };
       }
+      return { isAdmin: data?.isAdmin || false };
+    },
+    enabled: !!user,
+    ...ADMIN_CACHE,
+  });
 
-      // Don't fetch user_roles directly from client anymore
-      // Admin operations should use edge functions with service role
-      setUserRoles([]);
-    } catch (error) {
-      console.error('Error fetching user roles:', error);
-      setUserRoles([]);
-      setIsAdmin(false);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const isAdmin = adminQuery.data?.isAdmin ?? false;
+  const loading = adminQuery.isLoading;
 
-  const hasRole = (role: AppRole): boolean => {
-    return userRoles.some(userRole => userRole.role === role);
-  };
+  const hasRole = (_role: AppRole): boolean => false;
 
   const assignRole = async (userId: string, role: AppRole) => {
     try {
       const { data, error } = await supabase
         .from('user_roles')
-        .insert([{
-          user_id: userId,
-          role: role
-        }])
+        .insert([{ user_id: userId, role }])
         .select()
         .single();
-
       if (error) throw error;
-      
-      // Atualizar estado local se for o usuário atual
-      if (userId === user?.id) {
-        setUserRoles(prev => [...prev, data]);
-        if (role === 'admin') {
-          setIsAdmin(true);
-        }
-      }
-      
+      if (userId === user?.id) adminQuery.refetch();
       return { data, error: null };
     } catch (err: any) {
       return { data: null, error: err.message };
@@ -89,34 +66,21 @@ export const useUserRoles = () => {
         .delete()
         .eq('user_id', userId)
         .eq('role', role);
-
       if (error) throw error;
-      
-      // Atualizar estado local se for o usuário atual
-      if (userId === user?.id) {
-        setUserRoles(prev => prev.filter(r => r.role !== role));
-        if (role === 'admin') {
-          setIsAdmin(false);
-        }
-      }
-      
+      if (userId === user?.id) adminQuery.refetch();
       return { error: null };
     } catch (err: any) {
       return { error: err.message };
     }
   };
 
-  useEffect(() => {
-    fetchUserRoles();
-  }, [user]);
-
   return {
-    userRoles,
+    userRoles: [] as UserRole[],
     isAdmin,
     loading,
     hasRole,
     assignRole,
     removeRole,
-    refetch: fetchUserRoles
+    refetch: adminQuery.refetch,
   };
 };
