@@ -1,5 +1,14 @@
 import { useState, useMemo } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
+
+const INSIGHTS_CACHE = {
+  staleTime: 10 * 60 * 1000,
+  gcTime: 30 * 60 * 1000,
+  refetchOnMount: false as const,
+  refetchOnWindowFocus: false as const,
+  refetchOnReconnect: false as const,
+  placeholderData: keepPreviousData,
+};
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -116,6 +125,7 @@ export default function SeoAuditSection() {
       if (error) throw error;
       return data as AuditRun[];
     },
+    ...INSIGHTS_CACHE,
   });
 
   const runs = runsQuery.data || [];
@@ -134,6 +144,7 @@ export default function SeoAuditSection() {
       return data as AuditUrl[];
     },
     enabled: !!activeRunId,
+    ...INSIGHTS_CACHE,
   });
 
   const findingsQuery = useQuery({
@@ -148,6 +159,7 @@ export default function SeoAuditSection() {
       return data as AuditFinding[];
     },
     enabled: !!activeRunId,
+    ...INSIGHTS_CACHE,
   });
 
   // Compare run data
@@ -163,6 +175,7 @@ export default function SeoAuditSection() {
       return data as AuditUrl[];
     },
     enabled: !!compareRunId,
+    ...INSIGHTS_CACHE,
   });
 
   const compareFindingsQuery = useQuery({
@@ -177,6 +190,7 @@ export default function SeoAuditSection() {
       return data as AuditFinding[];
     },
     enabled: !!compareRunId,
+    ...INSIGHTS_CACHE,
   });
 
   // Drilldown findings
@@ -226,7 +240,7 @@ export default function SeoAuditSection() {
 
   // ─── Render ───
 
-  if (runsQuery.isLoading) {
+  if (runsQuery.isLoading && !runsQuery.data) {
     return (
       <section className="space-y-4">
         <Skeleton className="h-8 w-48" />
