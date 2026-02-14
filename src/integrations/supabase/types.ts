@@ -1677,6 +1677,164 @@ export type Database = {
           },
         ]
       }
+      seo_audit_findings: {
+        Row: {
+          category: string
+          evidence: string | null
+          fix: string | null
+          id: string
+          impact: string
+          issue: string
+          meta: Json | null
+          priority: number
+          run_id: string
+          url_id: string
+        }
+        Insert: {
+          category: string
+          evidence?: string | null
+          fix?: string | null
+          id?: string
+          impact: string
+          issue: string
+          meta?: Json | null
+          priority?: number
+          run_id: string
+          url_id: string
+        }
+        Update: {
+          category?: string
+          evidence?: string | null
+          fix?: string | null
+          id?: string
+          impact?: string
+          issue?: string
+          meta?: Json | null
+          priority?: number
+          run_id?: string
+          url_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seo_audit_findings_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "seo_audit_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "seo_audit_findings_url_id_fkey"
+            columns: ["url_id"]
+            isOneToOne: false
+            referencedRelation: "seo_audit_urls"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      seo_audit_runs: {
+        Row: {
+          created_at: string
+          finished_at: string | null
+          id: string
+          scheduled: boolean
+          started_at: string | null
+          status: string
+          summary: Json | null
+          urls_count: number
+        }
+        Insert: {
+          created_at?: string
+          finished_at?: string | null
+          id?: string
+          scheduled?: boolean
+          started_at?: string | null
+          status?: string
+          summary?: Json | null
+          urls_count?: number
+        }
+        Update: {
+          created_at?: string
+          finished_at?: string | null
+          id?: string
+          scheduled?: boolean
+          started_at?: string | null
+          status?: string
+          summary?: Json | null
+          urls_count?: number
+        }
+        Relationships: []
+      }
+      seo_audit_urls: {
+        Row: {
+          canonical: string | null
+          content_type: string | null
+          h1: string | null
+          h1_count: number
+          h2_count: number
+          health: string
+          id: string
+          meta_description: string | null
+          og_present: boolean
+          path: string
+          robots_meta: string | null
+          run_id: string
+          schema_types: string[]
+          score: number
+          status_code: number | null
+          title: string | null
+          ttfb_ms: number | null
+          url: string
+        }
+        Insert: {
+          canonical?: string | null
+          content_type?: string | null
+          h1?: string | null
+          h1_count?: number
+          h2_count?: number
+          health?: string
+          id?: string
+          meta_description?: string | null
+          og_present?: boolean
+          path: string
+          robots_meta?: string | null
+          run_id: string
+          schema_types?: string[]
+          score?: number
+          status_code?: number | null
+          title?: string | null
+          ttfb_ms?: number | null
+          url: string
+        }
+        Update: {
+          canonical?: string | null
+          content_type?: string | null
+          h1?: string | null
+          h1_count?: number
+          h2_count?: number
+          health?: string
+          id?: string
+          meta_description?: string | null
+          og_present?: boolean
+          path?: string
+          robots_meta?: string | null
+          run_id?: string
+          schema_types?: string[]
+          score?: number
+          status_code?: number | null
+          title?: string | null
+          ttfb_ms?: number | null
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seo_audit_urls_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "seo_audit_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       subscriptions: {
         Row: {
           created_at: string
