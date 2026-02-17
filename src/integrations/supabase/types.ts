@@ -1580,6 +1580,33 @@ export type Database = {
           },
         ]
       }
+      page_views: {
+        Row: {
+          created_at: string
+          id: string
+          meta: Json | null
+          path: string
+          session_id: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          meta?: Json | null
+          path: string
+          session_id: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          meta?: Json | null
+          path?: string
+          session_id?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       partners: {
         Row: {
           created_at: string
@@ -2674,6 +2701,22 @@ export type Database = {
       }
     }
     Functions: {
+      admin_overview_activity: {
+        Args: { p_limit?: number }
+        Returns: {
+          entity: string
+          event: string
+          event_date: string
+        }[]
+      }
+      admin_overview_stats: { Args: never; Returns: Json }
+      admin_overview_visitors_chart: {
+        Args: never
+        Returns: {
+          day: string
+          visitors: number
+        }[]
+      }
       analytics_concurso_avg_read: {
         Args: { end_at: string; start_at: string }
         Returns: {
