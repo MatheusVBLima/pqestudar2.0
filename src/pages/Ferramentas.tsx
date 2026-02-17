@@ -593,64 +593,59 @@ export default function Ferramentas() {
 
         <main className="flex-1">
           {/* Hero Section */}
-          <section className="pt-24 pb-12 px-4 sm:px-6 lg:px-8">
-            <div className="container max-w-7xl mx-auto">
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex-1">
-                  <motion.h1
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5 }}
-                    className="text-4xl sm:text-5xl md:text-6xl font-bold text-foreground mb-4">
+          <section className="relative bg-gradient-to-br from-primary/10 via-background to-background border-b overflow-hidden">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,hsl(var(--primary)/0.1),transparent_50%)]" />
+            <div className="container mx-auto px-6 py-16 md:py-20 relative">
+              <motion.div
+                className="max-w-3xl"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}>
+                <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight mb-6 bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
+                  O Arsenal de Ferramentas{" "}
+                  <span className="bg-gradient-primary bg-clip-text text-transparent">
+                    Secretas.
+                  </span>
+                </h1>
+                <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
+                  A curadoria completa das ferramentas e hacks que viralizaram.
+                  Explore por categoria e acelere seus resultados.
+                </p>
+              </motion.div>
+            </div>
+          </section>
 
-                    O Arsenal de Ferramentas{" "}
-                    <span className="bg-gradient-primary bg-clip-text text-transparent">
-                      Secretas.
-                    </span>
-                  </motion.h1>
-                  <motion.p
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.1 }}
-                    className="text-lg sm:text-xl text-muted-foreground">
-
-                    A curadoria completa das ferramentas e hacks que viralizaram.
-                    Explore por categoria e acelere seus resultados.
-                  </motion.p>
-                </div>
-
-                {/* Switch de Gerenciamento (apenas admin) - Skeleton durante loading */}
-                {loadingRoles ?
-                <div className="flex items-center gap-3 ml-6">
-                    <Skeleton className="h-6 w-12 rounded-full" />
-                    <Skeleton className="h-4 w-40 rounded" />
-                  </div> :
+          {/* Admin Toggle */}
+          {(loadingRoles || effectiveAdmin) &&
+          <section className="px-4 sm:px-6 lg:px-8 pt-6">
+            <div className="container max-w-7xl mx-auto flex justify-end">
+              {loadingRoles ?
+                <div className="flex items-center gap-3">
+                  <Skeleton className="h-6 w-12 rounded-full" />
+                  <Skeleton className="h-4 w-40 rounded" />
+                </div> :
                 effectiveAdmin ?
                 <motion.div
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.5, delay: 0.2 }}
-                  className="flex items-center gap-3 ml-6">
-
-                    <Switch
+                  className="flex items-center gap-3">
+                  <Switch
                     id="management-mode"
                     checked={isManagementMode}
                     onCheckedChange={setIsManagementMode}
                     data-testid="admin-toggle" />
-
-                    <Label htmlFor="management-mode" className="cursor-pointer whitespace-nowrap flex items-center gap-2">
-                      Modo de Gerenciamento
-                      {forceAdmin && isDev &&
-                    <Badge variant="secondary" className="text-xs">
-                          Admin ON
-                        </Badge>
+                  <Label htmlFor="management-mode" className="cursor-pointer whitespace-nowrap flex items-center gap-2">
+                    Modo de Gerenciamento
+                    {forceAdmin && isDev &&
+                      <Badge variant="secondary" className="text-xs">Admin ON</Badge>
                     }
-                    </Label>
-                  </motion.div> :
+                  </Label>
+                </motion.div> :
                 null}
-              </div>
             </div>
           </section>
+          }
 
           {/* Controles Admin */}
           {isManagementMode && effectiveAdmin &&
