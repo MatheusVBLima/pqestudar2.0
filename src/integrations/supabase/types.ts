@@ -2797,7 +2797,9 @@ export type Database = {
         Args: { p_audit_type: string }
         Returns: {
           issue_count: number
+          issues: Json
           path: string
+          raw: Json
           run_date: string
           score: number
           url: string
