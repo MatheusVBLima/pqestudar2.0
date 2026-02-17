@@ -12,9 +12,10 @@ interface DataTableProps {
   columns: Column[];
   rows?: Record<string, ReactNode>[];
   emptyMessage?: string;
+  onRowClick?: (index: number) => void;
 }
 
-export function DataTable({ title, columns, rows, emptyMessage = 'Nenhum dado disponível' }: DataTableProps) {
+export function DataTable({ title, columns, rows, emptyMessage = 'Nenhum dado disponível', onRowClick }: DataTableProps) {
   return (
     <Card>
       <CardHeader className="pb-3">
@@ -32,7 +33,11 @@ export function DataTable({ title, columns, rows, emptyMessage = 'Nenhum dado di
           <TableBody>
             {rows && rows.length > 0 ? (
               rows.map((row, i) => (
-                <TableRow key={i}>
+                <TableRow
+                  key={i}
+                  className={onRowClick ? 'cursor-pointer hover:bg-muted/50' : ''}
+                  onClick={() => onRowClick?.(i)}
+                >
                   {columns.map((col) => (
                     <TableCell key={col.key}>{row[col.key] ?? '—'}</TableCell>
                   ))}

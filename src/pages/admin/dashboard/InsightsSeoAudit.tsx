@@ -3,6 +3,7 @@ import { PageHeader } from '@/components/admin/dashboard/PageHeader';
 import { PeriodSelector, Period } from '@/components/admin/dashboard/PeriodSelector';
 import { ChartCard } from '@/components/admin/dashboard/ChartCard';
 import { DataTable } from '@/components/admin/dashboard/DataTable';
+import { AuditDetailDrawer } from '@/components/admin/dashboard/AuditDetailDrawer';
 import { periodToRange } from '@/components/admin/dashboard/periodHelper';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -15,9 +16,20 @@ import { toast } from 'sonner';
 
 const AUDIT_TYPE = 'seo';
 
+interface Finding {
+  url: string;
+  path: string;
+  score: number;
+  issue_count: number;
+  run_date: string;
+  issues: Array<{ issue: string; category: string; impact: string; evidence: string; fix: string; priority: number }>;
+  raw: Record<string, unknown>;
+}
+
 export default function InsightsSeoAudit() {
   const qc = useQueryClient();
   const [period, setPeriod] = useState<Period>('all');
+  const [drawerIdx, setDrawerIdx] = useState<number | null>(null);
   const range = periodToRange(period);
 
   const { data: history } = useQuery({
@@ -56,7 +68,7 @@ export default function InsightsSeoAudit() {
         p_audit_type: AUDIT_TYPE,
       });
       if (error) throw error;
-      return (data as { url: string; path: string; score: number; issue_count: number; run_date: string }[]) ?? [];
+      return (data as Finding[]) ?? [];
     },
     staleTime: 10 * 60 * 1000,
   });
@@ -68,6 +80,15 @@ export default function InsightsSeoAudit() {
     issues: String(f.issue_count),
     date: format(new Date(f.run_date), 'dd/MM/yyyy HH:mm', { locale: ptBR }),
   }));
+
+  const selectedFinding = drawerIdx != null && findings?.[drawerIdx]
+    ? {
+        ...findings[drawerIdx],
+        issues: Array.isArray(findings[drawerIdx].issues) ? findings[drawerIdx].issues : [],
+        raw: (findings[drawerIdx].raw as Record<string, unknown>) ?? {},
+        audit_type: 'seo' as const,
+      }
+    : null;
 
   const runAudit = useMutation({
     mutationFn: async () => {
@@ -141,6 +162,13 @@ export default function InsightsSeoAudit() {
           { key: 'date', label: 'Data' },
         ]}
         rows={tableRows}
+        onRowClick={(i) => setDrawerIdx(i)}
+      />
+
+      <AuditDetailDrawer
+        open={drawerIdx != null}
+        onOpenChange={(open) => { if (!open) setDrawerIdx(null); }}
+        finding={selectedFinding}
       />
     </div>
   );
