@@ -85,15 +85,12 @@ function analyze(parsed: ParsedPage, path: string): { score: number; health: str
     findings.push({ meta: {}, ...f });
   };
 
-  // Status code
   if (parsed.status_code !== 200) {
     score -= 50;
     add({ category: 'crawlability', issue: `HTTP status ${parsed.status_code}`, impact: 'High', evidence: `Status code: ${parsed.status_code}`, fix: 'Ensure the page returns 200.', priority: 1 });
   }
 
-  // Robots blocking
   if (parsed.robots_meta && /noindex/i.test(parsed.robots_meta)) {
-    // Check if it's a secret bonus page that SHOULD have noindex
     const secretPaths = ['/acesso-kit-partida-8h3z', '/curadoria-conteudo-ia-k4f9', '/acervo-video-prod-b7g1', '/metodos-automacao-w2p5', '/recursos-alta-performance-z9x0'];
     if (!secretPaths.includes(path)) {
       score -= 40;
@@ -101,7 +98,6 @@ function analyze(parsed: ParsedPage, path: string): { score: number; health: str
     }
   }
 
-  // Title
   if (!parsed.title) {
     score -= 15;
     add({ category: 'on-page', issue: 'Missing title tag', impact: 'High', evidence: 'No <title> found.', fix: 'Add a unique, descriptive title tag under 60 characters.', priority: 1 });
@@ -116,7 +112,6 @@ function analyze(parsed: ParsedPage, path: string): { score: number; health: str
     }
   }
 
-  // Meta description
   if (!parsed.meta_description) {
     score -= 10;
     add({ category: 'on-page', issue: 'Missing meta description', impact: 'Medium', evidence: 'No meta description found.', fix: 'Add a compelling meta description under 160 characters.', priority: 2 });
@@ -128,13 +123,11 @@ function analyze(parsed: ParsedPage, path: string): { score: number; health: str
     }
   }
 
-  // Canonical
   if (!parsed.canonical) {
     score -= 10;
     add({ category: 'indexation', issue: 'Missing canonical tag', impact: 'Medium', evidence: 'No <link rel="canonical"> found.', fix: 'Add a self-referencing canonical tag.', priority: 2 });
   }
 
-  // H1
   if (parsed.h1_count === 0) {
     score -= 10;
     add({ category: 'on-page', issue: 'Missing H1', impact: 'Medium', evidence: 'No H1 tag found on page.', fix: 'Add exactly one H1 tag with the primary keyword.', priority: 2 });
@@ -143,19 +136,16 @@ function analyze(parsed: ParsedPage, path: string): { score: number; health: str
     add({ category: 'on-page', issue: 'Multiple H1 tags', impact: 'Medium', evidence: `Found ${parsed.h1_count} H1 tags.`, fix: 'Use exactly one H1 per page.', priority: 3, meta: { count: parsed.h1_count } });
   }
 
-  // OG tags
   if (!parsed.og_present) {
     score -= 5;
     add({ category: 'on-page', issue: 'Missing Open Graph tags', impact: 'Low', evidence: 'No og:title/og:description/og:image found.', fix: 'Add OG tags for better social sharing.', priority: 4 });
   }
 
-  // JSON-LD
   if (parsed.schema_types.length === 0) {
     score -= 5;
     add({ category: 'technical', issue: 'No structured data (JSON-LD)', impact: 'Low', evidence: 'No JSON-LD scripts found.', fix: 'Add relevant schema.org structured data.', priority: 4 });
   }
 
-  // TTFB
   if (parsed.ttfb_ms > 2500) {
     score -= 5;
     add({ category: 'technical', issue: 'Slow TTFB', impact: 'Medium', evidence: `TTFB: ${parsed.ttfb_ms}ms`, fix: 'Optimize server response time to under 800ms.', priority: 3, meta: { ttfb_ms: parsed.ttfb_ms } });
@@ -203,10 +193,14 @@ Deno.serve(async (req) => {
     }
   }
 
-  // Create run
+  // Create run in the UNIFIED insights_audit_runs table
   const { data: run, error: runErr } = await supabaseAdmin
-    .from('seo_audit_runs')
-    .insert({ status: 'running', scheduled: isScheduled, started_at: new Date().toISOString() })
+    .from('insights_audit_runs')
+    .insert({
+      audit_type: 'seo',
+      status: 'running',
+      started_at: new Date().toISOString(),
+    })
     .select('id')
     .single();
 
@@ -221,7 +215,7 @@ Deno.serve(async (req) => {
     // Build URL list
     const urls = STATIC_PATHS.map(p => ({ url: `${SITE_BASE}${p}`, path: p }));
 
-    // Sample concursos slugs - try analytics first, fallback to recent
+    // Sample concursos slugs
     let slugs: string[] = [];
     try {
       const { data: topConcursos } = await supabaseAdmin
@@ -233,7 +227,6 @@ Deno.serve(async (req) => {
         .limit(100);
 
       if (topConcursos && topConcursos.length > 0) {
-        // Count by entity_id, take top N
         const counts: Record<string, number> = {};
         for (const e of topConcursos) {
           if (e.entity_id) counts[e.entity_id] = (counts[e.entity_id] || 0) + 1;
@@ -245,7 +238,6 @@ Deno.serve(async (req) => {
       }
     } catch { /* ignore analytics errors */ }
 
-    // Fallback: get recent published oportunidades
     if (slugs.length < MAX_SLUG_SAMPLE) {
       const needed = MAX_SLUG_SAMPLE - slugs.length;
       const { data: recent } = await supabaseAdmin
@@ -265,11 +257,9 @@ Deno.serve(async (req) => {
       }
     }
 
-    // entity_id from analytics may be the UUID, need to resolve slug
-    // Try to resolve UUIDs to slugs
+    // Resolve UUIDs to slugs
     const resolvedSlugs: string[] = [];
     for (const s of slugs) {
-      // Check if it looks like a UUID
       if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s)) {
         const { data: op } = await supabaseAdmin
           .from('oportunidades')
@@ -332,67 +322,46 @@ Deno.serve(async (req) => {
         summaryByImpact[f.impact as keyof typeof summaryByImpact] = (summaryByImpact[f.impact as keyof typeof summaryByImpact] || 0) + 1;
       }
 
-      // Insert URL
-      const { data: urlRow, error: urlErr } = await supabaseAdmin
-        .from('seo_audit_urls')
+      // Insert into UNIFIED insights_audit_findings table
+      const issuesJsonb = findings.map(f => ({
+        category: f.category,
+        issue: f.issue,
+        impact: f.impact,
+        evidence: f.evidence,
+        fix: f.fix,
+        priority: f.priority,
+      }));
+
+      const { error: findingErr } = await supabaseAdmin
+        .from('insights_audit_findings')
         .insert({
           run_id: runId,
+          audit_type: 'seo',
           url: target.url,
           path: target.path,
-          status_code: parsed.status_code,
-          ttfb_ms: parsed.ttfb_ms,
-          content_type: parsed.content_type,
-          canonical: parsed.canonical,
-          robots_meta: parsed.robots_meta,
-          title: parsed.title,
-          meta_description: parsed.meta_description,
-          h1: parsed.h1,
-          h1_count: parsed.h1_count,
-          h2_count: parsed.h2_count,
-          og_present: parsed.og_present,
-          schema_types: parsed.schema_types,
           score,
-          health,
-        })
-        .select('id')
-        .single();
+          issues: issuesJsonb,
+          raw: { parsed, health },
+        });
 
-      if (urlErr || !urlRow) {
-        console.error(`Failed to insert URL ${target.path}:`, urlErr);
-        continue;
-      }
-
-      // Insert findings
-      if (findings.length > 0) {
-        const findingsRows = findings.map(f => ({
-          run_id: runId,
-          url_id: urlRow.id,
-          category: f.category,
-          issue: f.issue,
-          impact: f.impact,
-          evidence: f.evidence,
-          fix: f.fix,
-          priority: f.priority,
-          meta: f.meta,
-        }));
-        const { error: fErr } = await supabaseAdmin.from('seo_audit_findings').insert(findingsRows);
-        if (fErr) console.error(`Failed to insert findings for ${target.path}:`, fErr);
+      if (findingErr) {
+        console.error(`Failed to insert finding for ${target.path}:`, findingErr);
       }
     }
 
     // Update run summary
     const avgScore = urls.length > 0 ? Math.round(totalScore / urls.length) : 0;
     await supabaseAdmin
-      .from('seo_audit_runs')
+      .from('insights_audit_runs')
       .update({
-        status: 'success',
+        status: 'completed',
         finished_at: new Date().toISOString(),
-        urls_count: urls.length,
         summary: {
           avg_score: avgScore,
           health: avgScore >= 85 ? 'good' : avgScore >= 65 ? 'ok' : 'poor',
           issues: summaryByImpact,
           total_findings: summaryByImpact.High + summaryByImpact.Medium + summaryByImpact.Low,
+          urls_count: urls.length,
         },
       })
       .eq('id', runId);
@@ -404,7 +373,7 @@ Deno.serve(async (req) => {
   } catch (err) {
     console.error('Audit failed:', err);
     await supabaseAdmin
-      .from('seo_audit_runs')
+      .from('insights_audit_runs')
       .update({ status: 'failed', finished_at: new Date().toISOString() })
       .eq('id', runId);
 

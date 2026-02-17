@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useSavedItems, SavedItemMetadata } from "@/hooks/useSavedItems";
+import { useAnalyticsTracker } from "@/hooks/useAnalyticsTracker";
 import { cn } from "@/lib/utils";
 
 interface SaveContestButtonProps {
@@ -23,6 +24,7 @@ export function SaveContestButton({
   const navigate = useNavigate();
   const { user } = useAuth();
   const { isSaved, toggleSave, isToggling } = useSavedItems();
+  const { track } = useAnalyticsTracker();
 
   const saved = isSaved('contest', contestId);
   const toggling = isToggling('contest', contestId);
@@ -33,6 +35,16 @@ export function SaveContestButton({
     if (!user) {
       navigate("/login");
       return;
+    }
+
+    // Track save/unsave event for analytics
+    if (!saved) {
+      track({
+        event_name: 'concurso_save_click',
+        entity_type: 'concurso',
+        entity_id: contestId,
+        meta: { contest_title: contestTitle },
+      });
     }
 
     await toggleSave('contest', contestId, metadata);
