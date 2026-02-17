@@ -216,14 +216,14 @@ export default function Votacoes() {
 
         {/* Admin toggle */}
         {effectiveAdmin && !loadingRoles && (
-          <div className="flex items-center justify-between mb-6 p-4 rounded-lg border bg-card">
-            <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4 mb-4">
+            <div className="flex items-center gap-2">
               <Switch
                 id="management-mode"
                 checked={isManagement}
                 onCheckedChange={setIsManagement}
               />
-              <Label htmlFor="management-mode" className="cursor-pointer font-medium">
+              <Label htmlFor="management-mode" className="text-sm font-medium">
                 Modo de Gerenciamento
               </Label>
             </div>
