@@ -597,7 +597,7 @@ export default function Ferramentas() {
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,hsl(var(--primary)/0.1),transparent_50%)]" />
             <div className="container mx-auto px-6 py-16 md:py-20 relative">
               <motion.div
-                className="max-w-3xl"
+                className="max-w-5xl"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}>
