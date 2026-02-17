@@ -4,7 +4,7 @@ import {
   Crown, Package, CalendarDays, Users, Ticket, ChevronDown,
 } from 'lucide-react';
 import {
-  Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
+  Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent,
   SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader,
 } from '@/components/ui/sidebar';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -28,8 +28,8 @@ const premiumItems = [
 export function AdminSidebar() {
   const { pathname } = useLocation();
   const isActive = (href: string) => pathname === href;
-  const isInsightsOpen = pathname.startsWith('/admin/insights');
-  const isPremiumOpen = pathname.startsWith('/admin/premium');
+  const isInsightsActive = pathname.startsWith('/admin/insights');
+  const isPremiumActive = pathname.startsWith('/admin/premium');
 
   return (
     <Sidebar className="border-r" collapsible="icon">
@@ -40,13 +40,20 @@ export function AdminSidebar() {
         </Link>
       </SidebarHeader>
 
-      <SidebarContent>
+      <SidebarContent className="px-2 py-3">
         {/* Overview */}
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={pathname === '/admin'}>
+                <SidebarMenuButton
+                  asChild
+                  isActive={pathname === '/admin'}
+                  className={cn(
+                    'rounded-md font-medium',
+                    pathname === '/admin' && 'bg-primary/10 text-primary font-semibold'
+                  )}
+                >
                   <Link to="/admin">
                     <LayoutDashboard className="h-4 w-4" />
                     <span>Overview</span>
@@ -59,27 +66,47 @@ export function AdminSidebar() {
 
         {/* Insights */}
         <SidebarGroup>
-          <Collapsible defaultOpen={isInsightsOpen}>
-            <CollapsibleTrigger className="flex w-full items-center justify-between px-2 py-1.5 text-xs font-medium text-muted-foreground uppercase tracking-wider hover:text-foreground transition-colors">
+          <Collapsible defaultOpen={isInsightsActive}>
+            <CollapsibleTrigger
+              className={cn(
+                'flex w-full items-center justify-between px-3 py-2 text-sm rounded-md transition-colors',
+                'hover:bg-muted',
+                isInsightsActive
+                  ? 'font-semibold text-foreground'
+                  : 'font-medium text-muted-foreground'
+              )}
+            >
               <div className="flex items-center gap-2">
-                <BarChart3 className="h-3.5 w-3.5" />
+                <BarChart3 className={cn('h-4 w-4', isInsightsActive && 'text-primary')} />
                 <span className="group-data-[collapsible=icon]:hidden">Insights</span>
               </div>
-              <ChevronDown className="h-3.5 w-3.5 transition-transform group-data-[collapsible=icon]:hidden [[data-state=open]>&]:rotate-180" />
+              <ChevronDown className="h-3.5 w-3.5 transition-transform duration-200 group-data-[collapsible=icon]:hidden [[data-state=open]>&]:rotate-180" />
             </CollapsibleTrigger>
             <CollapsibleContent>
               <SidebarGroupContent>
-                <SidebarMenu>
-                  {insightsItems.map((item) => (
-                    <SidebarMenuItem key={item.href}>
-                      <SidebarMenuButton asChild isActive={isActive(item.href)}>
-                        <Link to={item.href}>
-                          <item.icon className="h-4 w-4" />
-                          <span>{item.title}</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  ))}
+                <SidebarMenu className="mt-1">
+                  {insightsItems.map((item) => {
+                    const active = isActive(item.href);
+                    return (
+                      <SidebarMenuItem key={item.href}>
+                        <SidebarMenuButton
+                          asChild
+                          isActive={active}
+                          className={cn(
+                            'rounded-md pl-9 text-sm',
+                            active
+                              ? 'bg-primary/10 text-primary font-semibold'
+                              : 'text-muted-foreground font-normal hover:text-foreground'
+                          )}
+                        >
+                          <Link to={item.href}>
+                            <item.icon className={cn('h-3.5 w-3.5', active ? 'text-primary' : 'text-muted-foreground')} />
+                            <span>{item.title}</span>
+                          </Link>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    );
+                  })}
                 </SidebarMenu>
               </SidebarGroupContent>
             </CollapsibleContent>
@@ -91,7 +118,14 @@ export function AdminSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={pathname.startsWith('/admin/curadorias')}>
+                <SidebarMenuButton
+                  asChild
+                  isActive={pathname.startsWith('/admin/curadorias')}
+                  className={cn(
+                    'rounded-md font-medium',
+                    pathname.startsWith('/admin/curadorias') && 'bg-primary/10 text-primary font-semibold'
+                  )}
+                >
                   <Link to="/admin/curadorias">
                     <BookOpen className="h-4 w-4" />
                     <span>Curadorias</span>
@@ -104,27 +138,47 @@ export function AdminSidebar() {
 
         {/* Admin Premium */}
         <SidebarGroup>
-          <Collapsible defaultOpen={isPremiumOpen}>
-            <CollapsibleTrigger className="flex w-full items-center justify-between px-2 py-1.5 text-xs font-medium text-muted-foreground uppercase tracking-wider hover:text-foreground transition-colors">
+          <Collapsible defaultOpen={isPremiumActive}>
+            <CollapsibleTrigger
+              className={cn(
+                'flex w-full items-center justify-between px-3 py-2 text-sm rounded-md transition-colors',
+                'hover:bg-muted',
+                isPremiumActive
+                  ? 'font-semibold text-foreground'
+                  : 'font-medium text-muted-foreground'
+              )}
+            >
               <div className="flex items-center gap-2">
-                <Crown className="h-3.5 w-3.5" />
+                <Crown className={cn('h-4 w-4', isPremiumActive && 'text-primary')} />
                 <span className="group-data-[collapsible=icon]:hidden">Admin Premium</span>
               </div>
-              <ChevronDown className="h-3.5 w-3.5 transition-transform group-data-[collapsible=icon]:hidden [[data-state=open]>&]:rotate-180" />
+              <ChevronDown className="h-3.5 w-3.5 transition-transform duration-200 group-data-[collapsible=icon]:hidden [[data-state=open]>&]:rotate-180" />
             </CollapsibleTrigger>
             <CollapsibleContent>
               <SidebarGroupContent>
-                <SidebarMenu>
-                  {premiumItems.map((item) => (
-                    <SidebarMenuItem key={item.href}>
-                      <SidebarMenuButton asChild isActive={isActive(item.href)}>
-                        <Link to={item.href}>
-                          <item.icon className="h-4 w-4" />
-                          <span>{item.title}</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  ))}
+                <SidebarMenu className="mt-1">
+                  {premiumItems.map((item) => {
+                    const active = isActive(item.href);
+                    return (
+                      <SidebarMenuItem key={item.href}>
+                        <SidebarMenuButton
+                          asChild
+                          isActive={active}
+                          className={cn(
+                            'rounded-md pl-9 text-sm',
+                            active
+                              ? 'bg-primary/10 text-primary font-semibold'
+                              : 'text-muted-foreground font-normal hover:text-foreground'
+                          )}
+                        >
+                          <Link to={item.href}>
+                            <item.icon className={cn('h-3.5 w-3.5', active ? 'text-primary' : 'text-muted-foreground')} />
+                            <span>{item.title}</span>
+                          </Link>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    );
+                  })}
                 </SidebarMenu>
               </SidebarGroupContent>
             </CollapsibleContent>
