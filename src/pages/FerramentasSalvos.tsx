@@ -2,8 +2,6 @@ import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet";
 import { motion } from "framer-motion";
-import { Bookmark, ArrowLeft } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/useAuth";
 import { useSavedItems } from "@/hooks/useSavedItems";
@@ -76,33 +74,20 @@ export default function FerramentasSalvos() {
 
         <main className="flex-1">
           {/* Hero Section */}
-          <section className="pt-24 pb-8 px-4 sm:px-6 lg:px-8">
-            <div className="container max-w-5xl mx-auto">
-              <div className="flex items-center gap-4 mb-6">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => navigate(-1)}
-                  aria-label="Voltar"
-                >
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Voltar
-                </Button>
-              </div>
-
+          <section className="relative bg-gradient-to-br from-primary/10 via-background to-background border-b overflow-hidden">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,hsl(var(--primary)/0.1),transparent_50%)]" />
+            <div className="container mx-auto px-6 py-16 md:py-20 relative">
               <motion.div
+                className="max-w-3xl"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4 }}
+                transition={{ duration: 0.5 }}
               >
-                <div className="flex items-center gap-3 mb-2">
-                  <Bookmark className="h-7 w-7 text-primary" />
-                  <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
-                    Salvos
-                  </h1>
-                </div>
-                <p className="text-muted-foreground">
-                  Seus itens salvos em um só lugar.
+                <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight mb-6 bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
+                  Salvos
+                </h1>
+                <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
+                  Tudo que você salvou no PqEstudar, em um só lugar.
                 </p>
               </motion.div>
             </div>
