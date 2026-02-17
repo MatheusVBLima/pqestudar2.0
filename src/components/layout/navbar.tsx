@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Home, BookOpen, Menu, LogOut, User, Bookmark, Wrench, ScrollText, Info, LayoutList, Crown, Settings, BarChart3, Moon, Vote } from "lucide-react";
+import { Home, BookOpen, Menu, LogOut, User, Bookmark, Wrench, ScrollText, Info, Crown, BarChart3, Moon, Vote } from "lucide-react";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { useSubscription } from "@/hooks/useSubscription";
 import { NotificationDropdown } from "@/components/ui/notification-dropdown";
@@ -210,29 +210,13 @@ export function Navbar() {
                         Salvos
                       </DropdownMenuItem>
                       {isAdmin && (
-                        <>
-                          <DropdownMenuItem 
-                            onClick={() => handleNavigation("/admin/analytics")}
-                            className="cursor-pointer"
-                          >
-                            <BarChart3 className="h-4 w-4 mr-2" />
-                            Insights
-                          </DropdownMenuItem>
-                          <DropdownMenuItem 
-                            onClick={() => handleNavigation("/admin/curadorias")}
-                            className="cursor-pointer"
-                          >
-                            <LayoutList className="h-4 w-4 mr-2" />
-                            Curadorias
-                          </DropdownMenuItem>
-                          <DropdownMenuItem 
-                            onClick={() => handleNavigation("/admin/premium")}
-                            className="cursor-pointer"
-                          >
-                            <Settings className="h-4 w-4 mr-2" />
-                            Painel Premium
-                          </DropdownMenuItem>
-                        </>
+                        <DropdownMenuItem 
+                          onClick={() => handleNavigation("/admin")}
+                          className="cursor-pointer"
+                        >
+                          <BarChart3 className="h-4 w-4 mr-2" />
+                          Dashboard admin
+                        </DropdownMenuItem>
                       )}
                       {showPremiumArea && (
                         <DropdownMenuItem 
@@ -343,29 +327,13 @@ export function Navbar() {
                           Salvos
                         </DropdownMenuItem>
                         {isAdmin && (
-                          <>
-                            <DropdownMenuItem 
-                              onClick={() => handleNavigation("/admin/analytics")}
-                              className="cursor-pointer"
-                            >
-                              <BarChart3 className="h-4 w-4 mr-2" />
-                              Insights
-                            </DropdownMenuItem>
-                            <DropdownMenuItem 
-                              onClick={() => handleNavigation("/admin/curadorias")}
-                              className="cursor-pointer"
-                            >
-                              <LayoutList className="h-4 w-4 mr-2" />
-                              Curadorias
-                            </DropdownMenuItem>
-                            <DropdownMenuItem 
-                              onClick={() => handleNavigation("/admin/premium")}
-                              className="cursor-pointer"
-                            >
-                              <Settings className="h-4 w-4 mr-2" />
-                              Painel Premium
-                            </DropdownMenuItem>
-                          </>
+                          <DropdownMenuItem 
+                            onClick={() => handleNavigation("/admin")}
+                            className="cursor-pointer"
+                          >
+                            <BarChart3 className="h-4 w-4 mr-2" />
+                            Dashboard admin
+                          </DropdownMenuItem>
                         )}
                         {showPremiumArea && (
                           <DropdownMenuItem 
