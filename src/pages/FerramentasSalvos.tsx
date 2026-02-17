@@ -94,7 +94,7 @@ export default function FerramentasSalvos() {
           </section>
 
           {/* Accordion Sections */}
-          <section className="pb-24 px-4 sm:px-6 lg:px-8">
+          <section className="pt-12 md:pt-16 pb-24 px-4 sm:px-6 lg:px-8">
             <div className="container max-w-5xl mx-auto">
               {loading ? (
                 <div className="space-y-4">
