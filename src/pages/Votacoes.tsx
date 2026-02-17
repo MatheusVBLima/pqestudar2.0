@@ -189,19 +189,30 @@ export default function Votacoes() {
         <meta name="description" content="Vote nos próximos lançamentos e ajude a definir o futuro do PqEstudar." />
       </Helmet>
 
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold mb-3">
-            Próximos{' '}
-            <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              Lançamentos
-            </span>
-          </h1>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
-            Vote nas funcionalidades que você mais quer ver no PqEstudar.
-          </p>
+      {/* Hero Section */}
+      <section className="relative bg-gradient-to-br from-primary/10 via-background to-background border-b overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,hsl(var(--primary)/0.1),transparent_50%)]" />
+        <div className="container mx-auto px-6 py-16 md:py-20 relative">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="max-w-3xl"
+          >
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight mb-6 bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
+              Próximos{' '}
+              <span className="bg-gradient-primary bg-clip-text text-transparent">
+                Lançamentos
+              </span>
+            </h1>
+            <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
+              Vote nas funcionalidades que você mais quer ver no PqEstudar.
+            </p>
+          </motion.div>
         </div>
+      </section>
+
+      <div className="container mx-auto px-4 py-8 max-w-4xl">
 
         {/* Admin toggle */}
         {effectiveAdmin && !loadingRoles && (
