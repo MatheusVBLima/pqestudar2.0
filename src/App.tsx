@@ -67,6 +67,15 @@ import AdminPremiumItemForm from "./pages/admin/premium/AdminPremiumItemForm";
 import AdminPremiumTokens from "./pages/admin/premium/AdminPremiumTokens";
 import AdminPremiumUsers from "./pages/admin/premium/AdminPremiumUsers";
 
+// Admin Dashboard imports
+import { AdminLayout } from "@/components/admin/dashboard/AdminLayout";
+import AdminOverview from "./pages/admin/dashboard/AdminOverview";
+import InsightsFerramentas from "./pages/admin/dashboard/InsightsFerramentas";
+import InsightsConcursosLeitura from "./pages/admin/dashboard/InsightsConcursosLeitura";
+import InsightsConcursosEventos from "./pages/admin/dashboard/InsightsConcursosEventos";
+import InsightsSeoAudit from "./pages/admin/dashboard/InsightsSeoAudit";
+import InsightsCopyAudit from "./pages/admin/dashboard/InsightsCopyAudit";
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -91,6 +100,27 @@ const AppWithPixel = () => {
       <Route path="/assine" element={<Assine />} />
       <Route path="/mapa-dos-beneficios" element={<MapaDosBeneficios />} />
 
+      {/* Admin Dashboard (standalone layout with sidebar) */}
+      <Route path="/admin" element={<AdminLayout />}>
+        <Route index element={<AdminOverview />} />
+        <Route path="insights/ferramentas" element={<InsightsFerramentas />} />
+        <Route path="insights/concursos-leitura" element={<InsightsConcursosLeitura />} />
+        <Route path="insights/concursos-eventos" element={<InsightsConcursosEventos />} />
+        <Route path="insights/seo-audit" element={<InsightsSeoAudit />} />
+        <Route path="insights/copy-audit" element={<InsightsCopyAudit />} />
+        <Route path="curadorias" element={<AdminCuradoriasLista />} />
+        <Route path="curadorias/new" element={<AdminCuradoriasForm />} />
+        <Route path="curadorias/:id" element={<AdminCuradoriasForm />} />
+        <Route path="premium" element={<AdminPremiumDashboard />} />
+        <Route path="premium/itens" element={<AdminPremiumItems />} />
+        <Route path="premium/itens/:id" element={<AdminPremiumItemForm />} />
+        <Route path="premium/tokens" element={<AdminPremiumTokens />} />
+        <Route path="premium/usuarios" element={<AdminPremiumUsers />} />
+        <Route path="cursos" element={<AdminCourses />} />
+        <Route path="bonus" element={<AdminBonusPages />} />
+        <Route path="analytics" element={<AdminAnalytics />} />
+      </Route>
+
       {/* All pages with persistent Navbar + Footer layout */}
       <Route element={<AppLayout />}>
         <Route path="/" element={<Index />} />
@@ -110,9 +140,6 @@ const AppWithPixel = () => {
         
         <Route path="/configuracoes-cookies" element={<ConfiguracoesCookies />} />
         
-        <Route path="/admin/cursos" element={<AdminCourses />} />
-        <Route path="/admin/bonus" element={<AdminBonusPages />} />
-        <Route path="/admin/analytics" element={<AdminAnalytics />} />
         <Route path="/kit" element={<KitAceleracao />} />
         
         <Route path="/ferramentas" element={<Ferramentas />} />
@@ -123,9 +150,6 @@ const AppWithPixel = () => {
         
         {/* Curadoria Dinâmica */}
         <Route path="/curadoria/:slug" element={<CuradoriaPublic />} />
-        <Route path="/admin/curadorias" element={<AdminCuradoriasLista />} />
-        <Route path="/admin/curadorias/new" element={<AdminCuradoriasForm />} />
-        <Route path="/admin/curadorias/:id" element={<AdminCuradoriasForm />} />
         
         {/* Premium Routes - Public */}
         <Route path="/premium/upgrade" element={<PremiumUpgrade />} />
@@ -139,13 +163,6 @@ const AppWithPixel = () => {
         <Route path="/premium/atualizacoes/:slug" element={<RequireActiveSubscription><PremiumUpdateDetail /></RequireActiveSubscription>} />
         <Route path="/premium/salvos" element={<RequireActiveSubscription><PremiumSaved /></RequireActiveSubscription>} />
         <Route path="/premium/p/:slug" element={<RequireActiveSubscription><PremiumCurationPage /></RequireActiveSubscription>} />
-        
-        {/* Admin Premium Routes */}
-        <Route path="/admin/premium" element={<RequirePremiumAdmin><AdminPremiumDashboard /></RequirePremiumAdmin>} />
-        <Route path="/admin/premium/itens" element={<RequirePremiumAdmin><AdminPremiumItems /></RequirePremiumAdmin>} />
-        <Route path="/admin/premium/itens/:id" element={<RequirePremiumAdmin><AdminPremiumItemForm /></RequirePremiumAdmin>} />
-        <Route path="/admin/premium/tokens" element={<RequirePremiumAdmin><AdminPremiumTokens /></RequirePremiumAdmin>} />
-        <Route path="/admin/premium/usuarios" element={<RequirePremiumAdmin><AdminPremiumUsers /></RequirePremiumAdmin>} />
         
         {/* Bonus Pages - Exact Routes (noindex) */}
         <Route path="/acesso-kit-partida-8h3z" element={<BonusPage />} />
