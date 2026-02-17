@@ -246,7 +246,7 @@ export default function Concursos() {
         </div>
       </section>
 
-      <main className="flex-1 container mx-auto px-4 py-8 max-w-7xl">
+      <main className="flex-1 container mx-auto px-4 pt-12 md:pt-16 pb-8 max-w-7xl">
         <div className="mb-8">
           {/* Admin toggle */}
           {isAdmin && (

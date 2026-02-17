@@ -617,7 +617,7 @@ export default function Ferramentas() {
 
           {/* Admin Toggle */}
           {(loadingRoles || effectiveAdmin) &&
-          <section className="px-4 sm:px-6 lg:px-8 pt-6">
+          <section className="px-4 sm:px-6 lg:px-8 pt-12 md:pt-16">
             <div className="container max-w-7xl mx-auto flex justify-end">
               {loadingRoles ?
                 <div className="flex items-center gap-3">

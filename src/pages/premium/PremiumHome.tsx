@@ -73,7 +73,7 @@ const PremiumHome = () => {
         </div>
       </section>
 
-      <main className="flex-1 container max-w-6xl mx-auto px-4 py-8">
+      <main className="flex-1 container max-w-6xl mx-auto px-4 pt-12 md:pt-16 pb-8">
 
         {/* Menu Grid */}
         <div className="grid gap-6 md:grid-cols-2">

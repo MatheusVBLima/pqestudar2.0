@@ -212,7 +212,7 @@ export default function Votacoes() {
         </div>
       </section>
 
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <div className="container mx-auto px-4 pt-12 md:pt-16 pb-8 max-w-4xl">
 
         {/* Admin toggle */}
         {effectiveAdmin && !loadingRoles && (
