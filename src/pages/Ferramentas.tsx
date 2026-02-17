@@ -616,36 +616,25 @@ export default function Ferramentas() {
           </section>
 
           {/* Admin Toggle */}
-          {(loadingRoles || effectiveAdmin) &&
+          {isAdmin && (
           <section className="px-4 sm:px-6 lg:px-8 pt-12 md:pt-16">
-            <div className="container max-w-7xl mx-auto flex justify-end">
-              {loadingRoles ?
-                <div className="flex items-center gap-3">
-                  <Skeleton className="h-6 w-12 rounded-full" />
-                  <Skeleton className="h-4 w-40 rounded" />
-                </div> :
-                effectiveAdmin ?
-                <motion.div
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.5, delay: 0.2 }}
-                  className="flex items-center gap-3">
+            <div className="container max-w-7xl mx-auto">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="flex items-center gap-2">
                   <Switch
                     id="management-mode"
                     checked={isManagementMode}
                     onCheckedChange={setIsManagementMode}
-                    data-testid="admin-toggle" />
-                  <Label htmlFor="management-mode" className="cursor-pointer whitespace-nowrap flex items-center gap-2">
+                    data-testid="admin-toggle"
+                  />
+                  <Label htmlFor="management-mode" className="text-sm font-medium">
                     Modo de Gerenciamento
-                    {forceAdmin && isDev &&
-                      <Badge variant="secondary" className="text-xs">Admin ON</Badge>
-                    }
                   </Label>
-                </motion.div> :
-                null}
+                </div>
+              </div>
             </div>
           </section>
-          }
+          )}
 
           {/* Controles Admin */}
           {isManagementMode && effectiveAdmin &&
