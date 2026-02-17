@@ -226,42 +226,50 @@ export default function Concursos() {
     <div className="min-h-screen flex flex-col bg-background">
       
       
-      <main className="flex-1 container mx-auto px-4 py-8 max-w-7xl">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
-            <div>
-              <h1 className="text-3xl md:text-4xl font-bold text-foreground">
-                Oportunidades
-              </h1>
-              <p className="text-muted-foreground mt-2">
-                Concursos públicos, processos seletivos e programas educacionais
-              </p>
-            </div>
+      {/* Hero Section */}
+      <section className="relative bg-gradient-to-br from-primary/10 via-background to-background border-b overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,hsl(var(--primary)/0.1),transparent_50%)]" />
+        <div className="container mx-auto px-6 py-16 md:py-20 relative">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="max-w-3xl"
+          >
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight mb-6 bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
+              Oportunidades
+            </h1>
+            <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
+              Concursos públicos, processos seletivos e programas educacionais
+            </p>
+          </motion.div>
+        </div>
+      </section>
 
-            {/* Admin toggle */}
-            {isAdmin && (
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2">
-                  <Switch
-                    id="management-mode"
-                    checked={isManagementMode}
-                    onCheckedChange={setIsManagementMode}
-                  />
-                  <Label htmlFor="management-mode" className="text-sm font-medium">
-                    Modo de Gerenciamento
-                  </Label>
-                </div>
-                
-                {isManagementMode && (
-                  <Button onClick={handleAdd} size="sm">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Adicionar
-                  </Button>
-                )}
+      <main className="flex-1 container mx-auto px-4 py-8 max-w-7xl">
+        <div className="mb-8">
+          {/* Admin toggle */}
+          {isAdmin && (
+            <div className="flex items-center gap-4 mb-4">
+              <div className="flex items-center gap-2">
+                <Switch
+                  id="management-mode"
+                  checked={isManagementMode}
+                  onCheckedChange={setIsManagementMode}
+                />
+                <Label htmlFor="management-mode" className="text-sm font-medium">
+                  Modo de Gerenciamento
+                </Label>
               </div>
-            )}
-          </div>
+              
+              {isManagementMode && (
+                <Button onClick={handleAdd} size="sm">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Adicionar
+                </Button>
+              )}
+            </div>
+          )}
 
           {/* Admin Panel - Only visible when management mode is ON */}
           {isAdmin && isManagementMode && (
