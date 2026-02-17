@@ -45,7 +45,7 @@ import Votacoes from "./pages/Votacoes";
 import CuradoriaPublic from "./pages/CuradoriaPublic";
 import AdminCuradoriasLista from "./pages/AdminCuradoriasLista";
 import AdminCuradoriasForm from "./pages/AdminCuradoriasForm";
-import AdminAnalytics from "./pages/admin/Analytics";
+
 import { usePageViewTracker } from "@/hooks/usePageViewTracker";
 
 // Premium imports
@@ -120,7 +120,7 @@ const AppWithPixel = () => {
         <Route path="premium/usuarios" element={<AdminPremiumUsers />} />
         <Route path="cursos" element={<AdminCourses />} />
         <Route path="bonus" element={<AdminBonusPages />} />
-        <Route path="analytics" element={<AdminAnalytics />} />
+        
       </Route>
 
       {/* All pages with persistent Navbar + Footer layout */}
