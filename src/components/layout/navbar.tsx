@@ -1,10 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Home, BookOpen, Menu, LogOut, User, Bookmark, Wrench, ScrollText, Info, LayoutList, Crown, Settings, BarChart3 } from "lucide-react";
+import { Home, BookOpen, Menu, LogOut, User, Bookmark, Wrench, ScrollText, Info, LayoutList, Crown, Settings, BarChart3, Moon } from "lucide-react";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { useSubscription } from "@/hooks/useSubscription";
 import { NotificationDropdown } from "@/components/ui/notification-dropdown";
 import { useAuth } from "@/hooks/useAuth";
+import { useTheme } from "@/hooks/useTheme";
 import { toast } from "sonner";
 import { useState } from "react";
 import {
@@ -15,6 +16,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Switch } from "@/components/ui/switch";
 
 export function Navbar() {
   const navigate = useNavigate();
@@ -23,6 +25,7 @@ export function Navbar() {
   const { user, signOut, loading } = useAuth();
   const { isAdmin } = useUserRoles();
   const { isActive } = useSubscription();
+  const { isDark, toggleTheme } = useTheme();
   const [isClicked, setIsClicked] = useState(false);
   
   // Show premium area for admins OR active subscribers
@@ -230,6 +233,16 @@ export function Navbar() {
                           Área Premium
                         </DropdownMenuItem>
                       )}
+                      <DropdownMenuItem
+                        onSelect={(e) => { e.preventDefault(); toggleTheme(); }}
+                        className="cursor-pointer flex items-center justify-between"
+                      >
+                        <span className="flex items-center">
+                          <Moon className="h-4 w-4 mr-2" />
+                          Tema escuro
+                        </span>
+                        <Switch checked={isDark} tabIndex={-1} className="pointer-events-none" />
+                      </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem 
                         onClick={handleSignOut}
@@ -349,6 +362,16 @@ export function Navbar() {
                             Área Premium
                           </DropdownMenuItem>
                         )}
+                        <DropdownMenuItem
+                          onSelect={(e) => { e.preventDefault(); toggleTheme(); }}
+                          className="cursor-pointer flex items-center justify-between"
+                        >
+                          <span className="flex items-center">
+                            <Moon className="h-4 w-4 mr-2" />
+                            Tema escuro
+                          </span>
+                          <Switch checked={isDark} tabIndex={-1} className="pointer-events-none" />
+                        </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem 
                           onClick={handleSignOut}
