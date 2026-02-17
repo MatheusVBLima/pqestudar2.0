@@ -46,6 +46,7 @@ import CuradoriaPublic from "./pages/CuradoriaPublic";
 import AdminCuradoriasLista from "./pages/AdminCuradoriasLista";
 import AdminCuradoriasForm from "./pages/AdminCuradoriasForm";
 import AdminAnalytics from "./pages/admin/Analytics";
+import { usePageViewTracker } from "@/hooks/usePageViewTracker";
 
 // Premium imports
 import { RequireActiveSubscription } from "@/components/premium/RequireActiveSubscription";
@@ -92,6 +93,7 @@ const queryClient = new QueryClient({
 const AppWithPixel = () => {
   // Initialize Meta Pixel with SPA support
   useMetaPixel();
+  usePageViewTracker();
   
   return (
     <Routes>
