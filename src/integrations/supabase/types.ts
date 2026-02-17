@@ -783,6 +783,84 @@ export type Database = {
         }
         Relationships: []
       }
+      feature_requests: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_visible: boolean
+          sort_order: number
+          status: Database["public"]["Enums"]["feature_status"]
+          title: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_visible?: boolean
+          sort_order?: number
+          status?: Database["public"]["Enums"]["feature_status"]
+          title: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_visible?: boolean
+          sort_order?: number
+          status?: Database["public"]["Enums"]["feature_status"]
+          title?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
+      feature_votes: {
+        Row: {
+          created_at: string
+          feature_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          feature_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          feature_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feature_votes_feature_id_fkey"
+            columns: ["feature_id"]
+            isOneToOne: false
+            referencedRelation: "feature_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "feature_votes_feature_id_fkey"
+            columns: ["feature_id"]
+            isOneToOne: false
+            referencedRelation: "feature_requests_with_votes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       fontes_oportunidade: {
         Row: {
           created_at: string
@@ -1229,6 +1307,27 @@ export type Database = {
           subscribed_at?: string
           unsubscribed_at?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          title: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          title: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          title?: string
         }
         Relationships: []
       }
@@ -1993,6 +2092,38 @@ export type Database = {
         }
         Relationships: []
       }
+      user_notifications: {
+        Row: {
+          created_at: string
+          id: string
+          is_read: boolean
+          notification_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          notification_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          notification_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_notifications_notification_id_fkey"
+            columns: ["notification_id"]
+            isOneToOne: false
+            referencedRelation: "notifications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -2351,6 +2482,23 @@ export type Database = {
         }
         Relationships: []
       }
+      feature_requests_with_votes: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          id: string | null
+          is_visible: boolean | null
+          sort_order: number | null
+          status: Database["public"]["Enums"]["feature_status"] | null
+          title: string | null
+          updated_at: string | null
+          updated_by: string | null
+          votes_count: number | null
+        }
+        Relationships: []
+      }
       fontes_oportunidade_public: {
         Row: {
           id: string | null
@@ -2559,6 +2707,10 @@ export type Database = {
       cleanup_newsletter_rate_limit_30d: { Args: never; Returns: undefined }
       cleanup_old_rate_limit_entries: { Args: never; Returns: undefined }
       cleanup_old_view_fingerprints: { Args: never; Returns: undefined }
+      complete_feature_request: {
+        Args: { p_feature_id: string }
+        Returns: undefined
+      }
       get_brevo_config: {
         Args: never
         Returns: {
@@ -2582,11 +2734,28 @@ export type Database = {
         Returns: boolean
       }
       is_admin: { Args: never; Returns: boolean }
+      list_feature_requests: {
+        Args: { include_hidden?: boolean }
+        Returns: {
+          completed_at: string
+          created_at: string
+          description: string
+          id: string
+          is_visible: boolean
+          sort_order: number
+          status: Database["public"]["Enums"]["feature_status"]
+          title: string
+          updated_at: string
+          user_voted: boolean
+          votes_count: number
+        }[]
+      }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
       content_status: "draft" | "published"
       course_badge: "trending" | "popular" | "community"
+      feature_status: "open" | "completed"
       premium_item_type: "course" | "job"
       redeem_token_status: "new" | "used" | "expired" | "revoked"
       subscription_plan_type: "monthly" | "annual" | "trial_30d"
@@ -2721,6 +2890,7 @@ export const Constants = {
       app_role: ["admin", "moderator", "user"],
       content_status: ["draft", "published"],
       course_badge: ["trending", "popular", "community"],
+      feature_status: ["open", "completed"],
       premium_item_type: ["course", "job"],
       redeem_token_status: ["new", "used", "expired", "revoked"],
       subscription_plan_type: ["monthly", "annual", "trial_30d"],
