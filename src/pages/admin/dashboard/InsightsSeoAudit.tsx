@@ -4,15 +4,19 @@ import { PeriodSelector, Period } from '@/components/admin/dashboard/PeriodSelec
 import { ChartCard } from '@/components/admin/dashboard/ChartCard';
 import { DataTable } from '@/components/admin/dashboard/DataTable';
 import { periodToRange } from '@/components/admin/dashboard/periodHelper';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { Button } from '@/components/ui/button';
+import { Play } from 'lucide-react';
+import { toast } from 'sonner';
 
 const AUDIT_TYPE = 'seo';
 
 export default function InsightsSeoAudit() {
+  const qc = useQueryClient();
   const [period, setPeriod] = useState<Period>('all');
   const range = periodToRange(period);
 
@@ -65,12 +69,38 @@ export default function InsightsSeoAudit() {
     date: format(new Date(f.run_date), 'dd/MM/yyyy HH:mm', { locale: ptBR }),
   }));
 
+  const runAudit = useMutation({
+    mutationFn: async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      const resp = await supabase.functions.invoke('seo-audit-run', {
+        headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {},
+      });
+      if (resp.error) throw new Error(resp.error.message || 'Falha ao rodar auditoria');
+      return resp.data;
+    },
+    onSuccess: () => {
+      toast.success('Auditoria SEO concluída!');
+      qc.invalidateQueries({ queryKey: ['insights-audit-history', AUDIT_TYPE] });
+      qc.invalidateQueries({ queryKey: ['insights-audit-categories', AUDIT_TYPE] });
+      qc.invalidateQueries({ queryKey: ['insights-audit-findings', AUDIT_TYPE] });
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+
   return (
     <div className="space-y-6">
       <PageHeader
         title="SEO Audit"
         description="Resultados das auditorias de SEO por rota"
-        actions={<PeriodSelector value={period} onChange={setPeriod} />}
+        actions={
+          <div className="flex items-center gap-2">
+            <Button onClick={() => runAudit.mutate()} disabled={runAudit.isPending} size="sm">
+              <Play className="h-4 w-4 mr-1" />
+              {runAudit.isPending ? 'Rodando…' : 'Rodar auditoria agora'}
+            </Button>
+            <PeriodSelector value={period} onChange={setPeriod} />
+          </div>
+        }
       />
 
       <div className="grid gap-4 lg:grid-cols-2">
