@@ -403,22 +403,22 @@ const Privacidade = () => {
     <div className="min-h-screen flex flex-col">
       
 
-      {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-primary/10 via-background to-accent/10 py-16 md:py-24">
-        <div className="container mx-auto px-4">
+      {/* Hero Premium */}
+      <section className="relative bg-gradient-to-br from-primary/10 via-background to-background border-b overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,hsl(var(--primary)/0.1),transparent_50%)]" />
+        <div className="container mx-auto px-6 py-16 md:py-20 relative">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="max-w-3xl mx-auto text-center"
+            className="max-w-3xl"
           >
-            <Shield className="h-16 w-16 md:h-20 md:w-20 text-primary mx-auto mb-6" />
             <Badge variant="secondary" className="mb-4">
-              <CheckCircle2 className="h-3 w-3 mr-1" />
+              <Shield className="w-3 h-3 mr-1" />
               Última atualização: 28 de outubro de 2025
             </Badge>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight mb-6 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              Política de Privacidade – PqEstudar
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight mb-6 bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
+              Política de Privacidade
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
               Transparência e proteção dos seus dados pessoais são nossa prioridade. Veja como coletamos, usamos e
