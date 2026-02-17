@@ -2776,6 +2776,52 @@ export type Database = {
         }
         Returns: boolean
       }
+      insights_audit_history: {
+        Args: { end_at?: string; p_audit_type: string; start_at?: string }
+        Returns: {
+          avg_score: number
+          run_date: string
+          run_id: string
+          status: string
+          total_findings: number
+        }[]
+      }
+      insights_audit_issues_by_category: {
+        Args: { p_audit_type: string }
+        Returns: {
+          category: string
+          issue_count: number
+        }[]
+      }
+      insights_audit_latest_findings: {
+        Args: { p_audit_type: string }
+        Returns: {
+          issue_count: number
+          path: string
+          run_date: string
+          score: number
+          url: string
+        }[]
+      }
+      insights_concurso_scroll_stats: {
+        Args: { end_at?: string; start_at?: string }
+        Returns: {
+          avg_max_scroll: number
+          concurso_label: string
+          entity_id: string
+          total_sessions: number
+        }[]
+      }
+      insights_tools_ranking: {
+        Args: { end_at?: string; start_at?: string }
+        Returns: {
+          clicks: number
+          outbound: number
+          saves: number
+          tool_id: string
+          tool_name: string
+        }[]
+      }
       is_admin: { Args: never; Returns: boolean }
       list_feature_requests: {
         Args: { include_hidden?: boolean }
