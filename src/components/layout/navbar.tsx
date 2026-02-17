@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Home, BookOpen, Menu, LogOut, User, Bookmark, Wrench, ScrollText, Info, LayoutList, Crown, Settings, BarChart3, Moon } from "lucide-react";
+import { Home, BookOpen, Menu, LogOut, User, Bookmark, Wrench, ScrollText, Info, LayoutList, Crown, Settings, BarChart3, Moon, Vote } from "lucide-react";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { useSubscription } from "@/hooks/useSubscription";
 import { NotificationDropdown } from "@/components/ui/notification-dropdown";
@@ -137,6 +137,16 @@ export function Navbar() {
             >
               <ScrollText className="h-4 w-4 mr-2" aria-hidden="true" />
               Concursos
+            </Button>
+
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleNavigation("/votacoes")}
+              className={`hover:bg-accent ${location.pathname === "/votacoes" ? "bg-accent text-accent-foreground" : ""}`}
+            >
+              <Vote className="h-4 w-4 mr-2" aria-hidden="true" />
+              Votações
             </Button>
 
             <Button
@@ -284,6 +294,10 @@ export function Navbar() {
                 >
                   <ScrollText className="h-4 w-4 mr-2" aria-hidden="true" />
                   Concursos
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleNavigation("/votacoes")}>
+                  <Vote className="h-4 w-4 mr-2" aria-hidden="true" />
+                  Votações
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => handleNavigation("/sobre")}>
                   <Info className="h-4 w-4 mr-2" aria-hidden="true" />
