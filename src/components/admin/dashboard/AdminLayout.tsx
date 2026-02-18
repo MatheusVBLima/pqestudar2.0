@@ -29,7 +29,7 @@ export function AdminLayout() {
   return (
     <SidebarProvider>
       <div className="min-h-screen bg-muted admin-radius">
-        <div className="mx-auto flex max-w-[1400px] gap-4 p-4">
+        <div className="flex w-full gap-4 p-4">
           <AdminSidebar />
           <div className="flex-1 min-w-0">
             <div className="rounded-[var(--admin-radius)] border bg-card shadow-[var(--admin-shadow)] flex flex-col min-h-[calc(100vh-2rem)]">
