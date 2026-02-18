@@ -42,41 +42,35 @@ const AdminPremiumDashboard = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      
-      
-      <main className="flex-1 container max-w-6xl mx-auto px-4 py-8">
-        <div className="flex items-center gap-3 mb-8">
-          <Crown className="h-8 w-8 text-primary" />
-          <div>
-            <h1 className="text-3xl font-bold">Admin Premium</h1>
-            <p className="text-muted-foreground">Gerencie a área de membros premium</p>
-          </div>
+    <div className="space-y-6">
+      <div className="flex items-center gap-3">
+        <Crown className="h-8 w-8 text-primary" />
+        <div>
+          <h1 className="text-3xl font-bold">Admin Premium</h1>
+          <p className="text-muted-foreground">Gerencie a área de membros premium</p>
         </div>
+      </div>
 
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {menuItems.map((item) => (
-            <Link key={item.href} to={item.href}>
-              <Card className="h-full hover:shadow-lg transition-shadow cursor-pointer group">
-                <CardHeader className="pb-2">
-                  <div className="flex items-center justify-between">
-                    <div className="p-2 rounded-lg bg-muted">
-                      <item.icon className="h-5 w-5" />
-                    </div>
-                    <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {menuItems.map((item) => (
+          <Link key={item.href} to={item.href}>
+            <Card className="h-full hover:shadow-lg transition-shadow cursor-pointer group">
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between">
+                  <div className="p-2 rounded-lg bg-muted">
+                    <item.icon className="h-5 w-5" />
                   </div>
-                </CardHeader>
-                <CardContent>
-                  <CardTitle className="text-lg mb-1">{item.title}</CardTitle>
-                  <CardDescription>{item.description}</CardDescription>
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
-        </div>
-      </main>
-
-      
+                  <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <CardTitle className="text-lg mb-1">{item.title}</CardTitle>
+                <CardDescription>{item.description}</CardDescription>
+              </CardContent>
+            </Card>
+          </Link>
+        ))}
+      </div>
     </div>
   );
 };
