@@ -28,7 +28,7 @@ export function AdminLayout() {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen bg-muted admin-radius">
+      <div className="min-h-screen w-full bg-muted admin-radius">
         <div className="flex w-full gap-4 p-4">
           <AdminSidebar />
           <div className="flex-1 min-w-0">
