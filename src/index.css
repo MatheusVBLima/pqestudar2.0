@@ -289,13 +289,21 @@ All colors MUST be HSL.
   }
 }
 
-/* Admin dashboard scoped radius */
+/* Admin dashboard scoped radius + shadow */
 .admin-radius {
   --admin-radius: 1.2rem;
+  --admin-shadow: 0px 4px 10px 0px hsla(240, 30%, 25%, 0.12);
 }
 .admin-radius .admin-r {
   border-radius: var(--admin-radius);
 }
 .admin-radius .admin-r-sm {
   border-radius: calc(var(--admin-radius) - 0.2rem);
+}
+
+/* Auto-apply radius + shadow to all Card-based components inside admin */
+.admin-radius .rounded-lg[class*="border"][class*="bg-card"],
+.admin-radius [data-slot="card"] {
+  border-radius: var(--admin-radius) !important;
+  box-shadow: var(--admin-shadow) !important;
 }

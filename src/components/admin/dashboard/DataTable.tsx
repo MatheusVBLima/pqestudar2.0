@@ -17,7 +17,7 @@ interface DataTableProps {
 
 export function DataTable({ title, columns, rows, emptyMessage = 'Nenhum dado disponível', onRowClick }: DataTableProps) {
   return (
-    <Card className="rounded-[1.2rem]">
+    <Card>
       <CardHeader className="pb-3">
         <CardTitle className="text-base">{title}</CardTitle>
       </CardHeader>
