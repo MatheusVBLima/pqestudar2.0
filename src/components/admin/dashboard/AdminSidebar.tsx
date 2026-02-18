@@ -52,7 +52,7 @@ export function AdminSidebar() {
                   tooltip="Overview"
                   className={cn(
                     'rounded-[var(--admin-radius)] font-medium',
-                    pathname === '/admin' && 'bg-primary/10 text-primary font-semibold'
+                    pathname === '/admin' && 'bg-primary/10 text-primary font-semibold border border-primary/20'
                   )}
                 >
                   <Link to="/admin">
@@ -96,7 +96,7 @@ export function AdminSidebar() {
                           className={cn(
                             'rounded-[var(--admin-radius)] pl-9 text-sm',
                             active
-                              ? 'bg-primary/10 text-primary font-semibold'
+                              ? 'bg-primary/10 text-primary font-semibold border border-primary/20'
                               : 'text-muted-foreground font-normal hover:text-foreground'
                           )}
                         >
@@ -125,7 +125,7 @@ export function AdminSidebar() {
                   tooltip="Curadorias"
                   className={cn(
                     'rounded-[var(--admin-radius)] font-medium',
-                    pathname.startsWith('/admin/curadorias') && 'bg-primary/10 text-primary font-semibold'
+                    pathname.startsWith('/admin/curadorias') && 'bg-primary/10 text-primary font-semibold border border-primary/20'
                   )}
                 >
                   <Link to="/admin/curadorias">
@@ -169,7 +169,7 @@ export function AdminSidebar() {
                           className={cn(
                             'rounded-[var(--admin-radius)] pl-9 text-sm',
                             active
-                              ? 'bg-primary/10 text-primary font-semibold'
+                              ? 'bg-primary/10 text-primary font-semibold border border-primary/20'
                               : 'text-muted-foreground font-normal hover:text-foreground'
                           )}
                         >
