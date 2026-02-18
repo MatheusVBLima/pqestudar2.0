@@ -322,42 +322,4 @@ All colors MUST be HSL.
   background: transparent;
 }
 
-/* 
-  When sidebar is collapsed (icon mode), the outer wrapper (group) has
-  data-state="collapsed" data-collapsible="icon", while data-slot="admin-sidebar"
-  is on a child fixed div. Use the group ancestor to target collapsed state.
-*/
-.admin-radius [data-collapsible="icon"] [data-slot="admin-sidebar"] [data-sidebar="header"] {
-  padding: 0.75rem 0.25rem 0.5rem !important;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.admin-radius [data-collapsible="icon"] [data-slot="admin-sidebar"] [data-sidebar="content"] {
-  padding: 0.375rem 0.25rem !important;
-}
-
-.admin-radius [data-collapsible="icon"] [data-slot="admin-sidebar"] [data-sidebar="group"] {
-  padding: 0.125rem 0 !important;
-}
-
-.admin-radius [data-collapsible="icon"] [data-slot="admin-sidebar"] [data-sidebar="menu"] {
-  align-items: center;
-  gap: 0.25rem !important;
-}
-
-.admin-radius [data-collapsible="icon"] [data-slot="admin-sidebar"] [data-sidebar="menu-button"] {
-  width: 2.25rem !important;
-  height: 2.25rem !important;
-  padding: 0 !important;
-  margin: 0 auto !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  border-radius: 0.5rem !important;
-}
-
-.admin-radius [data-collapsible="icon"] [data-slot="admin-sidebar"] [data-sidebar="menu-button"] > svg {
-  margin: 0 !important;
-}
+/* Collapsed admin sidebar: offcanvas mode hides completely, no icon-mode rules needed */
