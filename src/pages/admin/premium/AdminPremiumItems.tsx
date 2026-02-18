@@ -126,142 +126,132 @@ const AdminPremiumItems = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex flex-col">
-        <main className="flex-1 container max-w-6xl mx-auto px-4 py-8">
-          <Skeleton className="h-10 w-64 mb-6" />
-          <div className="space-y-4">
-            {[1, 2, 3, 4].map(i => (
-              <Skeleton key={i} className="h-24" />
-            ))}
-          </div>
-        </main>
+      <div className="space-y-4">
+        <Skeleton className="h-10 w-64" />
+        {[1, 2, 3, 4].map(i => (
+          <Skeleton key={i} className="h-24" />
+        ))}
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      
-      
-      <main className="flex-1 container max-w-6xl mx-auto px-4 py-8">
-        <Link 
-          to="/admin/premium" 
-          className="inline-flex items-center text-muted-foreground hover:text-foreground mb-4"
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Voltar
-        </Link>
+    <div className="space-y-6">
+      <Link 
+        to="/admin/premium" 
+        className="inline-flex items-center text-muted-foreground hover:text-foreground"
+      >
+        <ArrowLeft className="mr-2 h-4 w-4" />
+        Voltar
+      </Link>
 
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-3xl font-bold">Itens Premium</h1>
-          <Button asChild>
-            <Link to="/admin/premium/itens/novo">
-              <Plus className="mr-2 h-4 w-4" />
-              Novo Item
-            </Link>
-          </Button>
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold">Itens Premium</h1>
+        <Button asChild>
+          <Link to="/admin/premium/itens/novo">
+            <Plus className="mr-2 h-4 w-4" />
+            Novo Item
+          </Link>
+        </Button>
+      </div>
+
+      {/* Filters */}
+      <div className="flex flex-wrap gap-4">
+        <div className="relative flex-1 min-w-[200px]">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Buscar..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10"
+          />
         </div>
+        <Select value={typeFilter} onValueChange={setTypeFilter}>
+          <SelectTrigger className="w-[150px]">
+            <SelectValue placeholder="Tipo" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos</SelectItem>
+            <SelectItem value="course">Cursos</SelectItem>
+            <SelectItem value="job">Vagas</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <SelectTrigger className="w-[150px]">
+            <SelectValue placeholder="Status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos</SelectItem>
+            <SelectItem value="draft">Rascunho</SelectItem>
+            <SelectItem value="published">Publicado</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
 
-        {/* Filters */}
-        <div className="flex flex-wrap gap-4 mb-6">
-          <div className="relative flex-1 min-w-[200px]">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Buscar..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-          <Select value={typeFilter} onValueChange={setTypeFilter}>
-            <SelectTrigger className="w-[150px]">
-              <SelectValue placeholder="Tipo" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos</SelectItem>
-              <SelectItem value="course">Cursos</SelectItem>
-              <SelectItem value="job">Vagas</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-[150px]">
-              <SelectValue placeholder="Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos</SelectItem>
-              <SelectItem value="draft">Rascunho</SelectItem>
-              <SelectItem value="published">Publicado</SelectItem>
-            </SelectContent>
-          </Select>
+      {/* Items List */}
+      {filteredItems.length === 0 ? (
+        <div className="text-center py-12">
+          <p className="text-muted-foreground">Nenhum item encontrado.</p>
         </div>
-
-        {/* Items List */}
-        {filteredItems.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-muted-foreground">Nenhum item encontrado.</p>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {filteredItems.map(item => (
-              <Card key={item.id}>
-                <CardContent className="py-4">
-                  <div className="flex items-center gap-4">
-                    <div className="p-2 rounded-lg bg-muted">
-                      {item.item_type === 'course' ? (
-                        <BookOpen className="h-5 w-5" />
-                      ) : (
-                        <Briefcase className="h-5 w-5" />
-                      )}
-                    </div>
-                    
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold truncate">{item.title}</h3>
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <span>{item.item_type === 'course' ? 'Curso' : 'Vaga'}</span>
-                        <span>•</span>
-                        <span>/{item.slug}</span>
-                      </div>
-                    </div>
-
-                    <Badge variant={item.status === 'published' ? 'default' : 'secondary'}>
-                      {item.status === 'published' ? 'Publicado' : 'Rascunho'}
-                    </Badge>
-
-                    <div className="flex items-center gap-2">
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        onClick={() => handleToggleStatus(item)}
-                        title={item.status === 'published' ? 'Despublicar' : 'Publicar'}
-                      >
-                        {item.status === 'published' ? (
-                          <EyeOff className="h-4 w-4" />
-                        ) : (
-                          <Eye className="h-4 w-4" />
-                        )}
-                      </Button>
-                      <Button size="icon" variant="ghost" asChild>
-                        <Link to={`/admin/premium/itens/${item.id}`}>
-                          <Edit className="h-4 w-4" />
-                        </Link>
-                      </Button>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        onClick={() => handleDelete(item)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+      ) : (
+        <div className="space-y-4">
+          {filteredItems.map(item => (
+            <Card key={item.id}>
+              <CardContent className="py-4">
+                <div className="flex items-center gap-4">
+                  <div className="p-2 rounded-lg bg-muted">
+                    {item.item_type === 'course' ? (
+                      <BookOpen className="h-5 w-5" />
+                    ) : (
+                      <Briefcase className="h-5 w-5" />
+                    )}
+                  </div>
+                  
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold truncate">{item.title}</h3>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <span>{item.item_type === 'course' ? 'Curso' : 'Vaga'}</span>
+                      <span>•</span>
+                      <span>/{item.slug}</span>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
-      </main>
 
-      
+                  <Badge variant={item.status === 'published' ? 'default' : 'secondary'}>
+                    {item.status === 'published' ? 'Publicado' : 'Rascunho'}
+                  </Badge>
+
+                  <div className="flex items-center gap-2">
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      onClick={() => handleToggleStatus(item)}
+                      title={item.status === 'published' ? 'Despublicar' : 'Publicar'}
+                    >
+                      {item.status === 'published' ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
+                    </Button>
+                    <Button size="icon" variant="ghost" asChild>
+                      <Link to={`/admin/premium/itens/${item.id}`}>
+                        <Edit className="h-4 w-4" />
+                      </Link>
+                    </Button>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      onClick={() => handleDelete(item)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

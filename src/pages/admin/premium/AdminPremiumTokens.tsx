@@ -53,8 +53,6 @@ const AdminPremiumTokens = () => {
     }
   };
 
-  // Generate token in uppercase format with hyphens (e.g., RNT1-VT2N-NM8E-SJ9X)
-  // This format must match the normalization in the Edge Function
   const generateToken = () => {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     let token = '';
@@ -62,7 +60,6 @@ const AdminPremiumTokens = () => {
       if (i > 0 && i % 4 === 0) token += '-';
       token += chars.charAt(Math.floor(Math.random() * chars.length));
     }
-    // Return already uppercase (chars are uppercase, but be explicit)
     return token.toUpperCase();
   };
 
@@ -72,7 +69,7 @@ const AdminPremiumTokens = () => {
     try {
       const token = generateToken();
       const expiresAt = new Date();
-      expiresAt.setHours(expiresAt.getHours() + 72); // 72 hours to use
+      expiresAt.setHours(expiresAt.getHours() + 72);
 
       const { error } = await supabase
         .from('redeem_tokens')
@@ -87,7 +84,6 @@ const AdminPremiumTokens = () => {
 
       await fetchTokens();
       
-      // Copy to clipboard
       await navigator.clipboard.writeText(token);
       
       toast({
@@ -145,43 +141,30 @@ const AdminPremiumTokens = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'new':
-        return 'default';
-      case 'used':
-        return 'secondary';
+      case 'new': return 'default';
+      case 'used': return 'secondary';
       case 'expired':
-      case 'revoked':
-        return 'destructive';
-      default:
-        return 'outline';
+      case 'revoked': return 'destructive';
+      default: return 'outline';
     }
   };
 
   const getStatusLabel = (status: string) => {
     switch (status) {
-      case 'new':
-        return 'Disponível';
-      case 'used':
-        return 'Utilizado';
-      case 'expired':
-        return 'Expirado';
-      case 'revoked':
-        return 'Revogado';
-      default:
-        return status;
+      case 'new': return 'Disponível';
+      case 'used': return 'Utilizado';
+      case 'expired': return 'Expirado';
+      case 'revoked': return 'Revogado';
+      default: return status;
     }
   };
 
   const getPlanLabel = (planType: string) => {
     switch (planType) {
-      case 'monthly':
-        return 'Mensal';
-      case 'annual':
-        return 'Anual';
-      case 'trial_30d':
-        return 'Trial 30d';
-      default:
-        return planType;
+      case 'monthly': return 'Mensal';
+      case 'annual': return 'Anual';
+      case 'trial_30d': return 'Trial 30d';
+      default: return planType;
     }
   };
 
@@ -193,134 +176,113 @@ const AdminPremiumTokens = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex flex-col">
-        <main className="flex-1 container max-w-6xl mx-auto px-4 py-8">
-          <Skeleton className="h-10 w-64 mb-6" />
-          <div className="space-y-4">
-            {[1, 2, 3].map(i => (
-              <Skeleton key={i} className="h-20" />
-            ))}
-          </div>
-        </main>
+      <div className="space-y-4">
+        <Skeleton className="h-10 w-64" />
+        {[1, 2, 3].map(i => (
+          <Skeleton key={i} className="h-20" />
+        ))}
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      
-      
-      <main className="flex-1 container max-w-6xl mx-auto px-4 py-8">
-        <Link 
-          to="/admin/premium" 
-          className="inline-flex items-center text-muted-foreground hover:text-foreground mb-4"
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Voltar
-        </Link>
+    <div className="space-y-6">
+      <Link 
+        to="/admin/premium" 
+        className="inline-flex items-center text-muted-foreground hover:text-foreground"
+      >
+        <ArrowLeft className="mr-2 h-4 w-4" />
+        Voltar
+      </Link>
 
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-3xl font-bold">Tokens de Resgate</h1>
-          <div className="flex gap-2">
-            <Button 
-              variant="outline" 
-              onClick={() => handleCreateToken('trial_30d')}
-              disabled={creating}
-            >
-              + Trial 30d
-            </Button>
-            <Button 
-              variant="outline" 
-              onClick={() => handleCreateToken('monthly')}
-              disabled={creating}
-            >
-              + Mensal
-            </Button>
-            <Button 
-              onClick={() => handleCreateToken('annual')}
-              disabled={creating}
-            >
-              + Anual
-            </Button>
-          </div>
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold">Tokens de Resgate</h1>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => handleCreateToken('trial_30d')} disabled={creating}>
+            + Trial 30d
+          </Button>
+          <Button variant="outline" onClick={() => handleCreateToken('monthly')} disabled={creating}>
+            + Mensal
+          </Button>
+          <Button onClick={() => handleCreateToken('annual')} disabled={creating}>
+            + Anual
+          </Button>
         </div>
+      </div>
 
-        {/* Search */}
-        <div className="relative max-w-md mb-6">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Buscar token ou e-mail..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
+      {/* Search */}
+      <div className="relative max-w-md">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Input
+          placeholder="Buscar token ou e-mail..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="pl-10"
+        />
+      </div>
+
+      {/* Tokens List */}
+      {filteredTokens.length === 0 ? (
+        <div className="text-center py-12">
+          <Ticket className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+          <p className="text-muted-foreground">Nenhum token encontrado.</p>
         </div>
-
-        {/* Tokens List */}
-        {filteredTokens.length === 0 ? (
-          <div className="text-center py-12">
-            <Ticket className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <p className="text-muted-foreground">Nenhum token encontrado.</p>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {filteredTokens.map(token => (
-              <Card key={token.id}>
-                <CardContent className="py-4">
-                  <div className="flex items-center gap-4">
-                    <div className="p-2 rounded-lg bg-muted">
-                      <Ticket className="h-5 w-5" />
-                    </div>
-                    
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <code className="font-mono text-sm bg-muted px-2 py-1 rounded">
-                          {token.token}
-                        </code>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          className="h-6 w-6"
-                          onClick={() => handleCopyToken(token.token)}
-                        >
-                          <Copy className="h-3 w-3" />
-                        </Button>
-                      </div>
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
-                        <span>{getPlanLabel(token.plan_type)}</span>
-                        <span>•</span>
-                        <span>Expira: {format(new Date(token.expires_at), 'dd/MM/yyyy HH:mm')}</span>
-                        {token.buyer_email && (
-                          <>
-                            <span>•</span>
-                            <span>{token.buyer_email}</span>
-                          </>
-                        )}
-                      </div>
-                    </div>
-
-                    <Badge variant={getStatusColor(token.status) as any}>
-                      {getStatusLabel(token.status)}
-                    </Badge>
-
-                    {token.status === 'new' && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleRevokeToken(token)}
-                      >
-                        Revogar
-                      </Button>
-                    )}
+      ) : (
+        <div className="space-y-4">
+          {filteredTokens.map(token => (
+            <Card key={token.id}>
+              <CardContent className="py-4">
+                <div className="flex items-center gap-4">
+                  <div className="p-2 rounded-lg bg-muted">
+                    <Ticket className="h-5 w-5" />
                   </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
-      </main>
+                  
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <code className="font-mono text-sm bg-muted px-2 py-1 rounded">
+                        {token.token}
+                      </code>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-6 w-6"
+                        onClick={() => handleCopyToken(token.token)}
+                      >
+                        <Copy className="h-3 w-3" />
+                      </Button>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
+                      <span>{getPlanLabel(token.plan_type)}</span>
+                      <span>•</span>
+                      <span>Expira: {format(new Date(token.expires_at), 'dd/MM/yyyy HH:mm')}</span>
+                      {token.buyer_email && (
+                        <>
+                          <span>•</span>
+                          <span>{token.buyer_email}</span>
+                        </>
+                      )}
+                    </div>
+                  </div>
 
-      
+                  <Badge variant={getStatusColor(token.status) as any}>
+                    {getStatusLabel(token.status)}
+                  </Badge>
+
+                  {token.status === 'new' && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleRevokeToken(token)}
+                    >
+                      Revogar
+                    </Button>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

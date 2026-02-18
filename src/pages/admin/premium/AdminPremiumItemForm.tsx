@@ -108,30 +108,19 @@ const AdminPremiumItemForm = () => {
     e.preventDefault();
     
     if (!form.title.trim()) {
-      toast({
-        title: 'Erro',
-        description: 'O título é obrigatório.',
-        variant: 'destructive',
-      });
+      toast({ title: 'Erro', description: 'O título é obrigatório.', variant: 'destructive' });
       return;
     }
 
     if (!form.slug.trim()) {
-      toast({
-        title: 'Erro',
-        description: 'O slug é obrigatório.',
-        variant: 'destructive',
-      });
+      toast({ title: 'Erro', description: 'O slug é obrigatório.', variant: 'destructive' });
       return;
     }
 
     setSaving(true);
 
     try {
-      const tags = form.tags
-        .split(',')
-        .map(t => t.trim())
-        .filter(t => t.length > 0);
+      const tags = form.tags.split(',').map(t => t.trim()).filter(t => t.length > 0);
 
       const itemData = {
         item_type: form.item_type,
@@ -149,41 +138,19 @@ const AdminPremiumItemForm = () => {
       };
 
       if (isEditing) {
-        const { error } = await supabase
-          .from('premium_items')
-          .update(itemData)
-          .eq('id', id);
-
+        const { error } = await supabase.from('premium_items').update(itemData).eq('id', id);
         if (error) throw error;
-
-        toast({
-          title: 'Salvo',
-          description: 'Item atualizado com sucesso.',
-        });
+        toast({ title: 'Salvo', description: 'Item atualizado com sucesso.' });
       } else {
-        const { error } = await supabase
-          .from('premium_items')
-          .insert({
-            ...itemData,
-            created_by: user?.id,
-          });
-
+        const { error } = await supabase.from('premium_items').insert({ ...itemData, created_by: user?.id });
         if (error) throw error;
-
-        toast({
-          title: 'Criado',
-          description: 'Item criado com sucesso.',
-        });
+        toast({ title: 'Criado', description: 'Item criado com sucesso.' });
       }
 
       navigate('/admin/premium/itens');
     } catch (err: any) {
       console.error('Error saving item:', err);
-      toast({
-        title: 'Erro',
-        description: err.message || 'Não foi possível salvar o item.',
-        variant: 'destructive',
-      });
+      toast({ title: 'Erro', description: err.message || 'Não foi possível salvar o item.', variant: 'destructive' });
     } finally {
       setSaving(false);
     }
@@ -191,186 +158,121 @@ const AdminPremiumItemForm = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex flex-col">
-        <main className="flex-1 container max-w-2xl mx-auto px-4 py-8">
-          <Skeleton className="h-10 w-64 mb-6" />
-          <Skeleton className="h-96" />
-        </main>
+      <div className="space-y-4">
+        <Skeleton className="h-10 w-64" />
+        <Skeleton className="h-96" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      
-      
-      <main className="flex-1 container max-w-2xl mx-auto px-4 py-8">
-        <Link 
-          to="/admin/premium/itens" 
-          className="inline-flex items-center text-muted-foreground hover:text-foreground mb-4"
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Voltar
-        </Link>
+    <div className="space-y-6">
+      <Link 
+        to="/admin/premium/itens" 
+        className="inline-flex items-center text-muted-foreground hover:text-foreground"
+      >
+        <ArrowLeft className="mr-2 h-4 w-4" />
+        Voltar
+      </Link>
 
-        <h1 className="text-3xl font-bold mb-6">
-          {isEditing ? 'Editar Item' : 'Novo Item Premium'}
-        </h1>
+      <h1 className="text-3xl font-bold">
+        {isEditing ? 'Editar Item' : 'Novo Item Premium'}
+      </h1>
 
-        <Card>
-          <CardContent className="pt-6">
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid gap-4 md:grid-cols-2">
-                <div>
-                  <Label htmlFor="item_type">Tipo</Label>
-                  <Select 
-                    value={form.item_type} 
-                    onValueChange={(value: 'course' | 'job') => setForm(prev => ({ ...prev, item_type: value }))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="course">Curso</SelectItem>
-                      <SelectItem value="job">Vaga</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <Label htmlFor="status">Status</Label>
-                  <Select 
-                    value={form.status} 
-                    onValueChange={(value: 'draft' | 'published') => setForm(prev => ({ ...prev, status: value }))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="draft">Rascunho</SelectItem>
-                      <SelectItem value="published">Publicado</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+      <Card>
+        <CardContent className="pt-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="grid gap-4 md:grid-cols-2">
+              <div>
+                <Label htmlFor="item_type">Tipo</Label>
+                <Select 
+                  value={form.item_type} 
+                  onValueChange={(value: 'course' | 'job') => setForm(prev => ({ ...prev, item_type: value }))}
+                >
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="course">Curso</SelectItem>
+                    <SelectItem value="job">Vaga</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               <div>
-                <Label htmlFor="title">Título *</Label>
-                <Input
-                  id="title"
-                  value={form.title}
-                  onChange={(e) => handleTitleChange(e.target.value)}
-                  placeholder="Ex: Curso de React Avançado"
-                />
+                <Label htmlFor="status">Status</Label>
+                <Select 
+                  value={form.status} 
+                  onValueChange={(value: 'draft' | 'published') => setForm(prev => ({ ...prev, status: value }))}
+                >
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="draft">Rascunho</SelectItem>
+                    <SelectItem value="published">Publicado</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
+            </div>
 
+            <div>
+              <Label htmlFor="title">Título *</Label>
+              <Input id="title" value={form.title} onChange={(e) => handleTitleChange(e.target.value)} placeholder="Ex: Curso de React Avançado" />
+            </div>
+
+            <div>
+              <Label htmlFor="slug">Slug *</Label>
+              <Input id="slug" value={form.slug} onChange={(e) => setForm(prev => ({ ...prev, slug: e.target.value }))} placeholder="curso-react-avancado" />
+              <p className="text-sm text-muted-foreground mt-1">
+                URL: /premium/{form.item_type === 'course' ? 'cursos' : 'vagas'}/{form.slug || '...'}
+              </p>
+            </div>
+
+            <div>
+              <Label htmlFor="description_short">Descrição curta</Label>
+              <Textarea id="description_short" value={form.description_short} onChange={(e) => setForm(prev => ({ ...prev, description_short: e.target.value }))} placeholder="Descrição breve exibida nos cards" rows={2} />
+            </div>
+
+            <div>
+              <Label htmlFor="description_full">Descrição completa</Label>
+              <Textarea id="description_full" value={form.description_full} onChange={(e) => setForm(prev => ({ ...prev, description_full: e.target.value }))} placeholder="Descrição detalhada" rows={4} />
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2">
               <div>
-                <Label htmlFor="slug">Slug *</Label>
-                <Input
-                  id="slug"
-                  value={form.slug}
-                  onChange={(e) => setForm(prev => ({ ...prev, slug: e.target.value }))}
-                  placeholder="curso-react-avancado"
-                />
-                <p className="text-sm text-muted-foreground mt-1">
-                  URL: /premium/{form.item_type === 'course' ? 'cursos' : 'vagas'}/{form.slug || '...'}
-                </p>
+                <Label htmlFor="logo_url">URL do Logo</Label>
+                <Input id="logo_url" value={form.logo_url} onChange={(e) => setForm(prev => ({ ...prev, logo_url: e.target.value }))} placeholder="https://..." />
               </div>
-
               <div>
-                <Label htmlFor="description_short">Descrição curta</Label>
-                <Textarea
-                  id="description_short"
-                  value={form.description_short}
-                  onChange={(e) => setForm(prev => ({ ...prev, description_short: e.target.value }))}
-                  placeholder="Descrição breve exibida nos cards"
-                  rows={2}
-                />
+                <Label htmlFor="external_url">URL Externa (Acessar)</Label>
+                <Input id="external_url" value={form.external_url} onChange={(e) => setForm(prev => ({ ...prev, external_url: e.target.value }))} placeholder="https://..." />
               </div>
+            </div>
 
+            <div className="grid gap-4 md:grid-cols-2">
               <div>
-                <Label htmlFor="description_full">Descrição completa</Label>
-                <Textarea
-                  id="description_full"
-                  value={form.description_full}
-                  onChange={(e) => setForm(prev => ({ ...prev, description_full: e.target.value }))}
-                  placeholder="Descrição detalhada"
-                  rows={4}
-                />
+                <Label htmlFor="tags">Tags (separadas por vírgula)</Label>
+                <Input id="tags" value={form.tags} onChange={(e) => setForm(prev => ({ ...prev, tags: e.target.value }))} placeholder="React, JavaScript, Frontend" />
               </div>
-
-              <div className="grid gap-4 md:grid-cols-2">
-                <div>
-                  <Label htmlFor="logo_url">URL do Logo</Label>
-                  <Input
-                    id="logo_url"
-                    value={form.logo_url}
-                    onChange={(e) => setForm(prev => ({ ...prev, logo_url: e.target.value }))}
-                    placeholder="https://..."
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="external_url">URL Externa (Acessar)</Label>
-                  <Input
-                    id="external_url"
-                    value={form.external_url}
-                    onChange={(e) => setForm(prev => ({ ...prev, external_url: e.target.value }))}
-                    placeholder="https://..."
-                  />
-                </div>
+              <div>
+                <Label htmlFor="sort_order">Ordem de exibição</Label>
+                <Input id="sort_order" type="number" value={form.sort_order} onChange={(e) => setForm(prev => ({ ...prev, sort_order: parseInt(e.target.value) || 0 }))} placeholder="0" />
+                <p className="text-sm text-muted-foreground mt-1">Menor número = aparece primeiro</p>
               </div>
+            </div>
 
-              <div className="grid gap-4 md:grid-cols-2">
-                <div>
-                  <Label htmlFor="tags">Tags (separadas por vírgula)</Label>
-                  <Input
-                    id="tags"
-                    value={form.tags}
-                    onChange={(e) => setForm(prev => ({ ...prev, tags: e.target.value }))}
-                    placeholder="React, JavaScript, Frontend"
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="sort_order">Ordem de exibição</Label>
-                  <Input
-                    id="sort_order"
-                    type="number"
-                    value={form.sort_order}
-                    onChange={(e) => setForm(prev => ({ ...prev, sort_order: parseInt(e.target.value) || 0 }))}
-                    placeholder="0"
-                  />
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Menor número = aparece primeiro
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex gap-4">
-                <Button type="submit" disabled={saving}>
-                  {saving ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Salvando...
-                    </>
-                  ) : (
-                    <>
-                      <Save className="mr-2 h-4 w-4" />
-                      Salvar
-                    </>
-                  )}
-                </Button>
-                <Button type="button" variant="outline" onClick={() => navigate('/admin/premium/itens')}>
-                  Cancelar
-                </Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
-      </main>
-
-      
+            <div className="flex gap-4">
+              <Button type="submit" disabled={saving}>
+                {saving ? (
+                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Salvando...</>
+                ) : (
+                  <><Save className="mr-2 h-4 w-4" />Salvar</>
+                )}
+              </Button>
+              <Button type="button" variant="outline" onClick={() => navigate('/admin/premium/itens')}>
+                Cancelar
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
 };
