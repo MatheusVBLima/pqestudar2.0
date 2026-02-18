@@ -303,7 +303,7 @@ export default function ConcursoDetalhe() {
       <Helmet>
         <title>{metaTitle} | PqEstudar</title>
         <meta name="description" content={metaDescription.substring(0, 160)} />
-        <link rel="canonical" href={canonicalUrl} />
+        
         
         {/* Open Graph */}
         <meta property="og:title" content={metaTitle} />

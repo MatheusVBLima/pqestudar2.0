@@ -256,10 +256,7 @@ const Privacidade = () => {
       );
     }
 
-    const canonical = document.querySelector('link[rel="canonical"]');
-    if (canonical) {
-      canonical.setAttribute("href", "https://pqestudar.com.br/privacidade");
-    }
+    // Canonical is handled globally by GlobalSeo
 
     // JSON-LD
     const script = document.createElement("script");
