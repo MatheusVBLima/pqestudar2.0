@@ -28,17 +28,13 @@ export function AdminLayout() {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen bg-muted admin-radius">
-        <div className="mx-auto flex max-w-[1400px] gap-4 p-4">
-          <AdminSidebar />
-          <div className="flex-1 min-w-0">
-            <div className="rounded-[var(--admin-radius)] border bg-card shadow-[var(--admin-shadow)] flex flex-col min-h-[calc(100vh-2rem)]">
-              <AdminHeader />
-              <main className="flex-1 p-6 overflow-auto">
-                <Outlet />
-              </main>
-            </div>
-          </div>
+      <div className="min-h-screen flex w-full bg-background admin-radius">
+        <AdminSidebar />
+        <div className="flex-1 flex flex-col min-w-0">
+          <AdminHeader />
+          <main className="flex-1 p-6 overflow-auto">
+            <Outlet />
+          </main>
         </div>
       </div>
     </SidebarProvider>

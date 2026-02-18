@@ -32,7 +32,7 @@ export function AdminSidebar() {
   const isPremiumActive = pathname.startsWith('/admin/premium');
 
   return (
-    <Sidebar className="border-none bg-transparent" collapsible="icon" data-slot="admin-sidebar">
+    <Sidebar className="border-r" collapsible="icon">
       <SidebarHeader className="p-4 border-b">
         <Link to="/admin" className="flex items-center gap-2 font-bold text-lg">
           <LayoutDashboard className="h-5 w-5 text-primary" />
