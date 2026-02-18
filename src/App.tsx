@@ -9,6 +9,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { useGoogleAnalytics } from "@/hooks/useGoogleAnalytics";
 import { useMetaPixel } from "@/hooks/useMetaPixel";
 import { AppLayout } from "@/components/layout/AppLayout";
+import { GlobalSeo } from "@/components/seo/GlobalSeo";
 import Index from "./pages/Index";
 import ExploreCourses from "./pages/ExploreCourses";
 import CourseDetail from "./pages/CourseDetail";
@@ -98,9 +99,9 @@ const AppWithPixel = () => {
   return (
     <Routes>
       {/* Standalone pages (no shared Navbar/Footer) */}
-      <Route path="/login" element={<Login />} />
-      <Route path="/assine" element={<Assine />} />
-      <Route path="/mapa-dos-beneficios" element={<MapaDosBeneficios />} />
+      <Route path="/login" element={<><GlobalSeo /><Login /></>} />
+      <Route path="/assine" element={<><GlobalSeo /><Assine /></>} />
+      <Route path="/mapa-dos-beneficios" element={<><GlobalSeo /><MapaDosBeneficios /></>} />
 
       {/* Admin Dashboard (standalone layout with sidebar) */}
       <Route path="/admin" element={<AdminLayout />}>
