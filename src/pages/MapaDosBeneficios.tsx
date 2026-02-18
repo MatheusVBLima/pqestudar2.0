@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Helmet } from "react-helmet";
+import { Helmet } from "react-helmet-async";
 import { motion, AnimatePresence } from "framer-motion";
 import { Flame, CheckCircle, X, FileText, Users, Award, RefreshCw, Heart, Gift, Check, Shield, ChevronDown, Clock, Volume2 } from "lucide-react";
 import { Button } from "@/components/ui/button";

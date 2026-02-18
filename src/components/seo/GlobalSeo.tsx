@@ -1,4 +1,5 @@
-import { Helmet } from "react-helmet";
+import { useEffect } from "react";
+import { Helmet } from "react-helmet-async";
 import { useLocation } from "react-router-dom";
 
 const BASE_URL = "https://pqestudar.com.br";
@@ -108,15 +109,31 @@ export function GlobalSeo({ jsonLd }: GlobalSeoProps) {
 
   const schemas = jsonLd ? buildJsonLd(canonical, jsonLd) : null;
 
+  // Inject canonical directly via DOM to guarantee it appears
+  useEffect(() => {
+    let link = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
+    if (!link) {
+      link = document.createElement("link");
+      link.setAttribute("rel", "canonical");
+      document.head.appendChild(link);
+    }
+    link.setAttribute("href", canonical);
+    return () => {
+      const existing = document.querySelector('link[rel="canonical"]');
+      if (existing) existing.remove();
+    };
+  }, [canonical]);
+
   return (
-    <Helmet>
-      <link rel="canonical" href={canonical} />
+    <>
       {schemas?.map((schema, i) => (
-        <script key={i} type="application/ld+json">
-          {JSON.stringify(schema)}
-        </script>
+        <Helmet key={i}>
+          <script type="application/ld+json">
+            {JSON.stringify(schema)}
+          </script>
+        </Helmet>
       ))}
-    </Helmet>
+    </>
   );
 }
 
