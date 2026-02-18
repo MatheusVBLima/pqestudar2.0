@@ -12,7 +12,7 @@ interface ChartCardProps {
 
 export function ChartCard({ title, description, actions, children, className }: ChartCardProps) {
   return (
-    <Card className={cn('rounded-[1.2rem]', className)}>
+    <Card className={cn('', className)}>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <div>
           <CardTitle className="text-base">{title}</CardTitle>
