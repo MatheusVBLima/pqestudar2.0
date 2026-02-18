@@ -316,3 +316,13 @@ All colors MUST be HSL.
   box-shadow: var(--admin-shadow);
   overflow: hidden;
 }
+
+/* Collapsed sidebar: keep card appearance and center icons */
+.admin-radius [data-slot="admin-sidebar"] [data-sidebar="sidebar"] {
+  background: transparent;
+}
+.admin-radius .group\/sidebar-wrapper [data-state="collapsed"] [data-sidebar="menu-button"] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
