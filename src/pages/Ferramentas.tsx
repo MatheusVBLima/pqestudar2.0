@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Helmet } from "react-helmet";
+import { Helmet } from "react-helmet-async";
 import { useSearchParams } from "react-router-dom";
 import { GlobalSeo } from "@/components/seo/GlobalSeo";
 import { X, Sparkles, Brain, Shield, GraduationCap, Wrench, Zap, Plus, Edit, Eye, EyeOff, Trash2, GripVertical, ChevronLeft, ChevronRight } from "lucide-react";

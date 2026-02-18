@@ -3,7 +3,7 @@ import { useParams, Navigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { BonusPage as BonusPageType } from "@/hooks/useBonusPages";
 import { useUserRoles } from "@/hooks/useUserRoles";
-import { Helmet } from "react-helmet";
+import { Helmet } from "react-helmet-async";
 import { BonusToolCard } from "@/components/ui/bonus-tool-card";
 const BonusPage = () => {
   const {
