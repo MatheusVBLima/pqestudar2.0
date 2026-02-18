@@ -188,12 +188,7 @@ const Termos = () => {
       metaDescription.setAttribute('content', `Termos de Uso da PqEstudar. Última atualização: ${updatedAt}.`);
     }
 
-    const linkCanonical = document.querySelector('link[rel="canonical"]') || document.createElement('link');
-    linkCanonical.setAttribute('rel', 'canonical');
-    linkCanonical.setAttribute('href', 'https://pqestudar.com.br/termos');
-    if (!document.querySelector('link[rel="canonical"]')) {
-      document.head.appendChild(linkCanonical);
-    }
+    // Canonical is handled globally by GlobalSeo
 
     // JSON-LD
     const jsonLd = {

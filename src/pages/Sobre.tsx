@@ -12,12 +12,7 @@ const Sobre = () => {
     if (metaDescription) {
       metaDescription.setAttribute('content', 'Por que estudar? Para hackear o sistema e acelerar sua carreira. Matheus Dias te ensina como.');
     }
-    const linkCanonical = document.querySelector('link[rel="canonical"]') || document.createElement('link');
-    linkCanonical.setAttribute('rel', 'canonical');
-    linkCanonical.setAttribute('href', 'https://pqestudar.com.br/sobre');
-    if (!document.querySelector('link[rel="canonical"]')) {
-      document.head.appendChild(linkCanonical);
-    }
+    // Canonical is handled globally by GlobalSeo
     return () => {
       document.title = "pqestudar - Cursos Gratuitos com Certificado";
       if (metaDescription) {
