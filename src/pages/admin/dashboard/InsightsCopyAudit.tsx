@@ -4,6 +4,7 @@ import { PeriodSelector, Period } from '@/components/admin/dashboard/PeriodSelec
 import { ChartCard } from '@/components/admin/dashboard/ChartCard';
 import { DataTable } from '@/components/admin/dashboard/DataTable';
 import { AuditDetailDrawer } from '@/components/admin/dashboard/AuditDetailDrawer';
+import { AuditSummaryCard } from '@/components/admin/dashboard/AuditSummaryCard';
 import { periodToRange } from '@/components/admin/dashboard/periodHelper';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -13,6 +14,9 @@ import { ptBR } from 'date-fns/locale';
 import { Button } from '@/components/ui/button';
 import { Play } from 'lucide-react';
 import { toast } from 'sonner';
+import { Progress } from '@/components/ui/progress';
+import { buildAuditUrls, runIframeAudit } from '@/lib/iframe-audit-engine';
+import { analyzeCopy } from '@/lib/copy-audit-analyzer';
 
 const AUDIT_TYPE = 'copywriting';
 
@@ -30,6 +34,7 @@ export default function InsightsCopyAudit() {
   const qc = useQueryClient();
   const [period, setPeriod] = useState<Period>('all');
   const [drawerIdx, setDrawerIdx] = useState<number | null>(null);
+  const [auditProgress, setAuditProgress] = useState<{ current: number; total: number; path: string } | null>(null);
   const range = periodToRange(period);
 
   const { data: history } = useQuery({
@@ -73,6 +78,7 @@ export default function InsightsCopyAudit() {
     staleTime: 10 * 60 * 1000,
   });
 
+  const latestRun = history?.find(h => h.status === 'completed') ?? null;
   const scoreChart = history?.filter(h => h.status === 'completed').reverse() ?? [];
   const tableRows = findings?.map(f => ({
     url: f.path,
@@ -92,37 +98,63 @@ export default function InsightsCopyAudit() {
 
   const runAudit = useMutation({
     mutationFn: async () => {
+      const urls = await buildAuditUrls();
+      setAuditProgress({ current: 0, total: urls.length, path: 'Preparando…' });
+
+      const results = await runIframeAudit(urls, analyzeCopy, (current, total, path) => {
+        setAuditProgress({ current, total, path });
+      });
+
+      setAuditProgress({ current: urls.length, total: urls.length, path: 'Salvando resultados…' });
+
       const { data: { session } } = await supabase.auth.getSession();
       const resp = await supabase.functions.invoke('insights-copywriting-audit', {
+        body: { findings: results },
         headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {},
       });
-      if (resp.error) throw new Error(resp.error.message || 'Falha ao rodar auditoria');
+      if (resp.error) throw new Error(resp.error.message || 'Falha ao salvar auditoria');
       return resp.data;
     },
     onSuccess: () => {
+      setAuditProgress(null);
       toast.success('Auditoria de Copywriting concluída!');
       qc.invalidateQueries({ queryKey: ['insights-audit-history', AUDIT_TYPE] });
       qc.invalidateQueries({ queryKey: ['insights-audit-categories', AUDIT_TYPE] });
       qc.invalidateQueries({ queryKey: ['insights-audit-findings', AUDIT_TYPE] });
     },
-    onError: (err: Error) => toast.error(err.message),
+    onError: (err: Error) => {
+      setAuditProgress(null);
+      toast.error(err.message);
+    },
   });
 
   return (
     <div className="space-y-6">
       <PageHeader
         title="Copy Audit"
-        description="Resultados das auditorias de copywriting por rota"
+        description="Resultados das auditorias de copywriting por rota (DOM renderizado)"
         actions={
           <div className="flex items-center gap-2">
             <Button onClick={() => runAudit.mutate()} disabled={runAudit.isPending} size="sm">
               <Play className="h-4 w-4 mr-1" />
-              {runAudit.isPending ? 'Rodando…' : 'Rodar auditoria agora'}
+              {runAudit.isPending ? 'Auditando…' : 'Rodar auditoria agora'}
             </Button>
             <PeriodSelector value={period} onChange={setPeriod} />
           </div>
         }
       />
+
+      {auditProgress && (
+        <div className="rounded-lg border p-4 space-y-2 bg-card">
+          <div className="flex items-center justify-between text-sm">
+            <span className="font-medium">Auditando {auditProgress.current}/{auditProgress.total}</span>
+            <span className="text-muted-foreground text-xs truncate max-w-[300px]">{auditProgress.path}</span>
+          </div>
+          <Progress value={auditProgress.total > 0 ? (auditProgress.current / auditProgress.total) * 100 : 0} className="h-2" />
+        </div>
+      )}
+
+      <AuditSummaryCard run={latestRun} />
 
       <div className="grid gap-4 lg:grid-cols-2">
         <ChartCard title="Score médio por execução" description="Histórico de auditorias">
