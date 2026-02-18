@@ -1,6 +1,8 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+import { Helmet } from "react-helmet";
 import { motion } from "framer-motion";
+import { GlobalSeo } from "@/components/seo/GlobalSeo";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
@@ -224,7 +226,19 @@ export default function Concursos() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      
+      <GlobalSeo
+        jsonLd={{
+          pageType: "itemList",
+          items: displayedOportunidades.map((o) => ({
+            name: o.titulo,
+            url: `/concursos/${o.slug}`,
+          })),
+        }}
+      />
+      <Helmet>
+        <title>Concursos e Oportunidades — PqEstudar</title>
+        <meta name="description" content="Acompanhe concursos públicos, processos seletivos e oportunidades educacionais com curadoria especializada." />
+      </Helmet>
       
       {/* Hero Section */}
       <section className="relative bg-gradient-to-br from-primary/10 via-background to-background border-b overflow-hidden">

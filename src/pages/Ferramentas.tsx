@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Helmet } from "react-helmet";
 import { useSearchParams } from "react-router-dom";
+import { GlobalSeo } from "@/components/seo/GlobalSeo";
 import { X, Sparkles, Brain, Shield, GraduationCap, Wrench, Zap, Plus, Edit, Eye, EyeOff, Trash2, GripVertical, ChevronLeft, ChevronRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -580,6 +581,12 @@ export default function Ferramentas() {
 
   return (
     <>
+      <GlobalSeo
+        jsonLd={{
+          pageType: "itemList",
+          items: tools.map((t) => ({ name: t.name, url: `/ferramentas` })),
+        }}
+      />
       <Helmet>
         <title>O Arsenal de Ferramentas Secretas — PqEstudar</title>
         <meta

@@ -5,6 +5,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { AdminSidebar } from './AdminSidebar';
 import { AdminHeader } from './AdminHeader';
 import { SidebarProvider } from '@/components/ui/sidebar';
+import { GlobalSeo } from '@/components/seo/GlobalSeo';
 
 export function AdminLayout() {
   const { user, loading: authLoading } = useAuth();
@@ -28,6 +29,7 @@ export function AdminLayout() {
 
   return (
     <SidebarProvider>
+      <GlobalSeo jsonLd={{ pageType: "none" }} />
       <div className="min-h-screen w-full bg-muted admin-radius">
         <div className="flex w-full gap-4 p-4">
           <AdminSidebar />
