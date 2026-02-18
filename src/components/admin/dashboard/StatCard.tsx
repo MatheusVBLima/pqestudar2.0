@@ -11,7 +11,7 @@ interface StatCardProps {
 
 export function StatCard({ title, value, description, icon: Icon, trend }: StatCardProps) {
   return (
-    <Card>
+    <Card className="rounded-[1.2rem]">
       <CardContent className="p-6">
         <div className="flex items-center justify-between">
           <p className="text-sm font-medium text-muted-foreground">{title}</p>

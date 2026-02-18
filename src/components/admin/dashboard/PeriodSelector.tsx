@@ -18,13 +18,13 @@ interface PeriodSelectorProps {
 
 export function PeriodSelector({ value, onChange }: PeriodSelectorProps) {
   return (
-    <div className="flex items-center gap-1 rounded-lg border p-1 bg-muted/30">
+    <div className="flex items-center gap-1 rounded-[1.2rem] border p-1 bg-muted/30">
       {(Object.keys(labels) as Period[]).map((p) => (
         <Button
           key={p}
           variant={value === p ? 'default' : 'ghost'}
           size="sm"
-          className={cn('h-7 text-xs', value !== p && 'text-muted-foreground')}
+          className={cn('h-7 text-xs rounded-[1rem]', value !== p && 'text-muted-foreground')}
           onClick={() => onChange(p)}
         >
           {labels[p]}

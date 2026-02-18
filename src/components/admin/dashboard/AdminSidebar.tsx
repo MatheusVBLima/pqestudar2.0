@@ -50,7 +50,7 @@ export function AdminSidebar() {
                   asChild
                   isActive={pathname === '/admin'}
                   className={cn(
-                    'rounded-md font-medium',
+                    'rounded-[1.2rem] font-medium',
                     pathname === '/admin' && 'bg-primary/10 text-primary font-semibold'
                   )}
                 >
@@ -69,7 +69,7 @@ export function AdminSidebar() {
           <Collapsible defaultOpen={isInsightsActive}>
             <CollapsibleTrigger
               className={cn(
-                'flex w-full items-center justify-between px-3 py-2 text-sm rounded-md transition-colors',
+                'flex w-full items-center justify-between px-3 py-2 text-sm rounded-[1.2rem] transition-colors',
                 'hover:bg-muted',
                 isInsightsActive
                   ? 'font-semibold text-foreground'
@@ -93,7 +93,7 @@ export function AdminSidebar() {
                           asChild
                           isActive={active}
                           className={cn(
-                            'rounded-md pl-9 text-sm',
+                            'rounded-[1.2rem] pl-9 text-sm',
                             active
                               ? 'bg-primary/10 text-primary font-semibold'
                               : 'text-muted-foreground font-normal hover:text-foreground'
@@ -122,7 +122,7 @@ export function AdminSidebar() {
                   asChild
                   isActive={pathname.startsWith('/admin/curadorias')}
                   className={cn(
-                    'rounded-md font-medium',
+                    'rounded-[1.2rem] font-medium',
                     pathname.startsWith('/admin/curadorias') && 'bg-primary/10 text-primary font-semibold'
                   )}
                 >
@@ -141,7 +141,7 @@ export function AdminSidebar() {
           <Collapsible defaultOpen={isPremiumActive}>
             <CollapsibleTrigger
               className={cn(
-                'flex w-full items-center justify-between px-3 py-2 text-sm rounded-md transition-colors',
+                'flex w-full items-center justify-between px-3 py-2 text-sm rounded-[1.2rem] transition-colors',
                 'hover:bg-muted',
                 isPremiumActive
                   ? 'font-semibold text-foreground'
@@ -165,7 +165,7 @@ export function AdminSidebar() {
                           asChild
                           isActive={active}
                           className={cn(
-                            'rounded-md pl-9 text-sm',
+                            'rounded-[1.2rem] pl-9 text-sm',
                             active
                               ? 'bg-primary/10 text-primary font-semibold'
                               : 'text-muted-foreground font-normal hover:text-foreground'
