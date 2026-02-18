@@ -6,7 +6,6 @@ import {
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent,
   SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader,
-  useSidebar,
 } from '@/components/ui/sidebar';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
@@ -28,18 +27,16 @@ const premiumItems = [
 
 export function AdminSidebar() {
   const { pathname } = useLocation();
-  const { state } = useSidebar();
-  const collapsed = state === 'collapsed';
   const isActive = (href: string) => pathname === href;
   const isInsightsActive = pathname.startsWith('/admin/insights');
   const isPremiumActive = pathname.startsWith('/admin/premium');
 
   return (
-    <Sidebar className="border-none bg-transparent" collapsible="icon" data-slot="admin-sidebar">
+    <Sidebar className="border-none bg-transparent" collapsible="offcanvas" data-slot="admin-sidebar">
       <SidebarHeader className="p-4 border-b">
         <Link to="/admin" className="flex items-center gap-2 font-bold text-lg">
           <LayoutDashboard className="h-5 w-5 shrink-0 text-primary" />
-          <span className="group-data-[collapsible=icon]:hidden truncate">PqEstudar Admin</span>
+          <span className="truncate">PqEstudar Admin</span>
         </Link>
       </SidebarHeader>
 
@@ -70,80 +67,51 @@ export function AdminSidebar() {
 
         {/* Insights */}
         <SidebarGroup>
-          {collapsed ? (
-            /* In collapsed mode, show each item as a standalone icon with tooltip */
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {insightsItems.map((item) => {
-                  const active = isActive(item.href);
-                  return (
-                    <SidebarMenuItem key={item.href}>
-                      <SidebarMenuButton
-                        asChild
-                        isActive={active}
-                        tooltip={item.title}
-                        className={cn(
-                          'rounded-[var(--admin-radius)]',
-                          active && 'bg-primary/10 text-primary font-semibold'
-                        )}
-                      >
-                        <Link to={item.href}>
-                          <item.icon className={cn('h-4 w-4', active ? 'text-primary' : 'text-muted-foreground')} />
-                          <span>{item.title}</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  );
-                })}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          ) : (
-            <Collapsible defaultOpen={isInsightsActive}>
-              <CollapsibleTrigger
-                className={cn(
-                  'flex w-full items-center justify-between px-3 py-2 text-sm rounded-[var(--admin-radius)] transition-colors',
-                  'hover:bg-muted',
-                  isInsightsActive
-                    ? 'font-semibold text-foreground'
-                    : 'font-medium text-muted-foreground'
-                )}
-              >
-                <div className="flex items-center gap-2">
-                  <BarChart3 className={cn('h-4 w-4', isInsightsActive && 'text-primary')} />
-                  <span>Insights</span>
-                </div>
-                <ChevronDown className="h-3.5 w-3.5 transition-transform duration-200 [[data-state=open]>&]:rotate-180" />
-              </CollapsibleTrigger>
-              <CollapsibleContent>
-                <SidebarGroupContent>
-                  <SidebarMenu className="mt-1">
-                    {insightsItems.map((item) => {
-                      const active = isActive(item.href);
-                      return (
-                        <SidebarMenuItem key={item.href}>
-                          <SidebarMenuButton
-                            asChild
-                            isActive={active}
-                            className={cn(
-                              'rounded-[var(--admin-radius)] pl-9 text-sm',
-                              active
-                                ? 'bg-primary/10 text-primary font-semibold'
-                                : 'text-muted-foreground font-normal hover:text-foreground'
-                            )}
-                          >
-                            <Link to={item.href}>
-                              <item.icon className={cn('h-3.5 w-3.5', active ? 'text-primary' : 'text-muted-foreground')} />
-                              <span>{item.title}</span>
-                            </Link>
-                          </SidebarMenuButton>
-                        </SidebarMenuItem>
-                      );
-                    })}
-                  </SidebarMenu>
-                </SidebarGroupContent>
-              </CollapsibleContent>
-            </Collapsible>
-          )}
+          <Collapsible defaultOpen={isInsightsActive}>
+            <CollapsibleTrigger
+              className={cn(
+                'flex w-full items-center justify-between px-3 py-2 text-sm rounded-[var(--admin-radius)] transition-colors',
+                'hover:bg-muted',
+                isInsightsActive
+                  ? 'font-semibold text-foreground'
+                  : 'font-medium text-muted-foreground'
+              )}
+            >
+              <div className="flex items-center gap-2">
+                <BarChart3 className={cn('h-4 w-4', isInsightsActive && 'text-primary')} />
+                <span>Insights</span>
+              </div>
+              <ChevronDown className="h-3.5 w-3.5 transition-transform duration-200 [[data-state=open]>&]:rotate-180" />
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <SidebarGroupContent>
+                <SidebarMenu className="mt-1">
+                  {insightsItems.map((item) => {
+                    const active = isActive(item.href);
+                    return (
+                      <SidebarMenuItem key={item.href}>
+                        <SidebarMenuButton
+                          asChild
+                          isActive={active}
+                          className={cn(
+                            'rounded-[var(--admin-radius)] pl-9 text-sm',
+                            active
+                              ? 'bg-primary/10 text-primary font-semibold'
+                              : 'text-muted-foreground font-normal hover:text-foreground'
+                          )}
+                        >
+                          <Link to={item.href}>
+                            <item.icon className={cn('h-3.5 w-3.5', active ? 'text-primary' : 'text-muted-foreground')} />
+                            <span>{item.title}</span>
+                          </Link>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    );
+                  })}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </CollapsibleContent>
+          </Collapsible>
         </SidebarGroup>
 
         {/* Curadorias */}
@@ -172,79 +140,51 @@ export function AdminSidebar() {
 
         {/* Admin Premium */}
         <SidebarGroup>
-          {collapsed ? (
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {premiumItems.map((item) => {
-                  const active = isActive(item.href);
-                  return (
-                    <SidebarMenuItem key={item.href}>
-                      <SidebarMenuButton
-                        asChild
-                        isActive={active}
-                        tooltip={item.title}
-                        className={cn(
-                          'rounded-[var(--admin-radius)]',
-                          active && 'bg-primary/10 text-primary font-semibold'
-                        )}
-                      >
-                        <Link to={item.href}>
-                          <item.icon className={cn('h-4 w-4', active ? 'text-primary' : 'text-muted-foreground')} />
-                          <span>{item.title}</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  );
-                })}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          ) : (
-            <Collapsible defaultOpen={isPremiumActive}>
-              <CollapsibleTrigger
-                className={cn(
-                  'flex w-full items-center justify-between px-3 py-2 text-sm rounded-[var(--admin-radius)] transition-colors',
-                  'hover:bg-muted',
-                  isPremiumActive
-                    ? 'font-semibold text-foreground'
-                    : 'font-medium text-muted-foreground'
-                )}
-              >
-                <div className="flex items-center gap-2">
-                  <Crown className={cn('h-4 w-4', isPremiumActive && 'text-primary')} />
-                  <span>Admin Premium</span>
-                </div>
-                <ChevronDown className="h-3.5 w-3.5 transition-transform duration-200 [[data-state=open]>&]:rotate-180" />
-              </CollapsibleTrigger>
-              <CollapsibleContent>
-                <SidebarGroupContent>
-                  <SidebarMenu className="mt-1">
-                    {premiumItems.map((item) => {
-                      const active = isActive(item.href);
-                      return (
-                        <SidebarMenuItem key={item.href}>
-                          <SidebarMenuButton
-                            asChild
-                            isActive={active}
-                            className={cn(
-                              'rounded-[var(--admin-radius)] pl-9 text-sm',
-                              active
-                                ? 'bg-primary/10 text-primary font-semibold'
-                                : 'text-muted-foreground font-normal hover:text-foreground'
-                            )}
-                          >
-                            <Link to={item.href}>
-                              <item.icon className={cn('h-3.5 w-3.5', active ? 'text-primary' : 'text-muted-foreground')} />
-                              <span>{item.title}</span>
-                            </Link>
-                          </SidebarMenuButton>
-                        </SidebarMenuItem>
-                      );
-                    })}
-                  </SidebarMenu>
-                </SidebarGroupContent>
-              </CollapsibleContent>
-            </Collapsible>
-          )}
+          <Collapsible defaultOpen={isPremiumActive}>
+            <CollapsibleTrigger
+              className={cn(
+                'flex w-full items-center justify-between px-3 py-2 text-sm rounded-[var(--admin-radius)] transition-colors',
+                'hover:bg-muted',
+                isPremiumActive
+                  ? 'font-semibold text-foreground'
+                  : 'font-medium text-muted-foreground'
+              )}
+            >
+              <div className="flex items-center gap-2">
+                <Crown className={cn('h-4 w-4', isPremiumActive && 'text-primary')} />
+                <span>Admin Premium</span>
+              </div>
+              <ChevronDown className="h-3.5 w-3.5 transition-transform duration-200 [[data-state=open]>&]:rotate-180" />
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <SidebarGroupContent>
+                <SidebarMenu className="mt-1">
+                  {premiumItems.map((item) => {
+                    const active = isActive(item.href);
+                    return (
+                      <SidebarMenuItem key={item.href}>
+                        <SidebarMenuButton
+                          asChild
+                          isActive={active}
+                          className={cn(
+                            'rounded-[var(--admin-radius)] pl-9 text-sm',
+                            active
+                              ? 'bg-primary/10 text-primary font-semibold'
+                              : 'text-muted-foreground font-normal hover:text-foreground'
+                          )}
+                        >
+                          <Link to={item.href}>
+                            <item.icon className={cn('h-3.5 w-3.5', active ? 'text-primary' : 'text-muted-foreground')} />
+                            <span>{item.title}</span>
+                          </Link>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    );
+                  })}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </CollapsibleContent>
+          </Collapsible>
         </SidebarGroup>
       </SidebarContent>
     </Sidebar>
