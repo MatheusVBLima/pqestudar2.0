@@ -307,3 +307,12 @@ All colors MUST be HSL.
   border-radius: var(--admin-radius) !important;
   box-shadow: var(--admin-shadow) !important;
 }
+
+/* Admin sidebar card appearance */
+.admin-radius [data-slot="admin-sidebar"] {
+  border-radius: var(--admin-radius);
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  box-shadow: var(--admin-shadow);
+  overflow: hidden;
+}
