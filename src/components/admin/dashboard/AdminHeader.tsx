@@ -28,7 +28,7 @@ export function AdminHeader() {
       <Separator orientation="vertical" className="h-6" />
       <h1 className="text-sm font-semibold truncate">{title}</h1>
       <div className="ml-auto">
-        <Button variant="ghost" size="sm" asChild>
+      <Button variant="ghost" size="sm" className="rounded-[1.2rem]" asChild>
           <Link to="/">
             <Home className="h-4 w-4 mr-1.5" />
             Voltar ao site

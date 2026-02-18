@@ -288,3 +288,14 @@ All colors MUST be HSL.
     @apply bg-muted/30;
   }
 }
+
+/* Admin dashboard scoped radius */
+.admin-radius {
+  --admin-radius: 1.2rem;
+}
+.admin-radius .admin-r {
+  border-radius: var(--admin-radius);
+}
+.admin-radius .admin-r-sm {
+  border-radius: calc(var(--admin-radius) - 0.2rem);
+}
