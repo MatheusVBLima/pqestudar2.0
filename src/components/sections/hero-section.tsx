@@ -1,14 +1,58 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { useNavigate } from "react-router-dom";
+import { Input } from "@/components/ui/input";
 import HeroBadge from "@/components/ui/hero-badge";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Loader2 } from "lucide-react";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export function HeroSection() {
-  const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!EMAIL_RE.test(email.trim())) {
+      toast.error("Por favor, insira um e-mail válido.");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const { data, error } = await supabase.functions.invoke("subscribe-newsletter-brevo", {
+        body: {
+          email: email.trim(),
+          consent: true,
+          utmSource: urlParams.get("utm_source") || undefined,
+          utmMedium: urlParams.get("utm_medium") || undefined,
+          utmCampaign: urlParams.get("utm_campaign") || undefined,
+          utmContent: urlParams.get("utm_content") || undefined,
+          utmTerm: urlParams.get("utm_term") || undefined,
+          pageSlug: "home_hero",
+        },
+      });
+
+      if (error) throw error;
+
+      if (data?.alreadySubscribed) {
+        toast.success("Você já está na lista. Verifique sua caixa de entrada.");
+      } else {
+        toast.success("Inscrição realizada! ✅");
+        setEmail("");
+      }
+    } catch {
+      toast.error("Não foi possível cadastrar seu e-mail. Tente novamente.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <section className="relative overflow-hidden w-full bg-gradient-to-br from-background to-accent/20">
@@ -19,7 +63,7 @@ export function HeroSection() {
 
       <div className="container relative">
         <div className="flex min-h-[calc(100vh-64px)] flex-col items-center justify-center py-8 px-4 md:px-8 lg:px-12">
-          <div className="flex flex-col gap-4 w-full max-w-4xl text-center">
+          <div className="flex flex-col gap-6 w-full max-w-4xl text-center">
             {/* Badge */}
             <div className="flex justify-center">
               <HeroBadge
@@ -37,9 +81,9 @@ export function HeroSection() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, ease }}
             >
-              Os Segredos da Internet,{" "}
+              Aprenda, Organize e Evolua com as{" "}
               <span className="bg-gradient-primary bg-clip-text text-transparent">
-                Revelados.
+                Ferramentas Certas
               </span>
             </motion.h1>
 
@@ -50,36 +94,42 @@ export function HeroSection() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1, duration: 0.8, ease }}
             >
-              O arsenal completo com os hacks, ferramentas e benefícios que já foram vistos por milhões de pessoas. Explore ou receba as novas descobertas no seu e-mail.
+              O PqEstudar organiza ferramentas online, plataformas educacionais, concursos públicos e conteúdos práticos para você resolver problemas e crescer mais rápido!
             </motion.p>
 
-            {/* CTAs */}
-            <motion.div
-              className="flex flex-col sm:flex-row gap-4 pt-4 justify-center"
+            {/* Email capture form */}
+            <motion.form
+              onSubmit={handleSubmit}
+              className="flex w-full max-w-xl mx-auto items-center gap-1 rounded-full border border-border bg-card/60 backdrop-blur-sm px-2 py-2 shadow-md"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2, duration: 0.8, ease }}
             >
+              <Input
+                type="email"
+                placeholder="Digite seu e-mail"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={isLoading}
+                className="flex-1 border-0 bg-transparent shadow-none focus-visible:ring-0 text-sm px-3"
+                aria-label="Seu e-mail"
+              />
               <Button
-                size="lg"
-                onClick={() => navigate("/ferramentas")}
-                className={cn(
-                  "gap-2 w-full sm:w-auto justify-center bg-primary text-primary-foreground hover:bg-primary/90"
-                )}
+                type="submit"
+                size="sm"
+                disabled={isLoading}
+                className="rounded-full px-5 shrink-0 gap-1.5"
               >
-                Explorar o Arsenal
-              </Button>
-              <Button
-                variant="outline"
-                size="lg"
-                onClick={() => navigate("/assine")}
-                className={cn(
-                  "gap-2 w-full sm:w-auto justify-center border-primary text-primary hover:bg-primary/10"
+                {isLoading ? (
+                  <>
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    Enviando…
+                  </>
+                ) : (
+                  "Receber Atualizações"
                 )}
-              >
-                Receber os Segredos
               </Button>
-            </motion.div>
+            </motion.form>
           </div>
         </div>
       </div>
