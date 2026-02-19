@@ -79,6 +79,16 @@ import InsightsConcursosEventos from "./pages/admin/dashboard/InsightsConcursosE
 import InsightsSeoAudit from "./pages/admin/dashboard/InsightsSeoAudit";
 import InsightsCopyAudit from "./pages/admin/dashboard/InsightsCopyAudit";
 import AdminPages from "./pages/admin/AdminPages";
+
+// Admin Concursos imports
+import AdminConcursosIndex from "./pages/admin/concursos/index";
+import AdminConcursosColeta from "./pages/admin/concursos/coleta";
+import AdminConcursosCuradoria from "./pages/admin/concursos/curadoria";
+import AdminConcursosBusca from "./pages/admin/concursos/busca";
+import AdminConcursosAntiRepeticao from "./pages/admin/concursos/anti-repeticao";
+import AdminConcursosOrquestracaoIA from "./pages/admin/concursos/orquestracao-ia";
+import AdminConcursosHistorico from "./pages/admin/concursos/historico";
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -122,6 +132,14 @@ const AppWithPixel = () => {
         <Route path="premium/usuarios" element={<AdminPremiumUsers />} />
         <Route path="cursos" element={<AdminCourses />} />
         <Route path="bonus" element={<AdminBonusPages />} />
+        {/* Admin Concursos */}
+        <Route path="concursos" element={<AdminConcursosIndex />} />
+        <Route path="concursos/coleta" element={<AdminConcursosColeta />} />
+        <Route path="concursos/curadoria" element={<AdminConcursosCuradoria />} />
+        <Route path="concursos/busca" element={<AdminConcursosBusca />} />
+        <Route path="concursos/anti-repeticao" element={<AdminConcursosAntiRepeticao />} />
+        <Route path="concursos/orquestracao-ia" element={<AdminConcursosOrquestracaoIA />} />
+        <Route path="concursos/historico" element={<AdminConcursosHistorico />} />
         <Route path="pages" element={<AdminPages />} />
       </Route>
 
