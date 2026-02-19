@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { motion } from "framer-motion";
 import { PageHero } from "@/components/layout/PageHero";
@@ -26,12 +26,10 @@ import {
   Trash2,
   RotateCcw,
   AlertTriangle,
-  ExternalLink,
 } from "lucide-react";
 import { useOportunidades, useOportunidadesAdmin, OportunidadeFilters, Oportunidade } from "@/hooks/useOportunidades";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import OportunidadeModal from "@/components/admin/OportunidadeModal";
-import ConcursosAdminPanel from "@/components/admin/ConcursosAdminPanel";
 import TrashConfirmDialog from "@/components/admin/TrashConfirmDialog";
 import { SaveContestButton } from "@/components/ui/save-contest-button";
 import { toast } from "sonner";
@@ -271,20 +269,6 @@ export default function Concursos() {
             </div>
           )}
 
-          {/* Admin Panel - Only visible when management mode is ON */}
-          {isAdmin && isManagementMode && (
-            <>
-              <div className="flex items-center gap-2 mb-3">
-                <Button asChild variant="outline" size="sm" className="gap-2 text-xs">
-                  <Link to="/admin/concursos">
-                    <ExternalLink className="h-3.5 w-3.5" />
-                    Abrir no Admin
-                  </Link>
-                </Button>
-              </div>
-              <ConcursosAdminPanel />
-            </>
-          )}
 
           {/* Admin Tabs (Ativos / Lixeira) - Only in management mode */}
           {isAdmin && isManagementMode && (
