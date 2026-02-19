@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { motion } from "framer-motion";
 import { PageHero } from "@/components/layout/PageHero";
@@ -26,6 +26,7 @@ import {
   Trash2,
   RotateCcw,
   AlertTriangle,
+  ExternalLink,
 } from "lucide-react";
 import { useOportunidades, useOportunidadesAdmin, OportunidadeFilters, Oportunidade } from "@/hooks/useOportunidades";
 import { useUserRoles } from "@/hooks/useUserRoles";
@@ -272,7 +273,17 @@ export default function Concursos() {
 
           {/* Admin Panel - Only visible when management mode is ON */}
           {isAdmin && isManagementMode && (
-            <ConcursosAdminPanel />
+            <>
+              <div className="flex items-center gap-2 mb-3">
+                <Button asChild variant="outline" size="sm" className="gap-2 text-xs">
+                  <Link to="/admin/concursos">
+                    <ExternalLink className="h-3.5 w-3.5" />
+                    Abrir no Admin
+                  </Link>
+                </Button>
+              </div>
+              <ConcursosAdminPanel />
+            </>
           )}
 
           {/* Admin Tabs (Ativos / Lixeira) - Only in management mode */}
