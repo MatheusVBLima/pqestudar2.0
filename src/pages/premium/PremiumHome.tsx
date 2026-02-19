@@ -3,10 +3,12 @@ import { motion } from 'framer-motion';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useSubscription } from '@/hooks/useSubscription';
+import { usePageSettings } from '@/hooks/usePageSettings';
 import { BookOpen, Briefcase, Calendar, Bookmark, ArrowRight } from 'lucide-react';
 
 const PremiumHome = () => {
   const { subscription, getPlanName, getRemainingDays, isActive } = useSubscription();
+  const ps = usePageSettings("/premium");
 
   const menuItems = [
     {
@@ -54,10 +56,10 @@ const PremiumHome = () => {
             transition={{ duration: 0.5 }}
           >
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight mb-6 bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
-              PqEstudar Premium
+              {ps.headerTitle}
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
-              Recursos exclusivos, organização avançada e vantagens para acelerar seus resultados.
+              {ps.headerDescription}
             </p>
             {isActive() && subscription && (
               <div className="flex flex-wrap items-center gap-4 mt-6">

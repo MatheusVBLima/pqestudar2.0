@@ -19,8 +19,10 @@ import {
 import { motion } from "framer-motion";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { usePageSettings } from "@/hooks/usePageSettings";
 
 const Termos = () => {
+  const ps = usePageSettings("/termos");
   const updatedAt = "28 de outubro de 2025";
   const [searchTerm, setSearchTerm] = useState("");
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
@@ -181,11 +183,11 @@ const Termos = () => {
   useEffect(() => {
     console.log("[Termos] Página carregada - Configurando SEO");
     
-    document.title = "Termos de Uso – PqEstudar";
+    document.title = ps.titleTag;
     
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
-      metaDescription.setAttribute('content', `Termos de Uso da PqEstudar. Última atualização: ${updatedAt}.`);
+      metaDescription.setAttribute('content', ps.metaDescription);
     }
 
     // Canonical is handled globally by GlobalSeo
@@ -218,7 +220,7 @@ const Termos = () => {
       const scriptToRemove = document.getElementById('terms-jsonld');
       if (scriptToRemove) scriptToRemove.remove();
     };
-  }, [updatedAt]);
+  }, [updatedAt, ps.titleTag, ps.metaDescription]);
 
   // Scroll spy for TOC
   useEffect(() => {
@@ -301,11 +303,10 @@ const Termos = () => {
               Última atualização: {updatedAt}
             </Badge>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight mb-6 bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
-              Termos de Uso
+              {ps.headerTitle}
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
-              Leia atentamente os termos e condições que regem o uso da plataforma PqEstudar. 
-              Transparência e clareza são fundamentais para nossa relação.
+              {ps.headerDescription}
             </p>
           </motion.div>
         </div>

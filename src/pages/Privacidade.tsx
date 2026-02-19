@@ -37,10 +37,12 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { useCookieConsent } from "@/hooks/useCookieConsent";
+import { usePageSettings } from "@/hooks/usePageSettings";
 
 import { sanitizeHtml, safeHighlight } from "@/lib/utils";
 
 const Privacidade = () => {
+  const ps = usePageSettings("/privacidade");
   const [searchTerm, setSearchTerm] = useState("");
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const [activeSection, setActiveSection] = useState("");
@@ -246,14 +248,11 @@ const Privacidade = () => {
   });
 
   useEffect(() => {
-    // SEO
-    document.title = "Política de Privacidade – PqEstudar";
+    // SEO - use page settings
+    document.title = ps.titleTag;
     const metaDesc = document.querySelector('meta[name="description"]');
     if (metaDesc) {
-      metaDesc.setAttribute(
-        "content",
-        "Transparência e proteção dos seus dados pessoais são nossa prioridade. Veja como coletamos, usamos e protegemos suas informações conforme a LGPD.",
-      );
+      metaDesc.setAttribute("content", ps.metaDescription);
     }
 
     // Canonical is handled globally by GlobalSeo
@@ -281,7 +280,7 @@ const Privacidade = () => {
     return () => {
       document.head.removeChild(script);
     };
-  }, []);
+  }, [ps.titleTag, ps.metaDescription]);
 
   useEffect(() => {
     // Scroll spy
@@ -415,11 +414,10 @@ const Privacidade = () => {
               Última atualização: 28 de outubro de 2025
             </Badge>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight mb-6 bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
-              Política de Privacidade
+              {ps.headerTitle}
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
-              Transparência e proteção dos seus dados pessoais são nossa prioridade. Veja como coletamos, usamos e
-              protegemos suas informações conforme a LGPD.
+              {ps.headerDescription}
             </p>
           </motion.div>
         </div>

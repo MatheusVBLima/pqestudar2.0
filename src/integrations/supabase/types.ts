@@ -1580,6 +1580,39 @@ export type Database = {
           },
         ]
       }
+      page_settings: {
+        Row: {
+          created_at: string
+          header_description: string
+          header_title: string
+          id: string
+          meta_description: string
+          route: string
+          title_tag: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          header_description: string
+          header_title: string
+          id?: string
+          meta_description: string
+          route: string
+          title_tag: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          header_description?: string
+          header_title?: string
+          id?: string
+          meta_description?: string
+          route?: string
+          title_tag?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       page_views: {
         Row: {
           created_at: string

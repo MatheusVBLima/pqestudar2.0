@@ -33,6 +33,7 @@ import ConcursosAdminPanel from "@/components/admin/ConcursosAdminPanel";
 import TrashConfirmDialog from "@/components/admin/TrashConfirmDialog";
 import { SaveContestButton } from "@/components/ui/save-contest-button";
 import { toast } from "sonner";
+import { usePageSettings } from "@/hooks/usePageSettings";
 
 const SITUACAO_OPTIONS = ["Previsto", "Edital publicado", "Aberto", "Encerrado"];
 const TIPO_OPTIONS = ["Concurso", "Programa educacional", "Processo seletivo", "Processo Seletivo Simplificado"];
@@ -59,6 +60,7 @@ const SITUACAO_COLORS: Record<string, string> = {
 };
 
 export default function Concursos() {
+  const ps = usePageSettings("/concursos");
   const navigate = useNavigate();
   const { isAdmin } = useUserRoles();
   const [isManagementMode, setIsManagementMode] = useState(false);
@@ -236,8 +238,8 @@ export default function Concursos() {
         }}
       />
       <Helmet>
-        <title>Concursos e Oportunidades — PqEstudar</title>
-        <meta name="description" content="Acompanhe concursos públicos, processos seletivos e oportunidades educacionais com curadoria especializada." />
+        <title>{ps.titleTag}</title>
+        <meta name="description" content={ps.metaDescription} />
       </Helmet>
       
       {/* Hero Section */}
@@ -251,10 +253,10 @@ export default function Concursos() {
             className="max-w-3xl"
           >
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight mb-6 bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
-              Oportunidades
+              {ps.headerTitle}
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
-              Concursos públicos, processos seletivos e programas educacionais
+              {ps.headerDescription}
             </p>
           </motion.div>
         </div>
