@@ -62,7 +62,7 @@ export function HeroSection() {
       </div>
 
       <div className="container relative">
-        <div className="flex min-h-[calc(100vh-64px)] flex-col items-center justify-center py-8 px-4 md:px-8 lg:px-12">
+        <div className="flex min-h-[calc(100vh-64px)] flex-col items-center justify-start pt-16 md:pt-20 pb-12 px-4 md:px-8 lg:px-12">
           <div className="flex flex-col gap-6 w-full max-w-4xl text-center">
             {/* Badge */}
             <div className="flex justify-center">
@@ -98,38 +98,45 @@ export function HeroSection() {
             </motion.p>
 
             {/* Email capture form */}
-            <motion.form
-              onSubmit={handleSubmit}
-              className="flex w-full max-w-xl mx-auto items-center gap-1 rounded-full border border-border bg-card/60 backdrop-blur-sm px-2 py-2 shadow-md"
+            <motion.div
+              className="flex flex-col items-center gap-2 w-full max-w-2xl mx-auto"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2, duration: 0.8, ease }}
             >
-              <Input
-                type="email"
-                placeholder="Digite seu e-mail"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                disabled={isLoading}
-                className="flex-1 border-0 bg-transparent shadow-none focus-visible:ring-0 text-sm px-3"
-                aria-label="Seu e-mail"
-              />
-              <Button
-                type="submit"
-                size="sm"
-                disabled={isLoading}
-                className="rounded-full px-5 shrink-0 gap-1.5"
+              <form
+                onSubmit={handleSubmit}
+                className="flex w-full items-center gap-1 rounded-full border border-border bg-card/60 backdrop-blur-sm px-2 py-2 shadow-md"
               >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                    Enviando…
-                  </>
-                ) : (
-                  "Receber Atualizações"
-                )}
-              </Button>
-            </motion.form>
+                <Input
+                  type="email"
+                  placeholder="Digite seu e-mail"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  disabled={isLoading}
+                  className="flex-1 border-0 bg-transparent shadow-none focus-visible:ring-0 text-sm px-3"
+                  aria-label="Seu e-mail"
+                />
+                <Button
+                  type="submit"
+                  size="sm"
+                  disabled={isLoading}
+                  className="rounded-full px-5 shrink-0 gap-1.5"
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      Enviando…
+                    </>
+                  ) : (
+                    "Receber Atualizações"
+                  )}
+                </Button>
+              </form>
+              <p className="text-xs text-muted-foreground/70 text-center">
+                Sem spam. Você pode sair quando quiser.
+              </p>
+            </motion.div>
           </div>
         </div>
       </div>
