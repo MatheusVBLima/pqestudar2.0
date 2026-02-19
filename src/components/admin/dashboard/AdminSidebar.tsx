@@ -1,7 +1,7 @@
 import { useLocation, Link } from 'react-router-dom';
 import {
   LayoutDashboard, BarChart3, Wrench, BookOpen, MousePointerClick, Search, FileText,
-  Crown, Package, CalendarDays, Users, Ticket, ChevronDown,
+  Crown, Package, CalendarDays, Users, Ticket, ChevronDown, Settings2,
 } from 'lucide-react';
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent,
@@ -138,6 +138,29 @@ export function AdminSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
+        {/* Page Settings */}
+        <SidebarGroup>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  isActive={pathname === '/admin/pages'}
+                  tooltip="Page Settings"
+                  className={cn(
+                    'rounded-[var(--admin-radius)] font-medium',
+                    pathname === '/admin/pages' && 'bg-primary/10 text-primary font-semibold border border-primary/20'
+                  )}
+                >
+                  <Link to="/admin/pages">
+                    <Settings2 className="h-4 w-4" />
+                    <span>Page Settings</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
         {/* Admin Premium */}
         <SidebarGroup>
           <Collapsible defaultOpen={isPremiumActive}>

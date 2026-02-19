@@ -21,6 +21,7 @@ import { useUserRoles } from '@/hooks/useUserRoles';
 import { useAuth } from '@/hooks/useAuth';
 import { useFeatureRequests, FeatureRequest } from '@/hooks/useFeatureRequests';
 import { toast } from '@/hooks/use-toast';
+import { usePageSettings } from '@/hooks/usePageSettings';
 import {
   DndContext, closestCenter, KeyboardSensor, PointerSensor,
   useSensor, useSensors, DragEndEvent,
@@ -124,6 +125,7 @@ function SortableFeatureCard({
 
 /* ─── Main Page ─── */
 export default function Votacoes() {
+  const ps = usePageSettings("/votacoes");
   const { isAdmin, loading: loadingRoles } = useUserRoles();
   const [isManagement, setIsManagement] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
@@ -185,8 +187,8 @@ export default function Votacoes() {
   return (
     <>
       <Helmet>
-        <title>Votações – PqEstudar</title>
-        <meta name="description" content="Vote nos próximos lançamentos e ajude a definir o futuro do PqEstudar." />
+        <title>{ps.titleTag}</title>
+        <meta name="description" content={ps.metaDescription} />
       </Helmet>
 
       {/* Hero Section */}
@@ -199,14 +201,11 @@ export default function Votacoes() {
             transition={{ duration: 0.5 }}
             className="max-w-3xl"
           >
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight mb-6 bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
-              Próximos{' '}
-              <span className="bg-gradient-primary bg-clip-text text-transparent">
-                Lançamentos
-              </span>
+             <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight mb-6 bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
+              {ps.headerTitle}
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
-              Vote nas funcionalidades que você mais quer ver no PqEstudar.
+              {ps.headerDescription}
             </p>
           </motion.div>
         </div>

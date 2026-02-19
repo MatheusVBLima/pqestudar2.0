@@ -61,6 +61,7 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import { toast } from "@/hooks/use-toast";
 import { useAnalyticsTracker } from "@/hooks/useAnalyticsTracker";
+import { usePageSettings } from "@/hooks/usePageSettings";
 
 // Categorias disponíveis
 const CATEGORIES = [
@@ -360,6 +361,7 @@ function SortableToolCard({
 }
 
 export default function Ferramentas() {
+  const ps = usePageSettings("/ferramentas");
   const [searchParams, setSearchParams] = useSearchParams();
   const currentPage = parseInt(searchParams.get('page') || '1', 10);
 
@@ -588,10 +590,10 @@ export default function Ferramentas() {
         }}
       />
       <Helmet>
-        <title>O Arsenal de Ferramentas Secretas — PqEstudar</title>
+        <title>{ps.titleTag}</title>
         <meta
           name="description"
-          content="A curadoria completa das ferramentas e hacks que viralizaram. Explore por categoria e acelere seus resultados." />
+          content={ps.metaDescription} />
 
       </Helmet>
 
@@ -609,14 +611,10 @@ export default function Ferramentas() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}>
                 <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight mb-6 bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
-                  O Arsenal de Ferramentas{" "}
-                  <span className="bg-gradient-primary bg-clip-text text-transparent">
-                    Secretas.
-                  </span>
+                  {ps.headerTitle}
                 </h1>
                 <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
-                  A curadoria completa das ferramentas e hacks que viralizaram.
-                  Explore por categoria e acelere seus resultados.
+                  {ps.headerDescription}
                 </p>
               </motion.div>
             </div>

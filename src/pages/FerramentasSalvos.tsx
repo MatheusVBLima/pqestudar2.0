@@ -8,8 +8,9 @@ import { useSavedItems } from "@/hooks/useSavedItems";
 import { SavedAccordion } from "@/components/saved/SavedAccordion";
 import { SavedToolsPanel } from "@/components/saved/SavedToolsPanel";
 import { SavedContestsPanel } from "@/components/saved/SavedContestsPanel";
-
+import { usePageSettings } from "@/hooks/usePageSettings";
 export default function FerramentasSalvos() {
+  const ps = usePageSettings("/ferramentas/salvos");
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const { savedItems, loading, fetchSavedItems, getSavedByType } = useSavedItems();
@@ -62,10 +63,10 @@ export default function FerramentasSalvos() {
   return (
     <>
       <Helmet>
-        <title>Salvos — PqEstudar</title>
+        <title>{ps.titleTag}</title>
         <meta
           name="description"
-          content="Seus itens salvos em um só lugar: ferramentas e concursos favoritos."
+          content={ps.metaDescription}
         />
       </Helmet>
 
@@ -84,10 +85,10 @@ export default function FerramentasSalvos() {
                 transition={{ duration: 0.5 }}
               >
                 <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight mb-6 bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
-                  Salvos
+                  {ps.headerTitle}
                 </h1>
                 <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
-                  Tudo que você salvou no PqEstudar, em um só lugar.
+                  {ps.headerDescription}
                 </p>
               </motion.div>
             </div>

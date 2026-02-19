@@ -78,7 +78,7 @@ import InsightsConcursosLeitura from "./pages/admin/dashboard/InsightsConcursosL
 import InsightsConcursosEventos from "./pages/admin/dashboard/InsightsConcursosEventos";
 import InsightsSeoAudit from "./pages/admin/dashboard/InsightsSeoAudit";
 import InsightsCopyAudit from "./pages/admin/dashboard/InsightsCopyAudit";
-
+import AdminPages from "./pages/admin/AdminPages";
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -122,7 +122,7 @@ const AppWithPixel = () => {
         <Route path="premium/usuarios" element={<AdminPremiumUsers />} />
         <Route path="cursos" element={<AdminCourses />} />
         <Route path="bonus" element={<AdminBonusPages />} />
-        
+        <Route path="pages" element={<AdminPages />} />
       </Route>
 
       {/* All pages with persistent Navbar + Footer layout */}
