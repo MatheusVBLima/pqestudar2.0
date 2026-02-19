@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { PageHero } from '@/components/layout/PageHero';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useSubscription } from '@/hooks/useSubscription';
@@ -45,35 +46,18 @@ const PremiumHome = () => {
     <div className="min-h-screen bg-background flex flex-col">
       
       
-      {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-primary/10 via-background to-background border-b overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,hsl(var(--primary)/0.1),transparent_50%)]" />
-        <div className="container mx-auto px-6 py-16 md:py-20 relative">
-          <motion.div
-            className="max-w-3xl"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight mb-6 bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
-              {ps.headerTitle}
-            </h1>
-            <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
-              {ps.headerDescription}
-            </p>
-            {isActive() && subscription && (
-              <div className="flex flex-wrap items-center gap-4 mt-6">
-                <span className="inline-flex items-center gap-2 bg-primary/10 text-primary px-3 py-1 rounded-full text-sm font-medium">
-                  Plano {getPlanName()}
-                </span>
-                <span className="text-sm text-muted-foreground">
-                  {getRemainingDays()} dias restantes
-                </span>
-              </div>
-            )}
-          </motion.div>
-        </div>
-      </section>
+      <PageHero title={ps.headerTitle} description={ps.headerDescription}>
+        {isActive() && subscription && (
+          <div className="flex flex-wrap items-center gap-4 mt-6">
+            <span className="inline-flex items-center gap-2 bg-primary/10 text-primary px-3 py-1 rounded-full text-sm font-medium">
+              Plano {getPlanName()}
+            </span>
+            <span className="text-sm text-muted-foreground">
+              {getRemainingDays()} dias restantes
+            </span>
+          </div>
+        )}
+      </PageHero>
 
       <main className="flex-1 container max-w-6xl mx-auto px-4 pt-12 md:pt-16 pb-8">
 

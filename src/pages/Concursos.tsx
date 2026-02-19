@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { motion } from "framer-motion";
+import { PageHero } from "@/components/layout/PageHero";
 import { GlobalSeo } from "@/components/seo/GlobalSeo";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -242,25 +243,7 @@ export default function Concursos() {
         <meta name="description" content={ps.metaDescription} />
       </Helmet>
       
-      {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-primary/10 via-background to-background border-b overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,hsl(var(--primary)/0.1),transparent_50%)]" />
-        <div className="container mx-auto px-6 py-16 md:py-20 relative">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="max-w-3xl"
-          >
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight mb-6 bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
-              {ps.headerTitle}
-            </h1>
-            <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
-              {ps.headerDescription}
-            </p>
-          </motion.div>
-        </div>
-      </section>
+      <PageHero title={ps.headerTitle} description={ps.headerDescription} />
 
       <main className="flex-1 container mx-auto px-4 pt-12 md:pt-16 pb-8 max-w-7xl">
         <div className="mb-8">
