@@ -1,16 +1,20 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PageHero } from '@/components/layout/PageHero';
-import { ThumbsUp, Plus, Edit, Eye, EyeOff, Trash2, GripVertical, CheckCircle, History, Sparkles } from 'lucide-react';
+import {
+  ThumbsUp, Plus, Edit, Eye, EyeOff, Trash2, GripVertical,
+  CheckCircle, History, Sparkles, Upload, Link as LinkIcon, X, ImageIcon,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from '@/components/ui/dialog';
@@ -23,6 +27,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useFeatureRequests, FeatureRequest } from '@/hooks/useFeatureRequests';
 import { toast } from '@/hooks/use-toast';
 import { usePageSettings } from '@/hooks/usePageSettings';
+import { supabase } from '@/integrations/supabase/client';
 import {
   DndContext, closestCenter, KeyboardSensor, PointerSensor,
   useSensor, useSensors, DragEndEvent,
@@ -60,7 +65,7 @@ function SortableFeatureCard({
     opacity: isDragging ? 0.5 : 1,
   };
 
-  // Generate a deterministic gradient from the title for placeholder covers
+  // Deterministic gradient fallback
   const hue = feature.title.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0) % 360;
   const gradientStyle = {
     background: `linear-gradient(135deg, hsl(${hue} 40% 20%), hsl(${(hue + 60) % 360} 50% 35%))`,
@@ -74,7 +79,24 @@ function SortableFeatureCard({
       >
         {/* Cover area */}
         <div className="relative" style={{ aspectRatio: '16/9' }}>
-          <div className="absolute inset-0 rounded-t-[1.2rem]" style={gradientStyle} />
+          {feature.card_image_url ? (
+            <img
+              src={feature.card_image_url}
+              alt={feature.title}
+              referrerPolicy="no-referrer"
+              className="absolute inset-0 w-full h-full object-cover rounded-t-[1.2rem]"
+              onError={(e) => {
+                (e.currentTarget as HTMLImageElement).style.display = 'none';
+                (e.currentTarget.nextElementSibling as HTMLElement | null)?.removeAttribute('hidden');
+              }}
+            />
+          ) : null}
+          {/* Gradient fallback (always rendered, hidden behind image if image loads) */}
+          <div
+            className="absolute inset-0 rounded-t-[1.2rem]"
+            style={gradientStyle}
+            hidden={!!feature.card_image_url}
+          />
 
           {/* Rank badge */}
           <div className="absolute top-3 left-3 z-10">
@@ -164,6 +186,151 @@ function SortableFeatureCard({
   );
 }
 
+/* ─── Image Field (Upload | URL) ─── */
+function ImageField({
+  imageUrl,
+  onImageUrl,
+}: {
+  imageUrl: string;
+  onImageUrl: (url: string) => void;
+}) {
+  const [source, setSource] = useState<'upload' | 'url'>('url');
+  const [uploading, setUploading] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [urlError, setUrlError] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const uploadToStorage = async (file: File): Promise<string> => {
+    const timestamp = Date.now();
+    const ext = file.name.split('.').pop();
+    const fileName = `vote-${crypto.randomUUID()}-${timestamp}.${ext}`;
+
+    const { error } = await supabase.storage
+      .from('vote-images')
+      .upload(fileName, file, { cacheControl: '3600', upsert: false });
+
+    if (error) throw error;
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('vote-images')
+      .getPublicUrl(fileName);
+
+    return publicUrl;
+  };
+
+  const handleFile = async (file: File) => {
+    const allowed = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'];
+    if (!allowed.includes(file.type)) {
+      toast({ title: 'Formato não suportado. Use PNG, JPG ou WEBP.', variant: 'destructive' });
+      return;
+    }
+    if (file.size > 3 * 1024 * 1024) {
+      toast({ title: 'Imagem muito grande. Máximo 3MB.', variant: 'destructive' });
+      return;
+    }
+    setUploading(true);
+    try {
+      const url = await uploadToStorage(file);
+      onImageUrl(url);
+    } catch {
+      toast({ title: 'Erro ao fazer upload da imagem.', variant: 'destructive' });
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files[0];
+    if (file) handleFile(file);
+  };
+
+  return (
+    <div className="space-y-2">
+      <Label className="flex items-center gap-1.5">
+        <ImageIcon className="w-3.5 h-3.5" />
+        Imagem do Card
+        <span className="text-muted-foreground text-xs font-normal">(opcional)</span>
+      </Label>
+
+      <Tabs value={source} onValueChange={(v) => setSource(v as 'upload' | 'url')}>
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="upload"><Upload className="w-3.5 h-3.5 mr-1.5" />Upload</TabsTrigger>
+          <TabsTrigger value="url"><LinkIcon className="w-3.5 h-3.5 mr-1.5" />URL</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="upload" className="mt-2">
+          <div
+            onDrop={handleDrop}
+            onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+            onDragLeave={() => setIsDragging(false)}
+            className={`border-2 border-dashed rounded-[1.2rem] p-5 text-center transition-colors cursor-pointer ${
+              isDragging ? 'border-primary bg-primary/5' : 'border-muted-foreground/25 hover:border-muted-foreground/50'
+            }`}
+            onClick={() => fileInputRef.current?.click()}
+          >
+            {uploading ? (
+              <p className="text-sm text-muted-foreground">Enviando…</p>
+            ) : (
+              <>
+                <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
+                <p className="text-sm text-muted-foreground">Arraste ou clique para selecionar</p>
+                <p className="text-xs text-muted-foreground mt-1">PNG, JPG, WEBP • Máx 3MB</p>
+              </>
+            )}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/png,image/jpeg,image/webp"
+              className="hidden"
+              onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }}
+            />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="url" className="mt-2">
+          <Input
+            type="url"
+            placeholder="https://exemplo.com/imagem.jpg"
+            value={imageUrl.startsWith('http') ? imageUrl : ''}
+            onChange={(e) => {
+              const v = e.target.value;
+              setUrlError('');
+              if (v && !v.startsWith('http')) {
+                setUrlError('URL deve começar com http:// ou https://');
+              }
+              onImageUrl(v);
+            }}
+          />
+          {urlError && <p className="text-xs text-destructive mt-1">{urlError}</p>}
+        </TabsContent>
+      </Tabs>
+
+      {/* Preview + remove */}
+      {imageUrl && (
+        <div className="relative rounded-[1.2rem] overflow-hidden border border-border" style={{ aspectRatio: '16/9' }}>
+          <img
+            src={imageUrl}
+            alt="Preview"
+            className="w-full h-full object-cover"
+            referrerPolicy="no-referrer"
+          />
+          <Button
+            type="button"
+            variant="destructive"
+            size="sm"
+            className="absolute top-2 right-2 h-7 w-7 p-0 rounded-full"
+            onClick={() => onImageUrl('')}
+          >
+            <X className="w-3.5 h-3.5" />
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ─── Main Page ─── */
 export default function Votacoes() {
   const ps = usePageSettings("/votacoes");
@@ -176,6 +343,7 @@ export default function Votacoes() {
   const [showHistory, setShowHistory] = useState(false);
   const [formTitle, setFormTitle] = useState('');
   const [formDesc, setFormDesc] = useState('');
+  const [formImageUrl, setFormImageUrl] = useState('');
 
   const effectiveAdmin = isAdmin;
   const includeHidden = isManagement && effectiveAdmin;
@@ -209,20 +377,27 @@ export default function Votacoes() {
       setEditing(feature);
       setFormTitle(feature.title);
       setFormDesc(feature.description || '');
+      setFormImageUrl(feature.card_image_url || '');
     } else {
       setEditing(null);
       setFormTitle('');
       setFormDesc('');
+      setFormImageUrl('');
     }
     setModalOpen(true);
   };
 
   const handleSave = () => {
     if (!formTitle.trim()) return;
+    const payload = {
+      title: formTitle,
+      description: formDesc,
+      card_image_url: formImageUrl || null,
+    };
     if (editing) {
-      update({ id: editing.id, title: formTitle, description: formDesc });
+      update({ id: editing.id, ...payload });
     } else {
-      create({ title: formTitle, description: formDesc });
+      create(payload);
     }
     setModalOpen(false);
   };
@@ -281,7 +456,6 @@ export default function Votacoes() {
             <p className="text-muted-foreground">Nenhum lançamento em votação no momento.</p>
           </div>
         ) : (
-          /* Feature cards */
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
             <SortableContext items={openFeatures.map(f => f.id)} strategy={verticalListSortingStrategy}>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 items-stretch">
@@ -342,13 +516,20 @@ export default function Votacoes() {
 
       {/* Add/Edit Modal */}
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-[520px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editing ? 'Editar Lançamento' : 'Novo Lançamento'}</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
-            <Input placeholder="Título" value={formTitle} onChange={e => setFormTitle(e.target.value)} />
-            <Textarea placeholder="Descrição (opcional)" value={formDesc} onChange={e => setFormDesc(e.target.value)} rows={3} />
+          <div className="space-y-4 py-2">
+            <div className="space-y-1.5">
+              <Label>Título <span className="text-destructive">*</span></Label>
+              <Input placeholder="Título do lançamento" value={formTitle} onChange={e => setFormTitle(e.target.value)} />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Descrição</Label>
+              <Textarea placeholder="Descrição (opcional)" value={formDesc} onChange={e => setFormDesc(e.target.value)} rows={3} />
+            </div>
+            <ImageField imageUrl={formImageUrl} onImageUrl={setFormImageUrl} />
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setModalOpen(false)}>Cancelar</Button>
