@@ -217,7 +217,7 @@ function SortableToolCard({
       style={style}
       className="relative group h-full">
 
-      <Card className="h-full shadow-card transition-shadow duration-300 flex flex-col">
+      <Card className="h-full shadow-card rounded-[1.2rem] transition-shadow duration-300 flex flex-col">
         <CardHeader>
           {isManagementMode &&
           <div
@@ -330,7 +330,7 @@ function SortableToolCard({
                 <Button
                   variant="outline"
                   size="sm"
-                  className="flex-1"
+                  className="flex-1 rounded-[1.2rem]"
                   onClick={() => {
                     const evtName = hasAttachment ? 'tool_card_click' : 'tool_outbound_click';
                     track({
