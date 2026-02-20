@@ -476,8 +476,7 @@ export default function Votacoes() {
           .from('vote-images')
           .upload(fileName, formPendingFile, {
             cacheControl: '3600',
-            upsert: true,
-            contentType: formPendingFile.type,
+            upsert: false,
           });
 
         if (error) {
