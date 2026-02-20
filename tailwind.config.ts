@@ -73,10 +73,11 @@ export default {
 				'gradient-primary': 'var(--gradient-primary)',
 				'gradient-hero': 'var(--gradient-hero)'
 			},
-			boxShadow: {
-				'purple': 'var(--shadow-purple)',
-				'card-custom': 'var(--shadow-card)'
-			},
+		boxShadow: {
+			'purple': 'var(--shadow-purple)',
+			'card-custom': 'var(--shadow-card)',
+			'card': '0 4px 10px hsl(240 30% 25% / 0.12)',
+		},
 			transitionTimingFunction: {
 				'smooth': 'var(--transition-smooth)'
 			},
