@@ -572,7 +572,7 @@ function OportunidadeCard({
   const isInTrash = item.status_admin === "lixeira" || isTrashMode;
 
   return (
-    <Card className={`h-full flex flex-col shadow-card ${
+    <Card className={`h-full flex flex-col shadow-card rounded-[1.2rem] ${
       isInTrash 
         ? "opacity-70 border-destructive/30 bg-destructive/5" 
         : !item.publicado 
@@ -680,7 +680,7 @@ function OportunidadeCard({
               
               <Button
                 onClick={onView}
-                className="flex-1 gap-2"
+                className="flex-1 gap-2 rounded-[1.2rem]"
               >
                 Ver página completa
                 <ChevronRight className="h-4 w-4" />
