@@ -476,28 +476,24 @@ export default function Ferramentas() {
     return Array.from(tagSet).sort();
   }, [localTools]);
 
-  // Filtragem combinada (apenas para admin mode dropdown)
-  let displayedTools = localTools;
-
-  // Filtro por categoria dropdown (modo admin)
-  if (isManagementMode && categoryFilter !== "all") {
-    displayedTools = displayedTools.filter((tool) =>
-    tool.tags.includes(categoryFilter)
-    );
-  }
-
-  // Ordenação de destaques (modo público)
+  // Filtragem + ordenação de destaques — tudo num único memo para garantir reatividade
   const sortedDisplayedTools = useMemo(() => {
-    if (isManagementMode) return displayedTools;
+    // 1. Filtro por categoria dropdown (modo admin)
+    let base = localTools;
+    if (isManagementMode && categoryFilter !== "all") {
+      base = base.filter((tool) => tool.tags.includes(categoryFilter));
+    }
 
-    const hasTagFilter = selectedTags.length > 0;
+    // 2. No modo admin, mantém a ordem do sort_order (sem reordenar destaques)
+    if (isManagementMode) return base;
 
-    if (!hasTagFilter) {
-      // Sem filtro: até 3 destaques ativos no topo
-      const active = displayedTools.filter(isFeaturedActive);
-      const rest = displayedTools.filter((t) => !isFeaturedActive(t));
+    // 3. Modo público: destaques ativos SEMPRE primeiro
+    const active = base.filter(isFeaturedActive);
+    const rest = base.filter((t) => !isFeaturedActive(t));
 
-      // Ordenar destaques: indefinidos primeiro, depois por data mais recente
+    if (selectedTags.length === 0) {
+      // Sem filtro de categoria: até 3 destaques no topo
+      // Prioridade: indefinidos primeiro, depois por featured_start mais recente
       const sortedActive = [...active].sort((a, b) => {
         if (a.featured_indefinite && !b.featured_indefinite) return -1;
         if (!a.featured_indefinite && b.featured_indefinite) return 1;
@@ -505,30 +501,28 @@ export default function Ferramentas() {
         const dateB = b.featured_start ? new Date(b.featured_start).getTime() : 0;
         return dateB - dateA;
       });
-
       return [...sortedActive.slice(0, 3), ...rest];
     } else {
-      // Com filtro: até 1 destaque ativo por categoria no topo
+      // Com filtro de categoria: até 1 destaque ativo por categoria selecionada no topo
       const seenCategories = new Set<string>();
       const featuredFirst: Tool[] = [];
-      const rest: Tool[] = [];
+      const normalRest: Tool[] = [];
 
-      for (const tool of displayedTools) {
-        if (isFeaturedActive(tool)) {
-          // Encontrar categoria(s) do tool que estão nos filtros ativos
-          const matchingCategory = tool.tags.find((tag) => selectedTags.includes(tag) && !seenCategories.has(tag));
-          if (matchingCategory) {
-            seenCategories.add(matchingCategory);
-            featuredFirst.push(tool);
-            continue;
-          }
+      for (const tool of active) {
+        const matchingCategory = tool.tags.find(
+          (tag) => selectedTags.includes(tag) && !seenCategories.has(tag)
+        );
+        if (matchingCategory) {
+          seenCategories.add(matchingCategory);
+          featuredFirst.push(tool);
+        } else {
+          normalRest.push(tool);
         }
-        rest.push(tool);
       }
 
-      return [...featuredFirst, ...rest];
+      return [...featuredFirst, ...normalRest, ...rest];
     }
-  }, [displayedTools, isManagementMode, selectedTags]);
+  }, [localTools, isManagementMode, categoryFilter, selectedTags]);
 
   const availableTags = CATEGORIES.filter((tag) => !selectedTags.includes(tag));
 
