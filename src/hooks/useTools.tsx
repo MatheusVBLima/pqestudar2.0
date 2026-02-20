@@ -17,6 +17,11 @@ export interface Tool {
   updated_at: string;
   created_by?: string;
   updated_by?: string;
+  // Featured fields
+  is_featured: boolean;
+  featured_indefinite: boolean;
+  featured_start?: string | null;
+  featured_end?: string | null;
 }
 
 export interface UseToolsOptions {
