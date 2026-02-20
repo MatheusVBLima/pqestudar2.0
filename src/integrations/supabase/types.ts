@@ -785,6 +785,7 @@ export type Database = {
       }
       feature_requests: {
         Row: {
+          card_image_url: string | null
           completed_at: string | null
           created_at: string
           created_by: string | null
@@ -798,6 +799,7 @@ export type Database = {
           updated_by: string | null
         }
         Insert: {
+          card_image_url?: string | null
           completed_at?: string | null
           created_at?: string
           created_by?: string | null
@@ -811,6 +813,7 @@ export type Database = {
           updated_by?: string | null
         }
         Update: {
+          card_image_url?: string | null
           completed_at?: string | null
           created_at?: string
           created_by?: string | null

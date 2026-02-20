@@ -15,6 +15,7 @@ export interface FeatureRequest {
   completed_at: string | null;
   created_at: string;
   updated_at: string;
+  card_image_url: string | null;
 }
 
 const QUERY_KEY = ['feature_requests'];
@@ -62,10 +63,11 @@ export const useFeatureRequests = (includeHidden = false) => {
   });
 
   const createMutation = useMutation({
-    mutationFn: async (data: { title: string; description?: string }) => {
+    mutationFn: async (data: { title: string; description?: string; card_image_url?: string | null }) => {
       const { error } = await supabase.from('feature_requests').insert({
         title: data.title,
         description: data.description || null,
+        card_image_url: data.card_image_url ?? null,
         created_by: user?.id,
       });
       if (error) throw error;
@@ -78,10 +80,15 @@ export const useFeatureRequests = (includeHidden = false) => {
   });
 
   const updateMutation = useMutation({
-    mutationFn: async (data: { id: string; title: string; description?: string }) => {
+    mutationFn: async (data: { id: string; title: string; description?: string; card_image_url?: string | null }) => {
       const { error } = await supabase
         .from('feature_requests')
-        .update({ title: data.title, description: data.description || null, updated_by: user?.id })
+        .update({
+          title: data.title,
+          description: data.description || null,
+          card_image_url: data.card_image_url ?? null,
+          updated_by: user?.id,
+        })
         .eq('id', data.id);
       if (error) throw error;
     },
