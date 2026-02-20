@@ -203,54 +203,38 @@ function SortableFeatureCard({
   );
 }
 
-/* ─── Image Field (Upload | URL) ─── */
+/* ─── Image Field (Upload | URL) — padrão idêntico ao ToolModal de /ferramentas ─── */
+// O upload NÃO acontece aqui: apenas armazena o File e gera preview local.
+// O upload real ocorre no handleSave (com sessão auth garantida).
 function ImageField({
   imageUrl,
+  pendingFile,
   onImageUrl,
+  onPendingFile,
 }: {
   imageUrl: string;
+  pendingFile: File | null;
   onImageUrl: (url: string) => void;
+  onPendingFile: (file: File | null) => void;
 }) {
   const [source, setSource] = useState<'upload' | 'url'>('url');
-  const [uploading, setUploading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
-  const [urlInput, setUrlInput] = useState(imageUrl.startsWith('http') ? imageUrl : '');
+  const [urlInput, setUrlInput] = useState('');
   const [urlError, setUrlError] = useState('');
   const [previewFailed, setPreviewFailed] = useState(false);
+  const [localPreview, setLocalPreview] = useState(''); // blob URL para preview antes do upload
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const uploadToStorage = async (file: File): Promise<string> => {
-    const timestamp = Date.now();
-    const random = Math.random().toString(36).substring(2, 10);
-    const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
-    const fileName = `vote-${timestamp}-${random}.${ext}`;
-
-    console.log('[Votacoes] Iniciando upload:', fileName, 'tipo:', file.type, 'tamanho:', file.size);
-
-    const { data, error } = await supabase.storage
-      .from('vote-images')
-      .upload(fileName, file, {
-        cacheControl: '3600',
-        upsert: true,
-        contentType: file.type,
-      });
-
-    if (error) {
-      console.error('[Votacoes] Erro no upload Supabase:', error);
-      throw error;
+  // Sync urlInput quando imageUrl muda externamente (ex: edição de item existente)
+  const prevImageUrl = useRef(imageUrl);
+  if (prevImageUrl.current !== imageUrl) {
+    prevImageUrl.current = imageUrl;
+    if (imageUrl.startsWith('http') && !pendingFile) {
+      setUrlInput(imageUrl);
     }
+  }
 
-    console.log('[Votacoes] Upload OK, path:', data.path);
-
-    const { data: { publicUrl } } = supabase.storage
-      .from('vote-images')
-      .getPublicUrl(data.path);
-
-    console.log('[Votacoes] URL pública gerada:', publicUrl);
-    return publicUrl;
-  };
-
-  const handleFile = async (file: File) => {
+  const handleFileSelect = (file: File) => {
     const allowed = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'];
     if (!allowed.includes(file.type)) {
       toast({ title: 'Formato não suportado. Use PNG, JPG ou WEBP.', variant: 'destructive' });
@@ -260,48 +244,51 @@ function ImageField({
       toast({ title: 'Imagem muito grande. Máximo 3MB.', variant: 'destructive' });
       return;
     }
-    setUploading(true);
+    // Gera preview local sem fazer upload ainda
+    const objectUrl = URL.createObjectURL(file);
+    setLocalPreview(objectUrl);
     setPreviewFailed(false);
-    try {
-      const url = await uploadToStorage(file);
-      onImageUrl(url);
-      toast({ title: 'Imagem enviada com sucesso!' });
-    } catch (err: any) {
-      console.error('[Votacoes] Falha no upload:', err);
-      toast({
-        title: 'Erro ao fazer upload da imagem',
-        description: err?.message || 'Verifique suas permissões e tente novamente.',
-        variant: 'destructive',
-      });
-    } finally {
-      setUploading(false);
-    }
+    onPendingFile(file);
+    // Limpa imageUrl anterior para usar preview local
+    onImageUrl('');
   };
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
     const file = e.dataTransfer.files[0];
-    if (file) handleFile(file);
+    if (file) handleFileSelect(file);
   };
 
-  const handleUrlChange = (v: string) => {
-    setUrlInput(v);
+  // URL: só confirma ao sair do campo (onBlur) ou pressionar Enter — evita 400 com URL parcial
+  const commitUrl = (v: string) => {
     setUrlError('');
     setPreviewFailed(false);
-    if (v && !v.startsWith('http')) {
+    if (!v) {
+      onImageUrl('');
+      return;
+    }
+    if (!v.startsWith('http')) {
       setUrlError('URL deve começar com http:// ou https://');
       return;
     }
+    onPendingFile(null);
+    setLocalPreview('');
     onImageUrl(v);
   };
 
   const handleRemove = () => {
     onImageUrl('');
+    onPendingFile(null);
     setUrlInput('');
     setUrlError('');
     setPreviewFailed(false);
+    setLocalPreview('');
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
+
+  // Preview exibido: blob local (arquivo selecionado) ou URL do banco
+  const previewSrc = localPreview || imageUrl;
 
   return (
     <div className="space-y-2">
@@ -330,8 +317,14 @@ function ImageField({
             }`}
             onClick={() => fileInputRef.current?.click()}
           >
-            {uploading ? (
-              <p className="text-sm text-muted-foreground">Enviando…</p>
+            {pendingFile ? (
+              <div className="space-y-1">
+                <Upload className="w-6 h-6 mx-auto text-primary" />
+                <p className="text-sm font-medium text-foreground">{pendingFile.name}</p>
+                <p className="text-xs text-muted-foreground">
+                  {(pendingFile.size / 1024 / 1024).toFixed(2)} MB — será enviado ao salvar
+                </p>
+              </div>
             ) : (
               <>
                 <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
@@ -344,7 +337,7 @@ function ImageField({
               type="file"
               accept="image/png,image/jpeg,image/webp"
               className="hidden"
-              onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }}
+              onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFileSelect(f); }}
             />
           </div>
         </TabsContent>
@@ -354,28 +347,30 @@ function ImageField({
             type="url"
             placeholder="https://exemplo.com/imagem.jpg"
             value={urlInput}
-            onChange={(e) => handleUrlChange(e.target.value)}
+            onChange={(e) => { setUrlInput(e.target.value); setUrlError(''); }}
+            onBlur={(e) => commitUrl(e.target.value.trim())}
+            onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); commitUrl(urlInput.trim()); } }}
           />
           {urlError && <p className="text-xs text-destructive">{urlError}</p>}
           {urlInput && !urlError && (
             <p className="text-xs text-muted-foreground">
-              ⚠️ Algumas URLs externas podem ser bloqueadas pelo servidor ao renderizar. Prefira fazer Upload.
+              ⚠️ Algumas URLs externas podem ser bloqueadas ao renderizar. Prefira fazer Upload.
             </p>
           )}
         </TabsContent>
       </Tabs>
 
       {/* Preview + remove */}
-      {imageUrl && (
+      {previewSrc && (
         <div className={`relative overflow-hidden border border-border ${UI_RADIUS}`} style={{ aspectRatio: '16/9' }}>
           {!previewFailed ? (
             <img
-              src={imageUrl}
+              src={previewSrc}
               alt="Preview"
               className="w-full h-full object-cover"
               referrerPolicy="no-referrer"
               onError={() => {
-                console.error('[Votacoes] Preview falhou para:', imageUrl);
+                console.error('[Votacoes] Preview falhou para:', previewSrc);
                 setPreviewFailed(true);
               }}
             />
@@ -383,8 +378,7 @@ function ImageField({
             <div className="w-full h-full flex flex-col items-center justify-center bg-muted gap-2">
               <ImageIcon className="w-8 h-8 text-muted-foreground" />
               <p className="text-xs text-muted-foreground text-center px-4">
-                Pré-visualização bloqueada pelo servidor externo.
-                <br />A URL foi salva — ela pode funcionar no card.
+                Pré-visualização bloqueada.<br />A URL foi salva — pode funcionar no card.
               </p>
             </div>
           )}
@@ -416,6 +410,8 @@ export default function Votacoes() {
   const [formTitle, setFormTitle] = useState('');
   const [formDesc, setFormDesc] = useState('');
   const [formImageUrl, setFormImageUrl] = useState('');
+  const [formPendingFile, setFormPendingFile] = useState<File | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   const effectiveAdmin = isAdmin;
   const includeHidden = isManagement && effectiveAdmin;
@@ -450,28 +446,78 @@ export default function Votacoes() {
       setFormTitle(feature.title);
       setFormDesc(feature.description || '');
       setFormImageUrl(feature.card_image_url || '');
+      setFormPendingFile(null);
     } else {
       setEditing(null);
       setFormTitle('');
       setFormDesc('');
       setFormImageUrl('');
+      setFormPendingFile(null);
     }
     setModalOpen(true);
   };
 
-  const handleSave = () => {
+  // Upload só ocorre aqui — com sessão auth garantida (padrão /ferramentas)
+  const handleSave = async () => {
     if (!formTitle.trim()) return;
-    const payload = {
-      title: formTitle,
-      description: formDesc,
-      card_image_url: formImageUrl || null,
-    };
-    if (editing) {
-      update({ id: editing.id, ...payload });
-    } else {
-      create(payload);
+    setIsSaving(true);
+    try {
+      let finalImageUrl = formImageUrl || null;
+
+      // Se há arquivo pendente, faz upload agora (sessão garantida)
+      if (formPendingFile) {
+        const timestamp = Date.now();
+        const random = Math.random().toString(36).substring(2, 10);
+        const ext = formPendingFile.name.split('.').pop()?.toLowerCase() || 'jpg';
+        const fileName = `vote-${timestamp}-${random}.${ext}`;
+
+        console.log('[Votacoes] Upload no save:', fileName, formPendingFile.type);
+        const { data, error } = await supabase.storage
+          .from('vote-images')
+          .upload(fileName, formPendingFile, {
+            cacheControl: '3600',
+            upsert: true,
+            contentType: formPendingFile.type,
+          });
+
+        if (error) {
+          console.error('[Votacoes] Erro no upload:', error);
+          toast({
+            title: 'Erro ao enviar imagem',
+            description: error.message,
+            variant: 'destructive',
+          });
+          setIsSaving(false);
+          return;
+        }
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('vote-images')
+          .getPublicUrl(data.path);
+
+        console.log('[Votacoes] Upload OK, URL pública:', publicUrl);
+        finalImageUrl = publicUrl;
+      }
+
+      const payload = {
+        title: formTitle,
+        description: formDesc,
+        card_image_url: finalImageUrl,
+      };
+
+      if (editing) {
+        update({ id: editing.id, ...payload });
+      } else {
+        create(payload);
+      }
+      setModalOpen(false);
+      setFormPendingFile(null);
+    } catch (err: any) {
+      console.error('[Votacoes] Erro ao salvar:', err);
+      toast({ title: 'Erro ao salvar', description: err.message, variant: 'destructive' });
+    } finally {
+      setIsSaving(false);
     }
-    setModalOpen(false);
   };
 
   return (
@@ -606,11 +652,13 @@ export default function Votacoes() {
               <Label>Descrição</Label>
               <Textarea placeholder="Descrição (opcional)" value={formDesc} onChange={e => setFormDesc(e.target.value)} rows={3} />
             </div>
-            <ImageField imageUrl={formImageUrl} onImageUrl={setFormImageUrl} />
+            <ImageField imageUrl={formImageUrl} pendingFile={formPendingFile} onImageUrl={setFormImageUrl} onPendingFile={setFormPendingFile} />
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setModalOpen(false)}>Cancelar</Button>
-            <Button onClick={handleSave} disabled={!formTitle.trim()}>Salvar</Button>
+            <Button variant="outline" onClick={() => setModalOpen(false)} disabled={isSaving}>Cancelar</Button>
+            <Button onClick={handleSave} disabled={!formTitle.trim() || isSaving}>
+              {isSaving ? 'Salvando…' : 'Salvar'}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
