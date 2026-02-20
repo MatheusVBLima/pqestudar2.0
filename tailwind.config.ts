@@ -73,6 +73,7 @@ export default {
 				'gradient-primary': 'var(--gradient-primary)',
 				'gradient-hero': 'var(--gradient-hero)'
 			},
+		// Padrão do projeto: todo card deve usar shadow-card.
 		boxShadow: {
 			'purple': 'var(--shadow-purple)',
 			'card-custom': 'var(--shadow-card)',
