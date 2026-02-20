@@ -80,10 +80,10 @@ export function Navbar() {
 
   return (
     <nav className={cn(
-      "sticky top-0 z-50 w-full border-b transition-all duration-200 ease-out",
+      "fixed top-0 left-0 right-0 z-50 w-full border-b transition-all duration-200 ease-out",
       isScrolled
-        ? "border-border/40 bg-background/70 backdrop-blur-md shadow-sm"
-        : "border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+        ? "border-border/40 bg-background/75 backdrop-blur-md shadow-sm"
+        : "border-transparent bg-background"
     )}>
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
