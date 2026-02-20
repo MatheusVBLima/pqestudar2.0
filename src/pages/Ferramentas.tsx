@@ -217,7 +217,7 @@ function SortableToolCard({
       style={style}
       className="relative group h-full">
 
-      <Card className="h-full shadow-card rounded-[1.2rem] transition-shadow duration-300 flex flex-col">
+      <Card className="h-full transition-shadow duration-300 flex flex-col">
         <CardHeader>
           {isManagementMode &&
           <div
