@@ -68,7 +68,7 @@ function SortableFeatureCard({
 
   return (
     <div ref={setNodeRef} style={style} className="relative group h-full">
-      <div className={`border border-border bg-card flex flex-col h-full overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${UI_RADIUS}`}>
+      <div className={`border border-border bg-card flex flex-col h-full overflow-hidden transition-all duration-300 shadow-card hover:-translate-y-1 ${UI_RADIUS}`}>
         <div className="flex flex-col flex-1 p-4 gap-3">
 
           {/* Top row: rank + votos (mesmo nível) + admin controls */}
