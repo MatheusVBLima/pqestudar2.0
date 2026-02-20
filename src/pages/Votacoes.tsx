@@ -71,13 +71,20 @@ function SortableFeatureCard({
       <div className={`border border-border bg-card flex flex-col h-full overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${UI_RADIUS}`}>
         <div className="flex flex-col flex-1 p-4 gap-3">
 
-          {/* Top row: rank badge + admin controls */}
-          <div className="flex items-center gap-2">
+          {/* Top row: rank + votos (mesmo nível) + admin controls */}
+          <div className="flex items-center justify-between gap-2">
+            {/* Esquerda: rank */}
             <span className={`inline-flex items-center justify-center border border-border bg-muted text-foreground text-xs font-bold px-2.5 py-1 ${UI_RADIUS}`}>
               #{rank}
             </span>
 
-            <div className="flex items-center gap-1 ml-auto">
+            {/* Direita: votos + admin controls */}
+            <div className="flex items-center gap-1.5">
+              <span className="inline-flex items-center gap-1 text-muted-foreground text-xs font-semibold">
+                <ThumbsUp className="h-3.5 w-3.5" />
+                {feature.votes_count}
+              </span>
+
               {isManagement && !feature.is_visible && (
                 <Badge variant="secondary" className="text-xs">Oculta</Badge>
               )}
@@ -90,36 +97,16 @@ function SortableFeatureCard({
                   >
                     <GripVertical className="w-3.5 h-3.5 text-muted-foreground" />
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className={`h-7 w-7 p-0 hover:bg-accent ${UI_RADIUS}`}
-                    onClick={() => onEdit(feature)}
-                  >
+                  <Button variant="ghost" size="sm" className={`h-7 w-7 p-0 hover:bg-accent ${UI_RADIUS}`} onClick={() => onEdit(feature)}>
                     <Edit className="w-3.5 h-3.5" />
                   </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className={`h-7 w-7 p-0 hover:bg-accent ${UI_RADIUS}`}
-                    onClick={() => onToggle(feature)}
-                  >
+                  <Button variant="ghost" size="sm" className={`h-7 w-7 p-0 hover:bg-accent ${UI_RADIUS}`} onClick={() => onToggle(feature)}>
                     {feature.is_visible ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
                   </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className={`h-7 w-7 p-0 hover:bg-accent ${UI_RADIUS}`}
-                    onClick={() => onComplete(feature)}
-                  >
+                  <Button variant="ghost" size="sm" className={`h-7 w-7 p-0 hover:bg-accent ${UI_RADIUS}`} onClick={() => onComplete(feature)}>
                     <CheckCircle className="w-3.5 h-3.5 text-primary" />
                   </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className={`h-7 w-7 p-0 hover:bg-accent text-destructive hover:text-destructive ${UI_RADIUS}`}
-                    onClick={() => onDelete(feature)}
-                  >
+                  <Button variant="ghost" size="sm" className={`h-7 w-7 p-0 hover:bg-accent text-destructive hover:text-destructive ${UI_RADIUS}`} onClick={() => onDelete(feature)}>
                     <Trash2 className="w-3.5 h-3.5" />
                   </Button>
                 </div>
@@ -139,19 +126,14 @@ function SortableFeatureCard({
             )}
           </div>
 
-          {/* Footer: vote count + CTA */}
-          <div className="flex items-center gap-2 mt-auto">
-            <span className="inline-flex items-center gap-1.5 text-muted-foreground text-xs font-medium">
-              <ThumbsUp className="h-3.5 w-3.5" />
-              {feature.votes_count}
-            </span>
-
+          {/* Footer: CTA sozinho */}
+          <div className="mt-auto">
             {user ? (
               <Button
                 variant={feature.user_voted ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => feature.user_voted ? onUnvote(feature.id) : onVote(feature.id)}
-                className={`flex-1 gap-2 text-sm ${UI_RADIUS}`}
+                className={`w-full gap-2 text-sm ${UI_RADIUS}`}
               >
                 <ThumbsUp className={`h-3.5 w-3.5 ${feature.user_voted ? 'fill-current' : ''}`} />
                 {feature.user_voted ? 'Votado ✓' : 'Votar'}
@@ -161,7 +143,7 @@ function SortableFeatureCard({
                 variant="outline"
                 size="sm"
                 onClick={() => toast({ title: 'Faça login para votar' })}
-                className={`flex-1 gap-2 text-sm ${UI_RADIUS}`}
+                className={`w-full gap-2 text-sm ${UI_RADIUS}`}
               >
                 <ThumbsUp className="h-3.5 w-3.5" />
                 Votar
