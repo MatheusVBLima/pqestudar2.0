@@ -2113,8 +2113,12 @@ export type Database = {
           created_at: string
           created_by: string | null
           description: string
+          featured_end: string | null
+          featured_indefinite: boolean
+          featured_start: string | null
           icon_url: string | null
           id: string
+          is_featured: boolean
           is_visible: boolean
           name: string
           sort_order: number
@@ -2128,8 +2132,12 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           description: string
+          featured_end?: string | null
+          featured_indefinite?: boolean
+          featured_start?: string | null
           icon_url?: string | null
           id?: string
+          is_featured?: boolean
           is_visible?: boolean
           name: string
           sort_order?: number
@@ -2143,8 +2151,12 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           description?: string
+          featured_end?: string | null
+          featured_indefinite?: boolean
+          featured_start?: string | null
           icon_url?: string | null
           id?: string
+          is_featured?: boolean
           is_visible?: boolean
           name?: string
           sort_order?: number
@@ -2698,39 +2710,51 @@ export type Database = {
       }
       tools_public: {
         Row: {
+          attachment_url: string | null
           created_at: string | null
           description: string | null
+          featured_end: string | null
+          featured_indefinite: boolean | null
+          featured_start: string | null
           icon_url: string | null
           id: string | null
+          is_featured: boolean | null
           is_visible: boolean | null
           name: string | null
           sort_order: number | null
           tags: string[] | null
-          updated_at: string | null
           url: string | null
         }
         Insert: {
+          attachment_url?: string | null
           created_at?: string | null
           description?: string | null
+          featured_end?: string | null
+          featured_indefinite?: boolean | null
+          featured_start?: string | null
           icon_url?: string | null
           id?: string | null
+          is_featured?: boolean | null
           is_visible?: boolean | null
           name?: string | null
           sort_order?: number | null
           tags?: string[] | null
-          updated_at?: string | null
           url?: string | null
         }
         Update: {
+          attachment_url?: string | null
           created_at?: string | null
           description?: string | null
+          featured_end?: string | null
+          featured_indefinite?: boolean | null
+          featured_start?: string | null
           icon_url?: string | null
           id?: string | null
+          is_featured?: boolean | null
           is_visible?: boolean | null
           name?: string | null
           sort_order?: number | null
           tags?: string[] | null
-          updated_at?: string | null
           url?: string | null
         }
         Relationships: []

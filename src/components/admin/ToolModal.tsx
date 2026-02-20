@@ -8,9 +8,10 @@ import { Switch } from "@/components/ui/switch";
 import { Tool } from "@/hooks/useTools";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { X, Sparkles, Upload, Link as LinkIcon } from "lucide-react";
+import { X, Sparkles, Upload, Link as LinkIcon, Star } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { Separator } from "@/components/ui/separator";
 
 interface ToolModalProps {
   open: boolean;
@@ -43,6 +44,13 @@ export function ToolModal({ open, onClose, onSave, tool, availableTags }: ToolMo
   const [isDraggingAttachment, setIsDraggingAttachment] = useState(false);
   const attachmentInputRef = useRef<HTMLInputElement>(null);
 
+  // Featured fields
+  const [isFeatured, setIsFeatured] = useState(false);
+  const [featuredIndefinite, setFeaturedIndefinite] = useState(false);
+  const [featuredStart, setFeaturedStart] = useState("");
+  const [featuredEnd, setFeaturedEnd] = useState("");
+
+
   useEffect(() => {
     if (tool) {
       setName(tool.name);
@@ -52,6 +60,10 @@ export function ToolModal({ open, onClose, onSave, tool, availableTags }: ToolMo
       setIconUrl(tool.icon_url || "");
       setSelectedTags(tool.tags || []);
       setIsVisible(tool.is_visible);
+      setIsFeatured(tool.is_featured ?? false);
+      setFeaturedIndefinite(tool.featured_indefinite ?? false);
+      setFeaturedStart(tool.featured_start ? tool.featured_start.slice(0, 16) : "");
+      setFeaturedEnd(tool.featured_end ? tool.featured_end.slice(0, 16) : "");
     } else {
       setName("");
       setDescription("");
@@ -60,6 +72,10 @@ export function ToolModal({ open, onClose, onSave, tool, availableTags }: ToolMo
       setIconUrl("");
       setSelectedTags([]);
       setIsVisible(true);
+      setIsFeatured(false);
+      setFeaturedIndefinite(false);
+      setFeaturedStart("");
+      setFeaturedEnd("");
     }
     setErrors({});
     setUploadedFile(null);
@@ -99,6 +115,19 @@ export function ToolModal({ open, onClose, onSave, tool, availableTags }: ToolMo
 
     if (selectedTags.length === 0) {
       newErrors.tags = "Selecione pelo menos uma categoria";
+    }
+
+    // Featured validations
+    if (isFeatured && !featuredIndefinite) {
+      if (!featuredStart) {
+        newErrors.featuredStart = "Informe o início do destaque";
+      }
+      if (!featuredEnd) {
+        newErrors.featuredEnd = "Informe o fim do destaque";
+      }
+      if (featuredStart && featuredEnd && featuredEnd < featuredStart) {
+        newErrors.featuredEnd = "Fim do destaque deve ser após o início";
+      }
     }
 
     setErrors(newErrors);
@@ -298,6 +327,10 @@ export function ToolModal({ open, onClose, onSave, tool, availableTags }: ToolMo
         icon_url: finalIconUrl,
         tags: selectedTags,
         is_visible: isVisible,
+        is_featured: isFeatured,
+        featured_indefinite: isFeatured ? featuredIndefinite : false,
+        featured_start: isFeatured && !featuredIndefinite && featuredStart ? new Date(featuredStart).toISOString() : null,
+        featured_end: isFeatured && !featuredIndefinite && featuredEnd ? new Date(featuredEnd).toISOString() : null,
       } as any);
       onClose();
     } finally {
@@ -668,6 +701,97 @@ export function ToolModal({ open, onClose, onSave, tool, availableTags }: ToolMo
             <Label htmlFor="visible" className="cursor-pointer">
               Visível para o público
             </Label>
+          </div>
+
+          {/* ── Bloco Destaque ── */}
+          <Separator />
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <Star className="w-4 h-4 text-amber-500" aria-hidden="true" />
+              <span className="text-sm font-semibold">Destaque</span>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="is_featured"
+                checked={isFeatured}
+                onCheckedChange={(v) => {
+                  setIsFeatured(v);
+                  if (!v) {
+                    setFeaturedIndefinite(false);
+                    setFeaturedStart("");
+                    setFeaturedEnd("");
+                    setErrors((prev) => ({ ...prev, featuredStart: "", featuredEnd: "" }));
+                  }
+                }}
+              />
+              <Label htmlFor="is_featured" className="cursor-pointer">
+                Ferramenta em destaque
+              </Label>
+            </div>
+
+            {isFeatured && (
+              <div className="space-y-3 pl-2 border-l-2 border-amber-400/40">
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="featured_indefinite"
+                    checked={featuredIndefinite}
+                    onCheckedChange={(v) => {
+                      setFeaturedIndefinite(v);
+                      if (v) {
+                        setFeaturedStart("");
+                        setFeaturedEnd("");
+                        setErrors((prev) => ({ ...prev, featuredStart: "", featuredEnd: "" }));
+                      }
+                    }}
+                  />
+                  <Label htmlFor="featured_indefinite" className="cursor-pointer text-sm">
+                    Destaque indeterminado (sem prazo)
+                  </Label>
+                </div>
+
+                {!featuredIndefinite && (
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <Label htmlFor="featured_start" className="text-xs text-muted-foreground">
+                        Início do destaque
+                      </Label>
+                      <Input
+                        id="featured_start"
+                        type="datetime-local"
+                        value={featuredStart}
+                        onChange={(e) => {
+                          setFeaturedStart(e.target.value);
+                          setErrors((prev) => ({ ...prev, featuredStart: "" }));
+                        }}
+                        aria-invalid={!!errors.featuredStart}
+                      />
+                      {errors.featuredStart && (
+                        <p className="text-xs text-destructive">{errors.featuredStart}</p>
+                      )}
+                    </div>
+                    <div className="space-y-1">
+                      <Label htmlFor="featured_end" className="text-xs text-muted-foreground">
+                        Fim do destaque
+                      </Label>
+                      <Input
+                        id="featured_end"
+                        type="datetime-local"
+                        value={featuredEnd}
+                        onChange={(e) => {
+                          setFeaturedEnd(e.target.value);
+                          setErrors((prev) => ({ ...prev, featuredEnd: "" }));
+                        }}
+                        aria-invalid={!!errors.featuredEnd}
+                      />
+                      {errors.featuredEnd && (
+                        <p className="text-xs text-destructive">{errors.featuredEnd}</p>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
 

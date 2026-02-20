@@ -4,7 +4,7 @@ import { PageHero } from "@/components/layout/PageHero";
 import { Helmet } from "react-helmet-async";
 import { useSearchParams } from "react-router-dom";
 import { GlobalSeo } from "@/components/seo/GlobalSeo";
-import { X, Sparkles, Brain, Shield, GraduationCap, Wrench, Zap, Plus, Edit, Eye, EyeOff, Trash2, GripVertical, ChevronLeft, ChevronRight } from "lucide-react";
+import { X, Sparkles, Brain, Shield, GraduationCap, Wrench, Zap, Plus, Edit, Eye, EyeOff, Trash2, GripVertical, ChevronLeft, ChevronRight, Star } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -63,6 +63,17 @@ import { CSS } from '@dnd-kit/utilities';
 import { toast } from "@/hooks/use-toast";
 import { useAnalyticsTracker } from "@/hooks/useAnalyticsTracker";
 import { usePageSettings } from "@/hooks/usePageSettings";
+
+// Helper: verifica se uma ferramenta tem destaque ativo
+function isFeaturedActive(tool: Tool): boolean {
+  if (!tool.is_featured) return false;
+  if (tool.featured_indefinite) return true;
+  const now = Date.now();
+  const start = tool.featured_start ? new Date(tool.featured_start).getTime() : null;
+  const end = tool.featured_end ? new Date(tool.featured_end).getTime() : null;
+  if (start === null || end === null) return false;
+  return now >= start && now <= end;
+}
 
 // Categorias disponíveis
 const CATEGORIES = [
@@ -210,6 +221,7 @@ function SortableToolCard({
   };
 
   const Icon = tool.tags[0] ? CATEGORY_ICONS[tool.tags[0]] || Sparkles : Sparkles;
+  const featured = isFeaturedActive(tool);
 
   return (
     <div
@@ -217,7 +229,7 @@ function SortableToolCard({
       style={style}
       className="relative group h-full">
 
-      <Card className="h-full transition-shadow duration-300 flex flex-col">
+      <Card className={`h-full transition-all duration-300 flex flex-col ${featured ? 'ring-2 ring-violet-500/60 shadow-md' : 'transition-shadow hover:shadow-lg'}`}>
         <CardHeader>
           {isManagementMode &&
           <div
@@ -290,11 +302,22 @@ function SortableToolCard({
                 style={{ display: tool.icon_url ? 'none' : 'block' }} />
 
             </div>
-            <CardTitle className="text-xl leading-tight flex items-center gap-2 mt-0">
+            <CardTitle className="text-xl leading-tight flex flex-wrap items-center gap-2 mt-0">
               {tool.name}
+              {featured &&
+                <Badge className="text-xs bg-amber-400 text-amber-950 border-amber-500 hover:bg-amber-400 gap-1 shrink-0">
+                  <Star className="w-3 h-3 fill-amber-950" aria-hidden="true" />
+                  Destaque
+                </Badge>
+              }
               {isManagementMode && !tool.is_visible &&
               <Badge variant="secondary" className="text-xs">
                   Oculta
+                </Badge>
+              }
+              {isManagementMode && tool.is_featured && !featured &&
+                <Badge variant="outline" className="text-xs text-muted-foreground shrink-0">
+                  Destaque inativo
                 </Badge>
               }
             </CardTitle>
@@ -462,6 +485,50 @@ export default function Ferramentas() {
     tool.tags.includes(categoryFilter)
     );
   }
+
+  // Ordenação de destaques (modo público)
+  const sortedDisplayedTools = useMemo(() => {
+    if (isManagementMode) return displayedTools;
+
+    const hasTagFilter = selectedTags.length > 0;
+
+    if (!hasTagFilter) {
+      // Sem filtro: até 3 destaques ativos no topo
+      const active = displayedTools.filter(isFeaturedActive);
+      const rest = displayedTools.filter((t) => !isFeaturedActive(t));
+
+      // Ordenar destaques: indefinidos primeiro, depois por data mais recente
+      const sortedActive = [...active].sort((a, b) => {
+        if (a.featured_indefinite && !b.featured_indefinite) return -1;
+        if (!a.featured_indefinite && b.featured_indefinite) return 1;
+        const dateA = a.featured_start ? new Date(a.featured_start).getTime() : 0;
+        const dateB = b.featured_start ? new Date(b.featured_start).getTime() : 0;
+        return dateB - dateA;
+      });
+
+      return [...sortedActive.slice(0, 3), ...rest];
+    } else {
+      // Com filtro: até 1 destaque ativo por categoria no topo
+      const seenCategories = new Set<string>();
+      const featuredFirst: Tool[] = [];
+      const rest: Tool[] = [];
+
+      for (const tool of displayedTools) {
+        if (isFeaturedActive(tool)) {
+          // Encontrar categoria(s) do tool que estão nos filtros ativos
+          const matchingCategory = tool.tags.find((tag) => selectedTags.includes(tag) && !seenCategories.has(tag));
+          if (matchingCategory) {
+            seenCategories.add(matchingCategory);
+            featuredFirst.push(tool);
+            continue;
+          }
+        }
+        rest.push(tool);
+      }
+
+      return [...featuredFirst, ...rest];
+    }
+  }, [displayedTools, isManagementMode, selectedTags]);
 
   const availableTags = CATEGORIES.filter((tag) => !selectedTags.includes(tag));
 
@@ -656,7 +723,7 @@ export default function Ferramentas() {
 
                   {showCount &&
                 <Badge variant="secondary" className="ml-auto">
-                      {displayedTools.length} ferramenta(s)
+                      {sortedDisplayedTools.length} ferramenta(s)
                     </Badge>
                 }
 
@@ -889,7 +956,7 @@ export default function Ferramentas() {
               }
 
               {/* Filtered Empty State */}
-              {!loading && localTools.length > 0 && displayedTools.length === 0 &&
+              {!loading && localTools.length > 0 && sortedDisplayedTools.length === 0 &&
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -910,7 +977,7 @@ export default function Ferramentas() {
               }
 
               {/* Tools Grid */}
-              {!loading && displayedTools.length > 0 &&
+              {!loading && sortedDisplayedTools.length > 0 &&
               <DndContext
                 sensors={sensors}
                 collisionDetection={closestCenter}
@@ -918,14 +985,14 @@ export default function Ferramentas() {
                 onDragEnd={handleDragEnd}>
 
                   <SortableContext
-                  items={displayedTools.map((t) => t.id)}
+                  items={sortedDisplayedTools.map((t) => t.id)}
                   strategy={rectSortingStrategy}>
 
                     <motion.div
                     layout
                     className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
 
-                      {displayedTools.map((tool) =>
+                      {sortedDisplayedTools.map((tool) =>
                     <SortableToolCard
                       key={tool.id}
                       tool={tool}
