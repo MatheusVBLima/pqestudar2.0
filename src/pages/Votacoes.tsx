@@ -36,7 +36,6 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
-// Constante reutilizável de border-radius padrão do projeto
 const UI_RADIUS = 'rounded-[1.2rem]';
 
 /* ─── Vitrine Card ─── */
@@ -67,74 +66,68 @@ function SortableFeatureCard({
     opacity: isDragging ? 0.5 : 1,
   };
 
-  // Gradiente determinístico por título
-  const hue = feature.title.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0) % 360;
-  const gradientStyle = {
-    background: `linear-gradient(135deg, hsl(${hue} 40% 20%), hsl(${(hue + 60) % 360} 50% 35%))`,
-  };
-
   return (
     <div ref={setNodeRef} style={style} className="relative group h-full">
-      <div
-        className={`border border-border bg-card flex flex-col h-full overflow-hidden
-          transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${UI_RADIUS}`}
-      >
-        {/* Cover area — sempre gradiente */}
-        <div className="relative" style={{ aspectRatio: '16/9' }}>
-          <div
-            className="absolute inset-0 rounded-t-[1.2rem]"
-            style={gradientStyle}
-          />
+      <div className={`border border-border bg-card flex flex-col h-full overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${UI_RADIUS}`}>
+        <div className="flex flex-col flex-1 p-4 gap-3">
 
-          {/* Rank badge */}
-          <div className="absolute top-3 left-3 z-10">
-            <span className={`inline-flex items-center justify-center bg-background/80 backdrop-blur-sm
-              border border-border text-foreground text-xs font-bold px-2.5 py-1 shadow-sm ${UI_RADIUS}`}>
+          {/* Top row: rank badge + admin controls */}
+          <div className="flex items-center gap-2">
+            <span className={`inline-flex items-center justify-center border border-border bg-muted text-foreground text-xs font-bold px-2.5 py-1 ${UI_RADIUS}`}>
               #{rank}
             </span>
+
+            <div className="flex items-center gap-1 ml-auto">
+              {isManagement && !feature.is_visible && (
+                <Badge variant="secondary" className="text-xs">Oculta</Badge>
+              )}
+              {isManagement && (
+                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div
+                    {...attributes}
+                    {...listeners}
+                    className={`cursor-grab active:cursor-grabbing p-1.5 hover:bg-accent ${UI_RADIUS}`}
+                  >
+                    <GripVertical className="w-3.5 h-3.5 text-muted-foreground" />
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className={`h-7 w-7 p-0 hover:bg-accent ${UI_RADIUS}`}
+                    onClick={() => onEdit(feature)}
+                  >
+                    <Edit className="w-3.5 h-3.5" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className={`h-7 w-7 p-0 hover:bg-accent ${UI_RADIUS}`}
+                    onClick={() => onToggle(feature)}
+                  >
+                    {feature.is_visible ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className={`h-7 w-7 p-0 hover:bg-accent ${UI_RADIUS}`}
+                    onClick={() => onComplete(feature)}
+                  >
+                    <CheckCircle className="w-3.5 h-3.5 text-primary" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className={`h-7 w-7 p-0 hover:bg-accent text-destructive hover:text-destructive ${UI_RADIUS}`}
+                    onClick={() => onDelete(feature)}
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </Button>
+                </div>
+              )}
+            </div>
           </div>
 
-          {/* Vote counter overlay */}
-          <div className="absolute bottom-3 right-3 z-10">
-            <span className={`inline-flex items-center gap-1.5 bg-background/80 backdrop-blur-sm
-              border border-border text-foreground text-xs font-semibold px-2.5 py-1 shadow-sm ${UI_RADIUS}`}>
-              <ThumbsUp className="h-3 w-3" />
-              {feature.votes_count}
-            </span>
-          </div>
-
-          {/* Admin controls overlay */}
-          {isManagement && (
-            <div className="absolute top-3 right-3 z-20 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-              <div {...attributes} {...listeners}
-                className={`cursor-grab active:cursor-grabbing p-1.5 bg-background/80 backdrop-blur-sm hover:bg-accent ${UI_RADIUS}`}>
-                <GripVertical className="w-3.5 h-3.5 text-muted-foreground" />
-              </div>
-              <Button variant="ghost" size="sm" className={`h-7 w-7 p-0 bg-background/80 backdrop-blur-sm hover:bg-accent ${UI_RADIUS}`} onClick={() => onEdit(feature)}>
-                <Edit className="w-3.5 h-3.5" />
-              </Button>
-              <Button variant="ghost" size="sm" className={`h-7 w-7 p-0 bg-background/80 backdrop-blur-sm hover:bg-accent ${UI_RADIUS}`} onClick={() => onToggle(feature)}>
-                {feature.is_visible ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-              </Button>
-              <Button variant="ghost" size="sm" className={`h-7 w-7 p-0 bg-background/80 backdrop-blur-sm hover:bg-accent ${UI_RADIUS}`} onClick={() => onComplete(feature)}>
-                <CheckCircle className="w-3.5 h-3.5 text-primary" />
-              </Button>
-              <Button variant="ghost" size="sm" className={`h-7 w-7 p-0 bg-background/80 backdrop-blur-sm hover:bg-accent text-destructive hover:text-destructive ${UI_RADIUS}`} onClick={() => onDelete(feature)}>
-                <Trash2 className="w-3.5 h-3.5" />
-              </Button>
-            </div>
-          )}
-
-          {/* Hidden badge for admin */}
-          {isManagement && !feature.is_visible && (
-            <div className="absolute bottom-3 left-3 z-10">
-              <Badge variant="secondary" className="text-xs">Oculta</Badge>
-            </div>
-          )}
-        </div>
-
-        {/* Card body */}
-        <div className="flex flex-col flex-1 p-4 gap-3">
+          {/* Content */}
           <div className="flex-1">
             <h3 className="font-semibold text-sm leading-snug line-clamp-2 text-foreground mb-1.5">
               {feature.title}
@@ -146,28 +139,35 @@ function SortableFeatureCard({
             )}
           </div>
 
-          {/* CTA */}
-          {user ? (
-            <Button
-              variant={feature.user_voted ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => feature.user_voted ? onUnvote(feature.id) : onVote(feature.id)}
-              className={`w-full gap-2 text-sm ${UI_RADIUS}`}
-            >
-              <ThumbsUp className={`h-3.5 w-3.5 ${feature.user_voted ? 'fill-current' : ''}`} />
-              {feature.user_voted ? 'Votado ✓' : 'Votar'}
-            </Button>
-          ) : (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => toast({ title: 'Faça login para votar' })}
-              className={`w-full gap-2 text-sm ${UI_RADIUS}`}
-            >
+          {/* Footer: vote count + CTA */}
+          <div className="flex items-center gap-2 mt-auto">
+            <span className="inline-flex items-center gap-1.5 text-muted-foreground text-xs font-medium">
               <ThumbsUp className="h-3.5 w-3.5" />
-              Votar
-            </Button>
-          )}
+              {feature.votes_count}
+            </span>
+
+            {user ? (
+              <Button
+                variant={feature.user_voted ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => feature.user_voted ? onUnvote(feature.id) : onVote(feature.id)}
+                className={`flex-1 gap-2 text-sm ${UI_RADIUS}`}
+              >
+                <ThumbsUp className={`h-3.5 w-3.5 ${feature.user_voted ? 'fill-current' : ''}`} />
+                {feature.user_voted ? 'Votado ✓' : 'Votar'}
+              </Button>
+            ) : (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => toast({ title: 'Faça login para votar' })}
+                className={`flex-1 gap-2 text-sm ${UI_RADIUS}`}
+              >
+                <ThumbsUp className="h-3.5 w-3.5" />
+                Votar
+              </Button>
+            )}
+          </div>
         </div>
       </div>
     </div>
@@ -232,11 +232,7 @@ export default function Votacoes() {
     if (!formTitle.trim()) return;
     setIsSaving(true);
     try {
-      const payload = {
-        title: formTitle,
-        description: formDesc,
-      };
-
+      const payload = { title: formTitle, description: formDesc };
       if (editing) {
         update({ id: editing.id, ...payload });
       } else {
@@ -293,9 +289,9 @@ export default function Votacoes() {
 
         {/* Loading */}
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
             {[1, 2, 3, 4].map(i => (
-              <Skeleton key={i} className={`h-64 ${UI_RADIUS}`} />
+              <Skeleton key={i} className={`h-40 ${UI_RADIUS}`} />
             ))}
           </div>
         ) : openFeatures.length === 0 ? (
@@ -306,7 +302,7 @@ export default function Votacoes() {
         ) : (
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
             <SortableContext items={openFeatures.map(f => f.id)} strategy={verticalListSortingStrategy}>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 items-stretch">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 items-stretch">
                 <AnimatePresence mode="popLayout">
                   {openFeatures.map((feature, index) => (
                     <motion.div
@@ -376,15 +372,26 @@ export default function Votacoes() {
           <div className="space-y-4 py-2">
             <div className="space-y-1.5">
               <Label>Título <span className="text-destructive">*</span></Label>
-              <Input placeholder="Título do lançamento" value={formTitle} onChange={e => setFormTitle(e.target.value)} />
+              <Input
+                placeholder="Título do lançamento"
+                value={formTitle}
+                onChange={e => setFormTitle(e.target.value)}
+              />
             </div>
             <div className="space-y-1.5">
               <Label>Descrição</Label>
-              <Textarea placeholder="Descrição (opcional)" value={formDesc} onChange={e => setFormDesc(e.target.value)} rows={3} />
+              <Textarea
+                placeholder="Descrição (opcional)"
+                value={formDesc}
+                onChange={e => setFormDesc(e.target.value)}
+                rows={3}
+              />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setModalOpen(false)} disabled={isSaving}>Cancelar</Button>
+            <Button variant="outline" onClick={() => setModalOpen(false)} disabled={isSaving}>
+              Cancelar
+            </Button>
             <Button onClick={handleSave} disabled={!formTitle.trim() || isSaving}>
               {isSaving ? 'Salvando…' : 'Salvar'}
             </Button>
