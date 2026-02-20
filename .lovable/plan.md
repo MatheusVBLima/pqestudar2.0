@@ -1,124 +1,91 @@
-```md
-# Plano: Migrar useTools para React Query + defaults globais de cache (com ajustes de refetch)
 
-## Confirmações dos 4 pontos (mantidas)
+## Root Cause: Storage RLS Policy — Missing `SELECT` Wrapper on `is_admin()`
 
-1. **Versão TanStack Query**: o projeto usa `@tanstack/react-query ^5.83.0` — **v5 confirmada**, portanto `gcTime` é o campo correto.
+### Diagnosis
 
-2. **queryKey estável**: tags serão ordenadas (`[...tags].sort().join(',')`) antes de compor a key. O hook atual não tem `search`, então a key será: `['tools_public', page, pageSize, sortedTagsString]` para público e `['tools_admin']` para admin.
+The error `StorageApiError: new row violates row-level security policy` occurs because the storage policies for `vote-images` were written with a subtle but critical syntax difference from the working `tools-icons` policies:
 
-3. **Sem skeleton ao voltar**: usaremos `isLoading` (false quando há cache) para skeleton, e `placeholderData: keepPreviousData` para paginação. `isFetching` não afetará a UI.
+```sql
+-- ❌ vote-images (broken) — is_admin() returns null/false in storage context
+WITH CHECK (bucket_id = 'vote-images' AND is_admin())
 
-4. **Invalidation por prefixo**: todas as mutations invalidarão `{ queryKey: ['tools_public'] }` e `{ queryKey: ['tools_admin'] }` (prefix match por padrão no v5).
-
----
-
-## Ajustes adicionais (importante para não “congelar” dados stale)
-
-### 5) **Não usar `refetchOnMount: false` no default global**
-Com `staleTime` de 5 minutos, já teremos cache imediato ao voltar rapidamente.
-Se mantivermos **`refetchOnMount: false` + `refetchOnWindowFocus: false`**, quando o dado ficar stale, ele pode **não atualizar ao remontar**, e o usuário pode ficar vendo dado antigo até uma invalidação ocorrer.
-
-✅ Portanto, no default global:
-- **Remover `refetchOnMount`** (deixar comportamento padrão)
-  **ou**
-- Definir `refetchOnMount: true`
-
-**Escolha recomendada:** **remover `refetchOnMount` do default** (menos agressivo e mais seguro).
-
----
-
-## Arquivos a alterar
-
-### 1. `src/App.tsx` (linha 68)
-
-Adicionar `defaultOptions` ao `QueryClient`:
-
-```ts
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 5 * 60 * 1000,
-      gcTime: 30 * 60 * 1000,
-      refetchOnWindowFocus: false,
-      // refetchOnMount: REMOVIDO (ou usar true) para não travar atualização quando stale
-      refetchOnReconnect: true,
-      retry: 2,
-    },
-  },
-});
-
+-- ✅ tools-icons (working) — subquery forces correct evaluation
+WITH CHECK (bucket_id = 'tools-icons' AND (SELECT public.is_admin()))
 ```
 
-> Observação: manter `refetchOnWindowFocus: false` é ok para reduzir ruído; a atualização quando stale ocorrerá no mount (comportamento padrão) e também em ações que invalidem cache.
+In Supabase Storage, the `storage.objects` table evaluates RLS in a different security context than regular public tables. When `is_admin()` (a `SECURITY DEFINER` function) is called directly, `auth.uid()` is not properly propagated to the function, so it returns `false` for every user. Wrapping it in `(SELECT public.is_admin())` forces PostgreSQL to evaluate it as a correlated subquery, which correctly resolves the session's `auth.uid()`.
+
+The same applies to `UPDATE` and `DELETE` policies (which also use the bare `is_admin()` call).
+
+The URL preview "400 Failed to load resource" is a secondary issue — because the upload never completes, the `card_image_url` in the database is never set, so the card falls back to the gradient and the stored URL (if any) attempts to load from a non-existent path in storage.
 
 ---
 
-### 2. `src/hooks/useTools.tsx` (reescrita completa)
+### Plan
 
-Migrar de `useState/useEffect` para `useQuery` + `useQueryClient`:
+#### Step 1 — Database Migration: Fix Storage RLS Policies
 
-- **Leitura pública**: `useQuery` com key `['tools_public', page, pageSize, sortedTags]`, `placeholderData: keepPreviousData`
-- **Leitura admin**: `useQuery` com key `['tools_admin']`, overrides estritos (`staleTime: 0, refetchOnMount: true, refetchOnWindowFocus: true`)
-- **Mutations** (add/update/delete/toggleVisible/reorder): funções async que chamam edge function e depois `queryClient.invalidateQueries({ queryKey: ['tools_public'] })` + `['tools_admin']`
-- **Reorder**: manter optimistic update via `queryClient.setQueryData` com rollback
-- **Interface pública mantida**: `tools, total, loading, page, pageSize, totalPages, addTool, updateTool, deleteTool, toggleVisible, reorderTools, refetch`
-- `loading` mapeado para `isLoading` (false quando cache existe)
+Create a new migration that drops the broken policies and recreates them using the correct `(SELECT public.is_admin())` pattern, matching the `tools-icons` working implementation exactly.
 
-#### Checks adicionais (para evitar fetch indevido/erros)
+```sql
+-- Drop broken policies
+DROP POLICY IF EXISTS "Admins can upload vote images" ON storage.objects;
+DROP POLICY IF EXISTS "Admins can update vote images" ON storage.objects;
+DROP POLICY IF EXISTS "Admins can delete vote images" ON storage.objects;
 
-- Garantir que query **admin** rode apenas quando estiver em modo admin e com permissão (usar `enabled` conforme o modo).
-- Se a área admin tiver paginação/filtros no futuro, considerar key admin mais específica; se não tiver, `['tools_admin']` está ok.
+-- Recreate with the correct subquery pattern (matching tools-icons)
+CREATE POLICY "Admins can upload vote images"
+  ON storage.objects FOR INSERT
+  TO authenticated
+  WITH CHECK (
+    bucket_id = 'vote-images'
+    AND (SELECT public.is_admin())
+  );
 
----
+CREATE POLICY "Admins can update vote images"
+  ON storage.objects FOR UPDATE
+  TO authenticated
+  USING (
+    bucket_id = 'vote-images'
+    AND (SELECT public.is_admin())
+  );
 
-### 3. `src/hooks/useConcursosAdmin.tsx`
-
-Adicionar overrides nas queries `concursos-pending-items` e `concursos-analyzed-urls`:
-
-```ts
-staleTime: 0,
-refetchOnMount: true,
-refetchOnWindowFocus: true,
-
+CREATE POLICY "Admins can delete vote images"
+  ON storage.objects FOR DELETE
+  TO authenticated
+  USING (
+    bucket_id = 'vote-images'
+    AND (SELECT public.is_admin())
+  );
 ```
 
----
+This is the **only backend change needed**. No other tables, RLS policies, or Edge Functions need to be modified.
 
-### 4. `src/hooks/useOportunidades.tsx`
+#### Step 2 — Improve Upload Path (Defensive)
 
-Adicionar overrides na query `oportunidades-admin`:
+Currently the upload path is flat: `vote-{timestamp}-{random}.ext`. The `tools-icons` bucket organizes by item ID. While not strictly required for fixing the bug, changing the path to `{featureId}/{timestamp}-{random}.ext` makes it cleaner for cleanup.
 
-```ts
-staleTime: 0,
-refetchOnMount: true,
-refetchOnWindowFocus: true,
+However, since `ImageField` does not receive `featureId` at upload time (it's inside the form, before save), the current flat path is acceptable and will be kept as-is to minimize code changes.
 
-```
+#### Step 3 — No Frontend Changes Required
 
-A query pública `oportunidades-public` herda defaults globais (5min stale).
+The `src/pages/Votacoes.tsx` upload logic is already correct:
+- Uses `supabase.storage.from('vote-images').upload(...)` with `upsert: true` and `contentType: file.type`
+- Uses `getPublicUrl()` to get the public URL
+- `referrerPolicy="no-referrer"` is already in the card `<img>` tag
+- `onError` fallback to gradient is already in place
 
----
-
-### 5. `src/hooks/useCurations.tsx`
-
-Adicionar overrides nas queries admin (`curationKeys.list` e `curationKeys.detail`):
-
-```ts
-staleTime: 0,
-refetchOnMount: true,
-refetchOnWindowFocus: true,
-
-```
-
-A query pública `curationKeys.bySlug` herda defaults globais.
+Once the RLS policies are fixed, the upload will succeed and the URL will be saved to `card_image_url`, which will cause the card to render the image correctly.
 
 ---
 
-## Resultado esperado
+### Files to Change
 
-- `/ferramentas`: primeira visita faz fetch normal com skeleton. Navegar para outra página e voltar em menos de 5 minutos mostra dados do cache instantaneamente (sem skeleton).
-- Quando o cache ficar stale (após 5 min), ao voltar para a rota, a lista **continua aparecendo** (sem skeleton) e atualiza em background quando necessário.
-- Paginação e filtros: transição suave com `keepPreviousData`, sem piscar.
-- Admin/premium: continuam com refetch estrito (staleTime 0, refetchOnMount true, refetchOnWindowFocus true).
-- Nenhuma mudança de UI, rotas, layout ou lógica de negócio.
+- **`supabase/migrations/[new].sql`** — New migration with fixed storage policies (DROP + CREATE)
+- **`src/pages/Votacoes.tsx`** — No changes needed (upload logic is correct)
+
+### What Will Work After the Fix
+
+1. Admin uploads PNG/JPG/WEBP → file is stored in `vote-images` bucket → public URL is saved to `feature_requests.card_image_url` → card renders image as cover
+2. Admin pastes a direct URL → saved to `card_image_url` → card renders it with `referrerPolicy="no-referrer"` and gradient fallback on error
+3. No other pages or functionality is affected
