@@ -1,3 +1,4 @@
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Home, BookOpen, Menu, LogOut, User, Bookmark, Wrench, ScrollText, Info, Crown, BarChart3, Moon, Vote } from "lucide-react";
@@ -7,7 +8,7 @@ import { NotificationDropdown } from "@/components/ui/notification-dropdown";
 import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/hooks/useTheme";
 import { toast } from "sonner";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,6 +28,13 @@ export function Navbar() {
   const { isActive } = useSubscription();
   const { isDark, toggleTheme } = useTheme();
   const [isClicked, setIsClicked] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => setIsScrolled(window.scrollY > 24);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
   
   // Show premium area for admins OR active subscribers
   const showPremiumArea = isAdmin || isActive();
@@ -71,7 +79,12 @@ export function Navbar() {
   };
 
   return (
-    <nav className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <nav className={cn(
+      "sticky top-0 z-50 w-full border-b transition-all duration-200 ease-out",
+      isScrolled
+        ? "border-border/40 bg-background/70 backdrop-blur-md shadow-sm"
+        : "border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+    )}>
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           {/* Logo/Brand */}
