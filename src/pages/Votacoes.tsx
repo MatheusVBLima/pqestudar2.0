@@ -1,10 +1,10 @@
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PageHero } from '@/components/layout/PageHero';
 import {
   ThumbsUp, Plus, Edit, Eye, EyeOff, Trash2, GripVertical,
-  CheckCircle, History, Sparkles, Upload, Link as LinkIcon, X, ImageIcon,
+  CheckCircle, History, Sparkles,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,7 +14,6 @@ import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from '@/components/ui/dialog';
@@ -27,7 +26,6 @@ import { useAuth } from '@/hooks/useAuth';
 import { useFeatureRequests, FeatureRequest } from '@/hooks/useFeatureRequests';
 import { toast } from '@/hooks/use-toast';
 import { usePageSettings } from '@/hooks/usePageSettings';
-import { supabase } from '@/integrations/supabase/client';
 import {
   DndContext, closestCenter, KeyboardSensor, PointerSensor,
   useSensor, useSensors, DragEndEvent,
@@ -57,7 +55,6 @@ function SortableFeatureCard({
   onComplete: (f: FeatureRequest) => void;
 }) {
   const { user } = useAuth();
-  const [imgFailed, setImgFailed] = useState(false);
 
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: feature.id,
@@ -76,44 +73,18 @@ function SortableFeatureCard({
     background: `linear-gradient(135deg, hsl(${hue} 40% 20%), hsl(${(hue + 60) % 360} 50% 35%))`,
   };
 
-  const handleImgError = (e: React.SyntheticEvent<HTMLImageElement>) => {
-    const src = (e.currentTarget as HTMLImageElement).src;
-    console.error('[Votacoes] Falha ao carregar imagem:', src);
-    setImgFailed(true);
-    // Se for URL externa bloqueada, avisar admin
-    if (isAdmin && feature.card_image_url && !feature.card_image_url.includes('supabase')) {
-      toast({
-        title: 'URL bloqueada pelo servidor externo',
-        description: 'Faça upload da imagem no sistema para evitar bloqueios.',
-        variant: 'destructive',
-      });
-    }
-  };
-
-  const showImage = feature.card_image_url && !imgFailed;
-
   return (
     <div ref={setNodeRef} style={style} className="relative group h-full">
       <div
         className={`border border-border bg-card flex flex-col h-full overflow-hidden
           transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${UI_RADIUS}`}
       >
-        {/* Cover area */}
+        {/* Cover area — sempre gradiente */}
         <div className="relative" style={{ aspectRatio: '16/9' }}>
-          {showImage ? (
-            <img
-              src={feature.card_image_url!}
-              alt={feature.title}
-              referrerPolicy="no-referrer"
-              className={`absolute inset-0 w-full h-full object-cover rounded-t-[1.2rem]`}
-              onError={handleImgError}
-            />
-          ) : (
-            <div
-              className="absolute inset-0 rounded-t-[1.2rem]"
-              style={gradientStyle}
-            />
-          )}
+          <div
+            className="absolute inset-0 rounded-t-[1.2rem]"
+            style={gradientStyle}
+          />
 
           {/* Rank badge */}
           <div className="absolute top-3 left-3 z-10">
@@ -203,200 +174,6 @@ function SortableFeatureCard({
   );
 }
 
-/* ─── Image Field (Upload | URL) — padrão idêntico ao ToolModal de /ferramentas ─── */
-// O upload NÃO acontece aqui: apenas armazena o File e gera preview local.
-// O upload real ocorre no handleSave (com sessão auth garantida).
-function ImageField({
-  imageUrl,
-  pendingFile,
-  onImageUrl,
-  onPendingFile,
-}: {
-  imageUrl: string;
-  pendingFile: File | null;
-  onImageUrl: (url: string) => void;
-  onPendingFile: (file: File | null) => void;
-}) {
-  const [source, setSource] = useState<'upload' | 'url'>('url');
-  const [isDragging, setIsDragging] = useState(false);
-  const [urlInput, setUrlInput] = useState('');
-  const [urlError, setUrlError] = useState('');
-  const [previewFailed, setPreviewFailed] = useState(false);
-  const [localPreview, setLocalPreview] = useState(''); // blob URL para preview antes do upload
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  // Sync urlInput quando imageUrl muda externamente (ex: edição de item existente)
-  const prevImageUrl = useRef(imageUrl);
-  if (prevImageUrl.current !== imageUrl) {
-    prevImageUrl.current = imageUrl;
-    if (imageUrl.startsWith('http') && !pendingFile) {
-      setUrlInput(imageUrl);
-    }
-  }
-
-  const handleFileSelect = (file: File) => {
-    const allowed = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'];
-    if (!allowed.includes(file.type)) {
-      toast({ title: 'Formato não suportado. Use PNG, JPG ou WEBP.', variant: 'destructive' });
-      return;
-    }
-    if (file.size > 3 * 1024 * 1024) {
-      toast({ title: 'Imagem muito grande. Máximo 3MB.', variant: 'destructive' });
-      return;
-    }
-    // Gera preview local sem fazer upload ainda
-    const objectUrl = URL.createObjectURL(file);
-    setLocalPreview(objectUrl);
-    setPreviewFailed(false);
-    onPendingFile(file);
-    // Limpa imageUrl anterior para usar preview local
-    onImageUrl('');
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-    const file = e.dataTransfer.files[0];
-    if (file) handleFileSelect(file);
-  };
-
-  // URL: só confirma ao sair do campo (onBlur) ou pressionar Enter — evita 400 com URL parcial
-  const commitUrl = (v: string) => {
-    setUrlError('');
-    setPreviewFailed(false);
-    if (!v) {
-      onImageUrl('');
-      return;
-    }
-    if (!v.startsWith('http')) {
-      setUrlError('URL deve começar com http:// ou https://');
-      return;
-    }
-    onPendingFile(null);
-    setLocalPreview('');
-    onImageUrl(v);
-  };
-
-  const handleRemove = () => {
-    onImageUrl('');
-    onPendingFile(null);
-    setUrlInput('');
-    setUrlError('');
-    setPreviewFailed(false);
-    setLocalPreview('');
-    if (fileInputRef.current) fileInputRef.current.value = '';
-  };
-
-  // Preview exibido: blob local (arquivo selecionado) ou URL do banco
-  const previewSrc = localPreview || imageUrl;
-
-  return (
-    <div className="space-y-2">
-      <Label className="flex items-center gap-1.5">
-        <ImageIcon className="w-3.5 h-3.5" />
-        Imagem do Card
-        <span className="text-muted-foreground text-xs font-normal">(opcional)</span>
-      </Label>
-
-      <Tabs value={source} onValueChange={(v) => {
-        setSource(v as 'upload' | 'url');
-        setPreviewFailed(false);
-      }}>
-        <TabsList className={`grid w-full grid-cols-2 ${UI_RADIUS}`}>
-          <TabsTrigger value="upload"><Upload className="w-3.5 h-3.5 mr-1.5" />Upload</TabsTrigger>
-          <TabsTrigger value="url"><LinkIcon className="w-3.5 h-3.5 mr-1.5" />URL</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="upload" className="mt-2">
-          <div
-            onDrop={handleDrop}
-            onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
-            onDragLeave={() => setIsDragging(false)}
-            className={`border-2 border-dashed p-5 text-center transition-colors cursor-pointer ${UI_RADIUS} ${
-              isDragging ? 'border-primary bg-primary/5' : 'border-muted-foreground/25 hover:border-muted-foreground/50'
-            }`}
-            onClick={() => fileInputRef.current?.click()}
-          >
-            {pendingFile ? (
-              <div className="space-y-1">
-                <Upload className="w-6 h-6 mx-auto text-primary" />
-                <p className="text-sm font-medium text-foreground">{pendingFile.name}</p>
-                <p className="text-xs text-muted-foreground">
-                  {(pendingFile.size / 1024 / 1024).toFixed(2)} MB — será enviado ao salvar
-                </p>
-              </div>
-            ) : (
-              <>
-                <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
-                <p className="text-sm text-muted-foreground">Arraste ou clique para selecionar</p>
-                <p className="text-xs text-muted-foreground mt-1">PNG, JPG, WEBP • Máx 3MB</p>
-              </>
-            )}
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/png,image/jpeg,image/webp"
-              className="hidden"
-              onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFileSelect(f); }}
-            />
-          </div>
-        </TabsContent>
-
-        <TabsContent value="url" className="mt-2 space-y-2">
-          <Input
-            type="url"
-            placeholder="https://exemplo.com/imagem.jpg"
-            value={urlInput}
-            onChange={(e) => { setUrlInput(e.target.value); setUrlError(''); }}
-            onBlur={(e) => commitUrl(e.target.value.trim())}
-            onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); commitUrl(urlInput.trim()); } }}
-          />
-          {urlError && <p className="text-xs text-destructive">{urlError}</p>}
-          {urlInput && !urlError && (
-            <p className="text-xs text-muted-foreground">
-              ⚠️ Algumas URLs externas podem ser bloqueadas ao renderizar. Prefira fazer Upload.
-            </p>
-          )}
-        </TabsContent>
-      </Tabs>
-
-      {/* Preview + remove */}
-      {previewSrc && (
-        <div className={`relative overflow-hidden border border-border ${UI_RADIUS}`} style={{ aspectRatio: '16/9' }}>
-          {!previewFailed ? (
-            <img
-              src={previewSrc}
-              alt="Preview"
-              className="w-full h-full object-cover"
-              referrerPolicy="no-referrer"
-              onError={() => {
-                console.error('[Votacoes] Preview falhou para:', previewSrc);
-                setPreviewFailed(true);
-              }}
-            />
-          ) : (
-            <div className="w-full h-full flex flex-col items-center justify-center bg-muted gap-2">
-              <ImageIcon className="w-8 h-8 text-muted-foreground" />
-              <p className="text-xs text-muted-foreground text-center px-4">
-                Pré-visualização bloqueada.<br />A URL foi salva — pode funcionar no card.
-              </p>
-            </div>
-          )}
-          <Button
-            type="button"
-            variant="destructive"
-            size="sm"
-            className={`absolute top-2 right-2 h-7 w-7 p-0 ${UI_RADIUS}`}
-            onClick={handleRemove}
-          >
-            <X className="w-3.5 h-3.5" />
-          </Button>
-        </div>
-      )}
-    </div>
-  );
-}
-
 /* ─── Main Page ─── */
 export default function Votacoes() {
   const ps = usePageSettings("/votacoes");
@@ -409,8 +186,6 @@ export default function Votacoes() {
   const [showHistory, setShowHistory] = useState(false);
   const [formTitle, setFormTitle] = useState('');
   const [formDesc, setFormDesc] = useState('');
-  const [formImageUrl, setFormImageUrl] = useState('');
-  const [formPendingFile, setFormPendingFile] = useState<File | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
   const effectiveAdmin = isAdmin;
@@ -445,63 +220,21 @@ export default function Votacoes() {
       setEditing(feature);
       setFormTitle(feature.title);
       setFormDesc(feature.description || '');
-      setFormImageUrl(feature.card_image_url || '');
-      setFormPendingFile(null);
     } else {
       setEditing(null);
       setFormTitle('');
       setFormDesc('');
-      setFormImageUrl('');
-      setFormPendingFile(null);
     }
     setModalOpen(true);
   };
 
-  // Upload só ocorre aqui — com sessão auth garantida (padrão /ferramentas)
   const handleSave = async () => {
     if (!formTitle.trim()) return;
     setIsSaving(true);
     try {
-      let finalImageUrl = formImageUrl || null;
-
-      // Se há arquivo pendente, faz upload agora (sessão garantida)
-      if (formPendingFile) {
-        const timestamp = Date.now();
-        const random = Math.random().toString(36).substring(2, 10);
-        const ext = formPendingFile.name.split('.').pop()?.toLowerCase() || 'jpg';
-        const fileName = `vote-${timestamp}-${random}.${ext}`;
-
-        console.log('[Votacoes] Upload no save:', fileName, formPendingFile.type);
-        const { data, error } = await supabase.storage
-          .from('vote-images')
-          .upload(fileName, formPendingFile, {
-            cacheControl: '3600',
-            upsert: false,
-          });
-
-        if (error) {
-          console.error('[Votacoes] Erro no upload:', error);
-          toast({
-            title: 'Erro ao enviar imagem',
-            description: error.message,
-            variant: 'destructive',
-          });
-          setIsSaving(false);
-          return;
-        }
-
-        const { data: { publicUrl } } = supabase.storage
-          .from('vote-images')
-          .getPublicUrl(data.path);
-
-        console.log('[Votacoes] Upload OK, URL pública:', publicUrl);
-        finalImageUrl = publicUrl;
-      }
-
       const payload = {
         title: formTitle,
         description: formDesc,
-        card_image_url: finalImageUrl,
       };
 
       if (editing) {
@@ -510,9 +243,7 @@ export default function Votacoes() {
         create(payload);
       }
       setModalOpen(false);
-      setFormPendingFile(null);
     } catch (err: any) {
-      console.error('[Votacoes] Erro ao salvar:', err);
       toast({ title: 'Erro ao salvar', description: err.message, variant: 'destructive' });
     } finally {
       setIsSaving(false);
@@ -631,14 +362,14 @@ export default function Votacoes() {
         )}
       </div>
 
-      {/* Add/Edit Modal — com DialogDescription para acessibilidade */}
+      {/* Add/Edit Modal */}
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-        <DialogContent className={`sm:max-w-[520px] max-h-[90vh] overflow-y-auto ${UI_RADIUS}`}>
+        <DialogContent className={`sm:max-w-[480px] ${UI_RADIUS}`}>
           <DialogHeader>
             <DialogTitle>{editing ? 'Editar Lançamento' : 'Novo Lançamento'}</DialogTitle>
             <DialogDescription>
               {editing
-                ? 'Edite as informações do lançamento e a imagem do card.'
+                ? 'Edite as informações do lançamento.'
                 : 'Preencha as informações do novo lançamento para votação.'}
             </DialogDescription>
           </DialogHeader>
@@ -651,7 +382,6 @@ export default function Votacoes() {
               <Label>Descrição</Label>
               <Textarea placeholder="Descrição (opcional)" value={formDesc} onChange={e => setFormDesc(e.target.value)} rows={3} />
             </div>
-            <ImageField imageUrl={formImageUrl} pendingFile={formPendingFile} onImageUrl={setFormImageUrl} onPendingFile={setFormPendingFile} />
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setModalOpen(false)} disabled={isSaving}>Cancelar</Button>
