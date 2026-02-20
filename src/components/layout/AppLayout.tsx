@@ -8,7 +8,7 @@ export function AppLayout() {
     <div className="min-h-screen flex flex-col overflow-x-hidden w-full">
       <GlobalSeo />
       <Navbar />
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col pt-16">
         <Outlet />
       </div>
       <Footer />
