@@ -84,12 +84,12 @@ export function Navbar() {
       <nav className={cn(
         "mx-auto transition-all duration-300 ease-out",
         isScrolled
-          ? "max-w-6xl mt-2 px-3 rounded-[1.2rem] border border-border/40 bg-background/75 backdrop-blur-md shadow-sm"
-          : "max-w-full bg-background border-b border-border/40"
+          ? "w-[85%] mt-2 px-3 rounded-[1.2rem] border border-border/40 bg-background/75 backdrop-blur-md shadow-sm"
+          : "w-full bg-background border-b border-border/40"
       )}>
         <div className={cn(
           "flex items-center justify-between transition-all duration-300 ease-out px-4",
-          isScrolled ? "h-12" : "h-16"
+          isScrolled ? "h-14" : "h-16"
         )}>
           {/* Logo/Brand */}
           <div className="flex items-center space-x-4">
