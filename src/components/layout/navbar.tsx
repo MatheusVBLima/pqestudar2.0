@@ -111,7 +111,7 @@ export function Navbar() {
               variant="ghost"
               size="sm"
               onClick={() => handleNavigation("/")}
-              className="hover:bg-accent"
+              className="hover:bg-accent rounded-[1.2rem]"
             >
               <Home className="h-4 w-4 mr-2" />
               Início
@@ -121,7 +121,7 @@ export function Navbar() {
               variant="ghost"
               size="sm"
               onClick={() => handleNavigation("/ferramentas")}
-              className={`hover:bg-accent ${location.pathname === "/ferramentas" ? "bg-accent text-accent-foreground" : ""}`}
+              className={`hover:bg-accent rounded-[1.2rem] ${location.pathname === "/ferramentas" ? "bg-accent text-accent-foreground" : ""}`}
             >
               <Wrench className="h-4 w-4 mr-2" aria-hidden="true" />
               Ferramentas
@@ -131,7 +131,7 @@ export function Navbar() {
               variant="ghost"
               size="sm"
               onClick={() => handleNavigation("/concursos")}
-              className={`hover:bg-accent ${location.pathname.startsWith("/concursos") ? "bg-accent text-accent-foreground" : ""}`}
+              className={`hover:bg-accent rounded-[1.2rem] ${location.pathname.startsWith("/concursos") ? "bg-accent text-accent-foreground" : ""}`}
               aria-label="Ir para Concursos"
               aria-current={location.pathname.startsWith("/concursos") ? "page" : undefined}
             >
@@ -143,7 +143,7 @@ export function Navbar() {
               variant="ghost"
               size="sm"
               onClick={() => handleNavigation("/votacoes")}
-              className={`hover:bg-accent ${location.pathname === "/votacoes" ? "bg-accent text-accent-foreground" : ""}`}
+              className={`hover:bg-accent rounded-[1.2rem] ${location.pathname === "/votacoes" ? "bg-accent text-accent-foreground" : ""}`}
             >
               <Vote className="h-4 w-4 mr-2" aria-hidden="true" />
               Votações
@@ -153,7 +153,7 @@ export function Navbar() {
               variant="ghost"
               size="sm"
               onClick={() => handleNavigation("/sobre")}
-              className={`hover:bg-accent ${location.pathname === "/sobre" ? "bg-accent text-accent-foreground" : ""}`}
+              className={`hover:bg-accent rounded-[1.2rem] ${location.pathname === "/sobre" ? "bg-accent text-accent-foreground" : ""}`}
             >
               <Info className="h-4 w-4 mr-2" aria-hidden="true" />
               Sobre
