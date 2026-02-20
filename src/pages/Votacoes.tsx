@@ -16,7 +16,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from '@/components/ui/dialog';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -38,6 +38,9 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
+// Constante reutilizável de border-radius padrão do projeto
+const UI_RADIUS = 'rounded-[1.2rem]';
+
 /* ─── Vitrine Card ─── */
 function SortableFeatureCard({
   feature, rank, isAdmin, isManagement, onVote, onUnvote, onEdit, onToggle, onDelete, onComplete,
@@ -54,6 +57,8 @@ function SortableFeatureCard({
   onComplete: (f: FeatureRequest) => void;
 }) {
   const { user } = useAuth();
+  const [imgFailed, setImgFailed] = useState(false);
+
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: feature.id,
     disabled: !isManagement,
@@ -65,51 +70,63 @@ function SortableFeatureCard({
     opacity: isDragging ? 0.5 : 1,
   };
 
-  // Deterministic gradient fallback
+  // Gradiente determinístico por título
   const hue = feature.title.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0) % 360;
   const gradientStyle = {
     background: `linear-gradient(135deg, hsl(${hue} 40% 20%), hsl(${(hue + 60) % 360} 50% 35%))`,
   };
 
+  const handleImgError = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    const src = (e.currentTarget as HTMLImageElement).src;
+    console.error('[Votacoes] Falha ao carregar imagem:', src);
+    setImgFailed(true);
+    // Se for URL externa bloqueada, avisar admin
+    if (isAdmin && feature.card_image_url && !feature.card_image_url.includes('supabase')) {
+      toast({
+        title: 'URL bloqueada pelo servidor externo',
+        description: 'Faça upload da imagem no sistema para evitar bloqueios.',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const showImage = feature.card_image_url && !imgFailed;
+
   return (
     <div ref={setNodeRef} style={style} className="relative group h-full">
       <div
-        className="rounded-[1.2rem] border border-border bg-card flex flex-col h-full overflow-hidden
-          transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
+        className={`border border-border bg-card flex flex-col h-full overflow-hidden
+          transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${UI_RADIUS}`}
       >
         {/* Cover area */}
         <div className="relative" style={{ aspectRatio: '16/9' }}>
-          {feature.card_image_url ? (
+          {showImage ? (
             <img
-              src={feature.card_image_url}
+              src={feature.card_image_url!}
               alt={feature.title}
               referrerPolicy="no-referrer"
-              className="absolute inset-0 w-full h-full object-cover rounded-t-[1.2rem]"
-              onError={(e) => {
-                (e.currentTarget as HTMLImageElement).style.display = 'none';
-                (e.currentTarget.nextElementSibling as HTMLElement | null)?.removeAttribute('hidden');
-              }}
+              className={`absolute inset-0 w-full h-full object-cover rounded-t-[1.2rem]`}
+              onError={handleImgError}
             />
-          ) : null}
-          {/* Gradient fallback (always rendered, hidden behind image if image loads) */}
-          <div
-            className="absolute inset-0 rounded-t-[1.2rem]"
-            style={gradientStyle}
-            hidden={!!feature.card_image_url}
-          />
+          ) : (
+            <div
+              className="absolute inset-0 rounded-t-[1.2rem]"
+              style={gradientStyle}
+            />
+          )}
 
           {/* Rank badge */}
           <div className="absolute top-3 left-3 z-10">
-            <span className="inline-flex items-center justify-center rounded-full bg-background/80 backdrop-blur-sm
-              border border-border text-foreground text-xs font-bold px-2.5 py-1 shadow-sm">
+            <span className={`inline-flex items-center justify-center bg-background/80 backdrop-blur-sm
+              border border-border text-foreground text-xs font-bold px-2.5 py-1 shadow-sm ${UI_RADIUS}`}>
               #{rank}
             </span>
           </div>
 
           {/* Vote counter overlay */}
           <div className="absolute bottom-3 right-3 z-10">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-background/80 backdrop-blur-sm
-              border border-border text-foreground text-xs font-semibold px-2.5 py-1 shadow-sm">
+            <span className={`inline-flex items-center gap-1.5 bg-background/80 backdrop-blur-sm
+              border border-border text-foreground text-xs font-semibold px-2.5 py-1 shadow-sm ${UI_RADIUS}`}>
               <ThumbsUp className="h-3 w-3" />
               {feature.votes_count}
             </span>
@@ -119,19 +136,19 @@ function SortableFeatureCard({
           {isManagement && (
             <div className="absolute top-3 right-3 z-20 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
               <div {...attributes} {...listeners}
-                className="cursor-grab active:cursor-grabbing p-1.5 bg-background/80 backdrop-blur-sm rounded-full hover:bg-accent">
+                className={`cursor-grab active:cursor-grabbing p-1.5 bg-background/80 backdrop-blur-sm hover:bg-accent ${UI_RADIUS}`}>
                 <GripVertical className="w-3.5 h-3.5 text-muted-foreground" />
               </div>
-              <Button variant="ghost" size="sm" className="h-7 w-7 p-0 bg-background/80 backdrop-blur-sm rounded-full hover:bg-accent" onClick={() => onEdit(feature)}>
+              <Button variant="ghost" size="sm" className={`h-7 w-7 p-0 bg-background/80 backdrop-blur-sm hover:bg-accent ${UI_RADIUS}`} onClick={() => onEdit(feature)}>
                 <Edit className="w-3.5 h-3.5" />
               </Button>
-              <Button variant="ghost" size="sm" className="h-7 w-7 p-0 bg-background/80 backdrop-blur-sm rounded-full hover:bg-accent" onClick={() => onToggle(feature)}>
+              <Button variant="ghost" size="sm" className={`h-7 w-7 p-0 bg-background/80 backdrop-blur-sm hover:bg-accent ${UI_RADIUS}`} onClick={() => onToggle(feature)}>
                 {feature.is_visible ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
               </Button>
-              <Button variant="ghost" size="sm" className="h-7 w-7 p-0 bg-background/80 backdrop-blur-sm rounded-full hover:bg-accent" onClick={() => onComplete(feature)}>
+              <Button variant="ghost" size="sm" className={`h-7 w-7 p-0 bg-background/80 backdrop-blur-sm hover:bg-accent ${UI_RADIUS}`} onClick={() => onComplete(feature)}>
                 <CheckCircle className="w-3.5 h-3.5 text-primary" />
               </Button>
-              <Button variant="ghost" size="sm" className="h-7 w-7 p-0 bg-background/80 backdrop-blur-sm rounded-full hover:bg-accent text-destructive hover:text-destructive" onClick={() => onDelete(feature)}>
+              <Button variant="ghost" size="sm" className={`h-7 w-7 p-0 bg-background/80 backdrop-blur-sm hover:bg-accent text-destructive hover:text-destructive ${UI_RADIUS}`} onClick={() => onDelete(feature)}>
                 <Trash2 className="w-3.5 h-3.5" />
               </Button>
             </div>
@@ -164,7 +181,7 @@ function SortableFeatureCard({
               variant={feature.user_voted ? 'default' : 'outline'}
               size="sm"
               onClick={() => feature.user_voted ? onUnvote(feature.id) : onVote(feature.id)}
-              className="w-full rounded-[1.2rem] gap-2 text-sm"
+              className={`w-full gap-2 text-sm ${UI_RADIUS}`}
             >
               <ThumbsUp className={`h-3.5 w-3.5 ${feature.user_voted ? 'fill-current' : ''}`} />
               {feature.user_voted ? 'Votado ✓' : 'Votar'}
@@ -174,7 +191,7 @@ function SortableFeatureCard({
               variant="outline"
               size="sm"
               onClick={() => toast({ title: 'Faça login para votar' })}
-              className="w-full rounded-[1.2rem] gap-2 text-sm"
+              className={`w-full gap-2 text-sm ${UI_RADIUS}`}
             >
               <ThumbsUp className="h-3.5 w-3.5" />
               Votar
@@ -197,24 +214,39 @@ function ImageField({
   const [source, setSource] = useState<'upload' | 'url'>('url');
   const [uploading, setUploading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [urlInput, setUrlInput] = useState(imageUrl.startsWith('http') ? imageUrl : '');
   const [urlError, setUrlError] = useState('');
+  const [previewFailed, setPreviewFailed] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const uploadToStorage = async (file: File): Promise<string> => {
     const timestamp = Date.now();
-    const ext = file.name.split('.').pop();
-    const fileName = `vote-${crypto.randomUUID()}-${timestamp}.${ext}`;
+    const random = Math.random().toString(36).substring(2, 10);
+    const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+    const fileName = `vote-${timestamp}-${random}.${ext}`;
 
-    const { error } = await supabase.storage
+    console.log('[Votacoes] Iniciando upload:', fileName, 'tipo:', file.type, 'tamanho:', file.size);
+
+    const { data, error } = await supabase.storage
       .from('vote-images')
-      .upload(fileName, file, { cacheControl: '3600', upsert: false });
+      .upload(fileName, file, {
+        cacheControl: '3600',
+        upsert: true,
+        contentType: file.type,
+      });
 
-    if (error) throw error;
+    if (error) {
+      console.error('[Votacoes] Erro no upload Supabase:', error);
+      throw error;
+    }
+
+    console.log('[Votacoes] Upload OK, path:', data.path);
 
     const { data: { publicUrl } } = supabase.storage
       .from('vote-images')
-      .getPublicUrl(fileName);
+      .getPublicUrl(data.path);
 
+    console.log('[Votacoes] URL pública gerada:', publicUrl);
     return publicUrl;
   };
 
@@ -229,11 +261,18 @@ function ImageField({
       return;
     }
     setUploading(true);
+    setPreviewFailed(false);
     try {
       const url = await uploadToStorage(file);
       onImageUrl(url);
-    } catch {
-      toast({ title: 'Erro ao fazer upload da imagem.', variant: 'destructive' });
+      toast({ title: 'Imagem enviada com sucesso!' });
+    } catch (err: any) {
+      console.error('[Votacoes] Falha no upload:', err);
+      toast({
+        title: 'Erro ao fazer upload da imagem',
+        description: err?.message || 'Verifique suas permissões e tente novamente.',
+        variant: 'destructive',
+      });
     } finally {
       setUploading(false);
     }
@@ -246,6 +285,24 @@ function ImageField({
     if (file) handleFile(file);
   };
 
+  const handleUrlChange = (v: string) => {
+    setUrlInput(v);
+    setUrlError('');
+    setPreviewFailed(false);
+    if (v && !v.startsWith('http')) {
+      setUrlError('URL deve começar com http:// ou https://');
+      return;
+    }
+    onImageUrl(v);
+  };
+
+  const handleRemove = () => {
+    onImageUrl('');
+    setUrlInput('');
+    setUrlError('');
+    setPreviewFailed(false);
+  };
+
   return (
     <div className="space-y-2">
       <Label className="flex items-center gap-1.5">
@@ -254,8 +311,11 @@ function ImageField({
         <span className="text-muted-foreground text-xs font-normal">(opcional)</span>
       </Label>
 
-      <Tabs value={source} onValueChange={(v) => setSource(v as 'upload' | 'url')}>
-        <TabsList className="grid w-full grid-cols-2">
+      <Tabs value={source} onValueChange={(v) => {
+        setSource(v as 'upload' | 'url');
+        setPreviewFailed(false);
+      }}>
+        <TabsList className={`grid w-full grid-cols-2 ${UI_RADIUS}`}>
           <TabsTrigger value="upload"><Upload className="w-3.5 h-3.5 mr-1.5" />Upload</TabsTrigger>
           <TabsTrigger value="url"><LinkIcon className="w-3.5 h-3.5 mr-1.5" />URL</TabsTrigger>
         </TabsList>
@@ -265,7 +325,7 @@ function ImageField({
             onDrop={handleDrop}
             onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
             onDragLeave={() => setIsDragging(false)}
-            className={`border-2 border-dashed rounded-[1.2rem] p-5 text-center transition-colors cursor-pointer ${
+            className={`border-2 border-dashed p-5 text-center transition-colors cursor-pointer ${UI_RADIUS} ${
               isDragging ? 'border-primary bg-primary/5' : 'border-muted-foreground/25 hover:border-muted-foreground/50'
             }`}
             onClick={() => fileInputRef.current?.click()}
@@ -289,39 +349,51 @@ function ImageField({
           </div>
         </TabsContent>
 
-        <TabsContent value="url" className="mt-2">
+        <TabsContent value="url" className="mt-2 space-y-2">
           <Input
             type="url"
             placeholder="https://exemplo.com/imagem.jpg"
-            value={imageUrl.startsWith('http') ? imageUrl : ''}
-            onChange={(e) => {
-              const v = e.target.value;
-              setUrlError('');
-              if (v && !v.startsWith('http')) {
-                setUrlError('URL deve começar com http:// ou https://');
-              }
-              onImageUrl(v);
-            }}
+            value={urlInput}
+            onChange={(e) => handleUrlChange(e.target.value)}
           />
-          {urlError && <p className="text-xs text-destructive mt-1">{urlError}</p>}
+          {urlError && <p className="text-xs text-destructive">{urlError}</p>}
+          {urlInput && !urlError && (
+            <p className="text-xs text-muted-foreground">
+              ⚠️ Algumas URLs externas podem ser bloqueadas pelo servidor ao renderizar. Prefira fazer Upload.
+            </p>
+          )}
         </TabsContent>
       </Tabs>
 
       {/* Preview + remove */}
       {imageUrl && (
-        <div className="relative rounded-[1.2rem] overflow-hidden border border-border" style={{ aspectRatio: '16/9' }}>
-          <img
-            src={imageUrl}
-            alt="Preview"
-            className="w-full h-full object-cover"
-            referrerPolicy="no-referrer"
-          />
+        <div className={`relative overflow-hidden border border-border ${UI_RADIUS}`} style={{ aspectRatio: '16/9' }}>
+          {!previewFailed ? (
+            <img
+              src={imageUrl}
+              alt="Preview"
+              className="w-full h-full object-cover"
+              referrerPolicy="no-referrer"
+              onError={() => {
+                console.error('[Votacoes] Preview falhou para:', imageUrl);
+                setPreviewFailed(true);
+              }}
+            />
+          ) : (
+            <div className="w-full h-full flex flex-col items-center justify-center bg-muted gap-2">
+              <ImageIcon className="w-8 h-8 text-muted-foreground" />
+              <p className="text-xs text-muted-foreground text-center px-4">
+                Pré-visualização bloqueada pelo servidor externo.
+                <br />A URL foi salva — ela pode funcionar no card.
+              </p>
+            </div>
+          )}
           <Button
             type="button"
             variant="destructive"
             size="sm"
-            className="absolute top-2 right-2 h-7 w-7 p-0 rounded-full"
-            onClick={() => onImageUrl('')}
+            className={`absolute top-2 right-2 h-7 w-7 p-0 ${UI_RADIUS}`}
+            onClick={handleRemove}
           >
             <X className="w-3.5 h-3.5" />
           </Button>
@@ -447,7 +519,7 @@ export default function Votacoes() {
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
             {[1, 2, 3, 4].map(i => (
-              <Skeleton key={i} className="h-64 rounded-[1.2rem]" />
+              <Skeleton key={i} className={`h-64 ${UI_RADIUS}`} />
             ))}
           </div>
         ) : openFeatures.length === 0 ? (
@@ -514,11 +586,16 @@ export default function Votacoes() {
         )}
       </div>
 
-      {/* Add/Edit Modal */}
+      {/* Add/Edit Modal — com DialogDescription para acessibilidade */}
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-        <DialogContent className="sm:max-w-[520px] max-h-[90vh] overflow-y-auto">
+        <DialogContent className={`sm:max-w-[520px] max-h-[90vh] overflow-y-auto ${UI_RADIUS}`}>
           <DialogHeader>
             <DialogTitle>{editing ? 'Editar Lançamento' : 'Novo Lançamento'}</DialogTitle>
+            <DialogDescription>
+              {editing
+                ? 'Edite as informações do lançamento e a imagem do card.'
+                : 'Preencha as informações do novo lançamento para votação.'}
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-1.5">
