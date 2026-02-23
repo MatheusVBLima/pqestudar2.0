@@ -1817,6 +1817,48 @@ export type Database = {
         }
         Relationships: []
       }
+      products: {
+        Row: {
+          category: string
+          clicks_count: number
+          created_at: string
+          cta_url: string
+          description: string
+          id: string
+          image_url: string | null
+          is_active: boolean
+          sort_order: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          clicks_count?: number
+          created_at?: string
+          cta_url: string
+          description: string
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          sort_order?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          clicks_count?: number
+          created_at?: string
+          cta_url?: string
+          description?: string
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          sort_order?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       redeem_tokens: {
         Row: {
           buyer_email: string | null
@@ -2835,6 +2877,10 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      increment_product_click: {
+        Args: { product_id: string }
+        Returns: undefined
       }
       insights_audit_history: {
         Args: { end_at?: string; p_audit_type: string; start_at?: string }

@@ -1,78 +1,119 @@
 import { useState } from "react";
 import { Helmet } from "react-helmet-async";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageHero } from "@/components/layout/PageHero";
 import { usePageSettings } from "@/hooks/usePageSettings";
+import { useUserRoles } from "@/hooks/useUserRoles";
+import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Eye } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Eye, Plus, Pencil, Trash2, EyeOff } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
 
 interface Product {
   id: string;
   title: string;
   description: string;
   category: string;
-  imageUrl: string;
-  clicks: number;
-  href: string;
+  image_url: string | null;
+  cta_url: string;
+  clicks_count: number;
+  is_active: boolean;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
 }
 
-const MOCK_PRODUCTS: Product[] = [
-  {
-    id: "1",
-    title: "Kit de Produtividade Digital",
-    description: "Ferramentas e templates para organizar sua rotina de estudos e trabalho com eficiência máxima.",
-    category: "Produtividade",
-    imageUrl: "/placeholder.svg",
-    clicks: 142,
-    href: "#",
-  },
-  {
-    id: "2",
-    title: "Guia de Concursos 2026",
-    description: "E-book completo com estratégias, cronogramas e dicas para aprovação em concursos públicos.",
-    category: "Concursos",
-    imageUrl: "/placeholder.svg",
-    clicks: 87,
-    href: "#",
-  },
-  {
-    id: "3",
-    title: "Pacote de Automações IA",
-    description: "Prompts prontos e fluxos de automação para acelerar tarefas repetitivas com inteligência artificial.",
-    category: "Inteligência Artificial",
-    imageUrl: "/placeholder.svg",
-    clicks: 203,
-    href: "#",
-  },
-  {
-    id: "4",
-    title: "Mapa de Carreira Tech",
-    description: "Roadmap visual interativo para quem quer migrar ou evoluir na área de tecnologia.",
-    category: "Carreira",
-    imageUrl: "/placeholder.svg",
-    clicks: 64,
-    href: "#",
-  },
-];
+type ProductFormData = {
+  title: string;
+  description: string;
+  category: string;
+  cta_url: string;
+  image_url: string;
+  sort_order: string;
+};
 
-function ProductCard({ product, onClickSaibaMais }: { product: Product & { clicks: number }; onClickSaibaMais: () => void }) {
+const EMPTY_FORM: ProductFormData = {
+  title: "",
+  description: "",
+  category: "",
+  cta_url: "",
+  image_url: "",
+  sort_order: "0",
+};
+
+// ── Public product card ──────────────────────────────────────────────
+
+function ProductCard({
+  product,
+  isAdmin,
+  adminMode,
+  onClickSaibaMais,
+  onEdit,
+  onDelete,
+  onToggleActive,
+}: {
+  product: Product;
+  isAdmin: boolean;
+  adminMode: boolean;
+  onClickSaibaMais: () => void;
+  onEdit: () => void;
+  onDelete: () => void;
+  onToggleActive: () => void;
+}) {
   return (
     <Card className="flex flex-col h-full overflow-hidden relative">
       {/* Click counter pill */}
       <div className="absolute top-3 right-3 z-10">
         <span className="inline-flex items-center gap-1 rounded-full bg-background/80 backdrop-blur-sm border px-2.5 py-1 text-xs font-medium text-muted-foreground shadow-sm">
           <Eye className="h-3 w-3" />
-          {product.clicks}
+          {product.clicks_count}
         </span>
       </div>
 
+      {/* Inactive badge for admin */}
+      {isAdmin && adminMode && !product.is_active && (
+        <div className="absolute top-3 left-3 z-10">
+          <Badge variant="destructive" className="text-[10px] px-2 py-0.5">
+            <EyeOff className="h-3 w-3 mr-1" /> Oculto
+          </Badge>
+        </div>
+      )}
+
       {/* Image */}
-      <div className="w-full aspect-[16/10] overflow-hidden">
+      <div className="w-full aspect-[16/10] overflow-hidden bg-muted">
         <img
-          src={product.imageUrl}
+          src={product.image_url || "/placeholder.svg"}
           alt={product.title}
           className="w-full h-full object-cover"
+          referrerPolicy="no-referrer"
+          onError={(e) => {
+            (e.target as HTMLImageElement).src = "/placeholder.svg";
+          }}
         />
       </div>
 
@@ -92,23 +133,271 @@ function ProductCard({ product, onClickSaibaMais }: { product: Product & { click
             Saiba Mais
           </Button>
         </div>
+
+        {/* Admin actions */}
+        {isAdmin && adminMode && (
+          <div className="flex items-center gap-2 pt-2 border-t">
+            <Button size="sm" variant="ghost" onClick={onEdit}>
+              <Pencil className="h-4 w-4 mr-1" /> Editar
+            </Button>
+            <Button size="sm" variant="ghost" onClick={onToggleActive}>
+              {product.is_active ? (
+                <><EyeOff className="h-4 w-4 mr-1" /> Ocultar</>
+              ) : (
+                <><Eye className="h-4 w-4 mr-1" /> Mostrar</>
+              )}
+            </Button>
+            <Button size="sm" variant="ghost" className="text-destructive ml-auto" onClick={onDelete}>
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
+        )}
       </div>
     </Card>
   );
 }
 
-export default function Produtos() {
-  const [products, setProducts] = useState(MOCK_PRODUCTS);
-  const { titleTag, metaDescription, headerTitle, headerDescription } = usePageSettings("/produtos");
+// ── Product Modal ────────────────────────────────────────────────────
 
-  const handleClick = (id: string, href: string) => {
-    setProducts((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, clicks: p.clicks + 1 } : p))
-    );
-    if (href && href !== "#") {
-      window.open(href, "_blank", "noopener,noreferrer");
+function ProductModal({
+  open,
+  onOpenChange,
+  initial,
+  onSave,
+  saving,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  initial: ProductFormData;
+  onSave: (data: ProductFormData) => void;
+  saving: boolean;
+}) {
+  const [form, setForm] = useState<ProductFormData>(initial);
+  const isEdit = initial.title !== "";
+
+  const handleOpen = (v: boolean) => {
+    if (v) setForm(initial);
+    onOpenChange(v);
+  };
+
+  const valid = form.title.trim() && form.description.trim() && form.category.trim() && form.cta_url.trim();
+
+  return (
+    <Dialog open={open} onOpenChange={handleOpen}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>{isEdit ? "Editar Produto" : "Adicionar Produto"}</DialogTitle>
+          <DialogDescription>
+            {isEdit ? "Atualize os dados do produto." : "Preencha os dados do novo produto."}
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-4">
+          <div>
+            <Label htmlFor="prod-title">Título *</Label>
+            <Input id="prod-title" value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} />
+          </div>
+          <div>
+            <Label htmlFor="prod-desc">Descrição *</Label>
+            <Textarea id="prod-desc" value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} />
+          </div>
+          <div>
+            <Label htmlFor="prod-cat">Categoria *</Label>
+            <Input id="prod-cat" value={form.category} onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))} />
+          </div>
+          <div>
+            <Label htmlFor="prod-cta">URL do CTA *</Label>
+            <Input id="prod-cta" value={form.cta_url} onChange={(e) => setForm((f) => ({ ...f, cta_url: e.target.value }))} />
+          </div>
+          <div>
+            <Label htmlFor="prod-img">URL da Imagem</Label>
+            <Input id="prod-img" value={form.image_url} onChange={(e) => setForm((f) => ({ ...f, image_url: e.target.value }))} placeholder="/placeholder.svg" />
+          </div>
+          <div>
+            <Label htmlFor="prod-order">Ordem</Label>
+            <Input id="prod-order" type="number" value={form.sort_order} onChange={(e) => setForm((f) => ({ ...f, sort_order: e.target.value }))} />
+          </div>
+        </div>
+
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>
+            Cancelar
+          </Button>
+          <Button onClick={() => onSave(form)} disabled={!valid || saving}>
+            {saving ? "Salvando..." : "Salvar"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ── Main page ────────────────────────────────────────────────────────
+
+export default function Produtos() {
+  const { titleTag, metaDescription, headerTitle, headerDescription } = usePageSettings("/produtos");
+  const { isAdmin, loading: adminLoading } = useUserRoles();
+  const queryClient = useQueryClient();
+
+  const [adminMode, setAdminMode] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Product | null>(null);
+
+  // ── Fetch products ──
+  const { data: products = [], isLoading } = useQuery({
+    queryKey: ["products-public"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("products")
+        .select("*")
+        .order("sort_order", { ascending: true })
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data as Product[];
+    },
+  });
+
+  // Admin list (includes inactive)
+  const { data: adminProducts = [] } = useQuery({
+    queryKey: ["products-admin"],
+    queryFn: async () => {
+      const { data, error } = await supabase.functions.invoke("admin-products", {
+        body: { action: "list", data: {} },
+      });
+      if (error) throw error;
+      return data as Product[];
+    },
+    enabled: isAdmin && adminMode,
+  });
+
+  const displayProducts = isAdmin && adminMode ? adminProducts : products;
+
+  // ── Click increment via RPC ──
+  const clickMutation = useMutation({
+    mutationFn: async (productId: string) => {
+      const { error } = await supabase.rpc("increment_product_click", { product_id: productId });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["products-public"] });
+      queryClient.invalidateQueries({ queryKey: ["products-admin"] });
+    },
+  });
+
+  const handleSaibaMais = (product: Product) => {
+    clickMutation.mutate(product.id);
+    if (product.cta_url && product.cta_url !== "#") {
+      window.open(product.cta_url, "_blank", "noopener,noreferrer");
     }
   };
+
+  // ── Admin mutations via Edge Function ──
+  const adminMutation = useMutation({
+    mutationFn: async ({ action, data }: { action: string; data: Record<string, unknown> }) => {
+      const { data: res, error } = await supabase.functions.invoke("admin-products", {
+        body: { action, data },
+      });
+      if (error) throw error;
+      return res;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["products-public"] });
+      queryClient.invalidateQueries({ queryKey: ["products-admin"] });
+    },
+  });
+
+  const handleSave = (form: ProductFormData) => {
+    const payload: Record<string, unknown> = {
+      title: form.title.trim(),
+      description: form.description.trim(),
+      category: form.category.trim(),
+      cta_url: form.cta_url.trim(),
+      image_url: form.image_url.trim() || null,
+      sort_order: parseInt(form.sort_order, 10) || 0,
+    };
+
+    if (editingProduct) {
+      payload.id = editingProduct.id;
+      adminMutation.mutate(
+        { action: "update", data: payload },
+        {
+          onSuccess: () => {
+            toast({ title: "Produto atualizado com sucesso." });
+            setModalOpen(false);
+            setEditingProduct(null);
+          },
+          onError: (err: any) => {
+            toast({ title: "Erro ao atualizar produto", description: err.message, variant: "destructive" });
+          },
+        }
+      );
+    } else {
+      adminMutation.mutate(
+        { action: "create", data: payload },
+        {
+          onSuccess: () => {
+            toast({ title: "Produto criado com sucesso." });
+            setModalOpen(false);
+          },
+          onError: (err: any) => {
+            toast({ title: "Erro ao criar produto", description: err.message, variant: "destructive" });
+          },
+        }
+      );
+    }
+  };
+
+  const handleDelete = () => {
+    if (!deleteTarget) return;
+    adminMutation.mutate(
+      { action: "delete", data: { id: deleteTarget.id } },
+      {
+        onSuccess: () => {
+          toast({ title: "Produto excluído." });
+          setDeleteTarget(null);
+        },
+        onError: (err: any) => {
+          toast({ title: "Erro ao excluir", description: err.message, variant: "destructive" });
+        },
+      }
+    );
+  };
+
+  const handleToggleActive = (product: Product) => {
+    adminMutation.mutate(
+      { action: "toggleActive", data: { id: product.id, is_active: !product.is_active } },
+      {
+        onSuccess: () => {
+          toast({ title: product.is_active ? "Produto ocultado." : "Produto reativado." });
+        },
+        onError: (err: any) => {
+          toast({ title: "Erro ao alternar visibilidade", description: err.message, variant: "destructive" });
+        },
+      }
+    );
+  };
+
+  const openCreateModal = () => {
+    setEditingProduct(null);
+    setModalOpen(true);
+  };
+
+  const openEditModal = (product: Product) => {
+    setEditingProduct(product);
+    setModalOpen(true);
+  };
+
+  const formInitial: ProductFormData = editingProduct
+    ? {
+        title: editingProduct.title,
+        description: editingProduct.description,
+        category: editingProduct.category,
+        cta_url: editingProduct.cta_url,
+        image_url: editingProduct.image_url || "",
+        sort_order: String(editingProduct.sort_order),
+      }
+    : EMPTY_FORM;
 
   return (
     <>
@@ -117,22 +406,88 @@ export default function Produtos() {
         <meta name="description" content={metaDescription} />
       </Helmet>
 
-      <PageHero
-        title={headerTitle}
-        description={headerDescription}
+      <PageHero title={headerTitle} description={headerDescription} />
+
+      <main className="container mx-auto px-6 pt-8 md:pt-12 pb-16">
+        {/* Admin Mode toggle */}
+        {!adminLoading && isAdmin && (
+          <div className="flex items-center gap-3 mb-6">
+            <Switch
+              id="admin-mode-produtos"
+              checked={adminMode}
+              onCheckedChange={setAdminMode}
+            />
+            <Label htmlFor="admin-mode-produtos" className="text-sm font-medium cursor-pointer">
+              Modo de Gerenciamento
+            </Label>
+          </div>
+        )}
+
+        {/* Admin toolbar */}
+        {isAdmin && adminMode && (
+          <div className="flex items-center gap-3 mb-6">
+            <Button onClick={openCreateModal}>
+              <Plus className="h-4 w-4 mr-2" /> Adicionar Produto
+            </Button>
+          </div>
+        )}
+
+        {/* Loading */}
+        {isLoading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {[1, 2, 3, 4].map((i) => (
+              <Skeleton key={i} className="h-80 rounded-[1.2rem]" />
+            ))}
+          </div>
+        ) : displayProducts.length === 0 ? (
+          <p className="text-center text-muted-foreground py-12">Nenhum produto disponível no momento.</p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {displayProducts.map((product) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+                isAdmin={isAdmin}
+                adminMode={adminMode}
+                onClickSaibaMais={() => handleSaibaMais(product)}
+                onEdit={() => openEditModal(product)}
+                onDelete={() => setDeleteTarget(product)}
+                onToggleActive={() => handleToggleActive(product)}
+              />
+            ))}
+          </div>
+        )}
+      </main>
+
+      {/* Create / Edit Modal */}
+      <ProductModal
+        open={modalOpen}
+        onOpenChange={(v) => {
+          setModalOpen(v);
+          if (!v) setEditingProduct(null);
+        }}
+        initial={formInitial}
+        onSave={handleSave}
+        saving={adminMutation.isPending}
       />
 
-      <main className="container mx-auto px-6 pt-12 md:pt-16 pb-16">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          {products.map((product) => (
-            <ProductCard
-              key={product.id}
-              product={product}
-              onClickSaibaMais={() => handleClick(product.id, product.href)}
-            />
-          ))}
-        </div>
-      </main>
+      {/* Delete confirmation */}
+      <AlertDialog open={!!deleteTarget} onOpenChange={(v) => !v && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir produto?</AlertDialogTitle>
+            <AlertDialogDescription>
+              O produto &quot;{deleteTarget?.title}&quot; será excluído permanentemente.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }
