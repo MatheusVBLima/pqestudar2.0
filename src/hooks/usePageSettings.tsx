@@ -27,6 +27,7 @@ const MANAGED_ROUTES = [
   "/premium",
   "/privacidade",
   "/termos",
+  "/produtos",
 ] as const;
 
 export type ManagedRoute = (typeof MANAGED_ROUTES)[number];

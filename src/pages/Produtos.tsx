@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { PageHero } from "@/components/layout/PageHero";
+import { usePageSettings } from "@/hooks/usePageSettings";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -98,6 +99,7 @@ function ProductCard({ product, onClickSaibaMais }: { product: Product & { click
 
 export default function Produtos() {
   const [products, setProducts] = useState(MOCK_PRODUCTS);
+  const { titleTag, metaDescription, headerTitle, headerDescription } = usePageSettings("/produtos");
 
   const handleClick = (id: string, href: string) => {
     setProducts((prev) =>
@@ -111,13 +113,13 @@ export default function Produtos() {
   return (
     <>
       <Helmet>
-        <title>Produtos | PqEstudar</title>
-        <meta name="description" content="Conheça os produtos selecionados pelo PqEstudar para acelerar seus estudos e carreira." />
+        <title>{titleTag}</title>
+        <meta name="description" content={metaDescription} />
       </Helmet>
 
       <PageHero
-        title="Nossos Produtos"
-        description="Recursos selecionados para impulsionar seus estudos, carreira e produtividade."
+        title={headerTitle}
+        description={headerDescription}
       />
 
       <main className="container mx-auto px-6 pt-12 md:pt-16 pb-16">
