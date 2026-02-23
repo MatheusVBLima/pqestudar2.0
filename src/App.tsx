@@ -44,6 +44,7 @@ import MapaDosBeneficios from "./pages/MapaDosBeneficios";
 import Concursos from "./pages/Concursos";
 import ConcursoDetalhe from "./pages/ConcursoDetalhe";
 import Votacoes from "./pages/Votacoes";
+import Produtos from "./pages/Produtos";
 import CuradoriaPublic from "./pages/CuradoriaPublic";
 import AdminCuradoriasLista from "./pages/AdminCuradoriasLista";
 import AdminCuradoriasForm from "./pages/AdminCuradoriasForm";
@@ -169,6 +170,7 @@ const AppWithPixel = () => {
         <Route path="/concursos" element={<Concursos />} />
         <Route path="/concursos/:slug" element={<ConcursoDetalhe />} />
         <Route path="/votacoes" element={<Votacoes />} />
+        <Route path="/produtos" element={<Produtos />} />
         
         {/* Curadoria Dinâmica */}
         <Route path="/curadoria/:slug" element={<CuradoriaPublic />} />
