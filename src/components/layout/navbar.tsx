@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Home, BookOpen, Menu, LogOut, User, Bookmark, Wrench, ScrollText, Info, Crown, BarChart3, Moon, Vote } from "lucide-react";
+import { Home, BookOpen, Menu, LogOut, User, Bookmark, Wrench, ScrollText, Info, Crown, BarChart3, Moon, Vote, ShoppingBag } from "lucide-react";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { useSubscription } from "@/hooks/useSubscription";
 import { NotificationDropdown } from "@/components/ui/notification-dropdown";
@@ -159,6 +159,16 @@ export function Navbar() {
             <Button
               variant="ghost"
               size="sm"
+              onClick={() => handleNavigation("/produtos")}
+              className={`hover:bg-accent rounded-[1.2rem] ${location.pathname === "/produtos" ? "bg-accent text-accent-foreground" : ""}`}
+            >
+              <ShoppingBag className="h-4 w-4 mr-2" aria-hidden="true" />
+              Produtos
+            </Button>
+
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={() => handleNavigation("/votacoes")}
               className={`hover:bg-accent rounded-[1.2rem] ${location.pathname === "/votacoes" ? "bg-accent text-accent-foreground" : ""}`}
             >
@@ -295,6 +305,10 @@ export function Navbar() {
                 >
                   <ScrollText className="h-4 w-4 mr-2" aria-hidden="true" />
                   Concursos
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleNavigation("/produtos")}>
+                  <ShoppingBag className="h-4 w-4 mr-2" aria-hidden="true" />
+                  Produtos
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => handleNavigation("/votacoes")}>
                   <Vote className="h-4 w-4 mr-2" aria-hidden="true" />
