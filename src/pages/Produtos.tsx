@@ -31,8 +31,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Eye, Plus, Pencil, Trash2, EyeOff } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Eye, Plus, Pencil, Trash2, EyeOff, Upload, Link, X } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { supabase as sbClient } from "@/integrations/supabase/client";
 
 interface Product {
   id: string;
@@ -55,6 +57,8 @@ type ProductFormData = {
   cta_url: string;
   image_url: string;
   sort_order: string;
+  imageFile: File | null;
+  imageTab: "upload" | "url";
 };
 
 const EMPTY_FORM: ProductFormData = {
@@ -64,7 +68,12 @@ const EMPTY_FORM: ProductFormData = {
   cta_url: "",
   image_url: "",
   sort_order: "0",
+  imageFile: null,
+  imageTab: "url",
 };
+
+const MAX_FILE_SIZE = 3 * 1024 * 1024; // 3MB
+const ACCEPTED_TYPES = ["image/png", "image/jpeg", "image/webp"];
 
 // ── Public product card ──────────────────────────────────────────────
 
@@ -173,18 +182,42 @@ function ProductModal({
   saving: boolean;
 }) {
   const [form, setForm] = useState<ProductFormData>(initial);
+  const [localPreview, setLocalPreview] = useState<string | null>(null);
   const isEdit = initial.title !== "";
 
   const handleOpen = (v: boolean) => {
-    if (v) setForm(initial);
+    if (v) {
+      setForm(initial);
+      setLocalPreview(null);
+    }
     onOpenChange(v);
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!ACCEPTED_TYPES.includes(file.type)) {
+      toast({ title: "Formato inválido", description: "Aceitos: PNG, JPG, WEBP", variant: "destructive" });
+      return;
+    }
+    if (file.size > MAX_FILE_SIZE) {
+      toast({ title: "Arquivo muito grande", description: "Máximo: 3MB", variant: "destructive" });
+      return;
+    }
+    setForm((f) => ({ ...f, imageFile: file, imageTab: "upload" }));
+    setLocalPreview(URL.createObjectURL(file));
+  };
+
+  const clearImage = () => {
+    setForm((f) => ({ ...f, imageFile: null, image_url: "" }));
+    setLocalPreview(null);
   };
 
   const valid = form.title.trim() && form.description.trim() && form.category.trim() && form.cta_url.trim();
 
   return (
     <Dialog open={open} onOpenChange={handleOpen}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{isEdit ? "Editar Produto" : "Adicionar Produto"}</DialogTitle>
           <DialogDescription>
@@ -193,6 +226,81 @@ function ProductModal({
         </DialogHeader>
 
         <div className="space-y-4">
+          {/* Image field with tabs */}
+          <div>
+            <Label>Imagem do Produto (opcional)</Label>
+            <Tabs
+              value={form.imageTab}
+              onValueChange={(v) => setForm((f) => ({ ...f, imageTab: v as "upload" | "url" }))}
+              className="mt-1.5"
+            >
+              <TabsList className="w-full">
+                <TabsTrigger value="upload" className="flex-1 gap-1.5">
+                  <Upload className="h-3.5 w-3.5" /> Upload
+                </TabsTrigger>
+                <TabsTrigger value="url" className="flex-1 gap-1.5">
+                  <Link className="h-3.5 w-3.5" /> URL
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="upload" className="mt-2 space-y-2">
+                {localPreview || (form.imageTab === "upload" && form.image_url) ? (
+                  <div className="relative rounded-lg overflow-hidden border bg-muted">
+                    <img
+                      src={localPreview || form.image_url}
+                      alt="Preview"
+                      className="w-full h-32 object-contain"
+                      referrerPolicy="no-referrer"
+                    />
+                    <Button
+                      type="button"
+                      size="icon"
+                      variant="destructive"
+                      className="absolute top-1 right-1 h-6 w-6"
+                      onClick={clearImage}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
+                ) : (
+                  <label className="flex flex-col items-center justify-center h-28 border-2 border-dashed rounded-lg cursor-pointer hover:border-primary/50 transition-colors bg-muted/30">
+                    <Upload className="h-5 w-5 text-muted-foreground mb-1" />
+                    <span className="text-xs text-muted-foreground">PNG, JPG ou WEBP (máx. 3MB)</span>
+                    <input type="file" className="hidden" accept=".png,.jpg,.jpeg,.webp" onChange={handleFileSelect} />
+                  </label>
+                )}
+              </TabsContent>
+
+              <TabsContent value="url" className="mt-2 space-y-2">
+                <Input
+                  placeholder="https://exemplo.com/imagem.png"
+                  value={form.imageTab === "url" ? form.image_url : ""}
+                  onChange={(e) => setForm((f) => ({ ...f, image_url: e.target.value, imageFile: null }))}
+                />
+                {form.imageTab === "url" && form.image_url.trim() && (
+                  <div className="relative rounded-lg overflow-hidden border bg-muted">
+                    <img
+                      src={form.image_url}
+                      alt="Preview"
+                      className="w-full h-32 object-contain"
+                      referrerPolicy="no-referrer"
+                      onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                    />
+                    <Button
+                      type="button"
+                      size="icon"
+                      variant="destructive"
+                      className="absolute top-1 right-1 h-6 w-6"
+                      onClick={clearImage}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
+                )}
+              </TabsContent>
+            </Tabs>
+          </div>
+
           <div>
             <Label htmlFor="prod-title">Título *</Label>
             <Input id="prod-title" value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} />
@@ -208,10 +316,6 @@ function ProductModal({
           <div>
             <Label htmlFor="prod-cta">URL do CTA *</Label>
             <Input id="prod-cta" value={form.cta_url} onChange={(e) => setForm((f) => ({ ...f, cta_url: e.target.value }))} />
-          </div>
-          <div>
-            <Label htmlFor="prod-img">URL da Imagem</Label>
-            <Input id="prod-img" value={form.image_url} onChange={(e) => setForm((f) => ({ ...f, image_url: e.target.value }))} placeholder="/placeholder.svg" />
           </div>
           <div>
             <Label htmlFor="prod-order">Ordem</Label>
@@ -307,13 +411,35 @@ export default function Produtos() {
     },
   });
 
-  const handleSave = (form: ProductFormData) => {
+  const handleSave = async (form: ProductFormData) => {
+    let finalImageUrl: string | null = form.image_url.trim() || null;
+
+    // Handle file upload if present
+    if (form.imageFile) {
+      const productId = editingProduct?.id || "new";
+      const ext = form.imageFile.name.split(".").pop() || "png";
+      const path = `${productId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+
+      const { error: uploadError } = await sbClient.storage
+        .from("product-images")
+        .upload(path, form.imageFile, { upsert: true });
+
+      if (uploadError) {
+        console.error("Upload error:", uploadError);
+        toast({ title: "Upload falhou", description: uploadError.message, variant: "destructive" });
+        return;
+      }
+
+      const { data: urlData } = sbClient.storage.from("product-images").getPublicUrl(path);
+      finalImageUrl = urlData.publicUrl;
+    }
+
     const payload: Record<string, unknown> = {
       title: form.title.trim(),
       description: form.description.trim(),
       category: form.category.trim(),
       cta_url: form.cta_url.trim(),
-      image_url: form.image_url.trim() || null,
+      image_url: finalImageUrl,
       sort_order: parseInt(form.sort_order, 10) || 0,
     };
 
@@ -396,6 +522,8 @@ export default function Produtos() {
         cta_url: editingProduct.cta_url,
         image_url: editingProduct.image_url || "",
         sort_order: String(editingProduct.sort_order),
+        imageFile: null,
+        imageTab: editingProduct.image_url ? "url" : "upload",
       }
     : EMPTY_FORM;
 
