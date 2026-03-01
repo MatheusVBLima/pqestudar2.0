@@ -247,6 +247,30 @@ export function AdminSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
+        {/* Páginas Legais */}
+        <SidebarGroup>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  isActive={pathname.startsWith('/admin/legal')}
+                  tooltip="Páginas Legais"
+                  className={cn(
+                    'rounded-[var(--admin-radius)] font-medium',
+                    pathname.startsWith('/admin/legal') && 'bg-primary/10 text-primary font-semibold border border-primary/20'
+                  )}
+                >
+                  <Link to="/admin/legal">
+                    <FileText className="h-4 w-4" />
+                    <span>Páginas Legais</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
         {/* Admin Premium */}
         <SidebarGroup>
           <Collapsible defaultOpen={isPremiumActive}>
