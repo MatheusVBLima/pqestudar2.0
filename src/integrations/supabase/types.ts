@@ -1045,6 +1045,9 @@ export type Database = {
           label: string
           open_in_new_tab: boolean
           order_index: number
+          show_icon_desktop: boolean
+          show_icon_mobile: boolean
+          show_icon_tablet: boolean
           updated_at: string
         }
         Insert: {
@@ -1057,6 +1060,9 @@ export type Database = {
           label: string
           open_in_new_tab?: boolean
           order_index?: number
+          show_icon_desktop?: boolean
+          show_icon_mobile?: boolean
+          show_icon_tablet?: boolean
           updated_at?: string
         }
         Update: {
@@ -1069,6 +1075,9 @@ export type Database = {
           label?: string
           open_in_new_tab?: boolean
           order_index?: number
+          show_icon_desktop?: boolean
+          show_icon_mobile?: boolean
+          show_icon_tablet?: boolean
           updated_at?: string
         }
         Relationships: []
@@ -2707,28 +2716,40 @@ export type Database = {
           href: string | null
           icon: string | null
           id: string | null
+          is_active: boolean | null
           is_external: boolean | null
           label: string | null
           open_in_new_tab: boolean | null
           order_index: number | null
+          show_icon_desktop: boolean | null
+          show_icon_mobile: boolean | null
+          show_icon_tablet: boolean | null
         }
         Insert: {
           href?: string | null
           icon?: string | null
           id?: string | null
+          is_active?: boolean | null
           is_external?: boolean | null
           label?: string | null
           open_in_new_tab?: boolean | null
           order_index?: number | null
+          show_icon_desktop?: boolean | null
+          show_icon_mobile?: boolean | null
+          show_icon_tablet?: boolean | null
         }
         Update: {
           href?: string | null
           icon?: string | null
           id?: string | null
+          is_active?: boolean | null
           is_external?: boolean | null
           label?: string | null
           open_in_new_tab?: boolean | null
           order_index?: number | null
+          show_icon_desktop?: boolean | null
+          show_icon_mobile?: boolean | null
+          show_icon_tablet?: boolean | null
         }
         Relationships: []
       }
