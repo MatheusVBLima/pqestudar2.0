@@ -1034,6 +1034,66 @@ export type Database = {
         }
         Relationships: []
       }
+      nav_items: {
+        Row: {
+          created_at: string
+          href: string
+          icon: string | null
+          id: string
+          is_active: boolean
+          is_external: boolean
+          label: string
+          open_in_new_tab: boolean
+          order_index: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          href: string
+          icon?: string | null
+          id?: string
+          is_active?: boolean
+          is_external?: boolean
+          label: string
+          open_in_new_tab?: boolean
+          order_index?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          href?: string
+          icon?: string | null
+          id?: string
+          is_active?: boolean
+          is_external?: boolean
+          label?: string
+          open_in_new_tab?: boolean
+          order_index?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      nav_settings: {
+        Row: {
+          id: string
+          logo_dark_url: string
+          logo_light_url: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          logo_dark_url?: string
+          logo_light_url?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          logo_dark_url?: string
+          logo_light_url?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       news: {
         Row: {
           author: string | null
@@ -2641,6 +2701,44 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      nav_items_public: {
+        Row: {
+          href: string | null
+          icon: string | null
+          id: string | null
+          is_external: boolean | null
+          label: string | null
+          open_in_new_tab: boolean | null
+          order_index: number | null
+        }
+        Insert: {
+          href?: string | null
+          icon?: string | null
+          id?: string | null
+          is_external?: boolean | null
+          label?: string | null
+          open_in_new_tab?: boolean | null
+          order_index?: number | null
+        }
+        Update: {
+          href?: string | null
+          icon?: string | null
+          id?: string | null
+          is_external?: boolean | null
+          label?: string | null
+          open_in_new_tab?: boolean | null
+          order_index?: number | null
+        }
+        Relationships: []
+      }
+      nav_settings_public: {
+        Row: {
+          id: string | null
+          logo_dark_url: string | null
+          logo_light_url: string | null
+        }
+        Relationships: []
       }
       oportunidades_public: {
         Row: {
