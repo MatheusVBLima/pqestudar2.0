@@ -2,6 +2,8 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Home, BookOpen, Menu, LogOut, User, Bookmark, Wrench, ScrollText, Info, Crown, BarChart3, Moon, Vote, ShoppingBag } from "lucide-react";
+import logoLight from "@/assets/logo-light.png";
+import logoDark from "@/assets/logo-dark.png";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { useSubscription } from "@/hooks/useSubscription";
 import { NotificationDropdown } from "@/components/ui/notification-dropdown";
@@ -92,34 +94,15 @@ export function Navbar() {
           isScrolled ? "h-14" : "h-16"
         )}>
           {/* Logo/Brand */}
-          <div className="flex items-center space-x-4">
-            <Button
-              variant="ghost"
-              size="sm"
+          <div className="flex items-center">
+            <button
               onClick={() => handleNavigation("/")}
-              className="group font-bold text-xl hover:bg-transparent p-2 transition-all duration-300"
+              className="flex items-center p-2 hover:opacity-80 transition-opacity duration-200"
+              aria-label="Ir para a página inicial"
             >
-              <div className="flex items-center space-x-2">
-                <div className="relative">
-                  <BookOpen className="h-6 w-6 text-primary group-hover:scale-110 transition-transform duration-300" />
-                  <div className="absolute inset-0 bg-primary/20 rounded-full blur-sm group-hover:blur-md transition-all duration-300 opacity-0 group-hover:opacity-100"></div>
-                </div>
-                <span className="bg-gradient-to-r from-primary via-primary/80 to-accent bg-clip-text text-transparent group-hover:from-primary group-hover:to-primary/60 transition-all duration-300">
-                  PqEstudar
-                </span>
-                <div 
-                  className="relative ml-1 cursor-pointer transition-all duration-300 hover:scale-110"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setIsClicked(!isClicked);
-                  }}
-                >
-                  <span className="text-primary font-bold text-xl group-hover:text-accent transition-colors duration-300">
-                    {isClicked ? "!" : "?"}
-                  </span>
-                </div>
-              </div>
-            </Button>
+              <img src={logoLight} alt="PqEstudar" className="h-6 sm:h-7 md:h-8 w-auto object-contain block dark:hidden" />
+              <img src={logoDark} alt="PqEstudar" className="h-6 sm:h-7 md:h-8 w-auto object-contain hidden dark:block" />
+            </button>
           </div>
 
           {/* Navigation Links - Desktop */}
