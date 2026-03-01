@@ -16,6 +16,14 @@ const socialLinks = [
   { icon: ThreadsIcon, url: "https://www.threads.com/@mdias.ofc", label: "Threads" },
 ];
 
+const allNavLinks = [
+  { label: "Produtos", to: "/produtos" },
+  { label: "Sobre", to: "/sobre" },
+  { label: "Privacidade", to: "/privacidade" },
+  { label: "Termos", to: "/termos" },
+  { label: "Cookies", to: "/configuracoes-cookies" },
+];
+
 const navLinksTop = [
   { label: "Produtos", to: "/produtos" },
   { label: "Sobre", to: "/sobre" },
@@ -31,13 +39,16 @@ export function Footer() {
   return (
     <footer className="border-t border-border bg-background mt-16 w-full">
       <div className="container mx-auto max-w-7xl px-4 py-8">
-        {/* Top row: logo + socials */}
-        <div className="flex items-center justify-between mb-8">
+
+        {/* ===== MOBILE LAYOUT (< md) ===== */}
+        <div className="md:hidden flex flex-col gap-6">
+          {/* Logo */}
           <Link to="/" aria-label="Ir para a página inicial">
-            <img src={logoLight} alt="PqEstudar" className="h-8 sm:h-9 md:h-11 block dark:hidden" />
-            <img src={logoDark} alt="PqEstudar" className="h-8 sm:h-9 md:h-11 hidden dark:block" />
+            <img src={logoLight} alt="PqEstudar" className="h-8 block dark:hidden" />
+            <img src={logoDark} alt="PqEstudar" className="h-8 hidden dark:block" />
           </Link>
 
+          {/* Socials */}
           <div className="flex items-center gap-3">
             {socialLinks.map((s) => (
               <a
@@ -52,34 +63,84 @@ export function Footer() {
               </a>
             ))}
           </div>
-        </div>
 
-        <div className="border-t border-border" />
+          <div className="border-t border-border" />
 
-        {/* Bottom row: copyright + nav links */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4 pt-6">
-          <div className="text-sm text-muted-foreground leading-relaxed">
+          {/* Nav links grid 2 cols */}
+          <nav className="grid grid-cols-2 gap-x-6 gap-y-2">
+            {allNavLinks.map((l) => (
+              <Link
+                key={l.to}
+                to={l.to}
+                className="text-sm text-foreground hover:text-primary transition-colors py-2"
+              >
+                {l.label}
+              </Link>
+            ))}
+          </nav>
+
+          <div className="border-t border-border" />
+
+          {/* Copyright */}
+          <div className="text-xs text-muted-foreground leading-relaxed">
             <p>© 2025 PqEstudar</p>
             <p>Todos os direitos reservados</p>
           </div>
-
-          <nav className="flex flex-col items-start sm:items-end gap-1 text-sm">
-            <div className="flex flex-wrap gap-4">
-              {navLinksTop.map((l) => (
-                <Link key={l.to} to={l.to} className="text-foreground hover:text-primary transition-colors">
-                  {l.label}
-                </Link>
-              ))}
-            </div>
-            <div className="flex flex-wrap gap-4">
-              {navLinksBottom.map((l) => (
-                <Link key={l.to} to={l.to} className="text-foreground hover:text-primary transition-colors">
-                  {l.label}
-                </Link>
-              ))}
-            </div>
-          </nav>
         </div>
+
+        {/* ===== DESKTOP LAYOUT (>= md) ===== */}
+        <div className="hidden md:block">
+          {/* Top row: logo + socials */}
+          <div className="flex items-center justify-between mb-8">
+            <Link to="/" aria-label="Ir para a página inicial">
+              <img src={logoLight} alt="PqEstudar" className="h-11 block dark:hidden" />
+              <img src={logoDark} alt="PqEstudar" className="h-11 hidden dark:block" />
+            </Link>
+
+            <div className="flex items-center gap-3">
+              {socialLinks.map((s) => (
+                <a
+                  key={s.label}
+                  href={s.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`Seguir no ${s.label}`}
+                  className="text-muted-foreground hover:text-primary transition-colors"
+                >
+                  <s.icon className="w-5 h-5" />
+                </a>
+              ))}
+            </div>
+          </div>
+
+          <div className="border-t border-border" />
+
+          {/* Bottom row: copyright + nav links */}
+          <div className="flex items-end justify-between gap-4 pt-6">
+            <div className="text-sm text-muted-foreground leading-relaxed">
+              <p>© 2025 PqEstudar</p>
+              <p>Todos os direitos reservados</p>
+            </div>
+
+            <nav className="flex flex-col items-end gap-1 text-sm">
+              <div className="flex flex-wrap gap-4">
+                {navLinksTop.map((l) => (
+                  <Link key={l.to} to={l.to} className="text-foreground hover:text-primary transition-colors">
+                    {l.label}
+                  </Link>
+                ))}
+              </div>
+              <div className="flex flex-wrap gap-4">
+                {navLinksBottom.map((l) => (
+                  <Link key={l.to} to={l.to} className="text-foreground hover:text-primary transition-colors">
+                    {l.label}
+                  </Link>
+                ))}
+              </div>
+            </nav>
+          </div>
+        </div>
+
       </div>
     </footer>
   );
