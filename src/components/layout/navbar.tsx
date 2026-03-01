@@ -1,9 +1,8 @@
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Home, BookOpen, Menu, LogOut, User, Bookmark, Wrench, ScrollText, Info, Crown, BarChart3, Moon, Vote, ShoppingBag } from "lucide-react";
-import logoLight from "@/assets/logo-light.png";
-import logoDark from "@/assets/logo-dark.png";
+import { Home, BookOpen, Menu, LogOut, User, Bookmark, Wrench, ScrollText, Info, Crown, BarChart3, Moon, Vote, ShoppingBag, ExternalLink, type LucideIcon } from "lucide-react";
+import { useNavConfig, type NavItem } from "@/hooks/useNavConfig";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { useSubscription } from "@/hooks/useSubscription";
 import { NotificationDropdown } from "@/components/ui/notification-dropdown";
@@ -21,6 +20,22 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
 
+// Icon mapping for dynamic icons from DB
+const ICON_MAP: Record<string, LucideIcon> = {
+  home: Home,
+  wrench: Wrench,
+  "scroll-text": ScrollText,
+  "shopping-bag": ShoppingBag,
+  vote: Vote,
+  info: Info,
+  "book-open": BookOpen,
+};
+
+function getIcon(name: string | null): LucideIcon | null {
+  if (!name) return null;
+  return ICON_MAP[name.toLowerCase()] ?? null;
+}
+
 export function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -29,7 +44,7 @@ export function Navbar() {
   const { isAdmin } = useUserRoles();
   const { isActive } = useSubscription();
   const { isDark, toggleTheme } = useTheme();
-  const [isClicked, setIsClicked] = useState(false);
+  const { items: navItems, logos } = useNavConfig();
   const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
@@ -37,11 +52,8 @@ export function Navbar() {
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
-  
-  // Show premium area for admins OR active subscribers
-  const showPremiumArea = isAdmin || isActive();
 
-  // Detecta se está no subdomínio kit
+  const showPremiumArea = isAdmin || isActive();
   const isOnKitSubdomain = window.location.hostname.startsWith("kit.");
   const mainDomain = isOnKitSubdomain ? "https://pqestudar.com.br" : "";
 
@@ -59,7 +71,6 @@ export function Navbar() {
     handleNavigation('/');
   };
 
-  // Get user initials for avatar fallback
   const getUserInitials = () => {
     if (user?.user_metadata?.full_name) {
       return user.user_metadata.full_name
@@ -69,19 +80,28 @@ export function Navbar() {
         .toUpperCase()
         .slice(0, 2);
     }
-    if (user?.email) {
-      return user.email[0].toUpperCase();
-    }
+    if (user?.email) return user.email[0].toUpperCase();
     return 'U';
   };
 
-  // Get user display name
   const getUserDisplayName = () => {
     return user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Usuário';
   };
 
+  const handleItemClick = (item: NavItem) => {
+    if (item.is_external) {
+      window.open(item.href, item.open_in_new_tab ? "_blank" : "_self", "noopener");
+    } else {
+      handleNavigation(item.href);
+    }
+  };
+
+  const isItemActive = (item: NavItem) => {
+    if (item.href === "/") return location.pathname === "/";
+    return location.pathname.startsWith(item.href);
+  };
+
   return (
-    /* Wrapper externo: full-width fixo, sem visual próprio */
     <div className="fixed top-0 left-0 right-0 z-50 w-full">
       <nav className={cn(
         "mx-auto transition-all duration-300 ease-out",
@@ -93,81 +113,40 @@ export function Navbar() {
           "flex items-center justify-between transition-all duration-300 ease-out px-4",
           isScrolled ? "h-14" : "h-16"
         )}>
-          {/* Logo/Brand */}
+          {/* Logo */}
           <div className="flex items-center">
             <button
               onClick={() => handleNavigation("/")}
               className="flex items-center p-2 hover:opacity-80 transition-opacity duration-200"
               aria-label="Ir para a página inicial"
             >
-              <img src={logoLight} alt="PqEstudar" className="h-8 sm:h-9 md:h-11 w-auto object-contain block dark:hidden" />
-              <img src={logoDark} alt="PqEstudar" className="h-8 sm:h-9 md:h-11 w-auto object-contain hidden dark:block" />
+              <img src={logos.light} alt="PqEstudar" className="h-8 sm:h-9 md:h-11 w-auto object-contain block dark:hidden" />
+              <img src={logos.dark} alt="PqEstudar" className="h-8 sm:h-9 md:h-11 w-auto object-contain hidden dark:block" />
             </button>
           </div>
 
           {/* Navigation Links - Desktop */}
           <div className="hidden md:flex items-center space-x-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => handleNavigation("/")}
-              className="hover:bg-accent rounded-[1.2rem]"
-            >
-              <Home className="h-4 w-4 mr-2" />
-              Início
-            </Button>
-            
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => handleNavigation("/ferramentas")}
-              className={`hover:bg-accent rounded-[1.2rem] ${location.pathname === "/ferramentas" ? "bg-accent text-accent-foreground" : ""}`}
-            >
-              <Wrench className="h-4 w-4 mr-2" aria-hidden="true" />
-              Ferramentas
-            </Button>
-
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => handleNavigation("/concursos")}
-              className={`hover:bg-accent rounded-[1.2rem] ${location.pathname.startsWith("/concursos") ? "bg-accent text-accent-foreground" : ""}`}
-              aria-label="Ir para Concursos"
-              aria-current={location.pathname.startsWith("/concursos") ? "page" : undefined}
-            >
-              <ScrollText className="h-4 w-4 mr-2" aria-hidden="true" />
-              Concursos
-            </Button>
-
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => handleNavigation("/produtos")}
-              className={`hover:bg-accent rounded-[1.2rem] ${location.pathname === "/produtos" ? "bg-accent text-accent-foreground" : ""}`}
-            >
-              <ShoppingBag className="h-4 w-4 mr-2" aria-hidden="true" />
-              Produtos
-            </Button>
-
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => handleNavigation("/votacoes")}
-              className={`hover:bg-accent rounded-[1.2rem] ${location.pathname === "/votacoes" ? "bg-accent text-accent-foreground" : ""}`}
-            >
-              <Vote className="h-4 w-4 mr-2" aria-hidden="true" />
-              Votações
-            </Button>
-
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => handleNavigation("/sobre")}
-              className={`hover:bg-accent rounded-[1.2rem] ${location.pathname === "/sobre" ? "bg-accent text-accent-foreground" : ""}`}
-            >
-              <Info className="h-4 w-4 mr-2" aria-hidden="true" />
-              Sobre
-            </Button>
+            {navItems.map((item) => {
+              const IconComp = getIcon(item.icon);
+              return (
+                <Button
+                  key={item.id}
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleItemClick(item)}
+                  className={cn(
+                    "hover:bg-accent rounded-[1.2rem]",
+                    isItemActive(item) && "bg-accent text-accent-foreground"
+                  )}
+                  aria-current={isItemActive(item) ? "page" : undefined}
+                >
+                  {IconComp && <IconComp className="h-4 w-4 mr-2" aria-hidden="true" />}
+                  {item.label}
+                  {item.is_external && <ExternalLink className="h-3 w-3 ml-1 opacity-50" />}
+                </Button>
+              );
+            })}
 
             {user && <NotificationDropdown />}
 
@@ -175,32 +154,16 @@ export function Navbar() {
             {!loading && (
               <>
                 {!user ? (
-                  <Button
-                    variant="default"
-                    size="sm"
-                    onClick={() => handleNavigation("/login")}
-                    aria-label="Entrar"
-                  >
+                  <Button variant="default" size="sm" onClick={() => handleNavigation("/login")} aria-label="Entrar">
                     Entrar
                   </Button>
                 ) : (
                   <DropdownMenu modal={false}>
                     <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="relative h-9 w-9 rounded-full p-0"
-                        aria-label="Menu do usuário"
-                        aria-haspopup="menu"
-                      >
+                      <Button variant="ghost" size="sm" className="relative h-9 w-9 rounded-full p-0" aria-label="Menu do usuário" aria-haspopup="menu">
                         <Avatar className="h-8 w-8">
-                          <AvatarImage 
-                            src={user.user_metadata?.avatar_url} 
-                            alt={getUserDisplayName()} 
-                          />
-                          <AvatarFallback className="bg-primary text-primary-foreground text-xs">
-                            {getUserInitials()}
-                          </AvatarFallback>
+                          <AvatarImage src={user.user_metadata?.avatar_url} alt={getUserDisplayName()} />
+                          <AvatarFallback className="bg-primary text-primary-foreground text-xs">{getUserInitials()}</AvatarFallback>
                         </Avatar>
                       </Button>
                     </DropdownMenuTrigger>
@@ -212,48 +175,26 @@ export function Navbar() {
                         </div>
                       </div>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem 
-                        onClick={() => handleNavigation("/ferramentas/salvos")}
-                        className="cursor-pointer"
-                      >
-                        <Bookmark className="h-4 w-4 mr-2" />
-                        Salvos
+                      <DropdownMenuItem onClick={() => handleNavigation("/ferramentas/salvos")} className="cursor-pointer">
+                        <Bookmark className="h-4 w-4 mr-2" />Salvos
                       </DropdownMenuItem>
                       {isAdmin && (
-                        <DropdownMenuItem 
-                          onClick={() => handleNavigation("/admin")}
-                          className="cursor-pointer"
-                        >
-                          <BarChart3 className="h-4 w-4 mr-2" />
-                          Dashboard admin
+                        <DropdownMenuItem onClick={() => handleNavigation("/admin")} className="cursor-pointer">
+                          <BarChart3 className="h-4 w-4 mr-2" />Dashboard admin
                         </DropdownMenuItem>
                       )}
                       {showPremiumArea && (
-                        <DropdownMenuItem 
-                          onClick={() => handleNavigation("/premium")}
-                          className="cursor-pointer"
-                        >
-                          <Crown className="h-4 w-4 mr-2" />
-                          Área Premium
+                        <DropdownMenuItem onClick={() => handleNavigation("/premium")} className="cursor-pointer">
+                          <Crown className="h-4 w-4 mr-2" />Área Premium
                         </DropdownMenuItem>
                       )}
-                      <DropdownMenuItem
-                        onSelect={(e) => { e.preventDefault(); toggleTheme(); }}
-                        className="cursor-pointer flex items-center justify-between"
-                      >
-                        <span className="flex items-center">
-                          <Moon className="h-4 w-4 mr-2" />
-                          Tema escuro
-                        </span>
+                      <DropdownMenuItem onSelect={(e) => { e.preventDefault(); toggleTheme(); }} className="cursor-pointer flex items-center justify-between">
+                        <span className="flex items-center"><Moon className="h-4 w-4 mr-2" />Tema escuro</span>
                         <Switch checked={isDark} tabIndex={-1} className="pointer-events-none" />
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem 
-                        onClick={handleSignOut}
-                        className="text-destructive focus:text-destructive cursor-pointer"
-                      >
-                        <LogOut className="h-4 w-4 mr-2" />
-                        Sair
+                      <DropdownMenuItem onClick={handleSignOut} className="text-destructive focus:text-destructive cursor-pointer">
+                        <LogOut className="h-4 w-4 mr-2" />Sair
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -265,7 +206,6 @@ export function Navbar() {
           {/* Mobile Menu */}
           <div className="md:hidden flex items-center space-x-2">
             {user && <NotificationDropdown />}
-            
             <DropdownMenu modal={false}>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm" aria-label="Menu de navegação">
@@ -273,59 +213,33 @@ export function Navbar() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56 bg-popover">
-                <DropdownMenuItem onClick={() => handleNavigation("/")}>
-                  <Home className="h-4 w-4 mr-2" />
-                  Início
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleNavigation("/ferramentas")}>
-                  <Wrench className="h-4 w-4 mr-2" aria-hidden="true" />
-                  Ferramentas
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  onClick={() => handleNavigation("/concursos")}
-                  aria-label="Ir para Concursos"
-                  aria-current={location.pathname.startsWith("/concursos") ? "page" : undefined}
-                >
-                  <ScrollText className="h-4 w-4 mr-2" aria-hidden="true" />
-                  Concursos
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleNavigation("/produtos")}>
-                  <ShoppingBag className="h-4 w-4 mr-2" aria-hidden="true" />
-                  Produtos
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleNavigation("/votacoes")}>
-                  <Vote className="h-4 w-4 mr-2" aria-hidden="true" />
-                  Votações
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleNavigation("/sobre")}>
-                  <Info className="h-4 w-4 mr-2" aria-hidden="true" />
-                  Sobre
-                </DropdownMenuItem>
-                
+                {navItems.map((item) => {
+                  const IconComp = getIcon(item.icon);
+                  return (
+                    <DropdownMenuItem
+                      key={item.id}
+                      onClick={() => handleItemClick(item)}
+                      aria-current={isItemActive(item) ? "page" : undefined}
+                    >
+                      {IconComp && <IconComp className="h-4 w-4 mr-2" aria-hidden="true" />}
+                      {item.label}
+                      {item.is_external && <ExternalLink className="h-3 w-3 ml-1 opacity-50" />}
+                    </DropdownMenuItem>
+                  );
+                })}
                 <DropdownMenuSeparator />
-                
-                {/* Auth section in mobile menu */}
                 {!loading && (
                   <>
                     {!user ? (
-                      <DropdownMenuItem 
-                        onClick={() => handleNavigation("/login")}
-                        className="text-primary font-medium"
-                      >
-                        <User className="h-4 w-4 mr-2" />
-                        Entrar
+                      <DropdownMenuItem onClick={() => handleNavigation("/login")} className="text-primary font-medium">
+                        <User className="h-4 w-4 mr-2" />Entrar
                       </DropdownMenuItem>
                     ) : (
                       <>
                         <div className="flex items-center gap-2 p-2">
                           <Avatar className="h-8 w-8">
-                            <AvatarImage 
-                              src={user.user_metadata?.avatar_url} 
-                              alt={getUserDisplayName()} 
-                            />
-                            <AvatarFallback className="bg-primary text-primary-foreground text-xs">
-                              {getUserInitials()}
-                            </AvatarFallback>
+                            <AvatarImage src={user.user_metadata?.avatar_url} alt={getUserDisplayName()} />
+                            <AvatarFallback className="bg-primary text-primary-foreground text-xs">{getUserInitials()}</AvatarFallback>
                           </Avatar>
                           <div className="flex flex-col space-y-0.5 leading-none">
                             <p className="font-medium text-sm">{getUserDisplayName()}</p>
@@ -333,48 +247,26 @@ export function Navbar() {
                           </div>
                         </div>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem 
-                          onClick={() => handleNavigation("/ferramentas/salvos")}
-                          className="cursor-pointer"
-                        >
-                          <Bookmark className="h-4 w-4 mr-2" />
-                          Salvos
+                        <DropdownMenuItem onClick={() => handleNavigation("/ferramentas/salvos")} className="cursor-pointer">
+                          <Bookmark className="h-4 w-4 mr-2" />Salvos
                         </DropdownMenuItem>
                         {isAdmin && (
-                          <DropdownMenuItem 
-                            onClick={() => handleNavigation("/admin")}
-                            className="cursor-pointer"
-                          >
-                            <BarChart3 className="h-4 w-4 mr-2" />
-                            Dashboard admin
+                          <DropdownMenuItem onClick={() => handleNavigation("/admin")} className="cursor-pointer">
+                            <BarChart3 className="h-4 w-4 mr-2" />Dashboard admin
                           </DropdownMenuItem>
                         )}
                         {showPremiumArea && (
-                          <DropdownMenuItem 
-                            onClick={() => handleNavigation("/premium")}
-                            className="cursor-pointer"
-                          >
-                            <Crown className="h-4 w-4 mr-2" />
-                            Área Premium
+                          <DropdownMenuItem onClick={() => handleNavigation("/premium")} className="cursor-pointer">
+                            <Crown className="h-4 w-4 mr-2" />Área Premium
                           </DropdownMenuItem>
                         )}
-                        <DropdownMenuItem
-                          onSelect={(e) => { e.preventDefault(); toggleTheme(); }}
-                          className="cursor-pointer flex items-center justify-between"
-                        >
-                          <span className="flex items-center">
-                            <Moon className="h-4 w-4 mr-2" />
-                            Tema escuro
-                          </span>
+                        <DropdownMenuItem onSelect={(e) => { e.preventDefault(); toggleTheme(); }} className="cursor-pointer flex items-center justify-between">
+                          <span className="flex items-center"><Moon className="h-4 w-4 mr-2" />Tema escuro</span>
                           <Switch checked={isDark} tabIndex={-1} className="pointer-events-none" />
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem 
-                          onClick={handleSignOut}
-                          className="text-destructive focus:text-destructive cursor-pointer"
-                        >
-                          <LogOut className="h-4 w-4 mr-2" />
-                          Sair
+                        <DropdownMenuItem onClick={handleSignOut} className="text-destructive focus:text-destructive cursor-pointer">
+                          <LogOut className="h-4 w-4 mr-2" />Sair
                         </DropdownMenuItem>
                       </>
                     )}
