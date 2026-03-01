@@ -42,26 +42,26 @@ export function Footer() {
 
         {/* ===== MOBILE LAYOUT (< md) ===== */}
         <div className="md:hidden flex flex-col gap-6">
-          {/* Logo */}
-          <Link to="/" aria-label="Ir para a página inicial">
-            <img src={logoLight} alt="PqEstudar" className="h-8 block dark:hidden" />
-            <img src={logoDark} alt="PqEstudar" className="h-8 hidden dark:block" />
-          </Link>
-
-          {/* Socials */}
-          <div className="flex items-center gap-3">
-            {socialLinks.map((s) => (
-              <a
-                key={s.label}
-                href={s.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label={`Seguir no ${s.label}`}
-                className="text-muted-foreground hover:text-primary transition-colors"
-              >
-                <s.icon className="w-5 h-5" />
-              </a>
-            ))}
+          {/* Logo + Socials on same line */}
+          <div className="flex items-center justify-between">
+            <Link to="/" aria-label="Ir para a página inicial">
+              <img src={logoLight} alt="PqEstudar" className="h-8 block dark:hidden" />
+              <img src={logoDark} alt="PqEstudar" className="h-8 hidden dark:block" />
+            </Link>
+            <div className="flex items-center gap-3">
+              {socialLinks.map((s) => (
+                <a
+                  key={s.label}
+                  href={s.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`Seguir no ${s.label}`}
+                  className="text-muted-foreground hover:text-primary transition-colors"
+                >
+                  <s.icon className="w-5 h-5" />
+                </a>
+              ))}
+            </div>
           </div>
 
           <div className="border-t border-border" />
