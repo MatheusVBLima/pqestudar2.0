@@ -50,6 +50,7 @@ import AdminCuradoriasLista from "./pages/AdminCuradoriasLista";
 import AdminCuradoriasForm from "./pages/AdminCuradoriasForm";
 
 import { usePageViewTracker } from "@/hooks/usePageViewTracker";
+import { ScrollToTop } from "@/components/ScrollToTop";
 
 // Premium imports
 import { RequireActiveSubscription } from "@/components/premium/RequireActiveSubscription";
@@ -215,6 +216,7 @@ const AppContent = () => {
     <>
       <CookieBanner />
       <BrowserRouter>
+        <ScrollToTop />
         <AppWithPixel />
       </BrowserRouter>
     </>
