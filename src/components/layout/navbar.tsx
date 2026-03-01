@@ -100,8 +100,8 @@ export function Navbar() {
               className="flex items-center p-2 hover:opacity-80 transition-opacity duration-200"
               aria-label="Ir para a página inicial"
             >
-              <img src={logoLight} alt="PqEstudar" className="h-6 sm:h-7 md:h-8 w-auto object-contain block dark:hidden" />
-              <img src={logoDark} alt="PqEstudar" className="h-6 sm:h-7 md:h-8 w-auto object-contain hidden dark:block" />
+              <img src={logoLight} alt="PqEstudar" className="h-8 sm:h-9 md:h-11 w-auto object-contain block dark:hidden" />
+              <img src={logoDark} alt="PqEstudar" className="h-8 sm:h-9 md:h-11 w-auto object-contain hidden dark:block" />
             </button>
           </div>
 
