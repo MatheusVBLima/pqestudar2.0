@@ -63,9 +63,17 @@ export function useNavConfig() {
     staleTime: 5 * 60 * 1000,
   });
 
-  const items = itemsQuery.data && itemsQuery.data.length > 0
-    ? itemsQuery.data.filter((i) => i.is_active)
+  // Fallback-first: never replace menu with empty array
+  const dbItems = itemsQuery.data;
+  const items = dbItems && dbItems.length > 0
+    ? dbItems.filter((i) => i.is_active !== false) // view may omit is_active; treat undefined as true
     : FALLBACK_ITEMS;
+
+  if (dbItems && dbItems.length > 0) {
+    console.debug("NavConfig loaded from DB:", dbItems.length, "items");
+  } else if (!itemsQuery.isLoading) {
+    console.debug("NavConfig fallback used");
+  }
 
   const settings = settingsQuery.data ?? FALLBACK_SETTINGS;
 
