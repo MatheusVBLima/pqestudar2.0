@@ -1034,6 +1034,71 @@ export type Database = {
         }
         Relationships: []
       }
+      legal_documents: {
+        Row: {
+          created_at: string
+          id: string
+          pdf_url: string | null
+          route: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          pdf_url?: string | null
+          route: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          pdf_url?: string | null
+          route?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      legal_sections: {
+        Row: {
+          content: string
+          created_at: string
+          document_id: string
+          id: string
+          is_active: boolean
+          sort_order: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          document_id: string
+          id?: string
+          is_active?: boolean
+          sort_order?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          document_id?: string
+          id?: string
+          is_active?: boolean
+          sort_order?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "legal_sections_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "legal_documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       nav_items: {
         Row: {
           created_at: string
