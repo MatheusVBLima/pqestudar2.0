@@ -80,6 +80,7 @@ import InsightsConcursosEventos from "./pages/admin/dashboard/InsightsConcursosE
 import InsightsSeoAudit from "./pages/admin/dashboard/InsightsSeoAudit";
 import InsightsCopyAudit from "./pages/admin/dashboard/InsightsCopyAudit";
 import AdminPages from "./pages/admin/AdminPages";
+import AdminMenu from "./pages/admin/AdminMenu";
 
 // Admin Concursos imports
 import AdminConcursosIndex from "./pages/admin/concursos/index";
@@ -142,6 +143,7 @@ const AppWithPixel = () => {
         <Route path="concursos/orquestracao-ia" element={<AdminConcursosOrquestracaoIA />} />
         <Route path="concursos/historico" element={<AdminConcursosHistorico />} />
         <Route path="pages" element={<AdminPages />} />
+        <Route path="menu" element={<AdminMenu />} />
       </Route>
 
       {/* All pages with persistent Navbar + Footer layout */}
