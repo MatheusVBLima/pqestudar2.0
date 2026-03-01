@@ -12,6 +12,9 @@ export interface NavItem {
   is_active: boolean;
   is_external: boolean;
   open_in_new_tab: boolean;
+  show_icon_desktop: boolean;
+  show_icon_tablet: boolean;
+  show_icon_mobile: boolean;
 }
 
 export interface NavSettings {
@@ -21,12 +24,12 @@ export interface NavSettings {
 }
 
 const FALLBACK_ITEMS: NavItem[] = [
-  { id: "fb-1", label: "Início", href: "/", icon: "home", order_index: 0, is_active: true, is_external: false, open_in_new_tab: false },
-  { id: "fb-2", label: "Ferramentas", href: "/ferramentas", icon: "wrench", order_index: 1, is_active: true, is_external: false, open_in_new_tab: false },
-  { id: "fb-3", label: "Concursos", href: "/concursos", icon: "scroll-text", order_index: 2, is_active: true, is_external: false, open_in_new_tab: false },
-  { id: "fb-4", label: "Produtos", href: "/produtos", icon: "shopping-bag", order_index: 3, is_active: true, is_external: false, open_in_new_tab: false },
-  { id: "fb-5", label: "Votações", href: "/votacoes", icon: "vote", order_index: 4, is_active: true, is_external: false, open_in_new_tab: false },
-  { id: "fb-6", label: "Sobre", href: "/sobre", icon: "info", order_index: 5, is_active: true, is_external: false, open_in_new_tab: false },
+  { id: "fb-1", label: "Início", href: "/", icon: "home", order_index: 0, is_active: true, is_external: false, open_in_new_tab: false, show_icon_desktop: true, show_icon_tablet: true, show_icon_mobile: false },
+  { id: "fb-2", label: "Ferramentas", href: "/ferramentas", icon: "wrench", order_index: 1, is_active: true, is_external: false, open_in_new_tab: false, show_icon_desktop: true, show_icon_tablet: true, show_icon_mobile: false },
+  { id: "fb-3", label: "Concursos", href: "/concursos", icon: "scroll-text", order_index: 2, is_active: true, is_external: false, open_in_new_tab: false, show_icon_desktop: true, show_icon_tablet: true, show_icon_mobile: false },
+  { id: "fb-4", label: "Produtos", href: "/produtos", icon: "shopping-bag", order_index: 3, is_active: true, is_external: false, open_in_new_tab: false, show_icon_desktop: true, show_icon_tablet: true, show_icon_mobile: false },
+  { id: "fb-5", label: "Votações", href: "/votacoes", icon: "vote", order_index: 4, is_active: true, is_external: false, open_in_new_tab: false, show_icon_desktop: true, show_icon_tablet: true, show_icon_mobile: false },
+  { id: "fb-6", label: "Sobre", href: "/sobre", icon: "info", order_index: 5, is_active: true, is_external: false, open_in_new_tab: false, show_icon_desktop: true, show_icon_tablet: true, show_icon_mobile: false },
 ];
 
 const FALLBACK_SETTINGS: NavSettings = {

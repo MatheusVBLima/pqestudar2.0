@@ -129,6 +129,8 @@ export function Navbar() {
           <div className="hidden md:flex items-center space-x-2">
             {navItems.map((item) => {
               const IconComp = getIcon(item.icon);
+              const showIconDesktop = item.show_icon_desktop !== false;
+              const showIconTablet = item.show_icon_tablet !== false;
               return (
                 <Button
                   key={item.id}
@@ -141,7 +143,12 @@ export function Navbar() {
                   )}
                   aria-current={isItemActive(item) ? "page" : undefined}
                 >
-                  {IconComp && <IconComp className="h-4 w-4 mr-2" aria-hidden="true" />}
+                  {IconComp && showIconDesktop && (
+                    <IconComp className="h-4 w-4 mr-2 hidden lg:inline-flex" aria-hidden="true" />
+                  )}
+                  {IconComp && showIconTablet && (
+                    <IconComp className="h-4 w-4 mr-2 inline-flex lg:hidden" aria-hidden="true" />
+                  )}
                   {item.label}
                   {item.is_external && <ExternalLink className="h-3 w-3 ml-1 opacity-50" />}
                 </Button>
@@ -215,13 +222,14 @@ export function Navbar() {
               <DropdownMenuContent align="end" className="w-56 bg-popover">
                 {navItems.map((item) => {
                   const IconComp = getIcon(item.icon);
+                  const showIconMobile = item.show_icon_mobile !== false;
                   return (
                     <DropdownMenuItem
                       key={item.id}
                       onClick={() => handleItemClick(item)}
                       aria-current={isItemActive(item) ? "page" : undefined}
                     >
-                      {IconComp && <IconComp className="h-4 w-4 mr-2" aria-hidden="true" />}
+                      {IconComp && showIconMobile && <IconComp className="h-4 w-4 mr-2" aria-hidden="true" />}
                       {item.label}
                       {item.is_external && <ExternalLink className="h-3 w-3 ml-1 opacity-50" />}
                     </DropdownMenuItem>

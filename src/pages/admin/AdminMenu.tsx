@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -18,7 +19,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { GripVertical, Plus, Pencil, Trash2, Save, Image } from "lucide-react";
+import { GripVertical, Plus, Pencil, Trash2, Save, Image, Monitor, Tablet, Smartphone } from "lucide-react";
 import {
   DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors,
   type DragEndEvent,
@@ -38,6 +39,9 @@ interface NavItem {
   is_active: boolean;
   is_external: boolean;
   open_in_new_tab: boolean;
+  show_icon_desktop: boolean;
+  show_icon_tablet: boolean;
+  show_icon_mobile: boolean;
 }
 
 interface NavSettings {
@@ -48,39 +52,76 @@ interface NavSettings {
 
 // ─── Sortable Row ───
 function SortableNavItem({
-  item, onEdit, onDelete, onToggle,
+  item, onEdit, onDelete, onToggle, onIconToggle,
 }: {
   item: NavItem;
   onEdit: (item: NavItem) => void;
   onDelete: (item: NavItem) => void;
   onToggle: (item: NavItem) => void;
+  onIconToggle: (item: NavItem, field: 'show_icon_desktop' | 'show_icon_tablet' | 'show_icon_mobile') => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: item.id });
   const style = { transform: CSS.Transform.toString(transform), transition };
+
+  const iconBreakpoints: { field: 'show_icon_desktop' | 'show_icon_tablet' | 'show_icon_mobile'; icon: typeof Monitor; label: string }[] = [
+    { field: 'show_icon_desktop', icon: Monitor, label: 'Desktop' },
+    { field: 'show_icon_tablet', icon: Tablet, label: 'Tablet' },
+    { field: 'show_icon_mobile', icon: Smartphone, label: 'Mobile' },
+  ];
 
   return (
     <div
       ref={setNodeRef}
       style={style}
       className={cn(
-        "flex items-center gap-3 rounded-lg border bg-card p-3 transition-shadow",
+        "flex flex-col gap-2 rounded-lg border bg-card p-3 transition-shadow",
         isDragging && "shadow-lg ring-2 ring-primary/30 z-10"
       )}
     >
-      <button {...attributes} {...listeners} className="cursor-grab touch-none text-muted-foreground hover:text-foreground" aria-label="Reordenar">
-        <GripVertical className="h-4 w-4" />
-      </button>
-      <div className="flex-1 min-w-0">
-        <p className="font-medium text-sm truncate">{item.label}</p>
-        <p className="text-xs text-muted-foreground truncate">{item.href}</p>
+      <div className="flex items-center gap-3">
+        <button {...attributes} {...listeners} className="cursor-grab touch-none text-muted-foreground hover:text-foreground" aria-label="Reordenar">
+          <GripVertical className="h-4 w-4" />
+        </button>
+        <div className="flex-1 min-w-0">
+          <p className="font-medium text-sm truncate">{item.label}</p>
+          <p className="text-xs text-muted-foreground truncate">{item.href}</p>
+        </div>
+        <Switch checked={item.is_active} onCheckedChange={() => onToggle(item)} aria-label="Ativo" />
+        <Button variant="ghost" size="icon" onClick={() => onEdit(item)} aria-label="Editar">
+          <Pencil className="h-4 w-4" />
+        </Button>
+        <Button variant="ghost" size="icon" onClick={() => onDelete(item)} className="text-destructive hover:text-destructive" aria-label="Excluir">
+          <Trash2 className="h-4 w-4" />
+        </Button>
       </div>
-      <Switch checked={item.is_active} onCheckedChange={() => onToggle(item)} aria-label="Ativo" />
-      <Button variant="ghost" size="icon" onClick={() => onEdit(item)} aria-label="Editar">
-        <Pencil className="h-4 w-4" />
-      </Button>
-      <Button variant="ghost" size="icon" onClick={() => onDelete(item)} className="text-destructive hover:text-destructive" aria-label="Excluir">
-        <Trash2 className="h-4 w-4" />
-      </Button>
+      {item.icon && (
+        <TooltipProvider delayDuration={200}>
+          <div className="flex items-center gap-3 pl-7">
+            <span className="text-xs text-muted-foreground">Ícone:</span>
+            {iconBreakpoints.map(({ field, icon: BpIcon, label }) => (
+              <Tooltip key={field}>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => onIconToggle(item, field)}
+                    className={cn(
+                      "flex items-center gap-1 rounded-md px-1.5 py-1 text-xs transition-colors",
+                      item[field]
+                        ? "bg-primary/10 text-primary"
+                        : "bg-muted text-muted-foreground"
+                    )}
+                    aria-label={`${label}: ícone ${item[field] ? 'visível' : 'oculto'}`}
+                  >
+                    <BpIcon className="h-3.5 w-3.5" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="text-xs">
+                  {label}: ícone {item[field] ? 'visível' : 'oculto'}
+                </TooltipContent>
+              </Tooltip>
+            ))}
+          </div>
+        </TooltipProvider>
+      )}
     </div>
   );
 }
@@ -176,6 +217,21 @@ export default function AdminMenu() {
       setItems((prev) => prev.map((i) => (i.id === item.id ? { ...i, is_active: newActive } : i)));
       const { error } = await supabase.from("nav_items").update({ is_active: newActive } as any).eq("id", item.id);
       if (error) toast.error("Erro ao alternar item");
+      else {
+        qc.invalidateQueries({ queryKey: ["admin-nav-items"] });
+        qc.invalidateQueries({ queryKey: ["nav-items-public"] });
+      }
+    },
+    [qc]
+  );
+
+  // ── Icon breakpoint toggle ──
+  const toggleIconBreakpoint = useCallback(
+    async (item: NavItem, field: 'show_icon_desktop' | 'show_icon_tablet' | 'show_icon_mobile') => {
+      const newValue = !item[field];
+      setItems((prev) => prev.map((i) => (i.id === item.id ? { ...i, [field]: newValue } : i)));
+      const { error } = await supabase.from("nav_items").update({ [field]: newValue } as any).eq("id", item.id);
+      if (error) toast.error("Erro ao alterar visibilidade do ícone");
       else {
         qc.invalidateQueries({ queryKey: ["admin-nav-items"] });
         qc.invalidateQueries({ queryKey: ["nav-items-public"] });
@@ -324,6 +380,7 @@ export default function AdminMenu() {
                             onEdit={openEdit}
                             onDelete={setDeleteTarget}
                             onToggle={toggleItem}
+                            onIconToggle={toggleIconBreakpoint}
                           />
                         ))}
                       </div>
