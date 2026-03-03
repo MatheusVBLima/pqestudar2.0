@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Home, BookOpen, Menu, LogOut, User, Bookmark, Wrench, ScrollText, Info, Crown, BarChart3, Moon, Vote, ShoppingBag, ExternalLink, type LucideIcon } from "lucide-react";
+import { Home, BookOpen, Menu, LogOut, User, Bookmark, Wrench, ScrollText, Info, Crown, BarChart3, Moon, Sun, Vote, ShoppingBag, ExternalLink, type LucideIcon } from "lucide-react";
 import { useNavConfig, type NavItem } from "@/hooks/useNavConfig";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { useSubscription } from "@/hooks/useSubscription";
@@ -164,6 +164,17 @@ export function Navbar() {
               })
             )}
 
+
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={toggleTheme}
+              className="h-9 w-9 p-0 rounded-[1.2rem]"
+              aria-label={isDark ? "Ativar tema claro" : "Ativar tema escuro"}
+            >
+              {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            </Button>
+
             {user && <NotificationDropdown />}
 
             {/* Auth Button / User Menu - Desktop */}
@@ -221,6 +232,15 @@ export function Navbar() {
 
           {/* Mobile Menu */}
           <div className="md:hidden flex items-center space-x-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={toggleTheme}
+              className="h-9 w-9 p-0"
+              aria-label={isDark ? "Ativar tema claro" : "Ativar tema escuro"}
+            >
+              {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            </Button>
             {user && <NotificationDropdown />}
             <DropdownMenu modal={false}>
               <DropdownMenuTrigger asChild>
