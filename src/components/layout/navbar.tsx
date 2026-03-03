@@ -19,7 +19,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Switch } from "@/components/ui/switch";
+
 
 // Icon mapping for dynamic icons from DB
 const ICON_MAP: Record<string, LucideIcon> = {
@@ -215,10 +215,6 @@ export function Navbar() {
                           <Crown className="h-4 w-4 mr-2" />Área Premium
                         </DropdownMenuItem>
                       )}
-                      <DropdownMenuItem onSelect={(e) => { e.preventDefault(); toggleTheme(); }} className="cursor-pointer flex items-center justify-between">
-                        <span className="flex items-center"><Moon className="h-4 w-4 mr-2" />Tema escuro</span>
-                        <Switch checked={isDark} tabIndex={-1} className="pointer-events-none" />
-                      </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={handleSignOut} className="text-destructive focus:text-destructive cursor-pointer">
                         <LogOut className="h-4 w-4 mr-2" />Sair
@@ -305,10 +301,6 @@ export function Navbar() {
                             <Crown className="h-4 w-4 mr-2" />Área Premium
                           </DropdownMenuItem>
                         )}
-                        <DropdownMenuItem onSelect={(e) => { e.preventDefault(); toggleTheme(); }} className="cursor-pointer flex items-center justify-between">
-                          <span className="flex items-center"><Moon className="h-4 w-4 mr-2" />Tema escuro</span>
-                          <Switch checked={isDark} tabIndex={-1} className="pointer-events-none" />
-                        </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem onClick={handleSignOut} className="text-destructive focus:text-destructive cursor-pointer">
                           <LogOut className="h-4 w-4 mr-2" />Sair
