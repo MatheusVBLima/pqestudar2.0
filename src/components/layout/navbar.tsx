@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Home, BookOpen, Menu, LogOut, User, Bookmark, Wrench, ScrollText, Info, Crown, BarChart3, Moon, Vote, ShoppingBag, ExternalLink, type LucideIcon } from "lucide-react";
 import { useNavConfig, type NavItem } from "@/hooks/useNavConfig";
@@ -44,7 +45,7 @@ export function Navbar() {
   const { isAdmin } = useUserRoles();
   const { isActive } = useSubscription();
   const { isDark, toggleTheme } = useTheme();
-  const { items: navItems, logos } = useNavConfig();
+  const { items: navItems, logos, loading: navLoading } = useNavConfig();
   const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
@@ -127,33 +128,41 @@ export function Navbar() {
 
           {/* Navigation Links - Desktop */}
           <div className="hidden md:flex items-center space-x-2">
-            {navItems.map((item) => {
-              const IconComp = getIcon(item.icon);
-              const showIconDesktop = item.show_icon_desktop !== false;
-              const showIconTablet = item.show_icon_tablet !== false;
-              return (
-                <Button
-                  key={item.id}
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleItemClick(item)}
-                  className={cn(
-                    "hover:bg-accent rounded-[1.2rem]",
-                    isItemActive(item) && "bg-accent text-accent-foreground"
-                  )}
-                  aria-current={isItemActive(item) ? "page" : undefined}
-                >
-                  {IconComp && showIconDesktop && (
-                    <IconComp className="h-4 w-4 mr-2 hidden lg:inline-flex" aria-hidden="true" />
-                  )}
-                  {IconComp && showIconTablet && (
-                    <IconComp className="h-4 w-4 mr-2 inline-flex lg:hidden" aria-hidden="true" />
-                  )}
-                  {item.label}
-                  {item.is_external && <ExternalLink className="h-3 w-3 ml-1 opacity-50" />}
-                </Button>
-              );
-            })}
+            {navLoading ? (
+              <>
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <Skeleton key={i} className="h-8 w-20 rounded-[1.2rem]" />
+                ))}
+              </>
+            ) : (
+              navItems.map((item) => {
+                const IconComp = getIcon(item.icon);
+                const showIconDesktop = item.show_icon_desktop !== false;
+                const showIconTablet = item.show_icon_tablet !== false;
+                return (
+                  <Button
+                    key={item.id}
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleItemClick(item)}
+                    className={cn(
+                      "hover:bg-accent rounded-[1.2rem]",
+                      isItemActive(item) && "bg-accent text-accent-foreground"
+                    )}
+                    aria-current={isItemActive(item) ? "page" : undefined}
+                  >
+                    {IconComp && showIconDesktop && (
+                      <IconComp className="h-4 w-4 mr-2 hidden lg:inline-flex" aria-hidden="true" />
+                    )}
+                    {IconComp && showIconTablet && (
+                      <IconComp className="h-4 w-4 mr-2 inline-flex lg:hidden" aria-hidden="true" />
+                    )}
+                    {item.label}
+                    {item.is_external && <ExternalLink className="h-3 w-3 ml-1 opacity-50" />}
+                  </Button>
+                );
+              })
+            )}
 
             {user && <NotificationDropdown />}
 
@@ -220,21 +229,29 @@ export function Navbar() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56 bg-popover">
-                {navItems.map((item) => {
-                  const IconComp = getIcon(item.icon);
-                  const showIconMobile = item.show_icon_mobile !== false;
-                  return (
-                    <DropdownMenuItem
-                      key={item.id}
-                      onClick={() => handleItemClick(item)}
-                      aria-current={isItemActive(item) ? "page" : undefined}
-                    >
-                      {IconComp && showIconMobile && <IconComp className="h-4 w-4 mr-2" aria-hidden="true" />}
-                      {item.label}
-                      {item.is_external && <ExternalLink className="h-3 w-3 ml-1 opacity-50" />}
-                    </DropdownMenuItem>
-                  );
-                })}
+                {navLoading ? (
+                  <div className="p-2 space-y-2">
+                    {Array.from({ length: 4 }).map((_, i) => (
+                      <Skeleton key={i} className="h-8 w-full rounded-md" />
+                    ))}
+                  </div>
+                ) : (
+                  navItems.map((item) => {
+                    const IconComp = getIcon(item.icon);
+                    const showIconMobile = item.show_icon_mobile !== false;
+                    return (
+                      <DropdownMenuItem
+                        key={item.id}
+                        onClick={() => handleItemClick(item)}
+                        aria-current={isItemActive(item) ? "page" : undefined}
+                      >
+                        {IconComp && showIconMobile && <IconComp className="h-4 w-4 mr-2" aria-hidden="true" />}
+                        {item.label}
+                        {item.is_external && <ExternalLink className="h-3 w-3 ml-1 opacity-50" />}
+                      </DropdownMenuItem>
+                    );
+                  })
+                )}
                 <DropdownMenuSeparator />
                 {!loading && (
                   <>

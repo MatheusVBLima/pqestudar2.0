@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useRef, useEffect } from "react";
 import logoLight from "@/assets/logo-light.png";
 import logoDark from "@/assets/logo-dark.png";
 
@@ -23,14 +24,19 @@ export interface NavSettings {
   logo_dark_url: string;
 }
 
-const FALLBACK_ITEMS: NavItem[] = [
-  { id: "fb-1", label: "Início", href: "/", icon: "home", order_index: 0, is_active: true, is_external: false, open_in_new_tab: false, show_icon_desktop: true, show_icon_tablet: true, show_icon_mobile: false },
-  { id: "fb-2", label: "Ferramentas", href: "/ferramentas", icon: "wrench", order_index: 1, is_active: true, is_external: false, open_in_new_tab: false, show_icon_desktop: true, show_icon_tablet: true, show_icon_mobile: false },
-  { id: "fb-3", label: "Concursos", href: "/concursos", icon: "scroll-text", order_index: 2, is_active: true, is_external: false, open_in_new_tab: false, show_icon_desktop: true, show_icon_tablet: true, show_icon_mobile: false },
-  { id: "fb-4", label: "Produtos", href: "/produtos", icon: "shopping-bag", order_index: 3, is_active: true, is_external: false, open_in_new_tab: false, show_icon_desktop: true, show_icon_tablet: true, show_icon_mobile: false },
-  { id: "fb-5", label: "Votações", href: "/votacoes", icon: "vote", order_index: 4, is_active: true, is_external: false, open_in_new_tab: false, show_icon_desktop: true, show_icon_tablet: true, show_icon_mobile: false },
-  { id: "fb-6", label: "Sobre", href: "/sobre", icon: "info", order_index: 5, is_active: true, is_external: false, open_in_new_tab: false, show_icon_desktop: true, show_icon_tablet: true, show_icon_mobile: false },
-];
+const NAV_CACHE_KEY = "pqe_nav_items_cache";
+const NAV_SETTINGS_CACHE_KEY = "pqe_nav_settings_cache";
+
+function readCache<T>(key: string): T | null {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
+}
+
+function writeCache<T>(key: string, data: T) {
+  try { localStorage.setItem(key, JSON.stringify(data)); } catch {}
+}
 
 const FALLBACK_SETTINGS: NavSettings = {
   id: "fallback",
@@ -39,6 +45,9 @@ const FALLBACK_SETTINGS: NavSettings = {
 };
 
 export function useNavConfig() {
+  const cachedItems = useRef(readCache<NavItem[]>(NAV_CACHE_KEY));
+  const cachedSettings = useRef(readCache<NavSettings>(NAV_SETTINGS_CACHE_KEY));
+
   const itemsQuery = useQuery({
     queryKey: ["nav-items-public"],
     queryFn: async () => {
@@ -66,28 +75,43 @@ export function useNavConfig() {
     staleTime: 5 * 60 * 1000,
   });
 
-  // Fallback-first: never replace menu with empty array
+  // Persist to localStorage when fresh data arrives
   const dbItems = itemsQuery.data;
-  const items = dbItems && dbItems.length > 0
-    ? dbItems.filter((i) => i.is_active !== false) // view may omit is_active; treat undefined as true
-    : FALLBACK_ITEMS;
+  useEffect(() => {
+    if (dbItems && dbItems.length > 0) {
+      writeCache(NAV_CACHE_KEY, dbItems);
+    }
+  }, [dbItems]);
 
-  if (dbItems && dbItems.length > 0) {
-    console.debug("NavConfig loaded from DB:", dbItems.length, "items");
-  } else if (!itemsQuery.isLoading) {
-    console.debug("NavConfig fallback used");
-  }
+  useEffect(() => {
+    if (settingsQuery.data) {
+      writeCache(NAV_SETTINGS_CACHE_KEY, settingsQuery.data);
+    }
+  }, [settingsQuery.data]);
 
-  const settings = settingsQuery.data ?? FALLBACK_SETTINGS;
+  // Priority: DB > cache > empty (never show hardcoded fallback)
+  const activeDbItems = dbItems && dbItems.length > 0
+    ? dbItems.filter((i) => i.is_active !== false)
+    : null;
 
-  // Resolve logos: if DB has URLs use them, otherwise use local assets
+  const activeCache = cachedItems.current && cachedItems.current.length > 0
+    ? cachedItems.current.filter((i) => i.is_active !== false)
+    : null;
+
+  const items = activeDbItems ?? activeCache ?? [];
+
+  const isLoading = itemsQuery.isLoading || settingsQuery.isLoading;
+  const ready = items.length > 0 || !isLoading;
+
+  const settings = settingsQuery.data ?? cachedSettings.current ?? FALLBACK_SETTINGS;
+
   const resolvedLogoLight = settings.logo_light_url || logoLight;
   const resolvedLogoDark = settings.logo_dark_url || logoDark;
 
   return {
     items,
     logos: { light: resolvedLogoLight, dark: resolvedLogoDark },
-    loading: itemsQuery.isLoading || settingsQuery.isLoading,
+    loading: !ready,
     error: itemsQuery.error || settingsQuery.error,
   };
 }
