@@ -114,56 +114,59 @@ export function Navbar() {
           "flex items-center justify-between transition-all duration-300 ease-out px-4",
           isScrolled ? "h-14" : "h-16"
         )}>
-          {/* Logo */}
-          <div className="flex items-center">
+          {/* LEFT BLOCK: Logo + Navigation (Desktop) */}
+          <div className="flex items-center gap-1">
             <button
               onClick={() => handleNavigation("/")}
-              className="flex items-center p-2 hover:opacity-80 transition-opacity duration-200"
+              className="flex items-center p-2 hover:opacity-80 transition-opacity duration-200 mr-2"
               aria-label="Ir para a página inicial"
             >
               <img src={logos.light} alt="PqEstudar" className="h-8 sm:h-9 md:h-11 w-auto object-contain block dark:hidden" />
               <img src={logos.dark} alt="PqEstudar" className="h-8 sm:h-9 md:h-11 w-auto object-contain hidden dark:block" />
             </button>
+
+            <div className="hidden md:flex items-center gap-1">
+              {navLoading ? (
+                <>
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <Skeleton key={i} className="h-8 w-20 rounded-[1.2rem]" />
+                  ))}
+                </>
+              ) : (
+                navItems.map((item) => {
+                  const IconComp = getIcon(item.icon);
+                  const showIconDesktop = item.show_icon_desktop !== false;
+                  const showIconTablet = item.show_icon_tablet !== false;
+                  return (
+                    <Button
+                      key={item.id}
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleItemClick(item)}
+                      className={cn(
+                        "hover:bg-accent rounded-[1.2rem]",
+                        isItemActive(item) && "bg-accent text-accent-foreground"
+                      )}
+                      aria-current={isItemActive(item) ? "page" : undefined}
+                    >
+                      {IconComp && showIconDesktop && (
+                        <IconComp className="h-4 w-4 mr-2 hidden lg:inline-flex" aria-hidden="true" />
+                      )}
+                      {IconComp && showIconTablet && (
+                        <IconComp className="h-4 w-4 mr-2 inline-flex lg:hidden" aria-hidden="true" />
+                      )}
+                      {item.label}
+                      {item.is_external && <ExternalLink className="h-3 w-3 ml-1 opacity-50" />}
+                    </Button>
+                  );
+                })
+              )}
+            </div>
           </div>
 
-          {/* Navigation Links - Desktop */}
-          <div className="hidden md:flex items-center space-x-2">
-            {navLoading ? (
-              <>
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Skeleton key={i} className="h-8 w-20 rounded-[1.2rem]" />
-                ))}
-              </>
-            ) : (
-              navItems.map((item) => {
-                const IconComp = getIcon(item.icon);
-                const showIconDesktop = item.show_icon_desktop !== false;
-                const showIconTablet = item.show_icon_tablet !== false;
-                return (
-                  <Button
-                    key={item.id}
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleItemClick(item)}
-                    className={cn(
-                      "hover:bg-accent rounded-[1.2rem]",
-                      isItemActive(item) && "bg-accent text-accent-foreground"
-                    )}
-                    aria-current={isItemActive(item) ? "page" : undefined}
-                  >
-                    {IconComp && showIconDesktop && (
-                      <IconComp className="h-4 w-4 mr-2 hidden lg:inline-flex" aria-hidden="true" />
-                    )}
-                    {IconComp && showIconTablet && (
-                      <IconComp className="h-4 w-4 mr-2 inline-flex lg:hidden" aria-hidden="true" />
-                    )}
-                    {item.label}
-                    {item.is_external && <ExternalLink className="h-3 w-3 ml-1 opacity-50" />}
-                  </Button>
-                );
-              })
-            )}
-
+          {/* RIGHT BLOCK: Notifications + Theme + Auth (Desktop) */}
+          <div className="hidden md:flex items-center gap-2">
+            {user && <NotificationDropdown />}
 
             <Button
               variant="ghost"
@@ -175,9 +178,6 @@ export function Navbar() {
               {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </Button>
 
-            {user && <NotificationDropdown />}
-
-            {/* Auth Button / User Menu - Desktop */}
             {!loading && (
               <>
                 {!user ? (
