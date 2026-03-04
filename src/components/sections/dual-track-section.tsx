@@ -71,15 +71,16 @@ function useTopConcursos() {
     queryKey: ["home-top-concursos"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("oportunidades_public")
-        .select("id, titulo, slug, categoria, situacao, abrangencia, data_publicacao, visualizacoes")
-        .order("visualizacoes", { ascending: false })
+        .from("oportunidades")
+        .select("id, titulo, slug, categoria, situacao, abrangencia, data_publicacao, views_total")
+        .eq("publicado", true)
+        .order("views_total", { ascending: false })
         .limit(3);
 
       if (error) throw error;
       return ((data || []) as unknown as ConcursoPreview[]).map(d => ({
         ...d,
-        views_total: (d as any).visualizacoes ?? 0,
+        views_total: (d as any).views_total ?? 0,
       }));
     },
     staleTime: 5 * 60 * 1000,
