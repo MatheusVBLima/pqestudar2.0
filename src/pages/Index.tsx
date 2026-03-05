@@ -1,6 +1,7 @@
 import { Helmet } from "react-helmet-async";
 import { HeroSection } from "@/components/sections/hero-section";
 import { DualTrackSection } from "@/components/sections/dual-track-section";
+import { HomeProductsSection } from "@/components/sections/home-products-section";
 import { SocialProofSection } from "@/components/sections/social-proof-section";
 import { GlobalSeo } from "@/components/seo/GlobalSeo";
 
@@ -24,6 +25,7 @@ const Index = () => {
       <main className="flex-1">
         <HeroSection />
         <DualTrackSection />
+        <HomeProductsSection />
         <SocialProofSection />
       </main>
     </>
