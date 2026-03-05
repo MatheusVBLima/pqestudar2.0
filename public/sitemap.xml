@@ -26,29 +26,9 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://pqestudar.com.br/explorar-cursos</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://pqestudar.com.br/noticias</loc>
-    <changefreq>daily</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://pqestudar.com.br/sobre</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
-  </url>
-  <url>
-    <loc>https://pqestudar.com.br/faq</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  <url>
-    <loc>https://pqestudar.com.br/kit</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
   </url>
   <url>
     <loc>https://pqestudar.com.br/termos</loc>
