@@ -11,11 +11,12 @@ const KitAceleracao = () => {
         <meta name="robots" content="noindex, follow" />
       </Helmet>
       <main className="flex-1">
-      <KitHeroSection />
-      <PainPointsSection />
-      <SystemSection />
-      <ArsenalSection />
-    </main>
+        <KitHeroSection />
+        <PainPointsSection />
+        <SystemSection />
+        <ArsenalSection />
+      </main>
+    </>
   );
 };
 
