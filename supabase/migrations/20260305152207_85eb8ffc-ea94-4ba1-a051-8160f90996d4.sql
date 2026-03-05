@@ -1,0 +1,3 @@
+INSERT INTO public.page_settings (route, title_tag, meta_description, header_title, header_description)
+VALUES ('/', 'PqEstudar: Os Segredos da Internet, Revelados.', 'O arsenal completo com os hacks, ferramentas secretas e benefícios que viralizaram. Explore nossa curadoria ou assine para receber as novidades.', 'PqEstudar', 'Conteúdo organizado para você evoluir mais rápido.')
+ON CONFLICT (route) DO NOTHING;
