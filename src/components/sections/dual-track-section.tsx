@@ -4,10 +4,19 @@ import { Link, useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { motion } from "framer-motion";
-import { ArrowRight, Eye, FileText, Globe, MapPin, Sparkles, ExternalLink } from "lucide-react";
+import {
+  ArrowRight,
+  Eye,
+  FileText,
+  Globe,
+  MapPin,
+  Sparkles,
+  ExternalLink,
+  ChevronRight,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
 /* ─── Types ─── */
@@ -32,13 +41,7 @@ interface ConcursoPreview {
   views_total: number;
 }
 
-/* ─── Style maps (same as Concursos page) ─── */
-
-const CATEGORIA_COLORS: Record<string, string> = {
-  Concurso: "bg-blue-500/10 text-blue-500 border-blue-500/20",
-  "Políticas Públicas": "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
-  Educação: "bg-purple-500/10 text-purple-500 border-purple-500/20",
-};
+/* ─── Style maps ─── */
 
 const SITUACAO_COLORS: Record<string, string> = {
   Previsto: "bg-amber-500/10 text-amber-600 border-amber-500/20",
@@ -58,7 +61,6 @@ function useFeaturedTools() {
         .select("id, name, description, url, icon_url, tags")
         .order("sort_order", { ascending: true })
         .limit(3);
-
       if (error) throw error;
       return (data || []) as ToolPreview[];
     },
@@ -76,9 +78,8 @@ function useTopConcursos() {
         .eq("publicado", true)
         .order("views_total", { ascending: false })
         .limit(3);
-
       if (error) throw error;
-      return ((data || []) as unknown as ConcursoPreview[]).map(d => ({
+      return ((data || []) as unknown as ConcursoPreview[]).map((d) => ({
         ...d,
         views_total: (d as any).views_total ?? 0,
       }));
@@ -87,124 +88,135 @@ function useTopConcursos() {
   });
 }
 
-/* ─── Mini-cards ─── */
+/* ─── Row items ─── */
 
-function MiniToolCard({ tool }: { tool: ToolPreview }) {
+function ToolRow({ tool }: { tool: ToolPreview }) {
   return (
-    <Card className="h-full flex flex-col hover:shadow-lg transition-shadow">
-      <CardHeader className="pb-3">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center overflow-hidden border shrink-0">
-            {tool.icon_url ? (
-              <img
-                src={tool.icon_url}
-                alt={`Logo de ${tool.name}`}
-                className="w-full h-full object-contain"
-                referrerPolicy="no-referrer"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).style.display = "none";
-                }}
-              />
-            ) : (
-              <Sparkles className="w-5 h-5 text-primary" />
-            )}
-          </div>
-          <CardTitle className="text-base leading-tight">{tool.name}</CardTitle>
-        </div>
-      </CardHeader>
-      <CardContent className="flex-1 flex flex-col pt-0">
-        <CardDescription className="text-sm leading-relaxed flex-1 mb-3 line-clamp-2">
-          {tool.description}
-        </CardDescription>
-        <div className="flex flex-wrap gap-1 mb-3">
-          {tool.tags.slice(0, 2).map((tag) => (
-            <Badge key={tag} variant="outline" className="text-xs">
-              {tag}
-            </Badge>
-          ))}
-        </div>
-        {tool.url && (
-          <Button
-            variant="outline"
-            size="sm"
-            className="w-full rounded-[1.2rem]"
-            asChild
-          >
-            <a href={tool.url} target="_blank" rel="noopener noreferrer">
-              Acessar
-              <ExternalLink className="h-3 w-3 ml-1" />
-            </a>
-          </Button>
+    <a
+      href={tool.url || "#"}
+      target={tool.url ? "_blank" : undefined}
+      rel="noopener noreferrer"
+      className="flex items-center gap-3 py-3 px-1 rounded-lg hover:bg-muted/50 transition-colors group"
+    >
+      <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center overflow-hidden border shrink-0">
+        {tool.icon_url ? (
+          <img
+            src={tool.icon_url}
+            alt={`Logo de ${tool.name}`}
+            className="w-full h-full object-contain"
+            referrerPolicy="no-referrer"
+            onError={(e) => {
+              (e.target as HTMLImageElement).style.display = "none";
+            }}
+          />
+        ) : (
+          <Sparkles className="w-4 h-4 text-primary" />
         )}
-      </CardContent>
-    </Card>
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-medium leading-tight truncate">{tool.name}</p>
+        <p className="text-xs text-muted-foreground truncate">{tool.description}</p>
+      </div>
+      <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
+    </a>
   );
 }
 
-function MiniConcursoCard({ item }: { item: ConcursoPreview }) {
+function ConcursoRow({ item }: { item: ConcursoPreview }) {
   const navigate = useNavigate();
-
   return (
-    <Card className="h-full flex flex-col hover:shadow-lg transition-shadow">
-      <CardHeader className="pb-3">
-        <div className="flex items-start justify-between gap-2">
-          <Badge variant="outline" className={CATEGORIA_COLORS[item.categoria] || ""}>
-            {item.categoria}
+    <button
+      onClick={() => navigate(`/concursos/${item.slug}`)}
+      className="flex items-center gap-3 py-3 px-1 rounded-lg hover:bg-muted/50 transition-colors group w-full text-left"
+    >
+      <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center shrink-0">
+        {item.abrangencia === "Nacional" ? (
+          <Globe className="w-4 h-4 text-primary" />
+        ) : (
+          <MapPin className="w-4 h-4 text-primary" />
+        )}
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-medium leading-tight truncate">{item.titulo}</p>
+        <div className="flex items-center gap-2 mt-0.5">
+          <Badge
+            variant="outline"
+            className={`text-[10px] px-1.5 py-0 h-4 ${SITUACAO_COLORS[item.situacao] || ""}`}
+          >
+            {item.situacao}
           </Badge>
-          <div className="flex items-center gap-1 text-xs text-muted-foreground shrink-0">
+          <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
             <Eye className="h-3 w-3" />
             {item.views_total.toLocaleString("pt-BR")}
-          </div>
+          </span>
         </div>
-        <h4 className="text-base font-semibold line-clamp-2 mt-1">{item.titulo}</h4>
-      </CardHeader>
-      <CardContent className="flex-1 flex flex-col pt-0">
-        <div className="space-y-1.5 text-sm text-muted-foreground mb-3">
-          <div className="flex items-center gap-2">
-            <FileText className="h-3.5 w-3.5" />
-            <span className="text-xs">
-              {format(new Date(item.data_publicacao), "d 'de' MMM 'de' yyyy", { locale: ptBR })}
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            {item.abrangencia === "Nacional" ? (
-              <Globe className="h-3.5 w-3.5" />
-            ) : (
-              <MapPin className="h-3.5 w-3.5" />
-            )}
-            <span className="text-xs">{item.abrangencia}</span>
-          </div>
-        </div>
-        <Badge variant="outline" className={`w-fit mb-3 ${SITUACAO_COLORS[item.situacao] || ""}`}>
-          {item.situacao}
-        </Badge>
-        <Button
-          size="sm"
-          className="w-full mt-auto rounded-[1.2rem]"
-          onClick={() => navigate(`/concursos/${item.slug}`)}
-        >
-          Ver detalhes
-        </Button>
-      </CardContent>
-    </Card>
+      </div>
+      <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
+    </button>
   );
 }
 
 /* ─── Skeletons ─── */
 
-function CardSkeleton() {
+function RowSkeleton() {
   return (
-    <Card className="h-full">
-      <CardHeader className="pb-3">
-        <div className="flex items-center gap-3">
-          <Skeleton className="w-10 h-10 rounded-full" />
-          <Skeleton className="h-4 w-32" />
+    <div className="flex items-center gap-3 py-3 px-1">
+      <Skeleton className="w-9 h-9 rounded-full" />
+      <div className="flex-1 space-y-1.5">
+        <Skeleton className="h-3.5 w-32" />
+        <Skeleton className="h-3 w-48" />
+      </div>
+    </div>
+  );
+}
+
+/* ─── Track card ─── */
+
+function TrackCard({
+  badge,
+  title,
+  description,
+  ctaLabel,
+  ctaTo,
+  children,
+  footerLabel,
+  footerTo,
+}: {
+  badge: string;
+  title: string;
+  description: string;
+  ctaLabel: string;
+  ctaTo: string;
+  children: React.ReactNode;
+  footerLabel: string;
+  footerTo: string;
+}) {
+  return (
+    <Card className="flex flex-col h-full overflow-hidden rounded-[1.2rem]">
+      <CardHeader className="pb-2">
+        <Badge variant="secondary" className="w-fit text-xs mb-2">
+          {badge}
+        </Badge>
+        <h3 className="text-lg font-semibold text-foreground">{title}</h3>
+        <p className="text-sm text-muted-foreground">{description}</p>
+        <div className="pt-3">
+          <Button variant="hero" size="sm" className="rounded-[1.2rem] gap-1" asChild>
+            <Link to={ctaTo}>
+              {ctaLabel}
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </Button>
         </div>
       </CardHeader>
-      <CardContent>
-        <Skeleton className="h-3 w-full mb-2" />
-        <Skeleton className="h-3 w-2/3 mb-4" />
-        <Skeleton className="h-8 w-full rounded-[1.2rem]" />
+      <CardContent className="flex-1 flex flex-col pt-0">
+        <div className="divide-y divide-border flex-1">{children}</div>
+        <Link
+          to={footerTo}
+          className="text-sm text-primary font-medium flex items-center gap-1 mt-4 hover:underline"
+        >
+          {footerLabel}
+          <ArrowRight className="h-3.5 w-3.5" />
+        </Link>
       </CardContent>
     </Card>
   );
@@ -212,105 +224,93 @@ function CardSkeleton() {
 
 /* ─── Main Section ─── */
 
+const ease = [0.16, 1, 0.3, 1] as const;
+
 export function DualTrackSection() {
   const toolsQuery = useFeaturedTools();
   const concursosQuery = useTopConcursos();
 
   return (
-    <section className="py-16 md:py-24 bg-background">
-      <div className="container mx-auto px-4 max-w-7xl">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-3">
-            Por onde quer começar?
-          </h2>
-          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Escolha uma trilha e veja os destaques de agora.
-          </p>
-        </div>
+    <section className="py-16 md:py-24">
+      <div className="container mx-auto px-6">
+        {/* Header — same pattern as HomeProductsSection */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-80px" }}
+          transition={{ duration: 0.6, ease }}
+          className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-10"
+        >
+          <div>
+            <h2 className="text-2xl md:text-3xl font-bold tracking-tight">
+              Por onde quer começar?
+            </h2>
+            <p className="text-muted-foreground mt-2 max-w-lg">
+              Escolha uma trilha e veja os destaques de agora.
+            </p>
+          </div>
+        </motion.div>
 
         {/* Two-column grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-stretch">
           {/* Column A — Ferramentas */}
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-80px" }}
-            transition={{ duration: 0.5 }}
-            className="space-y-6"
+            viewport={{ once: true, margin: "-60px" }}
+            transition={{ duration: 0.5, ease }}
+            className="h-full"
           >
-            <div>
-              <Badge variant="secondary" className="mb-3 text-xs">
-                Top 3 da semana
-              </Badge>
-              <p className="text-sm text-muted-foreground mb-1">
-                Resolva problemas rápido
-              </p>
-              <h3 className="text-xl font-semibold text-foreground mb-4">
-                Ferramentas em destaque
-              </h3>
-              <Button variant="hero" size="sm" className="rounded-[1.2rem] gap-1" asChild>
-                <Link to="/ferramentas">
-                  Explorar Ferramentas
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-              </Button>
-            </div>
-
-            <div className="grid gap-4">
+            <TrackCard
+              badge="Top 3 da semana"
+              title="Ferramentas em destaque"
+              description="Resolva problemas rápido"
+              ctaLabel="Explorar Ferramentas"
+              ctaTo="/ferramentas"
+              footerLabel="Ver todas as ferramentas"
+              footerTo="/ferramentas"
+            >
               {toolsQuery.isLoading ? (
-                Array.from({ length: 3 }).map((_, i) => <CardSkeleton key={i} />)
+                Array.from({ length: 3 }).map((_, i) => <RowSkeleton key={i} />)
               ) : toolsQuery.data && toolsQuery.data.length > 0 ? (
-                toolsQuery.data.map((tool) => (
-                  <MiniToolCard key={tool.id} tool={tool} />
-                ))
+                toolsQuery.data.map((tool) => <ToolRow key={tool.id} tool={tool} />)
               ) : (
-                <p className="text-muted-foreground text-sm py-6 text-center">
+                <p className="text-muted-foreground text-sm py-6">
                   Em breve novos destaques.
                 </p>
               )}
-            </div>
+            </TrackCard>
           </motion.div>
 
           {/* Column B — Concursos */}
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-80px" }}
-            transition={{ duration: 0.5, delay: 0.15 }}
-            className="space-y-6"
+            viewport={{ once: true, margin: "-60px" }}
+            transition={{ duration: 0.5, delay: 0.1, ease }}
+            className="h-full"
           >
-            <div>
-              <Badge variant="secondary" className="mb-3 text-xs">
-                Mais acessados
-              </Badge>
-              <p className="text-sm text-muted-foreground mb-1">
-                Acompanhe oportunidades com clareza
-              </p>
-              <h3 className="text-xl font-semibold text-foreground mb-4">
-                Concursos mais acessados
-              </h3>
-              <Button variant="hero" size="sm" className="rounded-[1.2rem] gap-1" asChild>
-                <Link to="/concursos">
-                  Ver Concursos
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-              </Button>
-            </div>
-
-            <div className="grid gap-4">
+            <TrackCard
+              badge="Mais acessados"
+              title="Concursos mais acessados"
+              description="Acompanhe oportunidades com clareza"
+              ctaLabel="Ver Concursos"
+              ctaTo="/concursos"
+              footerLabel="Ver todos os concursos"
+              footerTo="/concursos"
+            >
               {concursosQuery.isLoading ? (
-                Array.from({ length: 3 }).map((_, i) => <CardSkeleton key={i} />)
+                Array.from({ length: 3 }).map((_, i) => <RowSkeleton key={i} />)
               ) : concursosQuery.data && concursosQuery.data.length > 0 ? (
                 concursosQuery.data.map((item) => (
-                  <MiniConcursoCard key={item.id} item={item} />
+                  <ConcursoRow key={item.id} item={item} />
                 ))
               ) : (
-                <p className="text-muted-foreground text-sm py-6 text-center">
+                <p className="text-muted-foreground text-sm py-6">
                   Sem concursos em destaque no momento.
                 </p>
               )}
-            </div>
+            </TrackCard>
           </motion.div>
         </div>
       </div>
