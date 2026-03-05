@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageHero } from "@/components/layout/PageHero";
@@ -184,6 +184,14 @@ function ProductModal({
   const [form, setForm] = useState<ProductFormData>(initial);
   const [localPreview, setLocalPreview] = useState<string | null>(null);
   const isEdit = initial.title !== "";
+
+  // Sync form when initial data changes (e.g. switching between edit targets)
+  useEffect(() => {
+    if (open) {
+      setForm(initial);
+      setLocalPreview(null);
+    }
+  }, [open, initial]);
 
   const handleOpen = (v: boolean) => {
     if (v) {
