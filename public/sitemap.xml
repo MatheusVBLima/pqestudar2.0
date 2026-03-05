@@ -31,16 +31,6 @@
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pqestudar.com.br/faq</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  <url>
-    <loc>https://pqestudar.com.br/kit</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
     <loc>https://pqestudar.com.br/termos</loc>
     <changefreq>monthly</changefreq>
     <priority>0.3</priority>

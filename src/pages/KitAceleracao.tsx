@@ -1,3 +1,4 @@
+import { Helmet } from "react-helmet-async";
 import { KitHeroSection } from "@/components/sections/kit-hero-section";
 import { PainPointsSection } from "@/components/sections/pain-points-section";
 import { SystemSection } from "@/components/sections/system-section";
