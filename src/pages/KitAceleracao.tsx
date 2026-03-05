@@ -6,7 +6,11 @@ import { ArsenalSection } from "@/components/sections/arsenal-section";
 
 const KitAceleracao = () => {
   return (
-    <main className="flex-1">
+    <>
+      <Helmet>
+        <meta name="robots" content="noindex, follow" />
+      </Helmet>
+      <main className="flex-1">
       <KitHeroSection />
       <PainPointsSection />
       <SystemSection />

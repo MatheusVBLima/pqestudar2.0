@@ -63,6 +63,9 @@ const FAQ = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <Helmet>
+        <meta name="robots" content="noindex, follow" />
+      </Helmet>
       
       <main className="flex-1">
         <div className="container mx-auto px-4 py-16 max-w-4xl">

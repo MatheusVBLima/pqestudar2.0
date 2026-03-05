@@ -449,6 +449,9 @@ const Noticias = () => {
 
   return (
     <div className="min-h-screen bg-background overflow-x-hidden w-full">
+      <Helmet>
+        <meta name="robots" content="noindex, follow" />
+      </Helmet>
       
 
       <main className="container mx-auto px-4 py-8 max-w-7xl w-full">

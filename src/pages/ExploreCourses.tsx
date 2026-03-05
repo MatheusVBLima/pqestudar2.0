@@ -205,6 +205,9 @@ export default function ExploreCourses() {
 
   return (
     <div className="min-h-screen bg-background">
+      <Helmet>
+        <meta name="robots" content="noindex, follow" />
+      </Helmet>
       
       
       {/* Header */}
