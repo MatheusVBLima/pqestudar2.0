@@ -20,6 +20,7 @@ const FALLBACK: Omit<PageSettings, "id" | "route" | "created_at" | "updated_at">
 };
 
 const MANAGED_ROUTES = [
+  "/",
   "/ferramentas",
   "/concursos",
   "/votacoes",

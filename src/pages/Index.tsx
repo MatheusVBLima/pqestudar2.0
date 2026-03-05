@@ -4,8 +4,11 @@ import { DualTrackSection } from "@/components/sections/dual-track-section";
 import { HomeProductsSection } from "@/components/sections/home-products-section";
 import { SocialProofSection } from "@/components/sections/social-proof-section";
 import { GlobalSeo } from "@/components/seo/GlobalSeo";
+import { usePageSettings } from "@/hooks/usePageSettings";
 
 const Index = () => {
+  const { titleTag, metaDescription } = usePageSettings("/");
+
   return (
     <>
       <GlobalSeo
@@ -15,11 +18,8 @@ const Index = () => {
         }}
       />
       <Helmet>
-        <title>PqEstudar: Os Segredos da Internet, Revelados.</title>
-        <meta 
-          name="description" 
-          content="O arsenal completo com os hacks, ferramentas secretas e benefícios que viralizaram. Explore nossa curadoria ou assine para receber as novidades." 
-        />
+        <title>{titleTag}</title>
+        <meta name="description" content={metaDescription} />
       </Helmet>
 
       <main className="flex-1">
