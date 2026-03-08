@@ -544,6 +544,62 @@ export type Database = {
           },
         ]
       }
+      content_versions: {
+        Row: {
+          audit_score_after: number | null
+          audit_score_before: number | null
+          created_at: string
+          created_by: string | null
+          entity_id: string
+          entity_type: string
+          field_data: Json
+          id: string
+          previous_version_id: string | null
+          profile_key: string
+          source: string
+          summary: string | null
+          url: string
+        }
+        Insert: {
+          audit_score_after?: number | null
+          audit_score_before?: number | null
+          created_at?: string
+          created_by?: string | null
+          entity_id: string
+          entity_type: string
+          field_data?: Json
+          id?: string
+          previous_version_id?: string | null
+          profile_key: string
+          source?: string
+          summary?: string | null
+          url: string
+        }
+        Update: {
+          audit_score_after?: number | null
+          audit_score_before?: number | null
+          created_at?: string
+          created_by?: string | null
+          entity_id?: string
+          entity_type?: string
+          field_data?: Json
+          id?: string
+          previous_version_id?: string | null
+          profile_key?: string
+          source?: string
+          summary?: string | null
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_versions_previous_version_id_fkey"
+            columns: ["previous_version_id"]
+            isOneToOne: false
+            referencedRelation: "content_versions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       course_suggestions: {
         Row: {
           created_at: string
