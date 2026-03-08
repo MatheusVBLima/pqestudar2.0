@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useState, ReactNode } from 'react';
 import { PageHeader } from '@/components/admin/dashboard/PageHeader';
 import { PeriodSelector, Period } from '@/components/admin/dashboard/PeriodSelector';
 import { ChartCard } from '@/components/admin/dashboard/ChartCard';
 import { DataTable } from '@/components/admin/dashboard/DataTable';
-import { AuditDetailDrawer } from '@/components/admin/dashboard/AuditDetailDrawer';
+import { AuditOptimizationDrawer } from '@/components/admin/dashboard/AuditOptimizationDrawer';
 import { AuditSummaryCard } from '@/components/admin/dashboard/AuditSummaryCard';
 import { periodToRange } from '@/components/admin/dashboard/periodHelper';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -12,11 +12,13 @@ import { Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Too
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Button } from '@/components/ui/button';
-import { Play } from 'lucide-react';
+import { Play, Pencil, History, RotateCcw } from 'lucide-react';
 import { toast } from 'sonner';
 import { Progress } from '@/components/ui/progress';
 import { buildAuditUrls, runIframeAudit } from '@/lib/iframe-audit-engine';
 import { analyzeCopy } from '@/lib/copy-audit-analyzer';
+import { isUrlSupported } from '@/lib/audit-url-resolver';
+import { Tooltip as UITooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 const AUDIT_TYPE = 'copywriting';
 
@@ -34,6 +36,7 @@ export default function InsightsCopyAudit() {
   const qc = useQueryClient();
   const [period, setPeriod] = useState<Period>('all');
   const [drawerIdx, setDrawerIdx] = useState<number | null>(null);
+  const [drawerTab, setDrawerTab] = useState<'diagnostico' | 'editor' | 'historico'>('diagnostico');
   const [auditProgress, setAuditProgress] = useState<{ current: number; total: number; path: string } | null>(null);
   const range = periodToRange(period);
 
@@ -80,12 +83,48 @@ export default function InsightsCopyAudit() {
 
   const latestRun = history?.find(h => h.status === 'completed') ?? null;
   const scoreChart = history?.filter(h => h.status === 'completed').reverse() ?? [];
-  const tableRows = findings?.map(f => ({
-    url: f.path,
-    score: String(f.score),
-    issues: String(f.issue_count),
-    date: format(new Date(f.run_date), 'dd/MM/yyyy HH:mm', { locale: ptBR }),
-  }));
+
+  // Build table rows with action buttons
+  const tableRows = findings?.map((f, idx) => {
+    const supported = isUrlSupported(f.path);
+    return {
+      url: f.path as ReactNode,
+      score: String(f.score) as ReactNode,
+      issues: String(f.issue_count) as ReactNode,
+      date: format(new Date(f.run_date), 'dd/MM/yyyy HH:mm', { locale: ptBR }) as ReactNode,
+      actions: (
+        <div className="flex items-center gap-1" onClick={e => e.stopPropagation()}>
+          <UITooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7"
+                disabled={!supported}
+                onClick={() => { setDrawerIdx(idx); setDrawerTab('editor'); }}
+              >
+                <Pencil className="h-3.5 w-3.5" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>{supported ? 'Melhorar página' : 'Edição não suportada'}</TooltipContent>
+          </UITooltip>
+          <UITooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7"
+                onClick={() => { setDrawerIdx(idx); setDrawerTab('historico'); }}
+              >
+                <History className="h-3.5 w-3.5" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Histórico</TooltipContent>
+          </UITooltip>
+        </div>
+      ) as ReactNode,
+    };
+  });
 
   const selectedFinding = drawerIdx != null && findings?.[drawerIdx]
     ? {
@@ -128,11 +167,15 @@ export default function InsightsCopyAudit() {
     },
   });
 
+  const handleReauditComplete = () => {
+    qc.invalidateQueries({ queryKey: ['insights-audit-findings', AUDIT_TYPE] });
+  };
+
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Copy Audit"
-        description="Resultados das auditorias de copywriting por rota (DOM renderizado)"
+        title="Copy Audit — Central de Otimização"
+        description="Diagnóstico, edição, versionamento e reauditoria de copywriting por URL"
         actions={
           <div className="flex items-center gap-2">
             <Button onClick={() => runAudit.mutate()} disabled={runAudit.isPending} size="sm">
@@ -192,15 +235,17 @@ export default function InsightsCopyAudit() {
           { key: 'score', label: 'Score' },
           { key: 'issues', label: 'Issues' },
           { key: 'date', label: 'Data' },
+          { key: 'actions', label: 'Ações' },
         ]}
         rows={tableRows}
-        onRowClick={(i) => setDrawerIdx(i)}
+        onRowClick={(i) => { setDrawerIdx(i); setDrawerTab('diagnostico'); }}
       />
 
-      <AuditDetailDrawer
+      <AuditOptimizationDrawer
         open={drawerIdx != null}
         onOpenChange={(open) => { if (!open) setDrawerIdx(null); }}
         finding={selectedFinding}
+        onReauditComplete={handleReauditComplete}
       />
     </div>
   );
