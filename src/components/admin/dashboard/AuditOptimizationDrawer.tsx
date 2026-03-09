@@ -237,6 +237,12 @@ export function AuditOptimizationDrawer({ open, onOpenChange, finding, onReaudit
   const handleGenerateSuggestions = async () => {
     if (!profile || !path || !resolved) return;
 
+    // Check if there are auto-applicable issues first
+    if (applicabilitySummary.auto === 0) {
+      setNoApplicableDialog(true);
+      return;
+    }
+
     setIsGeneratingSuggestions(true);
     setSuggestionSummary(null);
     setHighlightedFields(new Set());
