@@ -417,6 +417,18 @@ export function AuditOptimizationDrawer({ open, onOpenChange, finding, onReaudit
                       <p>Edite os campos textuais/SEO abaixo. As alterações serão aplicadas diretamente na página.</p>
                     </div>
 
+                    {suggestionSummary && (
+                      <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 text-xs space-y-1">
+                        <p className="font-medium text-foreground flex items-center gap-1.5">
+                          <Sparkles className="h-3.5 w-3.5 text-primary" />
+                          {suggestionSummary.count} campo(s) alterado(s) automaticamente
+                        </p>
+                        <p className="text-muted-foreground">
+                          {suggestionSummary.fields.join(', ')}
+                        </p>
+                      </div>
+                    )}
+
                     {profile.fields.map(field => (
                       <FieldEditor
                         key={field.key}
@@ -425,6 +437,7 @@ export function AuditOptimizationDrawer({ open, onOpenChange, finding, onReaudit
                         editedValue={getFieldValue(field.key)}
                         onChange={(val) => setFieldValue(field.key, val)}
                         error={validationErrors[field.key]}
+                        highlighted={highlightedFields.has(field.key)}
                       />
                     ))}
 
