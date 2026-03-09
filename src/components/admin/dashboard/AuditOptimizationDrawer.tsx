@@ -630,6 +630,17 @@ export function AuditOptimizationDrawer({ open, onOpenChange, finding, onReaudit
 
 // ─── Sub-components ───
 
+function ApplicabilityBadge({ applicability }: { applicability: Applicability }) {
+  switch (applicability) {
+    case 'auto':
+      return <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-primary/40 text-primary">✅ Auto</Badge>;
+    case 'manual':
+      return <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-amber-500/40 text-amber-600">🟡 Manual</Badge>;
+    case 'na':
+      return <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-muted-foreground/40 text-muted-foreground">❌ N/A</Badge>;
+  }
+}
+
 function FieldEditor({
   field,
   currentValue,
