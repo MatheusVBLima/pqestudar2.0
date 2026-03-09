@@ -558,7 +558,7 @@ export function AuditOptimizationDrawer({ open, onOpenChange, finding, onReaudit
           </TabsContent>
 
           {/* ═══ HISTÓRICO ═══ */}
-          <TabsContent value="historico" className="flex-1 min-h-0">
+          <TabsContent value="historico" className="flex-1 min-h-0 overflow-hidden mt-0 data-[state=inactive]:hidden">
             <ScrollArea className="h-full px-6 pb-6">
               <div className="space-y-4 pt-4">
                 {isLoadingHistory ? (
