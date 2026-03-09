@@ -235,107 +235,19 @@ export function AuditOptimizationDrawer({ open, onOpenChange, finding, onReaudit
     }
   };
 
-  // Auto-correct handler (AI suggestions)
-  const handleGenerateSuggestions = async () => {
-    if (!profile || !path || !resolved) return;
+  // Open AI panel handler
+  const handleOpenAIPanel = () => {
+    setShowAIPanel(true);
+    setActiveTab('editor');
+  };
 
-    // Check if there are auto-applicable issues first
-    if (applicabilitySummary.auto === 0) {
-      setNoApplicableDialog(true);
-      return;
-    }
-
-    setIsGeneratingSuggestions(true);
-    setSuggestionSummary(null);
-    setHighlightedFields(new Set());
-
-    try {
-      const fieldsPayload = profile.fields.map(f => ({
-        key: f.key,
-        label: f.label,
-        value: getFieldValue(f.key),
-        maxLength: f.maxLength,
-        warnLength: f.warnLength,
-      }));
-
-      // Only send auto-applicable issues to AI
-      const autoIssues = classifiedIssues.filter(i => i.applicability === 'auto');
-      const issuesPayload = autoIssues.map(i => ({
-        issue: i.issue,
-        category: i.category,
-        evidence: i.evidence,
-        fix: i.fix,
-      }));
-
-      const { data, error } = await supabase.functions.invoke('generate-copy-suggestions', {
-        body: {
-          url: path,
-          fields: fieldsPayload,
-          issues: issuesPayload,
-          profileKey: resolved.profileKey,
-        },
-      });
-
-      if (error) throw new Error(error.message || 'Erro ao gerar sugestões');
-      if (!data?.suggestions) throw new Error('Resposta inválida do serviço de IA');
-
-      // Normalize keys and detect actual changes
-      const suggestions = data.suggestions as Record<string, string>;
-      const newEdited: Record<string, string> = { ...editedFields };
-      const appliedFields: string[] = [];
-      const ignoredKeys: string[] = [];
-
-      for (const [key, value] of Object.entries(suggestions)) {
-        if (typeof value !== 'string') continue;
-        const field = profile.fields.find(f => f.key === key);
-        if (!field) {
-          ignoredKeys.push(key);
-          continue;
-        }
-        const current = (currentFields[key] ?? '').trim();
-        const suggested = value.trim();
-        if (suggested && suggested !== current) {
-          newEdited[key] = value;
-          appliedFields.push(field.label);
-        }
-      }
-
-      if (import.meta.env.DEV) {
-        console.log('[Copy AI] Suggestions payload:', suggestions);
-        console.log('[Copy AI] Applied fields:', appliedFields);
-        console.log('[Copy AI] Ignored keys:', ignoredKeys);
-        if (data.reasoning) console.log('[Copy AI] Reasoning:', data.reasoning);
-      }
-
-      if (appliedFields.length === 0) {
-        // Explain why no changes were made
-        const autoIssuesCount = classifiedIssues.filter(i => i.applicability === 'auto').length;
-        if (autoIssuesCount > 0) {
-          toast.info(
-            `A IA analisou ${autoIssuesCount} issue(s) auto-aplicável(is), mas os textos sugeridos são idênticos aos atuais. Nenhuma alteração necessária.`,
-            { duration: 5000 }
-          );
-        } else {
-          toast.info('Nenhuma sugestão relevante para aplicar.');
-        }
-        return;
-      }
-
-      setEditedFields(newEdited);
-      const newHighlights = new Set(profile.fields.filter(f => appliedFields.includes(f.label)).map(f => f.key));
-      setHighlightedFields(newHighlights);
-      setSuggestionSummary({ fields: appliedFields, count: appliedFields.length });
-
-      toast.success(`${appliedFields.length} campo(s) atualizado(s). Revise e clique em "Salvar nova versão".`);
-
-      // Clear highlights after 3s
-      setTimeout(() => setHighlightedFields(new Set()), 3000);
-    } catch (err: any) {
-      console.error('[Copy AI] Error:', err);
-      toast.error(err.message || 'Erro ao gerar sugestões automáticas');
-    } finally {
-      setIsGeneratingSuggestions(false);
-    }
+  // Apply suggestions from AI panel
+  const handleApplySuggestions = (updates: Record<string, string>, appliedLabels: string[]) => {
+    setEditedFields(prev => ({ ...prev, ...updates }));
+    const newHighlights = new Set(Object.keys(updates));
+    setHighlightedFields(newHighlights);
+    setSuggestionSummary({ fields: appliedLabels, count: appliedLabels.length });
+    setTimeout(() => setHighlightedFields(new Set()), 3000);
   };
 
   if (!finding) return null;
