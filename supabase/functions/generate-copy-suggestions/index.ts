@@ -26,47 +26,10 @@ interface RequestBody {
   fields: CopyField[];
   issues?: CopyIssue[];
   profileKey: string;
+  provider?: 'lovable' | 'openai';
 }
 
-serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
-
-  try {
-    const { url, fields, issues, profileKey } = (await req.json()) as RequestBody;
-
-    if (!fields || fields.length === 0) {
-      return new Response(
-        JSON.stringify({ error: "Nenhum campo fornecido para otimização" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
-      console.error("LOVABLE_API_KEY not configured");
-      return new Response(
-        JSON.stringify({ error: "Serviço de IA não configurado" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    // Build context about current issues
-    const issuesContext = issues && issues.length > 0
-      ? `\n\nProblemas identificados na auditoria atual:\n${issues.map(i => `- ${i.category}: ${i.issue} — ${i.fix}`).join('\n')}`
-      : '';
-
-    // Build fields context
-    const fieldsContext = fields.map(f => {
-      const limits = [];
-      if (f.warnLength) limits.push(`ideal: ${f.warnLength} caracteres`);
-      if (f.maxLength) limits.push(`máximo: ${f.maxLength} caracteres`);
-      const limitsStr = limits.length > 0 ? ` (${limits.join(', ')})` : '';
-      return `- ${f.label}${limitsStr}: "${f.value || '(vazio)'}"`;
-    }).join('\n');
-
-    const systemPrompt = `Você é um especialista em copywriting para web, focado em conversão e clareza. Seu trabalho é melhorar textos de páginas web seguindo estas regras:
+const SYSTEM_PROMPT = `Você é um especialista em copywriting para web, focado em conversão e clareza. Seu trabalho é melhorar textos de páginas web seguindo estas regras:
 
 ## Princípios de Copywriting
 
@@ -116,6 +79,63 @@ serve(async (req) => {
 - Mantenha coerência entre os campos (título, descrição, H1 devem se complementar)
 - Se um campo já estiver bom, faça apenas ajustes mínimos`;
 
+serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const { url, fields, issues, profileKey, provider = 'lovable' } = (await req.json()) as RequestBody;
+
+    if (!fields || fields.length === 0) {
+      return new Response(
+        JSON.stringify({ error: "Nenhum campo fornecido para otimização" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Determine API endpoint and key based on provider
+    let apiUrl: string;
+    let apiKey: string | undefined;
+    let model: string;
+
+    if (provider === 'openai') {
+      apiKey = Deno.env.get("OPENAI_API_KEY");
+      if (!apiKey) {
+        return new Response(
+          JSON.stringify({ error: "OPENAI_API_KEY não configurada. Defina em Supabase Secrets ou use Lovable AI." }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      apiUrl = "https://api.openai.com/v1/chat/completions";
+      model = "gpt-4o-mini";
+    } else {
+      apiKey = Deno.env.get("LOVABLE_API_KEY");
+      if (!apiKey) {
+        console.error("LOVABLE_API_KEY not configured");
+        return new Response(
+          JSON.stringify({ error: "Serviço de IA não configurado" }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      apiUrl = "https://ai.gateway.lovable.dev/v1/chat/completions";
+      model = "google/gemini-3-flash-preview";
+    }
+
+    // Build context about current issues
+    const issuesContext = issues && issues.length > 0
+      ? `\n\nProblemas identificados na auditoria atual:\n${issues.map(i => `- ${i.category}: ${i.issue} — ${i.fix}`).join('\n')}`
+      : '';
+
+    // Build fields context
+    const fieldsContext = fields.map(f => {
+      const limits = [];
+      if (f.warnLength) limits.push(`ideal: ${f.warnLength} caracteres`);
+      if (f.maxLength) limits.push(`máximo: ${f.maxLength} caracteres`);
+      const limitsStr = limits.length > 0 ? ` (${limits.join(', ')})` : '';
+      return `- ${f.label} [key: ${f.key}]${limitsStr}: "${f.value || '(vazio)'}"`;
+    }).join('\n');
+
     const userPrompt = `Melhore os textos da página "${url}" (perfil: ${profileKey}).
 
 Campos atuais:
@@ -137,16 +157,18 @@ Importante:
 - Se um campo já estiver bom, inclua-o com ajustes mínimos ou idêntico
 - Seja conciso e direto`;
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    console.log(`[generate-copy-suggestions] Provider: ${provider}, Model: ${model}, URL: ${url}`);
+
+    const response = await fetch(apiUrl, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
+        model,
         messages: [
-          { role: "system", content: systemPrompt },
+          { role: "system", content: SYSTEM_PROMPT },
           { role: "user", content: userPrompt },
         ],
         temperature: 0.7,
@@ -167,9 +189,9 @@ Importante:
         );
       }
       const errorText = await response.text();
-      console.error("AI gateway error:", response.status, errorText);
+      console.error("AI error:", response.status, errorText);
       return new Response(
-        JSON.stringify({ error: "Erro no serviço de IA" }),
+        JSON.stringify({ error: `Erro no serviço de IA (${provider}): ${response.status}` }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -187,7 +209,6 @@ Importante:
     // Parse JSON from the response (handle markdown code blocks)
     let parsed;
     try {
-      // Try to extract JSON from markdown code blocks if present
       const jsonMatch = content.match(/```(?:json)?\s*([\s\S]*?)```/);
       const jsonStr = jsonMatch ? jsonMatch[1].trim() : content.trim();
       parsed = JSON.parse(jsonStr);

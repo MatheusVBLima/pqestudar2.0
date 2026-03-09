@@ -14,6 +14,7 @@ import { Pencil, History, RotateCcw, RefreshCw, AlertTriangle, Check, X, Clock, 
 import { resolveAuditedUrl, type ResolvedUrl } from '@/lib/audit-url-resolver';
 import { getProfile, type EditorField } from '@/lib/audit-editor-profiles';
 import { classifyIssues, getApplicabilitySummary, type ClassifiedIssue, type Applicability } from '@/lib/issue-applicability';
+import { AISuggestionsPanel } from './AISuggestionsPanel';
 import {
   useLoadEntityFields,
   useVersionHistory,
@@ -28,15 +29,6 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { supabase } from '@/integrations/supabase/client';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
 
 interface AuditIssue {
   issue: string;
@@ -77,9 +69,9 @@ export function AuditOptimizationDrawer({ open, onOpenChange, finding, onReaudit
   const [editedFields, setEditedFields] = useState<Record<string, string>>({});
   const [isReauditing, setIsReauditing] = useState(false);
   const [reauditScore, setReauditScore] = useState<number | null>(null);
-  const [isGeneratingSuggestions, setIsGeneratingSuggestions] = useState(false);
   const [highlightedFields, setHighlightedFields] = useState<Set<string>>(new Set());
   const [suggestionSummary, setSuggestionSummary] = useState<{ fields: string[]; count: number } | null>(null);
+  const [showAIPanel, setShowAIPanel] = useState(false);
 
   const path = finding?.path ?? null;
   const resolved = useMemo(() => path ? resolveAuditedUrl(path) : null, [path]);
@@ -88,7 +80,7 @@ export function AuditOptimizationDrawer({ open, onOpenChange, finding, onReaudit
   const { data: loadResult, isLoading: isLoadingFields } = useLoadEntityFields(open && resolved ? path : null);
   const { data: versions, isLoading: isLoadingHistory } = useVersionHistory(open ? path : null);
 
-  const [noApplicableDialog, setNoApplicableDialog] = useState(false);
+  
 
   const classifiedIssues = useMemo(() => {
     if (!finding?.issues || !profile) return [];
@@ -109,6 +101,7 @@ export function AuditOptimizationDrawer({ open, onOpenChange, finding, onReaudit
       setReauditScore(null);
       setHighlightedFields(new Set());
       setSuggestionSummary(null);
+      setShowAIPanel(false);
     }
   }, [open, loadResult]);
 
@@ -233,107 +226,19 @@ export function AuditOptimizationDrawer({ open, onOpenChange, finding, onReaudit
     }
   };
 
-  // Auto-correct handler (AI suggestions)
-  const handleGenerateSuggestions = async () => {
-    if (!profile || !path || !resolved) return;
+  // Open AI panel handler
+  const handleOpenAIPanel = () => {
+    setShowAIPanel(true);
+    setActiveTab('editor');
+  };
 
-    // Check if there are auto-applicable issues first
-    if (applicabilitySummary.auto === 0) {
-      setNoApplicableDialog(true);
-      return;
-    }
-
-    setIsGeneratingSuggestions(true);
-    setSuggestionSummary(null);
-    setHighlightedFields(new Set());
-
-    try {
-      const fieldsPayload = profile.fields.map(f => ({
-        key: f.key,
-        label: f.label,
-        value: getFieldValue(f.key),
-        maxLength: f.maxLength,
-        warnLength: f.warnLength,
-      }));
-
-      // Only send auto-applicable issues to AI
-      const autoIssues = classifiedIssues.filter(i => i.applicability === 'auto');
-      const issuesPayload = autoIssues.map(i => ({
-        issue: i.issue,
-        category: i.category,
-        evidence: i.evidence,
-        fix: i.fix,
-      }));
-
-      const { data, error } = await supabase.functions.invoke('generate-copy-suggestions', {
-        body: {
-          url: path,
-          fields: fieldsPayload,
-          issues: issuesPayload,
-          profileKey: resolved.profileKey,
-        },
-      });
-
-      if (error) throw new Error(error.message || 'Erro ao gerar sugestões');
-      if (!data?.suggestions) throw new Error('Resposta inválida do serviço de IA');
-
-      // Normalize keys and detect actual changes
-      const suggestions = data.suggestions as Record<string, string>;
-      const newEdited: Record<string, string> = { ...editedFields };
-      const appliedFields: string[] = [];
-      const ignoredKeys: string[] = [];
-
-      for (const [key, value] of Object.entries(suggestions)) {
-        if (typeof value !== 'string') continue;
-        const field = profile.fields.find(f => f.key === key);
-        if (!field) {
-          ignoredKeys.push(key);
-          continue;
-        }
-        const current = (currentFields[key] ?? '').trim();
-        const suggested = value.trim();
-        if (suggested && suggested !== current) {
-          newEdited[key] = value;
-          appliedFields.push(field.label);
-        }
-      }
-
-      if (import.meta.env.DEV) {
-        console.log('[Copy AI] Suggestions payload:', suggestions);
-        console.log('[Copy AI] Applied fields:', appliedFields);
-        console.log('[Copy AI] Ignored keys:', ignoredKeys);
-        if (data.reasoning) console.log('[Copy AI] Reasoning:', data.reasoning);
-      }
-
-      if (appliedFields.length === 0) {
-        // Explain why no changes were made
-        const autoIssuesCount = classifiedIssues.filter(i => i.applicability === 'auto').length;
-        if (autoIssuesCount > 0) {
-          toast.info(
-            `A IA analisou ${autoIssuesCount} issue(s) auto-aplicável(is), mas os textos sugeridos são idênticos aos atuais. Nenhuma alteração necessária.`,
-            { duration: 5000 }
-          );
-        } else {
-          toast.info('Nenhuma sugestão relevante para aplicar.');
-        }
-        return;
-      }
-
-      setEditedFields(newEdited);
-      const newHighlights = new Set(profile.fields.filter(f => appliedFields.includes(f.label)).map(f => f.key));
-      setHighlightedFields(newHighlights);
-      setSuggestionSummary({ fields: appliedFields, count: appliedFields.length });
-
-      toast.success(`${appliedFields.length} campo(s) atualizado(s). Revise e clique em "Salvar nova versão".`);
-
-      // Clear highlights after 3s
-      setTimeout(() => setHighlightedFields(new Set()), 3000);
-    } catch (err: any) {
-      console.error('[Copy AI] Error:', err);
-      toast.error(err.message || 'Erro ao gerar sugestões automáticas');
-    } finally {
-      setIsGeneratingSuggestions(false);
-    }
+  // Apply suggestions from AI panel
+  const handleApplySuggestions = (updates: Record<string, string>, appliedLabels: string[]) => {
+    setEditedFields(prev => ({ ...prev, ...updates }));
+    const newHighlights = new Set(Object.keys(updates));
+    setHighlightedFields(newHighlights);
+    setSuggestionSummary({ fields: appliedLabels, count: appliedLabels.length });
+    setTimeout(() => setHighlightedFields(new Set()), 3000);
   };
 
   if (!finding) return null;
@@ -342,7 +247,7 @@ export function AuditOptimizationDrawer({ open, onOpenChange, finding, onReaudit
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-full sm:max-w-3xl p-0 flex flex-col h-full" side="right">
+      <SheetContent className="w-full sm:max-w-3xl p-0 flex flex-col h-full relative overflow-hidden" side="right">
         <SheetHeader className="px-6 pt-6 pb-2 shrink-0">
           <SheetTitle className="text-base flex items-center gap-2">
             <Pencil className="h-4 w-4 text-primary" />
@@ -525,7 +430,7 @@ export function AuditOptimizationDrawer({ open, onOpenChange, finding, onReaudit
               <div className="border-t p-4 flex items-center gap-2">
                 <Button
                   onClick={handleSave}
-                  disabled={!canSave || saveMutation.isPending || isReauditing || isGeneratingSuggestions}
+                  disabled={!canSave || saveMutation.isPending || isReauditing}
                   className="flex-1"
                 >
                   {saveMutation.isPending ? 'Salvando…' : isReauditing ? 'Reauditando…' : 'Salvar nova versão'}
@@ -535,19 +440,13 @@ export function AuditOptimizationDrawer({ open, onOpenChange, finding, onReaudit
                     <Button
                       variant="outline"
                       size="icon"
-                      onClick={handleGenerateSuggestions}
-                      disabled={isGeneratingSuggestions || isReauditing || saveMutation.isPending}
+                      onClick={handleOpenAIPanel}
+                      disabled={isReauditing || saveMutation.isPending}
                     >
-                      {isGeneratingSuggestions ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <Sparkles className="h-4 w-4" />
-                      )}
+                      <Sparkles className="h-4 w-4" />
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent>
-                    {isGeneratingSuggestions ? 'Gerando sugestões…' : 'Corrigir automaticamente'}
-                  </TooltipContent>
+                  <TooltipContent>Corrigir automaticamente</TooltipContent>
                 </Tooltip>
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -555,7 +454,7 @@ export function AuditOptimizationDrawer({ open, onOpenChange, finding, onReaudit
                       variant="outline"
                       size="icon"
                       onClick={() => handleReaudit()}
-                      disabled={isReauditing || isGeneratingSuggestions}
+                      disabled={isReauditing}
                     >
                       <RefreshCw className={`h-4 w-4 ${isReauditing ? 'animate-spin' : ''}`} />
                     </Button>
@@ -595,43 +494,19 @@ export function AuditOptimizationDrawer({ open, onOpenChange, finding, onReaudit
           </TabsContent>
         </Tabs>
 
-        {/* No auto-applicable issues dialog */}
-        <AlertDialog open={noApplicableDialog} onOpenChange={setNoApplicableDialog}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle className="flex items-center gap-2">
-                <Info className="h-5 w-5 text-primary" />
-                Nenhuma correção automática disponível
-              </AlertDialogTitle>
-              <AlertDialogDescription asChild>
-                <div className="space-y-3">
-                  <p>
-                    Encontramos {applicabilitySummary.total} issue(s) no diagnóstico, mas {applicabilitySummary.auto === 0 ? 'nenhuma' : applicabilitySummary.auto} pode ser corrigida automaticamente com os campos disponíveis no editor.
-                  </p>
-                  {classifiedIssues.filter(i => i.applicability !== 'auto').length > 0 && (
-                    <div className="space-y-2 max-h-48 overflow-y-auto">
-                      {classifiedIssues.filter(i => i.applicability !== 'auto').map((issue, i) => (
-                        <div key={i} className="rounded border p-2 text-xs space-y-1">
-                          <div className="flex items-center gap-2">
-                            <ApplicabilityBadge applicability={issue.applicability} />
-                            <span className="font-medium">{issue.issue}</span>
-                          </div>
-                          <p className="text-muted-foreground italic">{issue.reason}</p>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  <p className="text-xs text-muted-foreground">
-                    Issues manuais exigem ajustes nos componentes/templates da página. Consulte o diagnóstico para orientações.
-                  </p>
-                </div>
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogAction>Entendi</AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+        {/* AI Suggestions Panel */}
+        {profile && path && resolved && (
+          <AISuggestionsPanel
+            open={showAIPanel}
+            onClose={() => setShowAIPanel(false)}
+            path={path}
+            profileKey={resolved.profileKey}
+            fields={profile.fields}
+            currentValues={currentFields}
+            classifiedIssues={classifiedIssues}
+            onApply={handleApplySuggestions}
+          />
+        )}
       </SheetContent>
     </Sheet>
   );
