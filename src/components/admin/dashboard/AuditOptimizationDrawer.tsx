@@ -87,6 +87,8 @@ export function AuditOptimizationDrawer({ open, onOpenChange, finding, onReaudit
     if (open && loadResult?.fields) {
       setEditedFields({});
       setReauditScore(null);
+      setHighlightedFields(new Set());
+      setSuggestionSummary(null);
     }
   }, [open, loadResult]);
 
