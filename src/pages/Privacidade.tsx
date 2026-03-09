@@ -238,6 +238,7 @@ const Privacidade = () => {
       <PageHero
         title={ps.headerTitle}
         description={ps.headerDescription}
+        isLoading={ps.isLoading}
         badge={
           <Badge variant="secondary" className="mb-4">
             <Shield className="w-3 h-3 mr-1" />
