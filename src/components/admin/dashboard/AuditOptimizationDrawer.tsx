@@ -306,7 +306,16 @@ export function AuditOptimizationDrawer({ open, onOpenChange, finding, onReaudit
       }
 
       if (appliedFields.length === 0) {
-        toast.info('Nenhuma sugestão relevante para aplicar.');
+        // Explain why no changes were made
+        const autoIssuesCount = classifiedIssues.filter(i => i.applicability === 'auto').length;
+        if (autoIssuesCount > 0) {
+          toast.info(
+            `A IA analisou ${autoIssuesCount} issue(s) auto-aplicável(is), mas os textos sugeridos são idênticos aos atuais. Nenhuma alteração necessária.`,
+            { duration: 5000 }
+          );
+        } else {
+          toast.info('Nenhuma sugestão relevante para aplicar.');
+        }
         return;
       }
 
