@@ -110,6 +110,7 @@ export function AuditOptimizationDrawer({ open, onOpenChange, finding, onReaudit
       setReauditScore(null);
       setHighlightedFields(new Set());
       setSuggestionSummary(null);
+      setShowAIPanel(false);
     }
   }, [open, loadResult]);
 
