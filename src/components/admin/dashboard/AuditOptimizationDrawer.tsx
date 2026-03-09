@@ -67,6 +67,7 @@ export function AuditOptimizationDrawer({ open, onOpenChange, finding, onReaudit
   const [editedFields, setEditedFields] = useState<Record<string, string>>({});
   const [isReauditing, setIsReauditing] = useState(false);
   const [reauditScore, setReauditScore] = useState<number | null>(null);
+  const [isGeneratingSuggestions, setIsGeneratingSuggestions] = useState(false);
 
   const path = finding?.path ?? null;
   const resolved = useMemo(() => path ? resolveAuditedUrl(path) : null, [path]);
