@@ -68,7 +68,7 @@ const Termos = () => {
       const scriptToRemove = document.getElementById("terms-jsonld");
       if (scriptToRemove) scriptToRemove.remove();
     };
-  }, [ps.titleTag, ps.metaDescription, doc?.updated_at]);
+  }, [ps.titleTag, ps.metaDescription, ps.isReady, doc?.updated_at]);
 
   // Scroll spy
   useEffect(() => {
