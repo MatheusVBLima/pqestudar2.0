@@ -651,19 +651,18 @@ export default function Ferramentas() {
           items: tools.map((t) => ({ name: t.name, url: `/ferramentas` })),
         }}
       />
-      <Helmet>
-        <title>{ps.titleTag}</title>
-        <meta
-          name="description"
-          content={ps.metaDescription} />
-
-      </Helmet>
-
-      <div className="min-h-screen flex flex-col bg-background">
-        
+      {ps.isReady && (
+        <Helmet>
+          <title>{ps.titleTag}</title>
+          <meta
+            name="description"
+            content={ps.metaDescription}
+          />
+        </Helmet>
+      )}
 
         <main className="flex-1">
-          <PageHero title={ps.headerTitle} description={ps.headerDescription} />
+          <PageHero title={ps.headerTitle} description={ps.headerDescription} isLoading={ps.isLoading} />
 
           {/* Admin Toggle */}
           {isAdmin && (
