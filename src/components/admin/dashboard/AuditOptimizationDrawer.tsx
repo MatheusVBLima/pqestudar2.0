@@ -256,12 +256,14 @@ export function AuditOptimizationDrawer({ open, onOpenChange, finding, onReaudit
         warnLength: f.warnLength,
       }));
 
-      const issuesPayload = finding?.issues?.map(i => ({
+      // Only send auto-applicable issues to AI
+      const autoIssues = classifiedIssues.filter(i => i.applicability === 'auto');
+      const issuesPayload = autoIssues.map(i => ({
         issue: i.issue,
         category: i.category,
         evidence: i.evidence,
         fix: i.fix,
-      })) ?? [];
+      }));
 
       const { data, error } = await supabase.functions.invoke('generate-copy-suggestions', {
         body: {
