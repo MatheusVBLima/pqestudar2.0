@@ -28,42 +28,55 @@ interface IssueRule {
 const RULES: IssueRule[] = [
   // Headline issues → auto-applicable via header_title / title_tag
   {
-    match: ['h1 ausente', 'h1 muito longo', 'h1 muito curto', 'h1 genérico', 'múltiplos h1'],
+    match: ['h1 ausente', 'h1 muito longo', 'h1 muito curto', 'h1 genérico', 'múltiplos h1', 'headline'],
     applicability: 'auto',
     reason: 'Pode ser corrigido via campo "Título do Hero (H1)" ou "Title Tag".',
-    suggestedFields: ['header_title', 'title_tag'],
+    suggestedFields: ['header_title', 'title_tag', 'titulo'],
+  },
+  // Title tag issues
+  {
+    match: ['title tag', 'título da página', 'meta title', 'meta_title'],
+    applicability: 'auto',
+    reason: 'Pode ser corrigido via campo "Title Tag" ou "Meta Title".',
+    suggestedFields: ['title_tag', 'meta_title', 'titulo'],
   },
   // Meta description issues → auto-applicable
   {
-    match: ['meta description', 'meta_description'],
+    match: ['meta description', 'meta_description', 'descrição meta'],
     applicability: 'auto',
     reason: 'Pode ser corrigido via campo "Meta Description".',
     suggestedFields: ['meta_description'],
   },
   // Clarity issues on text → partially applicable via resumo_editorial / header_description
   {
-    match: ['sentenças muito longas', 'buzzwords', 'jargão', 'excesso de buzzwords'],
+    match: [
+      'sentenças muito longas', 'sentenças longas', 'frases longas', 'frases muito longas',
+      'buzzwords', 'jargão', 'excesso de buzzwords',
+      'parágrafos longos', 'parágrafos muito longos', 'parágrafos excessivamente longos',
+      'linguagem genérica', 'termos genéricos', 'texto genérico',
+      'clareza', 'legibilidade',
+    ],
     applicability: 'auto',
     reason: 'Pode ser melhorado via campos "Resumo Editorial" ou "Descrição do Hero".',
-    suggestedFields: ['resumo_editorial', 'header_description'],
+    suggestedFields: ['resumo_editorial', 'header_description', 'conteudo_principal'],
   },
   // CTA issues → NOT fixable via editor fields (template/component level)
   {
-    match: ['cta principal ausente', 'cta sem verbo', 'cta fraco', 'cta ausente no final'],
+    match: ['cta principal ausente', 'cta sem verbo', 'cta fraco', 'cta ausente no final', 'call to action', 'cta ausente'],
     applicability: 'manual',
     reason: 'CTAs são definidos nos componentes/templates da página, não nos campos editáveis.',
     suggestedFields: [],
   },
   // Structure issues → NOT fixable via editor
   {
-    match: ['poucos headings', 'ausência de listas', 'parágrafos excessivamente'],
+    match: ['poucos headings', 'ausência de listas', 'parágrafos excessivamente', 'estrutura', 'hierarquia de headings'],
     applicability: 'manual',
     reason: 'A estrutura da página (headings, listas, parágrafos) é definida no template/componente.',
     suggestedFields: [],
   },
   // Social proof → NOT fixable via editor
   {
-    match: ['falta de prova social', 'prova social'],
+    match: ['falta de prova social', 'prova social', 'depoimentos'],
     applicability: 'manual',
     reason: 'Prova social é definida nos componentes/seções da página, não nos campos editáveis.',
     suggestedFields: [],
