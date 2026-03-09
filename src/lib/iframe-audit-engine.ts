@@ -78,7 +78,10 @@ export function extractDomFromIframe(url: string, path: string): Promise<DomSnap
     }, IFRAME_TIMEOUT_MS);
 
     iframe.onload = () => {
-      setTimeout(() => {
+      // Wait for page settings to be ready before extracting DOM
+      const iframeWin = iframe.contentWindow as any;
+      
+      const waitAndExtract = () => {
         if (resolved) return;
         resolved = true;
         clearTimeout(timeout);
@@ -96,7 +99,38 @@ export function extractDomFromIframe(url: string, path: string): Promise<DomSnap
           cleanup();
           resolve(emptySnapshot(url, path, 'error'));
         }
-      }, RENDER_WAIT_MS);
+      };
+
+      // Check if page settings are already ready
+      const checkReady = () => {
+        try {
+          return iframeWin?.__PAGE_SETTINGS_READY__ === true;
+        } catch {
+          return false;
+        }
+      };
+
+      if (checkReady()) {
+        // Already ready, wait a bit for final render
+        setTimeout(waitAndExtract, 1000);
+      } else {
+        // Wait for the page-settings-ready event or timeout
+        const settingsTimeout = setTimeout(() => {
+          // Proceed anyway after waiting
+          waitAndExtract();
+        }, PAGE_SETTINGS_WAIT_MS);
+
+        try {
+          iframeWin?.addEventListener('page-settings-ready', () => {
+            clearTimeout(settingsTimeout);
+            // Give a short delay for React to re-render with real data
+            setTimeout(waitAndExtract, 500);
+          });
+        } catch {
+          clearTimeout(settingsTimeout);
+          setTimeout(waitAndExtract, RENDER_WAIT_MS);
+        }
+      }
     };
 
     iframe.onerror = () => {
