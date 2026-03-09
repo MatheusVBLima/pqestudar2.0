@@ -10,7 +10,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
-import { Pencil, History, RotateCcw, RefreshCw, AlertTriangle, Check, X, Clock } from 'lucide-react';
+import { Pencil, History, RotateCcw, RefreshCw, AlertTriangle, Check, X, Clock, Sparkles, Loader2 } from 'lucide-react';
 import { resolveAuditedUrl, type ResolvedUrl } from '@/lib/audit-url-resolver';
 import { getProfile, type EditorField } from '@/lib/audit-editor-profiles';
 import {
@@ -25,6 +25,8 @@ import { extractDomFromIframe } from '@/lib/iframe-audit-engine';
 import { analyzeCopy } from '@/lib/copy-audit-analyzer';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { supabase } from '@/integrations/supabase/client';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface AuditIssue {
   issue: string;
