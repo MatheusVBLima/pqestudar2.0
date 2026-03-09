@@ -63,19 +63,20 @@ export default function FerramentasSalvos() {
 
   return (
     <>
-      <Helmet>
-        <title>{ps.titleTag}</title>
-        <meta
-          name="description"
-          content={ps.metaDescription}
-        />
-      </Helmet>
+      {ps.isReady && (
+        <Helmet>
+          <title>{ps.titleTag}</title>
+          <meta
+            name="description"
+            content={ps.metaDescription}
+          />
+        </Helmet>
+      )}
 
       <div className="min-h-screen flex flex-col bg-background">
-        
 
         <main className="flex-1">
-          <PageHero title={ps.headerTitle} description={ps.headerDescription} />
+          <PageHero title={ps.headerTitle} description={ps.headerDescription} isLoading={ps.isLoading} />
 
           {/* Accordion Sections */}
           <section className="pt-12 md:pt-16 pb-24 px-4 sm:px-6 lg:px-8">

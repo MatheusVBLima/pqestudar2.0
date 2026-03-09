@@ -46,7 +46,7 @@ const PremiumHome = () => {
     <div className="min-h-screen bg-background flex flex-col">
       
       
-      <PageHero title={ps.headerTitle} description={ps.headerDescription}>
+      <PageHero title={ps.headerTitle} description={ps.headerDescription} isLoading={ps.isLoading}>
         {isActive() && subscription && (
           <div className="flex flex-wrap items-center gap-4 mt-6">
             <span className="inline-flex items-center gap-2 bg-primary/10 text-primary px-3 py-1 rounded-full text-sm font-medium">

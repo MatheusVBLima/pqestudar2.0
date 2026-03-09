@@ -40,6 +40,7 @@ const Termos = () => {
 
   // SEO + JSON-LD
   useEffect(() => {
+    if (!ps.isReady) return;
     document.title = ps.titleTag;
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) metaDescription.setAttribute("content", ps.metaDescription);
