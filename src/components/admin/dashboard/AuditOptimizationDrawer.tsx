@@ -218,8 +218,10 @@ export function AuditOptimizationDrawer({ open, onOpenChange, finding, onReaudit
     if (!profile || !path || !resolved) return;
 
     setIsGeneratingSuggestions(true);
+    setSuggestionSummary(null);
+    setHighlightedFields(new Set());
+
     try {
-      // Build fields payload with current values
       const fieldsPayload = profile.fields.map(f => ({
         key: f.key,
         label: f.label,
@@ -228,7 +230,6 @@ export function AuditOptimizationDrawer({ open, onOpenChange, finding, onReaudit
         warnLength: f.warnLength,
       }));
 
-      // Build issues payload from current findings
       const issuesPayload = finding?.issues?.map(i => ({
         issue: i.issue,
         category: i.category,
@@ -245,28 +246,51 @@ export function AuditOptimizationDrawer({ open, onOpenChange, finding, onReaudit
         },
       });
 
-      if (error) {
-        throw new Error(error.message || 'Erro ao gerar sugestões');
-      }
+      if (error) throw new Error(error.message || 'Erro ao gerar sugestões');
+      if (!data?.suggestions) throw new Error('Resposta inválida do serviço de IA');
 
-      if (!data?.suggestions) {
-        throw new Error('Resposta inválida do serviço de IA');
-      }
+      // Normalize keys and detect actual changes
+      const suggestions = data.suggestions as Record<string, string>;
+      const newEdited: Record<string, string> = { ...editedFields };
+      const appliedFields: string[] = [];
+      const ignoredKeys: string[] = [];
 
-      // Apply suggestions to edited fields
-      const newEditedFields: Record<string, string> = { ...editedFields };
-      for (const [key, value] of Object.entries(data.suggestions)) {
-        if (typeof value === 'string' && profile.fields.some(f => f.key === key)) {
-          newEditedFields[key] = value;
+      for (const [key, value] of Object.entries(suggestions)) {
+        if (typeof value !== 'string') continue;
+        const field = profile.fields.find(f => f.key === key);
+        if (!field) {
+          ignoredKeys.push(key);
+          continue;
+        }
+        const current = (currentFields[key] ?? '').trim();
+        const suggested = value.trim();
+        if (suggested && suggested !== current) {
+          newEdited[key] = value;
+          appliedFields.push(field.label);
         }
       }
-      setEditedFields(newEditedFields);
 
-      toast.success('Sugestões aplicadas no editor. Revise e clique em "Salvar nova versão".');
-      
-      if (data.reasoning) {
-        console.log('[Copy AI] Reasoning:', data.reasoning);
+      if (import.meta.env.DEV) {
+        console.log('[Copy AI] Suggestions payload:', suggestions);
+        console.log('[Copy AI] Applied fields:', appliedFields);
+        console.log('[Copy AI] Ignored keys:', ignoredKeys);
+        if (data.reasoning) console.log('[Copy AI] Reasoning:', data.reasoning);
       }
+
+      if (appliedFields.length === 0) {
+        toast.info('Nenhuma sugestão relevante para aplicar.');
+        return;
+      }
+
+      setEditedFields(newEdited);
+      const newHighlights = new Set(profile.fields.filter(f => appliedFields.includes(f.label)).map(f => f.key));
+      setHighlightedFields(newHighlights);
+      setSuggestionSummary({ fields: appliedFields, count: appliedFields.length });
+
+      toast.success(`${appliedFields.length} campo(s) atualizado(s). Revise e clique em "Salvar nova versão".`);
+
+      // Clear highlights after 3s
+      setTimeout(() => setHighlightedFields(new Set()), 3000);
     } catch (err: any) {
       console.error('[Copy AI] Error:', err);
       toast.error(err.message || 'Erro ao gerar sugestões automáticas');
