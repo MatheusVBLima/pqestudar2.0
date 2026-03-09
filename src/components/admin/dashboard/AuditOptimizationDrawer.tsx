@@ -10,9 +10,10 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
-import { Pencil, History, RotateCcw, RefreshCw, AlertTriangle, Check, X, Clock, Sparkles, Loader2 } from 'lucide-react';
+import { Pencil, History, RotateCcw, RefreshCw, AlertTriangle, Check, X, Clock, Sparkles, Loader2, Info } from 'lucide-react';
 import { resolveAuditedUrl, type ResolvedUrl } from '@/lib/audit-url-resolver';
 import { getProfile, type EditorField } from '@/lib/audit-editor-profiles';
+import { classifyIssues, getApplicabilitySummary, type ClassifiedIssue, type Applicability } from '@/lib/issue-applicability';
 import {
   useLoadEntityFields,
   useVersionHistory,
@@ -27,6 +28,15 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { supabase } from '@/integrations/supabase/client';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 interface AuditIssue {
   issue: string;
@@ -77,6 +87,16 @@ export function AuditOptimizationDrawer({ open, onOpenChange, finding, onReaudit
 
   const { data: loadResult, isLoading: isLoadingFields } = useLoadEntityFields(open && resolved ? path : null);
   const { data: versions, isLoading: isLoadingHistory } = useVersionHistory(open ? path : null);
+
+  const [noApplicableDialog, setNoApplicableDialog] = useState(false);
+
+  const classifiedIssues = useMemo(() => {
+    if (!finding?.issues || !profile) return [];
+    const fieldKeys = profile.fields.map(f => f.key);
+    return classifyIssues(finding.issues, fieldKeys);
+  }, [finding?.issues, profile]);
+
+  const applicabilitySummary = useMemo(() => getApplicabilitySummary(classifiedIssues), [classifiedIssues]);
 
   const saveMutation = useSaveVersion();
   const rollbackMutation = useRollbackVersion();
@@ -217,6 +237,12 @@ export function AuditOptimizationDrawer({ open, onOpenChange, finding, onReaudit
   const handleGenerateSuggestions = async () => {
     if (!profile || !path || !resolved) return;
 
+    // Check if there are auto-applicable issues first
+    if (applicabilitySummary.auto === 0) {
+      setNoApplicableDialog(true);
+      return;
+    }
+
     setIsGeneratingSuggestions(true);
     setSuggestionSummary(null);
     setHighlightedFields(new Set());
@@ -230,12 +256,14 @@ export function AuditOptimizationDrawer({ open, onOpenChange, finding, onReaudit
         warnLength: f.warnLength,
       }));
 
-      const issuesPayload = finding?.issues?.map(i => ({
+      // Only send auto-applicable issues to AI
+      const autoIssues = classifiedIssues.filter(i => i.applicability === 'auto');
+      const issuesPayload = autoIssues.map(i => ({
         issue: i.issue,
         category: i.category,
         evidence: i.evidence,
         fix: i.fix,
-      })) ?? [];
+      }));
 
       const { data, error } = await supabase.functions.invoke('generate-copy-suggestions', {
         body: {
@@ -354,22 +382,34 @@ export function AuditOptimizationDrawer({ open, onOpenChange, finding, onReaudit
                 <Separator />
 
                 <div>
-                  <h4 className="text-sm font-semibold mb-3">Issues ({issues.length})</h4>
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="text-sm font-semibold">Issues ({issues.length})</h4>
+                    {classifiedIssues.length > 0 && (
+                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                        <span className="flex items-center gap-0.5"><Check className="h-3 w-3 text-primary" />{applicabilitySummary.auto}</span>
+                        <span className="flex items-center gap-0.5"><Pencil className="h-3 w-3 text-amber-500" />{applicabilitySummary.manual}</span>
+                      </div>
+                    )}
+                  </div>
                   {issues.length === 0 ? (
                     <p className="text-sm text-muted-foreground">Nenhuma issue encontrada.</p>
                   ) : (
                     <div className="space-y-3">
-                      {issues.map((issue, i) => (
+                      {classifiedIssues.map((issue, i) => (
                         <div key={i} className="rounded-lg border p-3 space-y-1.5">
                           <div className="flex items-center justify-between gap-2">
                             <p className="text-sm font-medium">{issue.issue}</p>
-                            <Badge variant={impactColor(issue.impact)} className="text-xs shrink-0">
-                              {issue.impact}
-                            </Badge>
+                            <div className="flex items-center gap-1 shrink-0">
+                              <ApplicabilityBadge applicability={issue.applicability} />
+                              <Badge variant={impactColor(issue.impact)} className="text-xs">
+                                {issue.impact}
+                              </Badge>
+                            </div>
                           </div>
                           <div className="space-y-0.5 text-xs text-muted-foreground">
                             <p><span className="font-medium text-foreground">Evidência:</span> {issue.evidence}</p>
                             <p><span className="font-medium text-foreground">Correção:</span> {issue.fix}</p>
+                            <p className="italic">{issue.reason}</p>
                           </div>
                         </div>
                       ))}
@@ -545,12 +585,61 @@ export function AuditOptimizationDrawer({ open, onOpenChange, finding, onReaudit
             </ScrollArea>
           </TabsContent>
         </Tabs>
+
+        {/* No auto-applicable issues dialog */}
+        <AlertDialog open={noApplicableDialog} onOpenChange={setNoApplicableDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle className="flex items-center gap-2">
+                <Info className="h-5 w-5 text-primary" />
+                Nenhuma correção automática disponível
+              </AlertDialogTitle>
+              <AlertDialogDescription asChild>
+                <div className="space-y-3">
+                  <p>
+                    Encontramos {applicabilitySummary.total} issue(s) no diagnóstico, mas {applicabilitySummary.auto === 0 ? 'nenhuma' : applicabilitySummary.auto} pode ser corrigida automaticamente com os campos disponíveis no editor.
+                  </p>
+                  {classifiedIssues.filter(i => i.applicability !== 'auto').length > 0 && (
+                    <div className="space-y-2 max-h-48 overflow-y-auto">
+                      {classifiedIssues.filter(i => i.applicability !== 'auto').map((issue, i) => (
+                        <div key={i} className="rounded border p-2 text-xs space-y-1">
+                          <div className="flex items-center gap-2">
+                            <ApplicabilityBadge applicability={issue.applicability} />
+                            <span className="font-medium">{issue.issue}</span>
+                          </div>
+                          <p className="text-muted-foreground italic">{issue.reason}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <p className="text-xs text-muted-foreground">
+                    Issues manuais exigem ajustes nos componentes/templates da página. Consulte o diagnóstico para orientações.
+                  </p>
+                </div>
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogAction>Entendi</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </SheetContent>
     </Sheet>
   );
 }
 
 // ─── Sub-components ───
+
+function ApplicabilityBadge({ applicability }: { applicability: Applicability }) {
+  switch (applicability) {
+    case 'auto':
+      return <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-primary/40 text-primary">✅ Auto</Badge>;
+    case 'manual':
+      return <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-amber-500/40 text-amber-600">🟡 Manual</Badge>;
+    case 'na':
+      return <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-muted-foreground/40 text-muted-foreground">❌ N/A</Badge>;
+  }
+}
 
 function FieldEditor({
   field,
