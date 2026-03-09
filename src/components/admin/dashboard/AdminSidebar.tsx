@@ -2,14 +2,17 @@ import { useLocation, Link } from 'react-router-dom';
 import {
   LayoutDashboard, BarChart3, Wrench, BookOpen, MousePointerClick, Search, FileText,
   Crown, Package, CalendarDays, Users, Ticket, ChevronDown, Settings2,
-  Database, ClipboardCheck, Shield, Bot, History, Menu as MenuIcon,
+  Database, ClipboardCheck, Shield, Bot, History, Menu as MenuIcon, Moon, Sun,
 } from 'lucide-react';
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent,
-  SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader,
+  SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader, SidebarFooter,
 } from '@/components/ui/sidebar';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
+import { useNavConfig } from '@/hooks/useNavConfig';
+import { useTheme } from '@/hooks/useTheme';
+import { Button } from '@/components/ui/button';
 
 const insightsItems = [
   { title: 'Ferramentas', href: '/admin/insights/ferramentas', icon: Wrench },
