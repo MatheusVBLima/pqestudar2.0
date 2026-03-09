@@ -132,6 +132,7 @@ const Termos = () => {
       <PageHero
         title={ps.headerTitle}
         description={ps.headerDescription}
+        isLoading={ps.isLoading}
         badge={
           <Badge variant="secondary" className="mb-4">
             <FileText className="w-3 h-3 mr-1" />
