@@ -85,6 +85,9 @@ export function AuditOptimizationDrawer({ open, onOpenChange, finding, onReaudit
   const resolved = useMemo(() => path ? resolveAuditedUrl(path) : null, [path]);
   const profile = useMemo(() => resolved ? getProfile(resolved.profileKey) : null, [resolved]);
 
+  const { data: loadResult, isLoading: isLoadingFields } = useLoadEntityFields(open && resolved ? path : null);
+  const { data: versions, isLoading: isLoadingHistory } = useVersionHistory(open ? path : null);
+
   const [noApplicableDialog, setNoApplicableDialog] = useState(false);
 
   const classifiedIssues = useMemo(() => {
