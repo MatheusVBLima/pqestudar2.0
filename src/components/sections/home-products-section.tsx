@@ -214,6 +214,7 @@ export function HomeProductsSection() {
             ))}
           </div>
         )}
+        </div>
       </div>
     </section>
   );
