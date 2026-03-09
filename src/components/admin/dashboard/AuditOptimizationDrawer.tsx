@@ -10,7 +10,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
-import { Pencil, History, RotateCcw, RefreshCw, AlertTriangle, Check, X, Clock } from 'lucide-react';
+import { Pencil, History, RotateCcw, RefreshCw, AlertTriangle, Check, X, Clock, Sparkles, Loader2 } from 'lucide-react';
 import { resolveAuditedUrl, type ResolvedUrl } from '@/lib/audit-url-resolver';
 import { getProfile, type EditorField } from '@/lib/audit-editor-profiles';
 import {
@@ -25,6 +25,8 @@ import { extractDomFromIframe } from '@/lib/iframe-audit-engine';
 import { analyzeCopy } from '@/lib/copy-audit-analyzer';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { supabase } from '@/integrations/supabase/client';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface AuditIssue {
   issue: string;
@@ -65,6 +67,7 @@ export function AuditOptimizationDrawer({ open, onOpenChange, finding, onReaudit
   const [editedFields, setEditedFields] = useState<Record<string, string>>({});
   const [isReauditing, setIsReauditing] = useState(false);
   const [reauditScore, setReauditScore] = useState<number | null>(null);
+  const [isGeneratingSuggestions, setIsGeneratingSuggestions] = useState(false);
 
   const path = finding?.path ?? null;
   const resolved = useMemo(() => path ? resolveAuditedUrl(path) : null, [path]);
@@ -203,6 +206,68 @@ export function AuditOptimizationDrawer({ open, onOpenChange, finding, onReaudit
       setEditedFields({});
     } catch (err: any) {
       // error handled by mutation
+    }
+  };
+
+  // Auto-correct handler (AI suggestions)
+  const handleGenerateSuggestions = async () => {
+    if (!profile || !path || !resolved) return;
+
+    setIsGeneratingSuggestions(true);
+    try {
+      // Build fields payload with current values
+      const fieldsPayload = profile.fields.map(f => ({
+        key: f.key,
+        label: f.label,
+        value: getFieldValue(f.key),
+        maxLength: f.maxLength,
+        warnLength: f.warnLength,
+      }));
+
+      // Build issues payload from current findings
+      const issuesPayload = finding?.issues?.map(i => ({
+        issue: i.issue,
+        category: i.category,
+        evidence: i.evidence,
+        fix: i.fix,
+      })) ?? [];
+
+      const { data, error } = await supabase.functions.invoke('generate-copy-suggestions', {
+        body: {
+          url: path,
+          fields: fieldsPayload,
+          issues: issuesPayload,
+          profileKey: resolved.profileKey,
+        },
+      });
+
+      if (error) {
+        throw new Error(error.message || 'Erro ao gerar sugestões');
+      }
+
+      if (!data?.suggestions) {
+        throw new Error('Resposta inválida do serviço de IA');
+      }
+
+      // Apply suggestions to edited fields
+      const newEditedFields: Record<string, string> = { ...editedFields };
+      for (const [key, value] of Object.entries(data.suggestions)) {
+        if (typeof value === 'string' && profile.fields.some(f => f.key === key)) {
+          newEditedFields[key] = value;
+        }
+      }
+      setEditedFields(newEditedFields);
+
+      toast.success('Sugestões aplicadas no editor. Revise e clique em "Salvar nova versão".');
+      
+      if (data.reasoning) {
+        console.log('[Copy AI] Reasoning:', data.reasoning);
+      }
+    } catch (err: any) {
+      console.error('[Copy AI] Error:', err);
+      toast.error(err.message || 'Erro ao gerar sugestões automáticas');
+    } finally {
+      setIsGeneratingSuggestions(false);
     }
   };
 
@@ -370,20 +435,43 @@ export function AuditOptimizationDrawer({ open, onOpenChange, finding, onReaudit
               <div className="border-t p-4 flex items-center gap-2">
                 <Button
                   onClick={handleSave}
-                  disabled={!canSave || saveMutation.isPending || isReauditing}
+                  disabled={!canSave || saveMutation.isPending || isReauditing || isGeneratingSuggestions}
                   className="flex-1"
                 >
                   {saveMutation.isPending ? 'Salvando…' : isReauditing ? 'Reauditando…' : 'Salvar nova versão'}
                 </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => handleReaudit()}
-                  disabled={isReauditing}
-                  title="Reauditar URL"
-                >
-                  <RefreshCw className={`h-4 w-4 ${isReauditing ? 'animate-spin' : ''}`} />
-                </Button>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={handleGenerateSuggestions}
+                      disabled={isGeneratingSuggestions || isReauditing || saveMutation.isPending}
+                    >
+                      {isGeneratingSuggestions ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Sparkles className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {isGeneratingSuggestions ? 'Gerando sugestões…' : 'Corrigir automaticamente'}
+                  </TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => handleReaudit()}
+                      disabled={isReauditing || isGeneratingSuggestions}
+                    >
+                      <RefreshCw className={`h-4 w-4 ${isReauditing ? 'animate-spin' : ''}`} />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Reauditar URL</TooltipContent>
+                </Tooltip>
               </div>
             )}
           </TabsContent>
