@@ -7,7 +7,7 @@ import { GlobalSeo } from "@/components/seo/GlobalSeo";
 import { usePageSettings } from "@/hooks/usePageSettings";
 
 const Index = () => {
-  const { titleTag, metaDescription, isReady } = usePageSettings("/");
+  const { titleTag, metaDescription, headerTitle, headerDescription, isReady, isLoading } = usePageSettings("/");
 
   return (
     <>
@@ -25,7 +25,11 @@ const Index = () => {
       )}
 
       <main className="flex-1">
-        <HeroSection />
+        <HeroSection
+          headerTitle={headerTitle}
+          headerDescription={headerDescription}
+          isLoading={isLoading}
+        />
         <DualTrackSection />
         <HomeProductsSection />
         <SocialProofSection />

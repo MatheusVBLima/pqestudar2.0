@@ -166,11 +166,7 @@ export default function AdminPages() {
               onChange={(e) => setHeaderDescription(e.target.value)}
               placeholder="Ex: A curadoria completa das ferramentas..."
               rows={3}
-              disabled={selectedRoute === "/"}
             />
-            {selectedRoute === "/" && (
-              <p className="text-xs text-muted-foreground">A descrição do hero da Home é fixa no componente Hero.</p>
-            )}
           </div>
 
           {/* Save */}

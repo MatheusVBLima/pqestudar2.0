@@ -6,14 +6,21 @@ import HeroBadge from "@/components/ui/hero-badge";
 import { Sparkles, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-export function HeroSection() {
+interface HeroSectionProps {
+  headerTitle?: string;
+  headerDescription?: string;
+  isLoading?: boolean;
+}
+
+export function HeroSection({ headerTitle, headerDescription, isLoading }: HeroSectionProps) {
   const [email, setEmail] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,7 +30,7 @@ export function HeroSection() {
       return;
     }
 
-    setIsLoading(true);
+    setIsSubmitting(true);
     try {
       const urlParams = new URLSearchParams(window.location.search);
       const { data, error } = await supabase.functions.invoke("subscribe-newsletter-brevo", {
@@ -50,7 +57,7 @@ export function HeroSection() {
     } catch {
       toast.error("Não foi possível cadastrar seu e-mail. Tente novamente.");
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -75,27 +82,38 @@ export function HeroSection() {
             </div>
 
             {/* Title */}
-            <motion.h1
-              className="text-4xl font-bold tracking-tight sm:text-6xl lg:text-7xl xl:text-8xl"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, ease }}
-            >
-              Aprenda, Organize e Evolua com as{" "}
-              <span className="bg-gradient-primary bg-clip-text text-transparent">
-                Ferramentas Certas
-              </span>
-            </motion.h1>
+            {isLoading ? (
+              <div className="flex flex-col items-center gap-3">
+                <Skeleton className="h-12 sm:h-16 lg:h-20 w-[90%] max-w-3xl rounded-lg" />
+                <Skeleton className="h-12 sm:h-16 lg:h-20 w-[70%] max-w-2xl rounded-lg" />
+              </div>
+            ) : (
+              <motion.h1
+                className="text-4xl font-bold tracking-tight sm:text-6xl lg:text-7xl xl:text-8xl"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, ease }}
+              >
+                {headerTitle}
+              </motion.h1>
+            )}
 
             {/* Description */}
-            <motion.p
-              className="max-w-[42rem] mx-auto leading-normal text-muted-foreground sm:text-xl sm:leading-8"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1, duration: 0.8, ease }}
-            >
-              O PqEstudar organiza ferramentas online, plataformas educacionais, concursos públicos e conteúdos práticos para você resolver problemas e crescer mais rápido!
-            </motion.p>
+            {isLoading ? (
+              <div className="flex flex-col items-center gap-2 mx-auto max-w-[42rem]">
+                <Skeleton className="h-6 w-full rounded-md" />
+                <Skeleton className="h-6 w-4/5 rounded-md" />
+              </div>
+            ) : (
+              <motion.p
+                className="max-w-[42rem] mx-auto leading-normal text-muted-foreground sm:text-xl sm:leading-8"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1, duration: 0.8, ease }}
+              >
+                {headerDescription}
+              </motion.p>
+            )}
 
             {/* Email capture form */}
             <motion.div
@@ -113,17 +131,17 @@ export function HeroSection() {
                   placeholder="Digite seu e-mail"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  disabled={isLoading}
+                  disabled={isSubmitting}
                   className="flex-1 border-0 bg-transparent shadow-none focus-visible:ring-0 text-sm px-3"
                   aria-label="Seu e-mail"
                 />
                 <Button
                   type="submit"
                   size="sm"
-                  disabled={isLoading}
+                  disabled={isSubmitting}
                   className="rounded-full px-5 shrink-0 gap-1.5"
                 >
-                  {isLoading ? (
+                  {isSubmitting ? (
                     <>
                       <Loader2 className="h-3.5 w-3.5 animate-spin" />
                       Enviando…
