@@ -2,14 +2,17 @@ import { useLocation, Link } from 'react-router-dom';
 import {
   LayoutDashboard, BarChart3, Wrench, BookOpen, MousePointerClick, Search, FileText,
   Crown, Package, CalendarDays, Users, Ticket, ChevronDown, Settings2,
-  Database, ClipboardCheck, Shield, Bot, History, Menu as MenuIcon,
+  Database, ClipboardCheck, Shield, Bot, History, Menu as MenuIcon, Moon, Sun,
 } from 'lucide-react';
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent,
-  SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader,
+  SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader, SidebarFooter,
 } from '@/components/ui/sidebar';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
+import { useNavConfig } from '@/hooks/useNavConfig';
+import { useTheme } from '@/hooks/useTheme';
+import { Button } from '@/components/ui/button';
 
 const insightsItems = [
   { title: 'Ferramentas', href: '/admin/insights/ferramentas', icon: Wrench },
@@ -42,13 +45,15 @@ export function AdminSidebar() {
   const isInsightsActive = pathname.startsWith('/admin/insights');
   const isPremiumActive = pathname.startsWith('/admin/premium');
   const isConcursosActive = pathname.startsWith('/admin/concursos');
+  const { logos } = useNavConfig();
+  const { isDark, toggleTheme } = useTheme();
 
   return (
     <Sidebar className="border-none bg-transparent" collapsible="offcanvas" data-slot="admin-sidebar">
       <SidebarHeader className="p-4 border-b">
-        <Link to="/admin" className="flex items-center gap-2 font-bold text-lg">
-          <LayoutDashboard className="h-5 w-5 shrink-0 text-primary" />
-          <span className="truncate">PqEstudar Admin</span>
+        <Link to="/admin" className="flex items-center gap-2">
+          <img src={isDark ? logos.dark : logos.light} alt="PqEstudar" className="h-7 shrink-0" />
+          <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Admin</span>
         </Link>
       </SidebarHeader>
 
@@ -320,6 +325,18 @@ export function AdminSidebar() {
           </Collapsible>
         </SidebarGroup>
       </SidebarContent>
+
+      <SidebarFooter className="p-3 border-t">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={toggleTheme}
+          className="w-full justify-start gap-2 rounded-[var(--admin-radius)] text-muted-foreground hover:text-foreground"
+        >
+          {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+          <span>{isDark ? 'Modo claro' : 'Modo escuro'}</span>
+        </Button>
+      </SidebarFooter>
     </Sidebar>
   );
 }
