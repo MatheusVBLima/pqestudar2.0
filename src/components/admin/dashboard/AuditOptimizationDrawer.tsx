@@ -434,7 +434,7 @@ export function AuditOptimizationDrawer({ open, onOpenChange, finding, onReaudit
           </TabsContent>
 
           {/* ═══ EDITOR ═══ */}
-          <TabsContent value="editor" className="flex-1 min-h-0 flex flex-col">
+          <TabsContent value="editor" className="flex-1 min-h-0 flex flex-col overflow-hidden mt-0 data-[state=inactive]:hidden">
             <ScrollArea className="flex-1 px-6 pb-4">
               <div className="space-y-5 pt-4">
                 {isLoadingFields ? (
