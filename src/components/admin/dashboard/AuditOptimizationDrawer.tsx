@@ -382,22 +382,34 @@ export function AuditOptimizationDrawer({ open, onOpenChange, finding, onReaudit
                 <Separator />
 
                 <div>
-                  <h4 className="text-sm font-semibold mb-3">Issues ({issues.length})</h4>
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="text-sm font-semibold">Issues ({issues.length})</h4>
+                    {classifiedIssues.length > 0 && (
+                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                        <span className="flex items-center gap-0.5"><Check className="h-3 w-3 text-primary" />{applicabilitySummary.auto}</span>
+                        <span className="flex items-center gap-0.5"><Pencil className="h-3 w-3 text-amber-500" />{applicabilitySummary.manual}</span>
+                      </div>
+                    )}
+                  </div>
                   {issues.length === 0 ? (
                     <p className="text-sm text-muted-foreground">Nenhuma issue encontrada.</p>
                   ) : (
                     <div className="space-y-3">
-                      {issues.map((issue, i) => (
+                      {classifiedIssues.map((issue, i) => (
                         <div key={i} className="rounded-lg border p-3 space-y-1.5">
                           <div className="flex items-center justify-between gap-2">
                             <p className="text-sm font-medium">{issue.issue}</p>
-                            <Badge variant={impactColor(issue.impact)} className="text-xs shrink-0">
-                              {issue.impact}
-                            </Badge>
+                            <div className="flex items-center gap-1 shrink-0">
+                              <ApplicabilityBadge applicability={issue.applicability} />
+                              <Badge variant={impactColor(issue.impact)} className="text-xs">
+                                {issue.impact}
+                              </Badge>
+                            </div>
                           </div>
                           <div className="space-y-0.5 text-xs text-muted-foreground">
                             <p><span className="font-medium text-foreground">Evidência:</span> {issue.evidence}</p>
                             <p><span className="font-medium text-foreground">Correção:</span> {issue.fix}</p>
+                            <p className="italic">{issue.reason}</p>
                           </div>
                         </div>
                       ))}
