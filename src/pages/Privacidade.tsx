@@ -114,6 +114,7 @@ const Privacidade = () => {
   });
 
   useEffect(() => {
+    if (!ps.isReady) return;
     document.title = ps.titleTag;
     const metaDesc = document.querySelector('meta[name="description"]');
     if (metaDesc) metaDesc.setAttribute("content", ps.metaDescription);
@@ -131,7 +132,7 @@ const Privacidade = () => {
     });
     document.head.appendChild(script);
     return () => { document.head.removeChild(script); };
-  }, [ps.titleTag, ps.metaDescription, doc?.updated_at]);
+  }, [ps.titleTag, ps.metaDescription, ps.isReady, doc?.updated_at]);
 
   useEffect(() => {
     if (sections.length === 0) return;
