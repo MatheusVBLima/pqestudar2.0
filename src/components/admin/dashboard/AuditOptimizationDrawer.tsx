@@ -14,6 +14,7 @@ import { Pencil, History, RotateCcw, RefreshCw, AlertTriangle, Check, X, Clock, 
 import { resolveAuditedUrl, type ResolvedUrl } from '@/lib/audit-url-resolver';
 import { getProfile, type EditorField } from '@/lib/audit-editor-profiles';
 import { classifyIssues, getApplicabilitySummary, type ClassifiedIssue, type Applicability } from '@/lib/issue-applicability';
+import { AISuggestionsPanel } from './AISuggestionsPanel';
 import {
   useLoadEntityFields,
   useVersionHistory,
