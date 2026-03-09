@@ -209,6 +209,68 @@ export function AuditOptimizationDrawer({ open, onOpenChange, finding, onReaudit
     }
   };
 
+  // Auto-correct handler (AI suggestions)
+  const handleGenerateSuggestions = async () => {
+    if (!profile || !path || !resolved) return;
+
+    setIsGeneratingSuggestions(true);
+    try {
+      // Build fields payload with current values
+      const fieldsPayload = profile.fields.map(f => ({
+        key: f.key,
+        label: f.label,
+        value: getFieldValue(f.key),
+        maxLength: f.maxLength,
+        warnLength: f.warnLength,
+      }));
+
+      // Build issues payload from current findings
+      const issuesPayload = finding?.issues?.map(i => ({
+        issue: i.issue,
+        category: i.category,
+        evidence: i.evidence,
+        fix: i.fix,
+      })) ?? [];
+
+      const { data, error } = await supabase.functions.invoke('generate-copy-suggestions', {
+        body: {
+          url: path,
+          fields: fieldsPayload,
+          issues: issuesPayload,
+          profileKey: resolved.profileKey,
+        },
+      });
+
+      if (error) {
+        throw new Error(error.message || 'Erro ao gerar sugestões');
+      }
+
+      if (!data?.suggestions) {
+        throw new Error('Resposta inválida do serviço de IA');
+      }
+
+      // Apply suggestions to edited fields
+      const newEditedFields: Record<string, string> = { ...editedFields };
+      for (const [key, value] of Object.entries(data.suggestions)) {
+        if (typeof value === 'string' && profile.fields.some(f => f.key === key)) {
+          newEditedFields[key] = value;
+        }
+      }
+      setEditedFields(newEditedFields);
+
+      toast.success('Sugestões aplicadas no editor. Revise e clique em "Salvar nova versão".');
+      
+      if (data.reasoning) {
+        console.log('[Copy AI] Reasoning:', data.reasoning);
+      }
+    } catch (err: any) {
+      console.error('[Copy AI] Error:', err);
+      toast.error(err.message || 'Erro ao gerar sugestões automáticas');
+    } finally {
+      setIsGeneratingSuggestions(false);
+    }
+  };
+
   if (!finding) return null;
 
   const issues = Array.isArray(finding.issues) ? finding.issues : [];
