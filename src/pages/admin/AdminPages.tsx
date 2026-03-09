@@ -154,11 +154,7 @@ export default function AdminPages() {
               value={headerTitle}
               onChange={(e) => setHeaderTitle(e.target.value)}
               placeholder="Ex: Ferramentas"
-              disabled={selectedRoute === "/"}
             />
-            {selectedRoute === "/" && (
-              <p className="text-xs text-muted-foreground">O H1 da Home é fixo no componente Hero.</p>
-            )}
           </div>
 
           {/* Header description */}
