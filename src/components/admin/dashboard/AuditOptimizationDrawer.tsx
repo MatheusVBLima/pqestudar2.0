@@ -558,18 +558,21 @@ function FieldEditor({
   editedValue,
   onChange,
   error,
+  highlighted,
 }: {
   field: EditorField;
   currentValue: string;
   editedValue: string;
   onChange: (val: string) => void;
   error?: string;
+  highlighted?: boolean;
 }) {
   const isOverWarn = field.warnLength && editedValue.length > field.warnLength;
   const isOverMax = field.maxLength && editedValue.length > field.maxLength;
+  const highlightClass = highlighted ? 'ring-2 ring-primary/40 transition-all duration-500' : 'transition-all duration-500';
 
   return (
-    <div className="space-y-1.5">
+    <div className={`space-y-1.5 rounded-lg p-2 -m-2 ${highlighted ? 'bg-primary/5' : ''} transition-colors duration-500`}>
       <div className="flex items-center justify-between">
         <Label className="text-sm">{field.label}</Label>
         <span className={`text-xs ${isOverMax ? 'text-destructive' : isOverWarn ? 'text-amber-500' : 'text-muted-foreground'}`}>
@@ -581,14 +584,14 @@ function FieldEditor({
           value={editedValue}
           onChange={(e) => onChange(e.target.value)}
           placeholder={field.placeholder}
-          className={`min-h-[80px] text-sm ${error ? 'border-destructive' : ''}`}
+          className={`min-h-[80px] text-sm ${error ? 'border-destructive' : ''} ${highlightClass}`}
         />
       ) : (
         <Input
           value={editedValue}
           onChange={(e) => onChange(e.target.value)}
           placeholder={field.placeholder}
-          className={`text-sm ${error ? 'border-destructive' : ''}`}
+          className={`text-sm ${error ? 'border-destructive' : ''} ${highlightClass}`}
         />
       )}
       {error && <p className="text-xs text-destructive">{error}</p>}
