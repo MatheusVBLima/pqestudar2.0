@@ -333,8 +333,8 @@ export function AuditOptimizationDrawer({ open, onOpenChange, finding, onReaudit
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-full sm:max-w-3xl p-0 flex flex-col" side="right">
-        <SheetHeader className="px-6 pt-6 pb-2">
+      <SheetContent className="w-full sm:max-w-3xl p-0 flex flex-col h-full" side="right">
+        <SheetHeader className="px-6 pt-6 pb-2 shrink-0">
           <SheetTitle className="text-base flex items-center gap-2">
             <Pencil className="h-4 w-4 text-primary" />
             Central de Otimização — Copy Audit
@@ -342,8 +342,8 @@ export function AuditOptimizationDrawer({ open, onOpenChange, finding, onReaudit
           <p className="text-xs text-muted-foreground break-all">{finding.path}</p>
         </SheetHeader>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
-          <div className="px-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0 overflow-hidden">
+          <div className="px-6 shrink-0">
             <TabsList className="w-full grid grid-cols-3">
               <TabsTrigger value="diagnostico">Diagnóstico</TabsTrigger>
               <TabsTrigger value="editor" disabled={!isSupported}>
@@ -354,8 +354,8 @@ export function AuditOptimizationDrawer({ open, onOpenChange, finding, onReaudit
           </div>
 
           {/* ═══ DIAGNÓSTICO ═══ */}
-          <TabsContent value="diagnostico" className="flex-1 min-h-0">
-            <ScrollArea className="h-full px-6 pb-6">
+          <TabsContent value="diagnostico" className="flex-1 min-h-0 overflow-hidden mt-0 data-[state=inactive]:hidden">
+            <div className="h-full overflow-y-auto px-6 pb-6">
               <div className="space-y-5 pt-4">
                 <div className="flex items-center gap-4">
                   <div>
@@ -430,7 +430,7 @@ export function AuditOptimizationDrawer({ open, onOpenChange, finding, onReaudit
                   </div>
                 )}
               </div>
-            </ScrollArea>
+            </div>
           </TabsContent>
 
           {/* ═══ EDITOR ═══ */}
