@@ -582,7 +582,7 @@ export function AuditOptimizationDrawer({ open, onOpenChange, finding, onReaudit
                   ))
                 )}
               </div>
-            </ScrollArea>
+            </div>
           </TabsContent>
         </Tabs>
 
