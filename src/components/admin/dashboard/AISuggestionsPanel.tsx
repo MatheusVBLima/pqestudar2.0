@@ -8,7 +8,7 @@ import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
-import { Sparkles, Loader2, Check, AlertTriangle, ArrowRight, Equal } from 'lucide-react';
+import { Sparkles, Loader2, Check, AlertTriangle, ArrowRight, Equal, Info } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { type EditorField } from '@/lib/audit-editor-profiles';
 import { type ClassifiedIssue } from '@/lib/issue-applicability';
@@ -28,7 +28,7 @@ interface FieldSuggestion {
 interface SuggestionsResult {
   fieldSuggestions: FieldSuggestion[];
   reasoning?: string;
-  unresolvedIssues: ClassifiedIssue[];
+  skippedIssues: ClassifiedIssue[];
 }
 
 interface Props {
@@ -63,6 +63,9 @@ export function AISuggestionsPanel({
   const changedSuggestions = useMemo(() => result?.fieldSuggestions.filter(s => s.changed) ?? [], [result]);
   const selectedSuggestions = useMemo(() => changedSuggestions.filter(s => s.selected), [changedSuggestions]);
 
+  // The button is enabled whenever there are editable fields — issues are context, not a gate
+  const canGenerate = fields.length > 0;
+
   const toggleSuggestion = (key: string) => {
     if (!result) return;
     setResult({
@@ -87,11 +90,13 @@ export function AISuggestionsPanel({
         warnLength: f.warnLength,
       }));
 
-      const issuesPayload = autoIssues.map(i => ({
+      // Send ALL issues as context to the AI, not just auto-applicable ones
+      const issuesPayload = classifiedIssues.map(i => ({
         issue: i.issue,
         category: i.category,
         evidence: i.evidence,
         fix: i.fix,
+        applicability: i.applicability,
       }));
 
       const { data, error: fnError } = await supabase.functions.invoke('generate-copy-suggestions', {
@@ -131,7 +136,7 @@ export function AISuggestionsPanel({
       setResult({
         fieldSuggestions,
         reasoning: data.reasoning,
-        unresolvedIssues: manualIssues,
+        skippedIssues: manualIssues,
       });
     } catch (err: any) {
       console.error('[AI Panel] Error:', err);
@@ -174,7 +179,7 @@ export function AISuggestionsPanel({
             Correção automática
           </DialogTitle>
           <DialogDescription className="text-xs">
-            Pré-visualize as sugestões antes de aplicar no editor.
+            Gera sugestões de melhoria para todos os campos editáveis usando boas práticas de copy.
           </DialogDescription>
         </DialogHeader>
 
@@ -194,48 +199,49 @@ export function AISuggestionsPanel({
             </Select>
             {provider === 'openai' && (
               <p className="text-[11px] text-muted-foreground">
-                Usa a API Key configurada em Supabase Secrets (OPENAI_API_KEY).
+                Usa modelo e API Key configurados em /admin/concursos/orquestracao-ia (OPENAI_API_KEY).
               </p>
             )}
           </div>
 
-          {/* Issues summary */}
+          {/* Editable fields info */}
+          <div className="rounded-lg border p-3 space-y-2 text-xs">
+            <p className="font-medium text-sm flex items-center gap-1.5">
+              <Info className="h-3.5 w-3.5 text-primary" />
+              {fields.length} campo(s) editável(is) detectado(s)
+            </p>
+            <p className="text-muted-foreground">
+              {fields.map(f => f.label).join(', ')}
+            </p>
+          </div>
+
+          {/* Issues context summary */}
           {classifiedIssues.length > 0 && (
             <div className="rounded-lg border p-3 space-y-2 text-xs">
-              <p className="font-medium text-sm">Issues do diagnóstico</p>
+              <p className="font-medium text-sm">Contexto do diagnóstico</p>
               <div className="flex items-center gap-3">
-                <span className="flex items-center gap-1">
-                  <Check className="h-3 w-3 text-primary" />
-                  {autoIssues.length} auto-aplicável(is)
-                </span>
-                <span className="flex items-center gap-1">
-                  <AlertTriangle className="h-3 w-3 text-amber-500" />
-                  {manualIssues.length} manual(is)
-                </span>
+                {autoIssues.length > 0 && (
+                  <span className="flex items-center gap-1">
+                    <Check className="h-3 w-3 text-primary" />
+                    {autoIssues.length} corrigível(is) via campos
+                  </span>
+                )}
+                {manualIssues.length > 0 && (
+                  <span className="flex items-center gap-1">
+                    <AlertTriangle className="h-3 w-3 text-amber-500" />
+                    {manualIssues.length} estrutural(is)
+                  </span>
+                )}
               </div>
-              {autoIssues.length === 0 && (
-                <p className="text-muted-foreground italic">
-                  Nenhuma issue pode ser corrigida automaticamente com os campos disponíveis.
-                </p>
-              )}
+              <p className="text-muted-foreground">
+                A IA usará todas as issues como contexto para melhorar os campos disponíveis, mesmo as estruturais.
+              </p>
             </div>
           )}
 
-          {/* Manual issues detail (before generating) */}
-          {manualIssues.length > 0 && !result && (
-            <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 space-y-2 text-xs">
-              <p className="font-medium text-amber-600">Issues estruturais/manuais</p>
-              <p className="text-muted-foreground">
-                Estas issues não podem ser resolvidas por IA neste editor:
-              </p>
-              <ul className="space-y-1 text-muted-foreground">
-                {manualIssues.map((issue, i) => (
-                  <li key={i} className="flex items-start gap-1.5">
-                    <span className="text-amber-500 mt-0.5">•</span>
-                    <span>{issue.issue} — <em>{issue.reason}</em></span>
-                  </li>
-                ))}
-              </ul>
+          {classifiedIssues.length === 0 && !result && (
+            <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 text-xs text-muted-foreground">
+              <p>Nenhuma issue no diagnóstico, mas a IA ainda pode sugerir melhorias de copy com base em boas práticas (clareza, tamanho de frase, SEO, etc.).</p>
             </div>
           )}
 
@@ -283,7 +289,7 @@ export function AISuggestionsPanel({
                 </p>
                 {changedSuggestions.length === 0 && (
                   <p className="text-xs text-muted-foreground italic">
-                    A IA analisou os campos, mas os textos sugeridos são idênticos aos atuais. Nenhuma alteração necessária.
+                    Nenhuma melhoria detectada com os campos atuais. Os textos já estão adequados segundo a análise da IA.
                   </p>
                 )}
               </div>
@@ -299,16 +305,19 @@ export function AISuggestionsPanel({
                   />
                 ))}
 
-              {/* Unresolved issues */}
-              {result.unresolvedIssues.length > 0 && (
+              {/* Structural/manual issues note */}
+              {result.skippedIssues.length > 0 && (
                 <>
                   <Separator />
                   <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 space-y-2 text-xs">
                     <p className="font-medium text-amber-600">
-                      {result.unresolvedIssues.length} issue(s) não resolvida(s)
+                      {result.skippedIssues.length} issue(s) estrutural(is)/manual(is)
+                    </p>
+                    <p className="text-muted-foreground">
+                      Estas issues dependem de alterações no template/componente e não podem ser resolvidas pelos campos editáveis:
                     </p>
                     <ul className="space-y-1 text-muted-foreground">
-                      {result.unresolvedIssues.map((issue, i) => (
+                      {result.skippedIssues.map((issue, i) => (
                         <li key={i} className="flex items-start gap-1.5">
                           <span className="text-amber-500 mt-0.5">•</span>
                           <span>{issue.issue} — <em>{issue.reason}</em></span>
@@ -330,7 +339,7 @@ export function AISuggestionsPanel({
           {!result ? (
             <Button
               onClick={handleGenerate}
-              disabled={isGenerating || autoIssues.length === 0}
+              disabled={isGenerating || !canGenerate}
               className="flex-1"
             >
               {isGenerating ? (

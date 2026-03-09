@@ -123,9 +123,20 @@ serve(async (req) => {
     }
 
     // Build context about current issues
-    const issuesContext = issues && issues.length > 0
-      ? `\n\nProblemas identificados na auditoria atual:\n${issues.map(i => `- ${i.category}: ${i.issue} — ${i.fix}`).join('\n')}`
-      : '';
+    // Build issues context — send ALL issues (auto + manual) as context
+    let issuesContext = '';
+    if (issues && issues.length > 0) {
+      const autoIssues = issues.filter((i: any) => i.applicability === 'auto' || !i.applicability);
+      const manualIssues = issues.filter((i: any) => i.applicability === 'manual' || i.applicability === 'na');
+      
+      issuesContext = '\n\nProblemas identificados na auditoria:';
+      if (autoIssues.length > 0) {
+        issuesContext += `\n\nCorrigíveis via campos editáveis:\n${autoIssues.map((i: any) => `- ${i.category}: ${i.issue} — ${i.fix}`).join('\n')}`;
+      }
+      if (manualIssues.length > 0) {
+        issuesContext += `\n\nEstruturais (não editáveis diretamente, mas use como contexto para melhorar os campos disponíveis):\n${manualIssues.map((i: any) => `- ${i.category}: ${i.issue} — ${i.fix}`).join('\n')}`;
+      }
+    }
 
     // Build fields context
     const fieldsContext = fields.map(f => {
@@ -142,6 +153,14 @@ Campos atuais:
 ${fieldsContext}
 ${issuesContext}
 
+IMPORTANTE: Mesmo que nem todas as issues sejam corrigíveis por campos, SEMPRE sugira melhorias nos campos disponíveis usando boas práticas de copywriting:
+- Clareza e objetividade (frases mais curtas)
+- Título/H1: benefício claro e específico, sem termos genéricos
+- Meta title (até 60 chars ideal): informativo, com palavra-chave
+- Meta description (até 160 chars ideal): CTA implícito, sem buzzwords
+- Resumo: direto, com resultados práticos, tom profissional PT-BR
+- Não invente dados/fatos
+
 Retorne APENAS um JSON com as sugestões melhoradas, no formato:
 {
   "suggestions": {
@@ -154,7 +173,8 @@ Retorne APENAS um JSON com as sugestões melhoradas, no formato:
 Importante:
 - Use exatamente as mesmas keys dos campos fornecidos
 - Respeite os limites de caracteres de cada campo
-- Se um campo já estiver bom, inclua-o com ajustes mínimos ou idêntico
+- Se um campo já estiver genuinamente bom, mantenha-o idêntico
+- Priorize mudanças nos campos com mais impacto SEO/conversão
 - Seja conciso e direto`;
 
     console.log(`[generate-copy-suggestions] Provider: ${provider}, Model: ${model}, URL: ${url}`);
