@@ -439,7 +439,7 @@ export function AuditOptimizationDrawer({ open, onOpenChange, finding, onReaudit
               <div className="border-t p-4 flex items-center gap-2">
                 <Button
                   onClick={handleSave}
-                  disabled={!canSave || saveMutation.isPending || isReauditing || isGeneratingSuggestions}
+                  disabled={!canSave || saveMutation.isPending || isReauditing}
                   className="flex-1"
                 >
                   {saveMutation.isPending ? 'Salvando…' : isReauditing ? 'Reauditando…' : 'Salvar nova versão'}
@@ -449,19 +449,13 @@ export function AuditOptimizationDrawer({ open, onOpenChange, finding, onReaudit
                     <Button
                       variant="outline"
                       size="icon"
-                      onClick={handleGenerateSuggestions}
-                      disabled={isGeneratingSuggestions || isReauditing || saveMutation.isPending}
+                      onClick={handleOpenAIPanel}
+                      disabled={isReauditing || saveMutation.isPending}
                     >
-                      {isGeneratingSuggestions ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <Sparkles className="h-4 w-4" />
-                      )}
+                      <Sparkles className="h-4 w-4" />
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent>
-                    {isGeneratingSuggestions ? 'Gerando sugestões…' : 'Corrigir automaticamente'}
-                  </TooltipContent>
+                  <TooltipContent>Corrigir automaticamente</TooltipContent>
                 </Tooltip>
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -469,7 +463,7 @@ export function AuditOptimizationDrawer({ open, onOpenChange, finding, onReaudit
                       variant="outline"
                       size="icon"
                       onClick={() => handleReaudit()}
-                      disabled={isReauditing || isGeneratingSuggestions}
+                      disabled={isReauditing}
                     >
                       <RefreshCw className={`h-4 w-4 ${isReauditing ? 'animate-spin' : ''}`} />
                     </Button>
