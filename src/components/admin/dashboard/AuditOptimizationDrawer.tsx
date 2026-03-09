@@ -585,6 +585,44 @@ export function AuditOptimizationDrawer({ open, onOpenChange, finding, onReaudit
             </ScrollArea>
           </TabsContent>
         </Tabs>
+
+        {/* No auto-applicable issues dialog */}
+        <AlertDialog open={noApplicableDialog} onOpenChange={setNoApplicableDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle className="flex items-center gap-2">
+                <Info className="h-5 w-5 text-primary" />
+                Nenhuma correção automática disponível
+              </AlertDialogTitle>
+              <AlertDialogDescription asChild>
+                <div className="space-y-3">
+                  <p>
+                    Encontramos {applicabilitySummary.total} issue(s) no diagnóstico, mas {applicabilitySummary.auto === 0 ? 'nenhuma' : applicabilitySummary.auto} pode ser corrigida automaticamente com os campos disponíveis no editor.
+                  </p>
+                  {classifiedIssues.filter(i => i.applicability !== 'auto').length > 0 && (
+                    <div className="space-y-2 max-h-48 overflow-y-auto">
+                      {classifiedIssues.filter(i => i.applicability !== 'auto').map((issue, i) => (
+                        <div key={i} className="rounded border p-2 text-xs space-y-1">
+                          <div className="flex items-center gap-2">
+                            <ApplicabilityBadge applicability={issue.applicability} />
+                            <span className="font-medium">{issue.issue}</span>
+                          </div>
+                          <p className="text-muted-foreground italic">{issue.reason}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <p className="text-xs text-muted-foreground">
+                    Issues manuais exigem ajustes nos componentes/templates da página. Consulte o diagnóstico para orientações.
+                  </p>
+                </div>
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogAction>Entendi</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </SheetContent>
     </Sheet>
   );
