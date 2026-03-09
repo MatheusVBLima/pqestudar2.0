@@ -347,7 +347,7 @@ function ProductModal({
 // ── Main page ────────────────────────────────────────────────────────
 
 export default function Produtos() {
-  const { titleTag, metaDescription, headerTitle, headerDescription } = usePageSettings("/produtos");
+  const { titleTag, metaDescription, headerTitle, headerDescription, isLoading: psLoading, isReady: psReady } = usePageSettings("/produtos");
   const { isAdmin, loading: adminLoading } = useUserRoles();
   const queryClient = useQueryClient();
 
