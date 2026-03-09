@@ -325,6 +325,18 @@ export function AdminSidebar() {
           </Collapsible>
         </SidebarGroup>
       </SidebarContent>
+
+      <SidebarFooter className="p-3 border-t">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={toggleTheme}
+          className="w-full justify-start gap-2 rounded-[var(--admin-radius)] text-muted-foreground hover:text-foreground"
+        >
+          {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+          <span>{isDark ? 'Modo claro' : 'Modo escuro'}</span>
+        </Button>
+      </SidebarFooter>
     </Sidebar>
   );
 }
