@@ -247,7 +247,7 @@ export function AuditOptimizationDrawer({ open, onOpenChange, finding, onReaudit
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-full sm:max-w-3xl p-0 flex flex-col h-full relative overflow-hidden" side="right">
+      <SheetContent className="w-full !max-w-3xl p-0 flex flex-col h-full overflow-hidden" side="right">
         <SheetHeader className="px-6 pt-6 pb-2 shrink-0">
           <SheetTitle className="text-base flex items-center gap-2">
             <Pencil className="h-4 w-4 text-primary" />
