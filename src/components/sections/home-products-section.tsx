@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Separator } from "@/components/ui/separator";
 
 interface Product {
   id: string;
@@ -141,31 +142,39 @@ export function HomeProductsSection() {
   const placeholderCount = Math.max(0, 3 - displayProducts.length);
 
   return (
-    <section className="py-16 md:py-24">
+    <section className="pt-0 pb-16 md:pb-24">
       <div className="container mx-auto px-6">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-80px" }}
-          transition={{ duration: 0.6, ease }}
-          className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-10"
-        >
-          <div>
-            <h2 className="text-2xl md:text-3xl font-bold tracking-tight">
-              Produtos do PqEstudar
-            </h2>
-            <p className="text-muted-foreground mt-2 max-w-lg">
-              Guias e recursos prontos para acelerar seu progresso. Em breve, novos produtos.
-            </p>
-          </div>
-          <Link to="/produtos">
-            <Button variant="outline" className="gap-2 rounded-[1.2rem] shrink-0">
-              Ver todos os produtos
-              <ArrowRight className="h-4 w-4" />
-            </Button>
-          </Link>
-        </motion.div>
+        {/* Divisor between sections */}
+        <Separator className="mb-14 md:mb-20 bg-border/50" />
+        
+        {/* Section container with subtle background */}
+        <div className="rounded-[1.2rem] border border-border/40 bg-muted/30 p-6 md:p-10 lg:p-12">
+          {/* Header */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ duration: 0.6, ease }}
+            className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6 mb-10"
+          >
+            <div>
+              <Badge variant="secondary" className="mb-4 text-xs">
+                Nossos produtos
+              </Badge>
+              <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
+                Produtos do PqEstudar
+              </h2>
+              <p className="text-muted-foreground mt-3 max-w-lg">
+                Guias e recursos prontos para acelerar seu progresso. Em breve, novos produtos.
+              </p>
+            </div>
+            <Link to="/produtos" className="w-full sm:w-auto">
+              <Button variant="outline" className="gap-2 rounded-[1.2rem] w-full sm:w-auto shrink-0">
+                Ver todos os produtos
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            </Link>
+          </motion.div>
 
         {/* Grid */}
         {isLoading ? (
@@ -205,6 +214,7 @@ export function HomeProductsSection() {
             ))}
           </div>
         )}
+        </div>
       </div>
     </section>
   );
