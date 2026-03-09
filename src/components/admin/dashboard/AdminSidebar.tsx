@@ -45,13 +45,15 @@ export function AdminSidebar() {
   const isInsightsActive = pathname.startsWith('/admin/insights');
   const isPremiumActive = pathname.startsWith('/admin/premium');
   const isConcursosActive = pathname.startsWith('/admin/concursos');
+  const { logos } = useNavConfig();
+  const { isDark, toggleTheme } = useTheme();
 
   return (
     <Sidebar className="border-none bg-transparent" collapsible="offcanvas" data-slot="admin-sidebar">
       <SidebarHeader className="p-4 border-b">
-        <Link to="/admin" className="flex items-center gap-2 font-bold text-lg">
-          <LayoutDashboard className="h-5 w-5 shrink-0 text-primary" />
-          <span className="truncate">PqEstudar Admin</span>
+        <Link to="/admin" className="flex items-center gap-2">
+          <img src={isDark ? logos.dark : logos.light} alt="PqEstudar" className="h-7 shrink-0" />
+          <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Admin</span>
         </Link>
       </SidebarHeader>
 
