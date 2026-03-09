@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -63,12 +64,26 @@ export function usePageSettings(route: string) {
     ? (data as PageSettings)
     : null;
 
+  const isReady = !isLoading;
+
+  // Signal for iframe-based audit engine to know page settings are loaded
+  useEffect(() => {
+    if (isReady) {
+      (window as any).__PAGE_SETTINGS_READY__ = true;
+      window.dispatchEvent(new Event("page-settings-ready"));
+    }
+    return () => {
+      (window as any).__PAGE_SETTINGS_READY__ = false;
+    };
+  }, [isReady]);
+
   return {
     titleTag: settings?.title_tag ?? FALLBACK.title_tag,
     metaDescription: settings?.meta_description ?? FALLBACK.meta_description,
     headerTitle: settings?.header_title ?? FALLBACK.header_title,
     headerDescription: settings?.header_description ?? FALLBACK.header_description,
     isLoading,
+    isReady,
     raw: settings,
   };
 }

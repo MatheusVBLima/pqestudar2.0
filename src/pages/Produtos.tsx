@@ -347,7 +347,7 @@ function ProductModal({
 // ── Main page ────────────────────────────────────────────────────────
 
 export default function Produtos() {
-  const { titleTag, metaDescription, headerTitle, headerDescription } = usePageSettings("/produtos");
+  const { titleTag, metaDescription, headerTitle, headerDescription, isLoading: psLoading, isReady: psReady } = usePageSettings("/produtos");
   const { isAdmin, loading: adminLoading } = useUserRoles();
   const queryClient = useQueryClient();
 
@@ -537,12 +537,14 @@ export default function Produtos() {
 
   return (
     <>
-      <Helmet>
-        <title>{titleTag}</title>
-        <meta name="description" content={metaDescription} />
-      </Helmet>
+      {psReady && (
+        <Helmet>
+          <title>{titleTag}</title>
+          <meta name="description" content={metaDescription} />
+        </Helmet>
+      )}
 
-      <PageHero title={headerTitle} description={headerDescription} />
+      <PageHero title={headerTitle} description={headerDescription} isLoading={psLoading} />
 
       <main className="container mx-auto px-6 pt-8 md:pt-12 pb-16">
         {/* Admin Mode toggle */}

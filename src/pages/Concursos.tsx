@@ -237,12 +237,14 @@ export default function Concursos() {
           })),
         }}
       />
-      <Helmet>
-        <title>{ps.titleTag}</title>
-        <meta name="description" content={ps.metaDescription} />
-      </Helmet>
+      {ps.isReady && (
+        <Helmet>
+          <title>{ps.titleTag}</title>
+          <meta name="description" content={ps.metaDescription} />
+        </Helmet>
+      )}
       
-      <PageHero title={ps.headerTitle} description={ps.headerDescription} />
+      <PageHero title={ps.headerTitle} description={ps.headerDescription} isLoading={ps.isLoading} />
 
       <main className="flex-1 container mx-auto px-4 pt-12 md:pt-16 pb-8 max-w-7xl">
         <div className="mb-8">

@@ -40,6 +40,7 @@ const Termos = () => {
 
   // SEO + JSON-LD
   useEffect(() => {
+    if (!ps.isReady) return;
     document.title = ps.titleTag;
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) metaDescription.setAttribute("content", ps.metaDescription);
@@ -67,7 +68,7 @@ const Termos = () => {
       const scriptToRemove = document.getElementById("terms-jsonld");
       if (scriptToRemove) scriptToRemove.remove();
     };
-  }, [ps.titleTag, ps.metaDescription, doc?.updated_at]);
+  }, [ps.titleTag, ps.metaDescription, ps.isReady, doc?.updated_at]);
 
   // Scroll spy
   useEffect(() => {
@@ -131,6 +132,7 @@ const Termos = () => {
       <PageHero
         title={ps.headerTitle}
         description={ps.headerDescription}
+        isLoading={ps.isLoading}
         badge={
           <Badge variant="secondary" className="mb-4">
             <FileText className="w-3 h-3 mr-1" />

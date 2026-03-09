@@ -7,7 +7,7 @@ import { GlobalSeo } from "@/components/seo/GlobalSeo";
 import { usePageSettings } from "@/hooks/usePageSettings";
 
 const Index = () => {
-  const { titleTag, metaDescription } = usePageSettings("/");
+  const { titleTag, metaDescription, isReady } = usePageSettings("/");
 
   return (
     <>
@@ -17,10 +17,12 @@ const Index = () => {
           siteName: "PqEstudar",
         }}
       />
-      <Helmet>
-        <title>{titleTag}</title>
-        <meta name="description" content={metaDescription} />
-      </Helmet>
+      {isReady && (
+        <Helmet>
+          <title>{titleTag}</title>
+          <meta name="description" content={metaDescription} />
+        </Helmet>
+      )}
 
       <main className="flex-1">
         <HeroSection />
