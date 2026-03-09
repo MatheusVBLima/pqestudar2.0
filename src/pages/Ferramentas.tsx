@@ -1026,9 +1026,6 @@ export default function Ferramentas() {
           }
         </main>
 
-        
-      </div>
-
       {/* Modais */}
       <ToolModal
         open={modalOpen}
