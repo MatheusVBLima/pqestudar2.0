@@ -132,28 +132,21 @@ const SobrePqEstudar = () => {
 
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {([
-                { icon: Wrench, title: "Ferramentas", desc: "Recursos para estudar, produzir e se organizar" },
-                { icon: BookOpen, title: "Concursos", desc: "Informações reunidas e mais fáceis de acompanhar" },
-                { icon: FileText, title: "Conteúdos", desc: "Guias e atalhos práticos, sem teoria solta" },
-                { icon: Package, title: "Produtos", desc: "Materiais criados para acelerar seu progresso" },
+                { icon: Wrench, title: "Ferramentas", desc: "Recursos para estudar, produzir e se organizar", href: "/ferramentas" },
+                { icon: BookOpen, title: "Concursos", desc: "Informações reunidas e mais fáceis de acompanhar", href: "/concursos" },
+                { icon: FileText, title: "Conteúdos", desc: "Guias e atalhos práticos, sem teoria solta", href: "/noticias" },
+                { icon: Package, title: "Produtos", desc: "Materiais criados para acelerar seu progresso", href: "/produtos" },
               ] as const).map((c) => (
-                <Card key={c.title} className="border-border/40">
-                  <CardContent className="p-5 flex flex-col gap-3">
-                    <c.icon className="h-6 w-6 text-primary" />
-                    <h3 className="font-semibold text-base">{c.title}</h3>
-                    <p className="text-sm text-muted-foreground leading-relaxed">{c.desc}</p>
-                  </CardContent>
-                </Card>
+                <Link key={c.title} to={c.href} className="group">
+                  <Card className="border-border/40 h-full transition-colors group-hover:border-primary/40">
+                    <CardContent className="p-5 flex flex-col gap-3">
+                      <c.icon className="h-6 w-6 text-primary" />
+                      <h3 className="font-semibold text-base group-hover:text-primary transition-colors">{c.title}</h3>
+                      <p className="text-sm text-muted-foreground leading-relaxed">{c.desc}</p>
+                    </CardContent>
+                  </Card>
+                </Link>
               ))}
-            </div>
-
-            <div className="mt-8">
-              <Link to="/ferramentas">
-                <Button variant="outline" className="gap-2 rounded-[1.2rem]">
-                  Ver ferramentas agora
-                  <ArrowRight className="h-4 w-4" />
-                </Button>
-              </Link>
             </div>
           </motion.div>
         </div>
