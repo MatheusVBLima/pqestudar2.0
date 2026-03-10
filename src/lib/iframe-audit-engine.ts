@@ -213,8 +213,20 @@ function extractFromDocument(doc: Document, url: string, path: string): DomSnaps
 
   const hasLists = doc.querySelectorAll('ul, ol').length > 0;
 
+  // Helper: check if element is inside nav or footer (not a real conversion CTA)
+  const isInsideNavOrFooter = (el: Element): boolean => {
+    let parent = el.parentElement;
+    while (parent) {
+      const tag = parent.tagName?.toLowerCase();
+      if (tag === 'nav' || tag === 'footer' || tag === 'header') return true;
+      parent = parent.parentElement;
+    }
+    return false;
+  };
+
   const ctaButtons: string[] = [];
   doc.querySelectorAll('button, a[role="button"], a[class*="btn"], a[class*="Button"]').forEach(el => {
+    if (isInsideNavOrFooter(el)) return;
     const text = (el as HTMLElement).innerText?.trim();
     if (text && text.length > 0 && text.length < 60) ctaButtons.push(text);
   });
@@ -223,6 +235,7 @@ function extractFromDocument(doc: Document, url: string, path: string): DomSnaps
   if (body) {
     const totalHeight = body.scrollHeight || 1;
     doc.querySelectorAll('button, a[role="button"]').forEach(el => {
+      if (isInsideNavOrFooter(el)) return;
       const top = (el as HTMLElement).offsetTop || 0;
       const pos = top / totalHeight;
       if (pos < 0.33) ctaPositions.push('top');
