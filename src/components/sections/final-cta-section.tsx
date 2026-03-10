@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowRight, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { renderHighlightedTitle } from "@/lib/highlight-title";
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
