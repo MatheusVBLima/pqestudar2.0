@@ -213,14 +213,18 @@ function extractFromDocument(doc: Document, url: string, path: string): DomSnaps
 
   const hasLists = doc.querySelectorAll('ul, ol').length > 0;
 
-  // Helper: check if element is inside nav or footer (not a real conversion CTA)
-  const isInsideNavOrFooter = (el: Element): boolean => {
+  // Helper: check if element is a non-conversion UI control (nav, footer, accordion, etc.)
+  const isNonConversionElement = (el: Element): boolean => {
     let parent = el.parentElement;
     while (parent) {
       const tag = parent.tagName?.toLowerCase();
       if (tag === 'nav' || tag === 'footer' || tag === 'header') return true;
+      // Skip accordion containers (Radix UI)
+      if (parent.hasAttribute('data-orientation') && parent.hasAttribute('data-state')) return true;
       parent = parent.parentElement;
     }
+    // Skip Radix accordion triggers directly
+    if (el.hasAttribute('data-radix-collection-item')) return true;
     return false;
   };
 
