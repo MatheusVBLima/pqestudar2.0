@@ -5,7 +5,6 @@ import HeroBadge from "@/components/ui/hero-badge";
 import { Sparkles, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { Skeleton } from "@/components/ui/skeleton";
 import { renderHighlightedTitle } from "@/lib/highlight-title";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -59,6 +58,11 @@ export function HeroSection({ headerTitle, headerDescription, isLoading }: HeroS
     }
   };
 
+  // Always show text immediately — fallback from usePageSettings is used while loading.
+  // This ensures the H1 (LCP element) renders on first paint without waiting for network.
+  const displayTitle = headerTitle || "PqEstudar";
+  const displayDescription = headerDescription || "Conteúdo organizado para você evoluir mais rápido.";
+
   return (
     <section className="relative overflow-hidden w-full bg-gradient-to-br from-background to-accent/20">
       {/* Background Pattern */}
@@ -79,38 +83,27 @@ export function HeroSection({ headerTitle, headerDescription, isLoading }: HeroS
               />
             </div>
 
-            {/* Title — NO animation delay to be LCP-friendly */}
-            {isLoading ? (
-              <div className="flex flex-col items-center gap-3">
-                <Skeleton className="h-12 sm:h-16 lg:h-20 w-[90%] max-w-3xl rounded-lg" />
-                <Skeleton className="h-12 sm:h-16 lg:h-20 w-[70%] max-w-2xl rounded-lg" />
-              </div>
-            ) : (
-              <h1
-                className="text-4xl font-bold tracking-tight sm:text-6xl lg:text-7xl xl:text-8xl"
-              >
-                {headerTitle ? renderHighlightedTitle(headerTitle) : null}
-              </h1>
-            )}
+            {/* 
+              Title — Always rendered immediately (no skeleton).
+              The fallback text from usePageSettings is available synchronously.
+              When the Supabase query resolves, the text updates in-place.
+              min-h prevents CLS when text length changes between fallback and real value.
+            */}
+            <h1
+              className="text-4xl font-bold tracking-tight sm:text-6xl lg:text-7xl xl:text-8xl min-h-[2.4em] sm:min-h-[2em]"
+            >
+              {renderHighlightedTitle(displayTitle)}
+            </h1>
 
-            {/* Description — no animation to avoid delaying paint */}
-            {isLoading ? (
-              <div className="flex flex-col items-center gap-2 mx-auto max-w-[42rem]">
-                <Skeleton className="h-6 w-full rounded-md" />
-                <Skeleton className="h-6 w-4/5 rounded-md" />
-              </div>
-            ) : (
-              <p
-                className="max-w-[42rem] mx-auto leading-normal text-muted-foreground sm:text-xl sm:leading-8"
-              >
-                {headerDescription}
-              </p>
-            )}
+            {/* Description — always rendered, min-h for stability */}
+            <p
+              className="max-w-[42rem] mx-auto leading-normal text-muted-foreground sm:text-xl sm:leading-8 min-h-[3em] sm:min-h-[2em]"
+            >
+              {displayDescription}
+            </p>
 
             {/* Email capture form */}
-            <div
-              className="flex flex-col items-center gap-2 w-full max-w-2xl mx-auto"
-            >
+            <div className="flex flex-col items-center gap-2 w-full max-w-2xl mx-auto">
               <form
                 onSubmit={handleSubmit}
                 className="flex w-full items-center gap-1 rounded-full border border-border bg-card/60 backdrop-blur-sm px-2 py-2 shadow-md"
