@@ -115,17 +115,23 @@ const SobrePqEstudar = () => {
 
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {([
-                { icon: Wrench, title: "Ferramentas", desc: "Recursos para estudar, produzir e se organizar", href: "/ferramentas" },
-                { icon: BookOpen, title: "Concursos", desc: "Informações reunidas e mais fáceis de acompanhar", href: "/concursos" },
-                { icon: FileText, title: "Conteúdos", desc: "Guias e atalhos práticos, sem teoria solta", href: "/noticias" },
-                { icon: Package, title: "Produtos", desc: "Materiais criados para acelerar seu progresso", href: "/produtos" },
+                { icon: Wrench, title: "Ferramentas", desc: "Recursos para estudar, produzir e se organizar", href: "/ferramentas", cta: "Explorar ferramentas" },
+                { icon: BookOpen, title: "Concursos", desc: "Informações reunidas e mais fáceis de acompanhar", href: "/concursos", cta: "Ver oportunidades" },
+                { icon: FileText, title: "Conteúdos", desc: "Guias e atalhos práticos, sem teoria solta", href: "/noticias", cta: "Acessar conteúdos" },
+                { icon: Package, title: "Produtos", desc: "Materiais criados para acelerar seu progresso", href: "/produtos", cta: "Conhecer produtos" },
               ] as const).map((c) => (
                 <Link key={c.title} to={c.href} className="group">
                   <Card className="border-border/40 h-full transition-colors group-hover:border-primary/40">
-                    <CardContent className="p-5 flex flex-col gap-3">
+                    <CardContent className="p-5 flex flex-col gap-3 h-full">
                       <c.icon className="h-6 w-6 text-primary" />
                       <h3 className="font-semibold text-base group-hover:text-primary transition-colors">{c.title}</h3>
                       <p className="text-sm text-muted-foreground leading-relaxed">{c.desc}</p>
+                      <div className="mt-auto pt-3">
+                        <span className="inline-flex items-center gap-1.5 text-sm font-medium text-primary group-hover:gap-2.5 transition-all">
+                          {c.cta}
+                          <ArrowRight className="h-3.5 w-3.5" />
+                        </span>
+                      </div>
                     </CardContent>
                   </Card>
                 </Link>
