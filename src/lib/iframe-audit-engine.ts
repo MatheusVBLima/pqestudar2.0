@@ -230,7 +230,7 @@ function extractFromDocument(doc: Document, url: string, path: string): DomSnaps
 
   const ctaButtons: string[] = [];
   doc.querySelectorAll('button, a[role="button"], a[class*="btn"], a[class*="Button"]').forEach(el => {
-    if (isInsideNavOrFooter(el)) return;
+    if (isNonConversionElement(el)) return;
     const text = (el as HTMLElement).innerText?.trim();
     if (text && text.length > 0 && text.length < 60) ctaButtons.push(text);
   });
