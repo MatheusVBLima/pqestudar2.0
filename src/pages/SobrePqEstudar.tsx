@@ -14,15 +14,15 @@ import {
   Eye,
   Target,
   LayoutGrid,
-  Unlock,
-} from "lucide-react";
+  Unlock } from
+"lucide-react";
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
 const SobrePqEstudar = () => {
   useEffect(() => {
     document.title =
-      "Sobre o PqEstudar: ferramentas, concursos e conteúdo prático em um só lugar";
+    "Sobre o PqEstudar: ferramentas, concursos e conteúdo prático em um só lugar";
     const meta = document.querySelector('meta[name="description"]');
     if (meta) {
       meta.setAttribute(
@@ -55,8 +55,8 @@ const SobrePqEstudar = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease }}
-            className="max-w-3xl mx-auto text-center lg:text-left lg:mx-0"
-          >
+            className="max-w-3xl mx-auto text-center lg:text-left lg:mx-0">
+            
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight mb-6 bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
               O PqEstudar existe para facilitar o que deveria ser{" "}
               <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
@@ -64,9 +64,9 @@ const SobrePqEstudar = () => {
               </span>
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground leading-relaxed max-w-2xl mx-auto lg:mx-0 mb-8">
-              Reunimos oportunidades, ferramentas e conteúdos práticos para quem
-              quer estudar melhor, encontrar recursos úteis e tomar decisões com
-              mais clareza.
+              Reunimos ferramentas, oportunidades e conteúdos práticos para ajudar você a estudar melhor e decidir com mais clareza.
+            
+
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
               <Link to="/ferramentas">
@@ -91,8 +91,8 @@ const SobrePqEstudar = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-80px" }}
             transition={{ duration: 0.6, ease }}
-            className="max-w-4xl mx-auto"
-          >
+            className="max-w-4xl mx-auto">
+            
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">
               O problema não é falta de informação.{" "}
               <span className="text-muted-foreground">É excesso de ruído.</span>
@@ -105,20 +105,20 @@ const SobrePqEstudar = () => {
 
             <div className="grid sm:grid-cols-2 gap-x-8 gap-y-3">
               {[
-                "Informação solta demais e difícil de comparar",
-                "Páginas confusas e cheias de distrações",
-                "Links importantes 'perdidos' no meio do conteúdo",
-                "Oportunidades sem contexto e sem organização",
-                "Dúvida constante sobre o que realmente vale a pena",
-              ].map((item) => (
-                <div
-                  key={item}
-                  className="flex items-start gap-2 text-muted-foreground"
-                >
+              "Informação solta demais e difícil de comparar",
+              "Páginas confusas e cheias de distrações",
+              "Links importantes 'perdidos' no meio do conteúdo",
+              "Oportunidades sem contexto e sem organização",
+              "Dúvida constante sobre o que realmente vale a pena"].
+              map((item) =>
+              <div
+                key={item}
+                className="flex items-start gap-2 text-muted-foreground">
+                
                   <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary/60" />
                   <span className="text-base leading-relaxed">{item}</span>
                 </div>
-              ))}
+              )}
             </div>
 
             <p className="mt-8 text-base font-medium text-foreground">
@@ -137,8 +137,8 @@ const SobrePqEstudar = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-80px" }}
             transition={{ duration: 0.6, ease }}
-            className="max-w-4xl mx-auto"
-          >
+            className="max-w-4xl mx-auto">
+            
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">
               O que é o PqEstudar
             </h2>
@@ -151,30 +151,30 @@ const SobrePqEstudar = () => {
 
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {(
-                [
-                  {
-                    icon: Wrench,
-                    title: "Ferramentas",
-                    desc: "Recursos para estudar, produzir e se organizar",
-                  },
-                  {
-                    icon: BookOpen,
-                    title: "Concursos",
-                    desc: "Informações reunidas e mais fáceis de acompanhar",
-                  },
-                  {
-                    icon: FileText,
-                    title: "Conteúdos",
-                    desc: "Guias e atalhos práticos, sem teoria solta",
-                  },
-                  {
-                    icon: Package,
-                    title: "Produtos",
-                    desc: "Materiais criados para acelerar seu progresso",
-                  },
-                ] as const
-              ).map((c) => (
-                <Card key={c.title} className="border-border/40">
+              [
+              {
+                icon: Wrench,
+                title: "Ferramentas",
+                desc: "Recursos para estudar, produzir e se organizar"
+              },
+              {
+                icon: BookOpen,
+                title: "Concursos",
+                desc: "Informações reunidas e mais fáceis de acompanhar"
+              },
+              {
+                icon: FileText,
+                title: "Conteúdos",
+                desc: "Guias e atalhos práticos, sem teoria solta"
+              },
+              {
+                icon: Package,
+                title: "Produtos",
+                desc: "Materiais criados para acelerar seu progresso"
+              }] as
+              const).
+              map((c) =>
+              <Card key={c.title} className="border-border/40">
                   <CardContent className="p-5 flex flex-col gap-3">
                     <c.icon className="h-6 w-6 text-primary" />
                     <h3 className="font-semibold text-base">{c.title}</h3>
@@ -183,7 +183,7 @@ const SobrePqEstudar = () => {
                     </p>
                   </CardContent>
                 </Card>
-              ))}
+              )}
             </div>
 
             <div className="mt-8">
@@ -206,8 +206,8 @@ const SobrePqEstudar = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-80px" }}
             transition={{ duration: 0.6, ease }}
-            className="max-w-4xl mx-auto"
-          >
+            className="max-w-4xl mx-auto">
+            
             <div className="grid lg:grid-cols-2 gap-10 items-start">
               <div>
                 <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">
@@ -228,20 +228,20 @@ const SobrePqEstudar = () => {
 
               <div className="space-y-4">
                 {[
-                  {
-                    label: "Clareza",
-                    text: "Estudar com um objetivo reduz ruído e acelera decisões.",
-                  },
-                  {
-                    label: "Oportunidades",
-                    text: "Concursos e recursos ficam mais fáceis de acompanhar e comparar.",
-                  },
-                  {
-                    label: "Habilidades úteis",
-                    text: "Ferramentas e conteúdos práticos para aplicar no dia a dia.",
-                  },
-                ].map((b) => (
-                  <div key={b.label} className="flex gap-3">
+                {
+                  label: "Clareza",
+                  text: "Estudar com um objetivo reduz ruído e acelera decisões."
+                },
+                {
+                  label: "Oportunidades",
+                  text: "Concursos e recursos ficam mais fáceis de acompanhar e comparar."
+                },
+                {
+                  label: "Habilidades úteis",
+                  text: "Ferramentas e conteúdos práticos para aplicar no dia a dia."
+                }].
+                map((b) =>
+                <div key={b.label} className="flex gap-3">
                     <span className="mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full bg-primary" />
                     <div>
                       <span className="font-semibold text-foreground">
@@ -250,7 +250,7 @@ const SobrePqEstudar = () => {
                       <span className="text-muted-foreground">{b.text}</span>
                     </div>
                   </div>
-                ))}
+                )}
               </div>
             </div>
           </motion.div>
@@ -265,36 +265,36 @@ const SobrePqEstudar = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-80px" }}
             transition={{ duration: 0.6, ease }}
-            className="max-w-4xl mx-auto"
-          >
+            className="max-w-4xl mx-auto">
+            
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-10">
               Como o PqEstudar ajuda na prática
             </h2>
 
             <div className="grid sm:grid-cols-2 gap-4">
               {[
-                {
-                  icon: Wrench,
-                  title: "Ferramentas úteis",
-                  desc: "Descubra recursos para estudar, produzir e se organizar melhor — sem perder tempo testando coisa que não entrega.",
-                },
-                {
-                  icon: BookOpen,
-                  title: "Concursos e oportunidades",
-                  desc: "Encontre informações reunidas de forma mais clara para acompanhar o que importa e reduzir confusão.",
-                },
-                {
-                  icon: FileText,
-                  title: "Conteúdo aplicável",
-                  desc: "Menos teoria solta e mais utilidade real: guias rápidos, atalhos e conteúdos práticos para usar no dia a dia.",
-                },
-                {
-                  icon: LayoutGrid,
-                  title: "Organização em um só lugar",
-                  desc: "Tudo pensado para reduzir o tempo perdido pulando entre sites e para facilitar suas escolhas.",
-                },
-              ].map((c) => (
-                <Card key={c.title} className="border-border/40">
+              {
+                icon: Wrench,
+                title: "Ferramentas úteis",
+                desc: "Descubra recursos para estudar, produzir e se organizar melhor — sem perder tempo testando coisa que não entrega."
+              },
+              {
+                icon: BookOpen,
+                title: "Concursos e oportunidades",
+                desc: "Encontre informações reunidas de forma mais clara para acompanhar o que importa e reduzir confusão."
+              },
+              {
+                icon: FileText,
+                title: "Conteúdo aplicável",
+                desc: "Menos teoria solta e mais utilidade real: guias rápidos, atalhos e conteúdos práticos para usar no dia a dia."
+              },
+              {
+                icon: LayoutGrid,
+                title: "Organização em um só lugar",
+                desc: "Tudo pensado para reduzir o tempo perdido pulando entre sites e para facilitar suas escolhas."
+              }].
+              map((c) =>
+              <Card key={c.title} className="border-border/40">
                   <CardContent className="p-6 flex flex-col gap-3">
                     <c.icon className="h-6 w-6 text-primary" />
                     <h3 className="font-semibold text-lg">{c.title}</h3>
@@ -303,7 +303,7 @@ const SobrePqEstudar = () => {
                     </p>
                   </CardContent>
                 </Card>
-              ))}
+              )}
             </div>
           </motion.div>
         </div>
@@ -317,8 +317,8 @@ const SobrePqEstudar = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-80px" }}
             transition={{ duration: 0.6, ease }}
-            className="max-w-4xl mx-auto"
-          >
+            className="max-w-4xl mx-auto">
+            
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-2">
               O que guia o projeto
             </h2>
@@ -329,28 +329,28 @@ const SobrePqEstudar = () => {
 
             <div className="grid sm:grid-cols-2 gap-4">
               {[
-                {
-                  icon: Eye,
-                  title: "Clareza antes de volume",
-                  desc: "Menos excesso, mais direção",
-                },
-                {
-                  icon: Target,
-                  title: "Utilidade antes de modinha",
-                  desc: "Conteúdo e recursos que resolvem",
-                },
-                {
-                  icon: LayoutGrid,
-                  title: "Organização antes de excesso",
-                  desc: "Navegação e curadoria para facilitar",
-                },
-                {
-                  icon: Unlock,
-                  title: "Acesso antes de complicação",
-                  desc: "Direto ao ponto, sem barreira desnecessária",
-                },
-              ].map((p) => (
-                <Card key={p.title} className="border-border/40">
+              {
+                icon: Eye,
+                title: "Clareza antes de volume",
+                desc: "Menos excesso, mais direção"
+              },
+              {
+                icon: Target,
+                title: "Utilidade antes de modinha",
+                desc: "Conteúdo e recursos que resolvem"
+              },
+              {
+                icon: LayoutGrid,
+                title: "Organização antes de excesso",
+                desc: "Navegação e curadoria para facilitar"
+              },
+              {
+                icon: Unlock,
+                title: "Acesso antes de complicação",
+                desc: "Direto ao ponto, sem barreira desnecessária"
+              }].
+              map((p) =>
+              <Card key={p.title} className="border-border/40">
                   <CardContent className="p-5 flex items-start gap-4">
                     <p.icon className="h-5 w-5 text-primary mt-0.5 shrink-0" />
                     <div>
@@ -359,7 +359,7 @@ const SobrePqEstudar = () => {
                     </div>
                   </CardContent>
                 </Card>
-              ))}
+              )}
             </div>
 
             <p className="mt-8 text-sm text-muted-foreground/70 italic">
@@ -378,8 +378,8 @@ const SobrePqEstudar = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-80px" }}
               transition={{ duration: 0.6, ease }}
-              className="flex flex-col items-center gap-6 max-w-2xl mx-auto"
-            >
+              className="flex flex-col items-center gap-6 max-w-2xl mx-auto">
+              
               <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
                 Encontre o próximo recurso certo para você
               </h2>
@@ -392,8 +392,8 @@ const SobrePqEstudar = () => {
                 <Link to="/ferramentas">
                   <Button
                     size="lg"
-                    className="gap-2 rounded-[1.2rem] w-full sm:w-auto"
-                  >
+                    className="gap-2 rounded-[1.2rem] w-full sm:w-auto">
+                    
                     <Search className="h-4 w-4" />
                     Ver ferramentas
                   </Button>
@@ -402,8 +402,8 @@ const SobrePqEstudar = () => {
                   <Button
                     size="lg"
                     variant="outline"
-                    className="gap-2 rounded-[1.2rem] w-full sm:w-auto"
-                  >
+                    className="gap-2 rounded-[1.2rem] w-full sm:w-auto">
+                    
                     Ver concursos
                     <ArrowRight className="h-4 w-4" />
                   </Button>
@@ -413,8 +413,8 @@ const SobrePqEstudar = () => {
           </div>
         </div>
       </section>
-    </>
-  );
+    </>);
+
 };
 
 export default SobrePqEstudar;
