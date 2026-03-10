@@ -3187,6 +3187,7 @@ export type Database = {
           votes_count: number
         }[]
       }
+      public_users_count: { Args: never; Returns: number }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
