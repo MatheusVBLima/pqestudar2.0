@@ -1,45 +1,41 @@
+## Plano: Refinar copy e SEO do FAQ da home
 
-## Diagnóstico do Problema
+### O que muda
 
-O `tailwind.config.ts` tem um bug de posicionamento: o bloco `boxShadow` está com indentação incorreta — ele foi inserido **fora** do bloco `extend`, em vez de dentro. Isso faz com que o Tailwind ignore ou trate incorretamente o token `shadow-card`.
+Reescrever as 9 perguntas e respostas do FAQ em `src/components/sections/home-faq-section.tsx` com foco em:
 
-### Estrutura atual (com bug):
+**Copy**: Perguntas que soam como dúvidas reais de um visitante (tom conversacional, direto). Respostas curtas (2-3 frases no máximo), que reduzem atrito e incentivam clique natural.
 
+**SEO**: Cobertura semântica discreta dos termos-chave — "ferramentas para estudar", "concursos públicos abertos", "organizar estudos", "produtividade nos estudos" — sem keyword stuffing. As perguntas usam linguagem natural que espelha buscas reais.
+
+**Conversão leve**: Respostas terminam com links internos contextuais (não forçados) e frases que geram curiosidade sem prometer demais.
+
+### Conteúdo proposto
+
+
+| #   | Pergunta (SEO-friendly, tom natural)                        | Resposta (curta, clara, com link quando natural)                                                                                                                                                |
+| --- | ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | O que é o PqEstudar e para quem ele foi feito?              | Uma plataforma gratuita que reúne ferramentas para estudar, concursos públicos e recursos educacionais num só lugar. Feita para quem quer se organizar melhor e aproveitar cada hora de estudo. |
+| 2   | Preciso pagar ou criar conta para usar?                     | Não. Todo o conteúdo público é gratuito e acessível sem cadastro. A conta é opcional — serve para salvar seus itens favoritos e acompanhar novidades.                                           |
+| 3   | Que tipo de ferramentas para estudos estão disponíveis?     | Ferramentas de produtividade, organização e aprendizado, filtradas por categoria. Você acessa direto, sem intermediários. → link /ferramentas                                                   |
+| 4   | Como acompanho concursos públicos abertos pelo PqEstudar?   | A seção de concursos reúne oportunidades com filtros por área, escolaridade e situação. Cada concurso tem página própria com detalhes e link para o edital. → link /concursos                   |
+| 5   | O que posso fazer na página de Votações?                    | Sugerir funcionalidades e votar nas que mais importam para você. É assim que a comunidade ajuda a decidir o que será desenvolvido. → link /votacoes                                             |
+| 6   | O que são os Produtos do PqEstudar?                         | Guias e materiais prontos para acelerar seus estudos, criados pela equipe do PqEstudar. → link /produtos                                                                                        |
+| 7   | Posso salvar ferramentas e concursos para consultar depois? | Sim. Com uma conta gratuita, você salva qualquer ferramenta ou concurso e acessa tudo na sua área de favoritos.                                                                                 |
+| 8   | O PqEstudar é atualizado com frequência?                    | Sim. Novas ferramentas, concursos e melhorias são adicionados regularmente com base no feedback da comunidade.                                                                                  |
+| 9   | Como entro em contato se tiver uma dúvida?                  | Por e-mail em [pqestudar.suporte@gmail.com](mailto:suporte@pqestudar.com)                                                                                                                       |
+
+
+### Também adicionar: FAQ JSON-LD
+
+Injetar schema `FAQPage` via `<script type="application/ld+json">` no componente (usando `Helmet`) para que o Google possa exibir rich results de FAQ. Estrutura:
+
+```json
+{ "@type": "FAQPage", "mainEntity": [{ "@type": "Question", "name": "...", "acceptedAnswer": { "@type": "Answer", "text": "..." } }] }
 ```
-theme: {
-  extend: {
-    colors: { ... },
-    backgroundImage: { ... },
-  // ← indentação quebrada aqui
-  boxShadow: {           <-- FORA do extend
-    'card': '...',
-  },
-    transitionTimingFunction: { ... },  <-- voltou para dentro
-```
 
-Quando `boxShadow` fica fora de `extend`, ele substitui o sistema completo de sombras do Tailwind em vez de adicionar ao existente — e pode ser ignorado por parsers dependendo da versão.
+Para os itens com JSX (links), será extraída uma versão texto-puro para o JSON-LD.
 
-### Solução
+### Arquivo editado
 
-**1. Corrigir `tailwind.config.ts`**: mover `boxShadow` para dentro de `theme.extend` com indentação correta, garantindo que `shadow-card` seja gerado como utilidade Tailwind válida.
-
-**2. Garantir aplicação em `src/components/ui/card.tsx`**: o `<Card />` base já tem `shadow-card` na classe padrão — isso está correto e não precisa mudar.
-
-**3. Verificar `src/pages/Ferramentas.tsx`**: o `SortableToolCard` usa `<Card className="h-full shadow-card ...">` — isso está correto. Com o config corrigido, o `shadow-card` passará a ser uma utilidade válida reconhecida pelo Tailwind e será aplicado.
-
-### O que será alterado
-
-| Arquivo | Mudança |
-|---|---|
-| `tailwind.config.ts` | Mover `boxShadow` para dentro de `theme.extend` com indentação correta |
-
-### O que NÃO será alterado
-
-- Nenhuma página além das 3 rotas afetadas indiretamente pelo token
-- Nenhuma lógica, rota, menu ou componente de negócio
-- Nenhum novo efeito visual além da sombra já especificada
-- O valor do shadow permanece exatamente: `0 4px 10px hsl(240 30% 25% / 0.12)`
-
-### Por que só o config precisa mudar?
-
-O `card.tsx` e `Ferramentas.tsx` já estão corretos — eles usam `shadow-card`. O problema é que a classe `shadow-card` não existe de fato no CSS gerado porque o token está mal posicionado no config. Corrigindo o config, a classe passa a existir e os arquivos já a consomem corretamente.
+- `src/components/sections/home-faq-section.tsx` (apenas)
