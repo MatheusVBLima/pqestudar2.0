@@ -24,7 +24,7 @@ export const CookieBanner = () => {
   if (!showBanner) return null;
 
   const handlePreferenceChange = (type: keyof CookiePreferences, value: boolean) => {
-    if (type === 'necessary') return; // Cannot disable necessary cookies
+    if (type === 'necessary') return;
     
     setTempPreferences(prev => ({
       ...prev,
@@ -65,118 +65,129 @@ export const CookieBanner = () => {
   ];
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 p-4 animate-fade-in">
-      <Card className="mx-auto max-w-4xl bg-card border-border shadow-lg backdrop-blur-sm">
-        <div className="p-6">
-          <div className="flex items-start gap-4">
-            <div className="flex-shrink-0">
-              <Cookie className="h-6 w-6 text-primary" />
-            </div>
-            
-            <div className="flex-1 space-y-4">
-              <div>
-                <h2 className="text-lg font-semibold text-foreground mb-2">
-                  Este site usa cookies
-                </h2>
-                <p className="text-sm text-muted-foreground">
-                  Utilizamos cookies para melhorar sua experiência, personalizar conteúdo e analisar o tráfego. 
-                  Você pode escolher quais tipos de cookies aceitar.
-                </p>
+    <>
+      {/*
+        CLS fix: Use CSS containment so the banner never shifts page content.
+        - `fixed` positioning already prevents layout shift in most cases.
+        - `contain: layout` ensures no paint/layout leak.
+        - `will-change: transform` hints compositor layer (avoids reflow on appear).
+      */}
+      <div
+        className="fixed bottom-0 left-0 right-0 z-50 p-4 animate-fade-in"
+        style={{ contain: 'layout', willChange: 'transform' }}
+      >
+        <Card className="mx-auto max-w-4xl bg-card border-border shadow-lg backdrop-blur-sm">
+          <div className="p-6">
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0">
+                <Cookie className="h-6 w-6 text-primary" />
               </div>
+              
+              <div className="flex-1 space-y-4">
+                <div>
+                  <h2 className="text-lg font-semibold text-foreground mb-2">
+                    Este site usa cookies
+                  </h2>
+                  <p className="text-sm text-muted-foreground">
+                    Utilizamos cookies para melhorar sua experiência, personalizar conteúdo e analisar o tráfego. 
+                    Você pode escolher quais tipos de cookies aceitar.
+                  </p>
+                </div>
 
-              <div className="flex flex-col sm:flex-row gap-3">
-                <Button
-                  onClick={acceptAll}
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground"
-                >
-                  Aceitar Todos
-                </Button>
-                
-                <Button
-                  variant="outline"
-                  onClick={acceptNecessaryOnly}
-                >
-                  Apenas Necessários
-                </Button>
-                
-                <Dialog open={showPreferences} onOpenChange={setShowPreferences}>
-                  <DialogTrigger asChild>
-                    <Button variant="ghost" className="gap-2">
-                      <Settings className="h-4 w-4" />
-                      Personalizar
-                    </Button>
-                  </DialogTrigger>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <Button
+                    onClick={acceptAll}
+                    className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                  >
+                    Aceitar Todos
+                  </Button>
                   
-                  <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-                    <DialogHeader>
-                      <DialogTitle className="flex items-center gap-2">
-                        <Cookie className="h-5 w-5 text-primary" />
-                        Preferências de Cookies
-                      </DialogTitle>
-                      <DialogDescription>
-                        Configure suas preferências de cookies. Você pode alterar essas configurações a qualquer momento.
-                      </DialogDescription>
-                    </DialogHeader>
+                  <Button
+                    variant="outline"
+                    onClick={acceptNecessaryOnly}
+                  >
+                    Apenas Necessários
+                  </Button>
+                  
+                  <Dialog open={showPreferences} onOpenChange={setShowPreferences}>
+                    <DialogTrigger asChild>
+                      <Button variant="ghost" className="gap-2">
+                        <Settings className="h-4 w-4" />
+                        Personalizar
+                      </Button>
+                    </DialogTrigger>
                     
-                    <div className="space-y-6">
-                      {cookieTypes.map((cookieType) => (
-                        <div key={cookieType.id} className="space-y-2">
-                          <div className="flex items-center justify-between">
-                            <div className="space-y-1">
-                              <h4 className="text-sm font-medium text-foreground">
-                                {cookieType.title}
-                              </h4>
-                              <p className="text-xs text-muted-foreground">
-                                {cookieType.description}
-                              </p>
-                            </div>
-                            <Switch
-                              checked={tempPreferences[cookieType.id]}
-                              onCheckedChange={(checked) => 
-                                handlePreferenceChange(cookieType.id, checked)
-                              }
-                              disabled={cookieType.required}
-                            />
-                          </div>
-                          {cookieType.required && (
-                            <p className="text-xs text-muted-foreground italic">
-                              * Obrigatório para o funcionamento do site
-                            </p>
-                          )}
-                        </div>
-                      ))}
+                    <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+                      <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                          <Cookie className="h-5 w-5 text-primary" />
+                          Preferências de Cookies
+                        </DialogTitle>
+                        <DialogDescription>
+                          Configure suas preferências de cookies. Você pode alterar essas configurações a qualquer momento.
+                        </DialogDescription>
+                      </DialogHeader>
                       
-                      <div className="flex justify-end gap-3 pt-4 border-t border-border">
-                        <Button
-                          variant="outline"
-                          onClick={() => setShowPreferences(false)}
-                        >
-                          Cancelar
-                        </Button>
-                        <Button
-                          onClick={handleSavePreferences}
-                          className="bg-primary hover:bg-primary/90"
-                        >
-                          Salvar Preferências
-                        </Button>
+                      <div className="space-y-6">
+                        {cookieTypes.map((cookieType) => (
+                          <div key={cookieType.id} className="space-y-2">
+                            <div className="flex items-center justify-between">
+                              <div className="space-y-1">
+                                <h4 className="text-sm font-medium text-foreground">
+                                  {cookieType.title}
+                                </h4>
+                                <p className="text-xs text-muted-foreground">
+                                  {cookieType.description}
+                                </p>
+                              </div>
+                              <Switch
+                                checked={tempPreferences[cookieType.id]}
+                                onCheckedChange={(checked) => 
+                                  handlePreferenceChange(cookieType.id, checked)
+                                }
+                                disabled={cookieType.required}
+                              />
+                            </div>
+                            {cookieType.required && (
+                              <p className="text-xs text-muted-foreground italic">
+                                * Obrigatório para o funcionamento do site
+                              </p>
+                            )}
+                          </div>
+                        ))}
+                        
+                        <div className="flex justify-end gap-3 pt-4 border-t border-border">
+                          <Button
+                            variant="outline"
+                            onClick={() => setShowPreferences(false)}
+                          >
+                            Cancelar
+                          </Button>
+                          <Button
+                            onClick={handleSavePreferences}
+                            className="bg-primary hover:bg-primary/90"
+                          >
+                            Salvar Preferências
+                          </Button>
+                        </div>
                       </div>
-                    </div>
-                  </DialogContent>
-                </Dialog>
+                    </DialogContent>
+                  </Dialog>
+                </div>
               </div>
-            </div>
 
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowBanner(false)}
-              className="flex-shrink-0 h-8 w-8 p-0"
-            >
-              <X className="h-4 w-4" />
-            </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowBanner(false)}
+                className="flex-shrink-0 h-8 w-8 p-0"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
-        </div>
-      </Card>
-    </div>
+        </Card>
+      </div>
+    </>
   );
 };

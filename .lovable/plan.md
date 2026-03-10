@@ -43,3 +43,46 @@ Quando `boxShadow` fica fora de `extend`, ele substitui o sistema completo de so
 ### Por que só o config precisa mudar?
 
 O `card.tsx` e `Ferramentas.tsx` já estão corretos — eles usam `shadow-card`. O problema é que a classe `shadow-card` não existe de fato no CSS gerado porque o token está mal posicionado no config. Corrigindo o config, a classe passa a existir e os arquivos já a consomem corretamente.
+
+---
+
+## Performance Guardrails — Home `/` (Sprint 2)
+
+### Regras anti-regressão (o que NÃO pode voltar)
+
+1. **Scripts síncronos no `<head>`**: Meta Pixel e qualquer outro terceiro devem ser adiados via `requestIdleCallback` ou `setTimeout`. NUNCA inserir `<script>` síncrono que bloqueie render.
+
+2. **Framer-motion no elemento LCP**: O `<h1>` da hero-section NÃO pode ter animação framer-motion (motion.h1). Animações atrasam o primeiro paint do LCP.
+
+3. **Importar rotas estaticamente em App.tsx**: Apenas `Index` (home) é importado estaticamente. Todas as demais rotas DEVEM usar `React.lazy()`.
+
+4. **Skeleton no H1 da hero**: O `<h1>` DEVE renderizar imediatamente com texto de fallback. NUNCA mostrar Skeleton no lugar do H1 — isso atrasa o LCP.
+
+5. **Below-fold na home sem lazy**: Seções abaixo da dobra (`DualTrackSection`, `HomeProductsSection`, etc.) DEVEM ser lazy-loaded via `React.lazy` + `Suspense`.
+
+### Checklist de release para Home `/` (5 itens)
+
+- [ ] H1 renderiza no primeiro paint (sem skeleton, sem esperar rede)
+- [ ] Nenhum `<script>` síncrono no `<head>` (exceto stub inline mínimo)
+- [ ] Seções below-fold usam `React.lazy`
+- [ ] Imagens na navbar têm `width`/`height` explícitos
+- [ ] Cookie banner usa `position: fixed` + `contain: layout` (sem CLS)
+
+### Limites operacionais
+
+| Métrica | Limite |
+|---|---|
+| Chunk inicial (JS) | Deve conter apenas: React, Router, Home, Navbar, Hero |
+| Scripts terceiros na primeira dobra | 0 (todos adiados) |
+| Imagens acima da dobra sem dimensões | 0 |
+| Animações no elemento LCP | 0 |
+
+### Baseline registrada
+
+| Métrica | Sprint 0 (antes) | Sprint 1 (depois) | Meta |
+|---|---|---|---|
+| LCP (lab) | 6.6s | — (medir) | ≤ 2.5s |
+| FCP (lab) | 4.6s | — (medir) | ≤ 1.8s |
+| TTFB (lab) | 2.0s | — (infra) | ≤ 0.8s |
+| CLS (campo) | 0.13 | — (medir) | ≤ 0.1 |
+| TBT (lab) | 100ms | — (medir) | ≤ 200ms |
