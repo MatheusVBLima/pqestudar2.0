@@ -16,6 +16,7 @@ function json(body: unknown, status = 200) {
 const PAGE_SETTINGS_ROUTES = [
   '/', '/ferramentas', '/concursos', '/votacoes', '/produtos',
   '/privacidade', '/termos', '/ferramentas/salvos', '/premium',
+  '/sobre-pqestudar',
 ];
 
 interface Resolved {

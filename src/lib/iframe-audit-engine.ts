@@ -27,7 +27,7 @@ export interface DomSnapshot {
 const RENDER_WAIT_MS = 5000;
 const PAGE_SETTINGS_WAIT_MS = 8000;
 const IFRAME_TIMEOUT_MS = 20000;
-const STATIC_PATHS = ['/', '/ferramentas', '/concursos'];
+const STATIC_PATHS = ['/', '/ferramentas', '/concursos', '/sobre-pqestudar'];
 const MAX_SLUG_SAMPLE = 10;
 
 export async function buildAuditUrls(): Promise<{ url: string; path: string }[]> {

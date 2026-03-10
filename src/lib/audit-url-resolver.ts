@@ -20,6 +20,7 @@ const PAGE_SETTINGS_ROUTES = [
   '/termos',
   '/ferramentas/salvos',
   '/premium',
+  '/sobre-pqestudar',
 ];
 
 /**
