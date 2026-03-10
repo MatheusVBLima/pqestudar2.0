@@ -59,7 +59,7 @@ const SobrePqEstudar = () => {
             viewport={{ once: true, margin: "-80px" }}
             transition={{ duration: 0.6, ease }}
           >
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4 max-w-4xl">
+            <h2 className="text-2xl md:text-4xl font-bold tracking-tight mb-4 max-w-4xl">
               {renderHighlightedTitle("O problema não é falta de informação. É excesso de **ruído**.")}
             </h2>
             <p className="text-lg text-muted-foreground leading-relaxed mb-8 max-w-3xl">
