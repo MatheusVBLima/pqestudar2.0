@@ -7,6 +7,7 @@ import { Sparkles, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
+import { renderHighlightedTitle } from "@/lib/highlight-title";
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
@@ -94,7 +95,7 @@ export function HeroSection({ headerTitle, headerDescription, isLoading }: HeroS
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, ease }}
               >
-                {headerTitle}
+                {headerTitle ? renderHighlightedTitle(headerTitle) : null}
               </motion.h1>
             )}
 

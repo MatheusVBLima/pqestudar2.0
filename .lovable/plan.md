@@ -1,60 +1,45 @@
 
+## Diagnóstico do Problema
 
-## Recomendação de palavras destacadas por página
+O `tailwind.config.ts` tem um bug de posicionamento: o bloco `boxShadow` está com indentação incorreta — ele foi inserido **fora** do bloco `extend`, em vez de dentro. Isso faz com que o Tailwind ignore ou trate incorretamente o token `shadow-card`.
 
-Os títulos vêm do banco de dados (`page_settings`). Para destacar palavras específicas, vamos usar uma convenção simples: envolver a palavra em `**` no campo `header_title` do banco, e o `PageHero` + `HeroSection` renderizam essas palavras com o gradiente roxo da marca.
+### Estrutura atual (com bug):
 
-### Palavras recomendadas e justificativa
-
-| Rota | Título atual | Palavra(s) destacada(s) | Porquê |
-|------|-------------|------------------------|--------|
-| `/` | Aprenda, Organize e Evolua com as Ferramentas Certas | **Evolua** | É o verbo de transformação — resume a promessa do site. Destacar os três verbos seria visual demais. |
-| `/ferramentas` | Ferramentas e Plataformas Educacionais Gratuitas | **Gratuitas** | É o diferencial de valor, o que mais chama atenção do visitante. Consistente com a memória do projeto (destaque similar ao "Secretas" original). |
-| `/concursos` | Concursos Públicos Abertos e Previstos | **Abertos** | Transmite urgência e ação — "está acontecendo agora". |
-| `/produtos` | Guias e Soluções Criadas pelo PqEstudar | **Soluções** | É a palavra de valor/benefício — o usuário busca resolver problemas. |
-| `/votacoes` | Vote nas Próximas Funcionalidades | **Próximas** | Gera expectativa e senso de participação ativa no futuro da plataforma. |
-| `/premium` | Área Premium do PqEstudar | **Premium** | É a identidade da seção — reforça exclusividade. |
-
-### Implementação técnica
-
-**1. Convenção de marcação no banco**
-
-Usar `**palavra**` dentro do `header_title`. Exemplo:
 ```
-Aprenda, Organize e **Evolua** com as Ferramentas Certas
+theme: {
+  extend: {
+    colors: { ... },
+    backgroundImage: { ... },
+  // ← indentação quebrada aqui
+  boxShadow: {           <-- FORA do extend
+    'card': '...',
+  },
+    transitionTimingFunction: { ... },  <-- voltou para dentro
 ```
 
-**2. Helper de renderização**
+Quando `boxShadow` fica fora de `extend`, ele substitui o sistema completo de sombras do Tailwind em vez de adicionar ao existente — e pode ser ignorado por parsers dependendo da versão.
 
-Criar uma função `renderHighlightedTitle(title: string)` que:
-- Faz split por `**`
-- Alterna entre texto normal e `<span>` com gradiente roxo
-- Retorna `ReactNode[]`
+### Solução
 
-```typescript
-// src/lib/highlight-title.tsx
-export function renderHighlightedTitle(title: string): React.ReactNode {
-  const parts = title.split(/\*\*(.*?)\*\*/g);
-  return parts.map((part, i) =>
-    i % 2 === 1
-      ? <span key={i} className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">{part}</span>
-      : part
-  );
-}
-```
+**1. Corrigir `tailwind.config.ts`**: mover `boxShadow` para dentro de `theme.extend` com indentação correta, garantindo que `shadow-card` seja gerado como utilidade Tailwind válida.
 
-**3. Atualizar componentes**
+**2. Garantir aplicação em `src/components/ui/card.tsx`**: o `<Card />` base já tem `shadow-card` na classe padrão — isso está correto e não precisa mudar.
 
-- `PageHero.tsx`: usar `renderHighlightedTitle(title)` dentro do `<h1>` em vez de `{title}` direto.
-- `hero-section.tsx`: mesma lógica no `<h1>` que renderiza `headerTitle`.
+**3. Verificar `src/pages/Ferramentas.tsx`**: o `SortableToolCard` usa `<Card className="h-full shadow-card ...">` — isso está correto. Com o config corrigido, o `shadow-card` passará a ser uma utilidade válida reconhecida pelo Tailwind e será aplicado.
 
-**4. Atualizar títulos no banco (6 UPDATEs)**
+### O que será alterado
 
-Inserir `**` ao redor das palavras escolhidas nos 6 registros de `page_settings`.
+| Arquivo | Mudança |
+|---|---|
+| `tailwind.config.ts` | Mover `boxShadow` para dentro de `theme.extend` com indentação correta |
 
-### Arquivos alterados
-- Criar `src/lib/highlight-title.tsx`
-- Editar `src/components/layout/PageHero.tsx`
-- Editar `src/components/sections/hero-section.tsx`
-- 6 UPDATEs no banco via migration
+### O que NÃO será alterado
 
+- Nenhuma página além das 3 rotas afetadas indiretamente pelo token
+- Nenhuma lógica, rota, menu ou componente de negócio
+- Nenhum novo efeito visual além da sombra já especificada
+- O valor do shadow permanece exatamente: `0 4px 10px hsl(240 30% 25% / 0.12)`
+
+### Por que só o config precisa mudar?
+
+O `card.tsx` e `Ferramentas.tsx` já estão corretos — eles usam `shadow-card`. O problema é que a classe `shadow-card` não existe de fato no CSS gerado porque o token está mal posicionado no config. Corrigindo o config, a classe passa a existir e os arquivos já a consomem corretamente.
