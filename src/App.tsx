@@ -34,6 +34,7 @@ import AdminCourses from "./pages/AdminCourses";
 import AdminBonusPages from "./pages/AdminBonusPages";
 import BonusPage from "./pages/BonusPage";
 import NotFound from "./pages/NotFound";
+import EmBreve from "./pages/EmBreve";
 import KitAceleracao from "./pages/KitAceleracao";
 
 import Assine from "./pages/Assine";
