@@ -27,6 +27,15 @@ const SobrePqEstudar = () => {
 
   return (
     <>
+      <GlobalSeo
+        jsonLd={{
+          pageType: "website",
+          siteName: "PqEstudar",
+          logoUrl: "https://pqestudar.com.br/favicon.png",
+          sameAs: [],
+        }}
+      />
+
       <Helmet>
         <title>{titleTag}</title>
         <meta name="description" content={metaDescription} />
