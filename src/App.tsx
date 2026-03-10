@@ -21,7 +21,7 @@ import NoticiaDetalhes from "./pages/NoticiaDetalhes";
 import MeuPerfil from "./pages/MeuPerfil";
 import MeusMateriais from "./pages/MeusMateriais";
 import RankingComunidade from "./pages/RankingComunidade";
-import Sobre from "./pages/Sobre";
+import SobrePqEstudar from "./pages/SobrePqEstudar";
 import Termos from "./pages/Termos";
 import Privacidade from "./pages/Privacidade";
 import FAQ from "./pages/FAQ";
