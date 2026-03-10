@@ -250,7 +250,7 @@ function extractFromDocument(doc: Document, url: string, path: string): DomSnaps
   if (body) {
     const totalHeight = body.scrollHeight || 1;
     doc.querySelectorAll('button, a[role="button"]').forEach(el => {
-      if (isInsideNavOrFooter(el)) return;
+      if (isNonConversionElement(el)) return;
       const top = getAbsoluteTop(el as HTMLElement);
       const pos = top / totalHeight;
       if (pos < 0.33) ctaPositions.push('top');
