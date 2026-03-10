@@ -10,6 +10,16 @@ interface SocialProofMetrics {
 }
 
 export function useSocialProofMetrics(): SocialProofMetrics {
+  const { data: usersCount, isLoading: loadingUsers } = useQuery({
+    queryKey: ["metrics-users-count"],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("public_users_count");
+      if (error) throw error;
+      return data as number;
+    },
+    staleTime: 1000 * 60 * 10,
+  });
+
   const { data: toolsCount, isLoading: loadingTools } = useQuery({
     queryKey: ["metrics-tools-count"],
     queryFn: async () => {
@@ -34,19 +44,15 @@ export function useSocialProofMetrics(): SocialProofMetrics {
     staleTime: 1000 * 60 * 10,
   });
 
-  // TODO: conectar fonte real de usuários (profiles table ou RPC segura)
-  // Não há view pública de perfis exposta no momento; fallback null → exibe "—"
-  const usersCount = null;
-
+  // Fallback estático — fonte real: Brevo (não acessível via Supabase)
   // TODO: conectar fonte real de newsletter (Brevo API ou RPC segura)
-  // A tabela newsletter_subscribers não tem SELECT público; fallback null → exibe "—"
-  const newsletterCount = null;
+  const newsletterCount = 38;
 
   return {
-    usersCount,
+    usersCount: usersCount ?? null,
     toolsCount: toolsCount ?? null,
     contestsCount: contestsCount ?? null,
     newsletterCount,
-    isLoading: loadingTools || loadingContests,
+    isLoading: loadingUsers || loadingTools || loadingContests,
   };
 }
