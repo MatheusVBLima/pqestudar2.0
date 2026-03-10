@@ -284,7 +284,7 @@ const SobrePqEstudar = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-80px" }}
               transition={{ duration: 0.6, ease }}
-              className="flex flex-col items-center gap-6 max-w-2xl mx-auto"
+              className="flex flex-col items-center gap-6 max-w-3xl mx-auto"
             >
               <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
                 {renderHighlightedTitle("Encontre o próximo **recurso** certo para você")}
