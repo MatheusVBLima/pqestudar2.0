@@ -22,37 +22,20 @@ import {
 const ease = [0.16, 1, 0.3, 1] as const;
 
 const SobrePqEstudar = () => {
-  useEffect(() => {
-    document.title =
-      "Sobre o PqEstudar: ferramentas, concursos e conteúdo prático em um só lugar";
-    const meta = document.querySelector('meta[name="description"]');
-    if (meta) {
-      meta.setAttribute(
-        "content",
-        "Entenda como o PqEstudar organiza ferramentas, concursos e conteúdos práticos para você estudar melhor, economizar tempo e decidir com mais clareza."
-      );
-    }
-    return () => {
-      document.title = "pqestudar - Cursos Gratuitos com Certificado";
-      if (meta) {
-        meta.setAttribute(
-          "content",
-          "Plataforma educacional completa com cursos online gratuitos e certificados válidos. Transforme sua carreira com nossa curadoria especializada."
-        );
-      }
-    };
-  }, []);
+  const { titleTag, metaDescription, headerTitle, headerDescription } = usePageSettings("/sobre-pqestudar");
 
   return (
     <>
       <Helmet>
+        <title>{titleTag}</title>
+        <meta name="description" content={metaDescription} />
         <meta name="robots" content="index, follow" />
       </Helmet>
 
       {/* 1) Hero */}
       <PageHero
-        title="O PqEstudar existe para facilitar o que deveria ser **simples**"
-        description="Reunimos ferramentas, oportunidades e conteúdos práticos para ajudar você a estudar melhor e decidir com mais clareza."
+        title={headerTitle}
+        description={headerDescription}
       >
         <div className="flex flex-col sm:flex-row gap-3 mt-8">
           <Link to="/ferramentas">
