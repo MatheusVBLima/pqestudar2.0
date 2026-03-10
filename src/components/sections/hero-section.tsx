@@ -95,7 +95,7 @@ export function HeroSection({ headerTitle, headerDescription, isLoading }: HeroS
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, ease }}
               >
-                {headerTitle}
+                {headerTitle ? renderHighlightedTitle(headerTitle) : null}
               </motion.h1>
             )}
 
