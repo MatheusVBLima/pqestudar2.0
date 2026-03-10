@@ -33,6 +33,7 @@ const Index = () => {
         />
         <DualTrackSection />
         <HomeProductsSection />
+        <HomeFaqSection />
         <SocialProofSection />
       </main>
     </>
