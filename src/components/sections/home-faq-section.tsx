@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import { motion } from "framer-motion";
 import { HelpCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -13,22 +14,28 @@ import {
 const faqs = [
   {
     id: "faq-1",
-    question: "O que é o PqEstudar?",
+    question: "O que é o PqEstudar e para quem ele foi feito?",
+    answerText:
+      "Uma plataforma gratuita que reúne ferramentas para estudar, concursos públicos e recursos educacionais num só lugar. Feita para quem quer se organizar melhor e aproveitar cada hora de estudo.",
     answer:
-      "O PqEstudar é uma plataforma gratuita que reúne ferramentas, concursos públicos e recursos educacionais em um só lugar — tudo pensado para quem quer estudar de forma mais inteligente.",
+      "Uma plataforma gratuita que reúne ferramentas para estudar, concursos públicos e recursos educacionais num só lugar. Feita para quem quer se organizar melhor e aproveitar cada hora de estudo.",
   },
   {
     id: "faq-2",
-    question: "Preciso criar uma conta para usar?",
+    question: "Preciso pagar ou criar conta para usar?",
+    answerText:
+      "Não. Todo o conteúdo público é gratuito e acessível sem cadastro. A conta é opcional — serve para salvar seus itens favoritos e acompanhar novidades.",
     answer:
-      "Não. Você pode navegar por ferramentas, concursos e produtos sem precisar de conta. O cadastro é opcional e desbloqueia recursos extras, como salvar itens favoritos.",
+      "Não. Todo o conteúdo público é gratuito e acessível sem cadastro. A conta é opcional — serve para salvar seus itens favoritos e acompanhar novidades.",
   },
   {
     id: "faq-3",
-    question: "O que encontro na seção de Ferramentas?",
+    question: "Que tipo de ferramentas para estudos estão disponíveis?",
+    answerText:
+      "Ferramentas de produtividade, organização e aprendizado, filtradas por categoria. Você acessa direto, sem intermediários.",
     answer: (
       <>
-        Uma curadoria de ferramentas úteis para estudos, produtividade e organização. Você pode filtrar por categoria, acessar diretamente cada ferramenta e salvar as que mais usar.{" "}
+        Ferramentas de produtividade, organização e aprendizado, filtradas por categoria. Você acessa direto, sem intermediários.{" "}
         <Link to="/ferramentas" className="text-primary underline underline-offset-2 hover:text-primary/80">
           Explorar ferramentas →
         </Link>
@@ -37,10 +44,12 @@ const faqs = [
   },
   {
     id: "faq-4",
-    question: "O que encontro na seção de Concursos?",
+    question: "Como acompanho concursos públicos abertos pelo PqEstudar?",
+    answerText:
+      "A seção de concursos reúne oportunidades com filtros por área, escolaridade e situação. Cada concurso tem página própria com detalhes e link para o edital.",
     answer: (
       <>
-        Oportunidades de concursos públicos organizadas com filtros por área, escolaridade e situação. Cada concurso tem uma página com detalhes, links para editais e atualizações.{" "}
+        A seção de concursos reúne oportunidades com filtros por área, escolaridade e situação. Cada concurso tem página própria com detalhes e link para o edital.{" "}
         <Link to="/concursos" className="text-primary underline underline-offset-2 hover:text-primary/80">
           Ver concursos →
         </Link>
@@ -49,10 +58,12 @@ const faqs = [
   },
   {
     id: "faq-5",
-    question: "Para que serve a página de Votações?",
+    question: "O que posso fazer na página de Votações?",
+    answerText:
+      "Sugerir funcionalidades e votar nas que mais importam para você. É assim que a comunidade ajuda a decidir o que será desenvolvido.",
     answer: (
       <>
-        Nas Votações, você pode sugerir e votar em funcionalidades que gostaria de ver no PqEstudar. É a forma mais direta de influenciar o que vai ser desenvolvido.{" "}
+        Sugerir funcionalidades e votar nas que mais importam para você. É assim que a comunidade ajuda a decidir o que será desenvolvido.{" "}
         <Link to="/votacoes" className="text-primary underline underline-offset-2 hover:text-primary/80">
           Participar das votações →
         </Link>
@@ -62,43 +73,46 @@ const faqs = [
   {
     id: "faq-6",
     question: "O que são os Produtos do PqEstudar?",
+    answerText:
+      "Guias e materiais prontos para acelerar seus estudos, criados pela equipe do PqEstudar.",
     answer: (
       <>
-        São guias e recursos prontos criados pela equipe do PqEstudar para acelerar seu progresso nos estudos. Você pode conferir os disponíveis na{" "}
+        Guias e materiais prontos para acelerar seus estudos, criados pela equipe do PqEstudar.{" "}
         <Link to="/produtos" className="text-primary underline underline-offset-2 hover:text-primary/80">
-          página de produtos
+          Ver produtos →
         </Link>
-        .
       </>
     ),
   },
   {
     id: "faq-7",
-    question: "Posso salvar ferramentas e concursos para ver depois?",
+    question: "Posso salvar ferramentas e concursos para consultar depois?",
+    answerText:
+      "Sim. Com uma conta gratuita, você salva qualquer ferramenta ou concurso e acessa tudo na sua área de favoritos.",
     answer:
-      "Sim! Se estiver logado, você pode salvar ferramentas e concursos nos seus favoritos e acessá-los a qualquer momento pela sua área de salvos.",
+      "Sim. Com uma conta gratuita, você salva qualquer ferramenta ou concurso e acessa tudo na sua área de favoritos.",
   },
   {
     id: "faq-8",
-    question: "O PqEstudar é gratuito?",
+    question: "O PqEstudar é atualizado com frequência?",
+    answerText:
+      "Sim. Novas ferramentas, concursos e melhorias são adicionados regularmente com base no feedback da comunidade.",
     answer:
-      "Sim, o acesso à plataforma é gratuito. Você pode navegar por todo o conteúdo público sem nenhum custo.",
+      "Sim. Novas ferramentas, concursos e melhorias são adicionados regularmente com base no feedback da comunidade.",
   },
   {
     id: "faq-9",
-    question: "Como posso tirar dúvidas ou entrar em contato?",
+    question: "Como entro em contato se tiver uma dúvida?",
+    answerText:
+      "Por e-mail em pqestudar.suporte@gmail.com.",
     answer: (
       <>
-        Você pode nos encontrar na{" "}
-        <Link to="/sobre" className="text-primary underline underline-offset-2 hover:text-primary/80">
-          página Sobre
-        </Link>{" "}
-        ou enviar um e-mail para{" "}
+        Por e-mail em{" "}
         <a
-          href="mailto:suporte@pqestudar.com"
+          href="mailto:pqestudar.suporte@gmail.com"
           className="text-primary underline underline-offset-2 hover:text-primary/80"
         >
-          suporte@pqestudar.com
+          pqestudar.suporte@gmail.com
         </a>
         .
       </>
@@ -106,11 +120,28 @@ const faqs = [
   },
 ];
 
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: faqs.map((faq) => ({
+    "@type": "Question",
+    name: faq.question,
+    acceptedAnswer: {
+      "@type": "Answer",
+      text: faq.answerText,
+    },
+  })),
+};
+
 const ease = [0.16, 1, 0.3, 1] as const;
 
 export function HomeFaqSection() {
   return (
     <section className="pt-0 pb-16 md:pb-24">
+      <Helmet>
+        <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
+      </Helmet>
+
       <div className="container mx-auto px-6">
         <Separator className="mb-14 md:mb-20 bg-border/50" />
 
