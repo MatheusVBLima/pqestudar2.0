@@ -36,6 +36,7 @@ const Index = () => {
         <HomeProductsSection />
         <HomeFaqSection />
         <SocialProofSection />
+        <FinalCtaSection />
       </main>
     </>
   );
