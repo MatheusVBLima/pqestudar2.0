@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { PageHero } from "@/components/layout/PageHero";
 import {
   Search,
   ArrowRight,
@@ -48,40 +49,22 @@ const SobrePqEstudar = () => {
       </Helmet>
 
       {/* 1) Hero */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-primary/10 via-background to-background border-b">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,hsl(var(--primary)/0.08),transparent_60%)]" />
-        <div className="container mx-auto px-6 py-20 md:py-28 relative">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease }}
-            className="max-w-3xl mx-auto text-center lg:text-left lg:mx-0">
-            
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight mb-6 bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
-              O PqEstudar existe para facilitar o que deveria ser{" "}
-              <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-                simples
-              </span>
-            </h1>
-            <p className="text-lg md:text-xl text-muted-foreground leading-relaxed max-w-2xl mx-auto lg:mx-0 mb-8">
-              Reunimos ferramentas, oportunidades e conteúdos práticos para ajudar você a estudar melhor e decidir com mais clareza.
-            
-
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
-              <Link to="/ferramentas">
-                <Button size="lg" className="gap-2 rounded-[1.2rem] w-full sm:w-auto">
-                  <Search className="h-4 w-4" />
-                  Conhecer Ferramentas
-                </Button>
-              </Link>
-            </div>
-            <p className="text-sm text-muted-foreground/60 mt-4 text-center lg:text-left">
-              Ferramentas, oportunidades e conteúdos úteis em um só lugar.
-            </p>
-          </motion.div>
+      <PageHero
+        title="O PqEstudar existe para facilitar o que deveria ser **simples**"
+        description="Reunimos ferramentas, oportunidades e conteúdos práticos para ajudar você a estudar melhor e decidir com mais clareza."
+      >
+        <div className="flex flex-col sm:flex-row gap-3 mt-8">
+          <Link to="/ferramentas">
+            <Button size="lg" className="gap-2 rounded-[1.2rem] w-full sm:w-auto">
+              <Search className="h-4 w-4" />
+              Conhecer Ferramentas
+            </Button>
+          </Link>
         </div>
-      </section>
+        <p className="text-sm text-muted-foreground/60 mt-4">
+          Sem enrolação. Sem excesso. Só o que ajuda na prática.
+        </p>
+      </PageHero>
 
       {/* 2) O problema */}
       <section className="py-16 md:py-24">
