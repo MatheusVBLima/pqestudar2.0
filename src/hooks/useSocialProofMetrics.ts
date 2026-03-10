@@ -35,12 +35,12 @@ export function useSocialProofMetrics(): SocialProofMetrics {
   });
 
   // TODO: conectar fonte real de usuários (profiles table ou RPC segura)
-  // Não há view pública de perfis exposta; fallback null
+  // Não há view pública de perfis exposta no momento; fallback null → exibe "—"
   const usersCount = null;
 
-  // TODO: conectar fonte real (Brevo/Supabase)
-  // Fallback estático baseado em dado informado pelo proprietário
-  const newsletterCount = 38;
+  // TODO: conectar fonte real de newsletter (Brevo API ou RPC segura)
+  // A tabela newsletter_subscribers não tem SELECT público; fallback null → exibe "—"
+  const newsletterCount = null;
 
   return {
     usersCount,
