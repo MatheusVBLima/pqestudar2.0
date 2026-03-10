@@ -107,7 +107,7 @@ const SobrePqEstudar = () => {
               {[
                 "Informação solta demais e difícil de comparar",
                 "Páginas confusas e cheias de distrações",
-                "Links importantes "perdidos" no meio do conteúdo",
+                "Links importantes 'perdidos' no meio do conteúdo",
                 "Oportunidades sem contexto e sem organização",
                 "Dúvida constante sobre o que realmente vale a pena",
               ].map((item) => (
