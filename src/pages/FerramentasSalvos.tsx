@@ -63,15 +63,10 @@ export default function FerramentasSalvos() {
 
   return (
     <>
-      {ps.isReady && (
-        <Helmet>
-          <title>{ps.titleTag}</title>
-          <meta
-            name="description"
-            content={ps.metaDescription}
-          />
-        </Helmet>
-      )}
+      <Helmet>
+        <title>{ps.titleTag}</title>
+        <meta name="description" content={ps.metaDescription} />
+      </Helmet>
 
       <div className="min-h-screen flex flex-col bg-background">
 

@@ -22,12 +22,10 @@ const Index = () => {
           siteName: "PqEstudar",
         }}
       />
-      {isReady && (
-        <Helmet>
-          <title>{titleTag}</title>
-          <meta name="description" content={metaDescription} />
-        </Helmet>
-      )}
+      <Helmet>
+        <title>{titleTag}</title>
+        <meta name="description" content={metaDescription} />
+      </Helmet>
 
       <main className="flex-1">
         <HeroSection
