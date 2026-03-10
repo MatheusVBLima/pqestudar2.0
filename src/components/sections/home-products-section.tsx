@@ -170,7 +170,7 @@ export function HomeProductsSection() {
             </div>
             <Link to="/produtos" className="w-full sm:w-auto">
               <Button variant="outline" className="gap-2 rounded-[1.2rem] w-full sm:w-auto shrink-0">
-                Ver todos os produtos
+                Explorar produtos
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
