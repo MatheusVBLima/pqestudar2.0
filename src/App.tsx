@@ -34,6 +34,7 @@ import AdminCourses from "./pages/AdminCourses";
 import AdminBonusPages from "./pages/AdminBonusPages";
 import BonusPage from "./pages/BonusPage";
 import NotFound from "./pages/NotFound";
+import EmBreve from "./pages/EmBreve";
 import KitAceleracao from "./pages/KitAceleracao";
 
 import Assine from "./pages/Assine";
@@ -162,6 +163,7 @@ const AppWithPixel = () => {
         <Route path="/ranking-comunidade" element={<RankingComunidade />} />
         
         <Route path="/sobre-pqestudar" element={<SobrePqEstudar />} />
+        <Route path="/breve" element={<EmBreve />} />
         <Route path="/termos" element={<Termos />} />
         <Route path="/privacidade" element={<Privacidade />} />
         <Route path="/faq" element={<FAQ />} />
