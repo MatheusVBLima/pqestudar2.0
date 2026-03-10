@@ -72,7 +72,7 @@ const SobrePqEstudar = () => {
               <Link to="/ferramentas">
                 <Button size="lg" className="gap-2 rounded-[1.2rem] w-full sm:w-auto">
                   <Search className="h-4 w-4" />
-                  Explorar recursos
+                  Conhecer Ferramentas
                 </Button>
               </Link>
             </div>
