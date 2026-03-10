@@ -1,12 +1,15 @@
+import { lazy, Suspense } from "react";
 import { Helmet } from "react-helmet-async";
 import { HeroSection } from "@/components/sections/hero-section";
-import { DualTrackSection } from "@/components/sections/dual-track-section";
-import { HomeProductsSection } from "@/components/sections/home-products-section";
-import { HomeFaqSection } from "@/components/sections/home-faq-section";
-import { SocialProofSection } from "@/components/sections/social-proof-section";
-import { FinalCtaSection } from "@/components/sections/final-cta-section";
 import { GlobalSeo } from "@/components/seo/GlobalSeo";
 import { usePageSettings } from "@/hooks/usePageSettings";
+
+// Lazy-load below-fold sections to prioritize hero LCP
+const DualTrackSection = lazy(() => import("@/components/sections/dual-track-section").then(m => ({ default: m.DualTrackSection })));
+const HomeProductsSection = lazy(() => import("@/components/sections/home-products-section").then(m => ({ default: m.HomeProductsSection })));
+const HomeFaqSection = lazy(() => import("@/components/sections/home-faq-section").then(m => ({ default: m.HomeFaqSection })));
+const SocialProofSection = lazy(() => import("@/components/sections/social-proof-section").then(m => ({ default: m.SocialProofSection })));
+const FinalCtaSection = lazy(() => import("@/components/sections/final-cta-section").then(m => ({ default: m.FinalCtaSection })));
 
 const Index = () => {
   const { titleTag, metaDescription, headerTitle, headerDescription, isReady, isLoading } = usePageSettings("/");
@@ -32,11 +35,13 @@ const Index = () => {
           headerDescription={headerDescription}
           isLoading={isLoading}
         />
-        <DualTrackSection />
-        <HomeProductsSection />
-        <HomeFaqSection />
-        <SocialProofSection />
-        <FinalCtaSection />
+        <Suspense fallback={<div className="min-h-[200px]" />}>
+          <DualTrackSection />
+          <HomeProductsSection />
+          <HomeFaqSection />
+          <SocialProofSection />
+          <FinalCtaSection />
+        </Suspense>
       </main>
     </>
   );
