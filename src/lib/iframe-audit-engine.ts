@@ -213,20 +213,24 @@ function extractFromDocument(doc: Document, url: string, path: string): DomSnaps
 
   const hasLists = doc.querySelectorAll('ul, ol').length > 0;
 
-  // Helper: check if element is inside nav or footer (not a real conversion CTA)
-  const isInsideNavOrFooter = (el: Element): boolean => {
+  // Helper: check if element is a non-conversion UI control (nav, footer, accordion, etc.)
+  const isNonConversionElement = (el: Element): boolean => {
     let parent = el.parentElement;
     while (parent) {
       const tag = parent.tagName?.toLowerCase();
       if (tag === 'nav' || tag === 'footer' || tag === 'header') return true;
+      // Skip accordion containers (Radix UI)
+      if (parent.hasAttribute('data-orientation') && parent.hasAttribute('data-state')) return true;
       parent = parent.parentElement;
     }
+    // Skip Radix accordion triggers directly
+    if (el.hasAttribute('data-radix-collection-item')) return true;
     return false;
   };
 
   const ctaButtons: string[] = [];
   doc.querySelectorAll('button, a[role="button"], a[class*="btn"], a[class*="Button"]').forEach(el => {
-    if (isInsideNavOrFooter(el)) return;
+    if (isNonConversionElement(el)) return;
     const text = (el as HTMLElement).innerText?.trim();
     if (text && text.length > 0 && text.length < 60) ctaButtons.push(text);
   });
@@ -246,7 +250,7 @@ function extractFromDocument(doc: Document, url: string, path: string): DomSnaps
   if (body) {
     const totalHeight = body.scrollHeight || 1;
     doc.querySelectorAll('button, a[role="button"]').forEach(el => {
-      if (isInsideNavOrFooter(el)) return;
+      if (isNonConversionElement(el)) return;
       const top = getAbsoluteTop(el as HTMLElement);
       const pos = top / totalHeight;
       if (pos < 0.33) ctaPositions.push('top');

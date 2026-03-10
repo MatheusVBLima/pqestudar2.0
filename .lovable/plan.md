@@ -1,35 +1,45 @@
 
+## Diagnóstico do Problema
 
-## Problema
+O `tailwind.config.ts` tem um bug de posicionamento: o bloco `boxShadow` está com indentação incorreta — ele foi inserido **fora** do bloco `extend`, em vez de dentro. Isso faz com que o Tailwind ignore ou trate incorretamente o token `shadow-card`.
 
-O FAQ usa `<button>` dentro do `AccordionTrigger` do Radix UI. O motor de auditoria coleta **todos os `<button>`** fora de nav/header/footer como CTAs. Resultado: perguntas do FAQ ("O que é o PqEstudar…", "Preciso pagar…") aparecem como CTAs fracos.
+### Estrutura atual (com bug):
 
-## Solução
-
-Adicionar ao filtro `isInsideNavOrFooter` a detecção de **accordion containers** — elementos com `data-state` (atributo do Radix Accordion) ou role `region`/`tablist`. Também filtrar botões cujo `data-radix-collection-item` exista (atributo interno do Radix AccordionTrigger).
-
-### Alteração em `src/lib/iframe-audit-engine.ts`
-
-Renomear o helper para `isNonConversionElement` e expandir a lógica:
-
-```typescript
-const isNonConversionElement = (el: Element): boolean => {
-  // Skip nav/header/footer
-  let parent = el.parentElement;
-  while (parent) {
-    const tag = parent.tagName?.toLowerCase();
-    if (tag === 'nav' || tag === 'footer' || tag === 'header') return true;
-    // Skip accordion containers (Radix UI)
-    if (parent.hasAttribute('data-orientation') && parent.hasAttribute('data-state')) return true;
-    parent = parent.parentElement;
-  }
-  // Skip Radix accordion triggers directly
-  if (el.hasAttribute('data-radix-collection-item')) return true;
-  return false;
-};
+```
+theme: {
+  extend: {
+    colors: { ... },
+    backgroundImage: { ... },
+  // ← indentação quebrada aqui
+  boxShadow: {           <-- FORA do extend
+    'card': '...',
+  },
+    transitionTimingFunction: { ... },  <-- voltou para dentro
 ```
 
-Usar esse helper nos dois loops existentes (`ctaButtons` e `ctaPositions`).
+Quando `boxShadow` fica fora de `extend`, ele substitui o sistema completo de sombras do Tailwind em vez de adicionar ao existente — e pode ser ignorado por parsers dependendo da versão.
 
-Arquivo alterado: apenas `src/lib/iframe-audit-engine.ts`.
+### Solução
 
+**1. Corrigir `tailwind.config.ts`**: mover `boxShadow` para dentro de `theme.extend` com indentação correta, garantindo que `shadow-card` seja gerado como utilidade Tailwind válida.
+
+**2. Garantir aplicação em `src/components/ui/card.tsx`**: o `<Card />` base já tem `shadow-card` na classe padrão — isso está correto e não precisa mudar.
+
+**3. Verificar `src/pages/Ferramentas.tsx`**: o `SortableToolCard` usa `<Card className="h-full shadow-card ...">` — isso está correto. Com o config corrigido, o `shadow-card` passará a ser uma utilidade válida reconhecida pelo Tailwind e será aplicado.
+
+### O que será alterado
+
+| Arquivo | Mudança |
+|---|---|
+| `tailwind.config.ts` | Mover `boxShadow` para dentro de `theme.extend` com indentação correta |
+
+### O que NÃO será alterado
+
+- Nenhuma página além das 3 rotas afetadas indiretamente pelo token
+- Nenhuma lógica, rota, menu ou componente de negócio
+- Nenhum novo efeito visual além da sombra já especificada
+- O valor do shadow permanece exatamente: `0 4px 10px hsl(240 30% 25% / 0.12)`
+
+### Por que só o config precisa mudar?
+
+O `card.tsx` e `Ferramentas.tsx` já estão corretos — eles usam `shadow-card`. O problema é que a classe `shadow-card` não existe de fato no CSS gerado porque o token está mal posicionado no config. Corrigindo o config, a classe passa a existir e os arquivos já a consomem corretamente.
