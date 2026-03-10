@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import HeroBadge from "@/components/ui/hero-badge";
@@ -8,8 +7,6 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { renderHighlightedTitle } from "@/lib/highlight-title";
-
-const ease = [0.16, 1, 0.3, 1] as const;
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -82,46 +79,37 @@ export function HeroSection({ headerTitle, headerDescription, isLoading }: HeroS
               />
             </div>
 
-            {/* Title */}
+            {/* Title — NO animation delay to be LCP-friendly */}
             {isLoading ? (
               <div className="flex flex-col items-center gap-3">
                 <Skeleton className="h-12 sm:h-16 lg:h-20 w-[90%] max-w-3xl rounded-lg" />
                 <Skeleton className="h-12 sm:h-16 lg:h-20 w-[70%] max-w-2xl rounded-lg" />
               </div>
             ) : (
-              <motion.h1
+              <h1
                 className="text-4xl font-bold tracking-tight sm:text-6xl lg:text-7xl xl:text-8xl"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, ease }}
               >
                 {headerTitle ? renderHighlightedTitle(headerTitle) : null}
-              </motion.h1>
+              </h1>
             )}
 
-            {/* Description */}
+            {/* Description — no animation to avoid delaying paint */}
             {isLoading ? (
               <div className="flex flex-col items-center gap-2 mx-auto max-w-[42rem]">
                 <Skeleton className="h-6 w-full rounded-md" />
                 <Skeleton className="h-6 w-4/5 rounded-md" />
               </div>
             ) : (
-              <motion.p
+              <p
                 className="max-w-[42rem] mx-auto leading-normal text-muted-foreground sm:text-xl sm:leading-8"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1, duration: 0.8, ease }}
               >
                 {headerDescription}
-              </motion.p>
+              </p>
             )}
 
             {/* Email capture form */}
-            <motion.div
+            <div
               className="flex flex-col items-center gap-2 w-full max-w-2xl mx-auto"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2, duration: 0.8, ease }}
             >
               <form
                 onSubmit={handleSubmit}
@@ -155,7 +143,7 @@ export function HeroSection({ headerTitle, headerDescription, isLoading }: HeroS
               <p className="text-xs text-muted-foreground/70 text-center">
                 Sem spam. Você pode sair quando quiser.
               </p>
-            </motion.div>
+            </div>
           </div>
         </div>
       </div>

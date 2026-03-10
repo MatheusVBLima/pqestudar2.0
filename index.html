@@ -18,18 +18,28 @@
     <meta name="twitter:site" content="@educertifica" />
     <meta name="twitter:image" content="https://pqestudar.com.br/favicon.png" />
 
-    <!-- Meta Pixel Code -->
+    <!-- Preconnect to critical origins -->
+    <link rel="preconnect" href="https://omkxiomwzbykmqttfozi.supabase.co" crossorigin />
+    <link rel="dns-prefetch" href="https://omkxiomwzbykmqttfozi.supabase.co" />
+
+    <!-- Meta Pixel Code – deferred to after first paint -->
     <script>
-      !function(f,b,e,v,n,t,s)
-      {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-      n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-      if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-      n.queue=[];t=b.createElement(e);t.async=!0;
-      t.src=v;s=b.getElementsByTagName(e)[0];
-      s.parentNode.insertBefore(t,s)}(window, document,'script',
-      'https://connect.facebook.net/en_US/fbevents.js');
-      fbq('init', '4463744813854271');
-      fbq('track', 'PageView');
+      // Stub fbq so calls before load are queued
+      window.fbq=window.fbq||function(){(window.fbq.q=window.fbq.q||[]).push(arguments)};
+      window._fbq=window.fbq;
+      // Load the real pixel script after first paint
+      if(typeof requestIdleCallback==='function'){
+        requestIdleCallback(function(){__loadPixel()});
+      }else{
+        setTimeout(function(){__loadPixel()},2500);
+      }
+      function __loadPixel(){
+        var t=document.createElement('script');t.async=true;
+        t.src='https://connect.facebook.net/en_US/fbevents.js';
+        document.head.appendChild(t);
+        fbq('init','4463744813854271');
+        fbq('track','PageView');
+      }
     </script>
     <!-- End Meta Pixel Code -->
   </head>
