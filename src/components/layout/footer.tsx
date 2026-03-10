@@ -26,7 +26,7 @@ const allNavLinks = [
 
 const navLinksTop = [
   { label: "Produtos", to: "/produtos" },
-  { label: "Sobre", to: "/sobre" },
+  { label: "Sobre", to: "/sobre-pqestudar" },
 ];
 
 const navLinksBottom = [
