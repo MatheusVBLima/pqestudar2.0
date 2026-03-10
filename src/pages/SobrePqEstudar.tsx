@@ -117,7 +117,7 @@ const SobrePqEstudar = () => {
               {([
                 { icon: Wrench, title: "Ferramentas", desc: "Recursos para estudar, produzir e se organizar", href: "/ferramentas", cta: "Explorar ferramentas" },
                 { icon: BookOpen, title: "Concursos", desc: "Informações reunidas e mais fáceis de acompanhar", href: "/concursos", cta: "Ver oportunidades" },
-                { icon: FileText, title: "Conteúdos", desc: "Guias e atalhos práticos, sem teoria solta", href: "/noticias", cta: "Acessar conteúdos" },
+                { icon: FileText, title: "Conteúdos", desc: "Guias e atalhos práticos, sem teoria solta", href: "/breve", cta: "Acessar conteúdos" },
                 { icon: Package, title: "Produtos", desc: "Materiais criados para acelerar seu progresso", href: "/produtos", cta: "Conhecer produtos" },
               ] as const).map((c) => (
                 <Link key={c.title} to={c.href} className="group">
