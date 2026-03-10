@@ -147,7 +147,7 @@ export function HeroSection({ headerTitle, headerDescription, isLoading }: HeroS
                       Enviando…
                     </>
                   ) : (
-                    "Receber Atualizações"
+                    "Receber novidades úteis"
                   )}
                 </Button>
               </form>

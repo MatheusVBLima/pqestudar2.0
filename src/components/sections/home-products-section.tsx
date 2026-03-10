@@ -46,9 +46,9 @@ function PlaceholderCard() {
           <Badge variant="secondary" className="w-fit text-xs opacity-60">
             {PLACEHOLDER_CARD.category}
           </Badge>
-          <Button className="w-full" disabled>
+          <Badge variant="outline" className="w-fit text-xs text-muted-foreground/60">
             Em breve
-          </Button>
+          </Badge>
         </div>
       </div>
     </Card>
