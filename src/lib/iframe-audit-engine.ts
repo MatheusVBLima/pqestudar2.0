@@ -231,12 +231,23 @@ function extractFromDocument(doc: Document, url: string, path: string): DomSnaps
     if (text && text.length > 0 && text.length < 60) ctaButtons.push(text);
   });
 
+  // Helper: get absolute top offset relative to document
+  const getAbsoluteTop = (el: HTMLElement): number => {
+    let top = 0;
+    let current: HTMLElement | null = el;
+    while (current) {
+      top += current.offsetTop || 0;
+      current = current.offsetParent as HTMLElement | null;
+    }
+    return top;
+  };
+
   const ctaPositions: string[] = [];
   if (body) {
     const totalHeight = body.scrollHeight || 1;
     doc.querySelectorAll('button, a[role="button"]').forEach(el => {
       if (isInsideNavOrFooter(el)) return;
-      const top = (el as HTMLElement).offsetTop || 0;
+      const top = getAbsoluteTop(el as HTMLElement);
       const pos = top / totalHeight;
       if (pos < 0.33) ctaPositions.push('top');
       else if (pos < 0.66) ctaPositions.push('middle');
