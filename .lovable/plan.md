@@ -1,16 +1,45 @@
 
+## Diagnóstico do Problema
 
-## Plan: Add `/sobre-pqestudar` to audit system
+O `tailwind.config.ts` tem um bug de posicionamento: o bloco `boxShadow` está com indentação incorreta — ele foi inserido **fora** do bloco `extend`, em vez de dentro. Isso faz com que o Tailwind ignore ou trate incorretamente o token `shadow-card`.
 
-The route is missing from three places that control which URLs get audited and which are editable via the optimization center.
+### Estrutura atual (com bug):
 
-### Changes
+```
+theme: {
+  extend: {
+    colors: { ... },
+    backgroundImage: { ... },
+  // ← indentação quebrada aqui
+  boxShadow: {           <-- FORA do extend
+    'card': '...',
+  },
+    transitionTimingFunction: { ... },  <-- voltou para dentro
+```
 
-1. **`src/lib/iframe-audit-engine.ts`** (line 30): Add `/sobre-pqestudar` to `STATIC_PATHS` array so the audit engine includes it when building URLs to scan.
+Quando `boxShadow` fica fora de `extend`, ele substitui o sistema completo de sombras do Tailwind em vez de adicionar ao existente — e pode ser ignorado por parsers dependendo da versão.
 
-2. **`src/lib/audit-url-resolver.ts`** (lines 13-22): Add `/sobre-pqestudar` to `PAGE_SETTINGS_ROUTES` so audit findings for this route are recognized as editable (maps to `page_settings` entity type).
+### Solução
 
-3. **`supabase/functions/admin-content-versions/index.ts`** (lines 19-21): Add `/sobre-pqestudar` to the server-side `PAGE_SETTINGS_ROUTES` mirror so the content versioning/optimization drawer works for this route.
+**1. Corrigir `tailwind.config.ts`**: mover `boxShadow` para dentro de `theme.extend` com indentação correta, garantindo que `shadow-card` seja gerado como utilidade Tailwind válida.
 
-No database changes needed — the `page_settings` row for `/sobre-pqestudar` was already inserted in a previous migration.
+**2. Garantir aplicação em `src/components/ui/card.tsx`**: o `<Card />` base já tem `shadow-card` na classe padrão — isso está correto e não precisa mudar.
 
+**3. Verificar `src/pages/Ferramentas.tsx`**: o `SortableToolCard` usa `<Card className="h-full shadow-card ...">` — isso está correto. Com o config corrigido, o `shadow-card` passará a ser uma utilidade válida reconhecida pelo Tailwind e será aplicado.
+
+### O que será alterado
+
+| Arquivo | Mudança |
+|---|---|
+| `tailwind.config.ts` | Mover `boxShadow` para dentro de `theme.extend` com indentação correta |
+
+### O que NÃO será alterado
+
+- Nenhuma página além das 3 rotas afetadas indiretamente pelo token
+- Nenhuma lógica, rota, menu ou componente de negócio
+- Nenhum novo efeito visual além da sombra já especificada
+- O valor do shadow permanece exatamente: `0 4px 10px hsl(240 30% 25% / 0.12)`
+
+### Por que só o config precisa mudar?
+
+O `card.tsx` e `Ferramentas.tsx` já estão corretos — eles usam `shadow-card`. O problema é que a classe `shadow-card` não existe de fato no CSS gerado porque o token está mal posicionado no config. Corrigindo o config, a classe passa a existir e os arquivos já a consomem corretamente.
