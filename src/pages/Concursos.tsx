@@ -237,12 +237,10 @@ export default function Concursos() {
           })),
         }}
       />
-      {ps.isReady && (
-        <Helmet>
-          <title>{ps.titleTag}</title>
-          <meta name="description" content={ps.metaDescription} />
-        </Helmet>
-      )}
+      <Helmet>
+        <title>{ps.titleTag}</title>
+        <meta name="description" content={ps.metaDescription} />
+      </Helmet>
       
       <PageHero title={ps.headerTitle} description={ps.headerDescription} isLoading={ps.isLoading} />
 
