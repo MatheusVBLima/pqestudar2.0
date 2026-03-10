@@ -1,45 +1,44 @@
 
-## Diagnóstico do Problema
 
-O `tailwind.config.ts` tem um bug de posicionamento: o bloco `boxShadow` está com indentação incorreta — ele foi inserido **fora** do bloco `extend`, em vez de dentro. Isso faz com que o Tailwind ignore ou trate incorretamente o token `shadow-card`.
+## Plano: Conectar contagem real de usuários + fallback 38 para newsletter
 
-### Estrutura atual (com bug):
+### Respostas às suas dúvidas
 
+**Ferramentas e Concursos** — Sim, são conexões reais ao Supabase. Sempre que você adicionar/remover uma ferramenta ou concurso, o número atualiza automaticamente (com cache de 10 min).
+
+**Usuários** — O Supabase tem 29 usuários cadastrados em `auth.users`, mas essa tabela não é acessível pelo frontend (anon/authenticated). Precisamos criar uma função RPC segura que retorne apenas o count.
+
+**Newsletter** — Entendido: o número 38 será usado como fallback estático, com comentário claro no código.
+
+### Alterações
+
+**1. Criar RPC no Supabase: `public_users_count()`**
+
+```sql
+CREATE OR REPLACE FUNCTION public.public_users_count()
+RETURNS bigint
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT count(*) FROM auth.users;
+$$;
 ```
-theme: {
-  extend: {
-    colors: { ... },
-    backgroundImage: { ... },
-  // ← indentação quebrada aqui
-  boxShadow: {           <-- FORA do extend
-    'card': '...',
-  },
-    transitionTimingFunction: { ... },  <-- voltou para dentro
-```
 
-Quando `boxShadow` fica fora de `extend`, ele substitui o sistema completo de sombras do Tailwind em vez de adicionar ao existente — e pode ser ignorado por parsers dependendo da versão.
+- `SECURITY DEFINER` permite acessar `auth.users` mesmo com role `anon`.
+- Retorna apenas o número total, sem expor dados sensíveis.
+- Conceder `EXECUTE` para `anon` e `authenticated`.
 
-### Solução
+**2. Atualizar `useSocialProofMetrics.ts`**
 
-**1. Corrigir `tailwind.config.ts`**: mover `boxShadow` para dentro de `theme.extend` com indentação correta, garantindo que `shadow-card` seja gerado como utilidade Tailwind válida.
+- Adicionar query para `supabase.rpc('public_users_count')` com `staleTime: 10min`.
+- Trocar `newsletterCount = null` por `newsletterCount = 38` com comentário `// Fallback estático — fonte real: Brevo (não acessível via Supabase)`.
+- Ambas as mudanças são simples, no mesmo arquivo.
 
-**2. Garantir aplicação em `src/components/ui/card.tsx`**: o `<Card />` base já tem `shadow-card` na classe padrão — isso está correto e não precisa mudar.
+### Resultado
 
-**3. Verificar `src/pages/Ferramentas.tsx`**: o `SortableToolCard` usa `<Card className="h-full shadow-card ...">` — isso está correto. Com o config corrigido, o `shadow-card` passará a ser uma utilidade válida reconhecida pelo Tailwind e será aplicado.
+- Card "Usuários" mostra o número real (hoje 29), atualizado dinamicamente.
+- Card "Newsletter" mostra 38 (estático até haver integração com Brevo).
+- Ferramentas e Concursos continuam dinâmicos como já estão.
 
-### O que será alterado
-
-| Arquivo | Mudança |
-|---|---|
-| `tailwind.config.ts` | Mover `boxShadow` para dentro de `theme.extend` com indentação correta |
-
-### O que NÃO será alterado
-
-- Nenhuma página além das 3 rotas afetadas indiretamente pelo token
-- Nenhuma lógica, rota, menu ou componente de negócio
-- Nenhum novo efeito visual além da sombra já especificada
-- O valor do shadow permanece exatamente: `0 4px 10px hsl(240 30% 25% / 0.12)`
-
-### Por que só o config precisa mudar?
-
-O `card.tsx` e `Ferramentas.tsx` já estão corretos — eles usam `shadow-card`. O problema é que a classe `shadow-card` não existe de fato no CSS gerado porque o token está mal posicionado no config. Corrigindo o config, a classe passa a existir e os arquivos já a consomem corretamente.
