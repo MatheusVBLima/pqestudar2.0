@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { PageHero } from "@/components/layout/PageHero";
 import { renderHighlightedTitle } from "@/lib/highlight-title";
 import { usePageSettings } from "@/hooks/usePageSettings";
+import { GlobalSeo } from "@/components/seo/GlobalSeo";
 import {
   Search,
   ArrowRight,
@@ -26,6 +27,15 @@ const SobrePqEstudar = () => {
 
   return (
     <>
+      <GlobalSeo
+        jsonLd={{
+          pageType: "website",
+          siteName: "PqEstudar",
+          logoUrl: "https://pqestudar.com.br/favicon.png",
+          sameAs: [],
+        }}
+      />
+
       <Helmet>
         <title>{titleTag}</title>
         <meta name="description" content={metaDescription} />
