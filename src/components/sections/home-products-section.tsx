@@ -46,9 +46,9 @@ function PlaceholderCard() {
           <Badge variant="secondary" className="w-fit text-xs opacity-60">
             {PLACEHOLDER_CARD.category}
           </Badge>
-          <Button className="w-full" disabled>
+          <Badge variant="outline" className="w-fit text-xs text-muted-foreground/60">
             Em breve
-          </Button>
+          </Badge>
         </div>
       </div>
     </Card>
@@ -96,7 +96,7 @@ function ProductCard({
             {product.category}
           </Badge>
           <Button className="w-full" onClick={onClickSaibaMais}>
-            {product.title === "Mapa dos Benefícios Ocultos" ? "Ver o mapa completo" : "Saiba Mais"}
+            {product.title === "Mapa dos Benefícios Ocultos" ? "Explorar o mapa" : "Acessar produto"}
           </Button>
         </div>
       </div>
@@ -170,7 +170,7 @@ export function HomeProductsSection() {
             </div>
             <Link to="/produtos" className="w-full sm:w-auto">
               <Button variant="outline" className="gap-2 rounded-[1.2rem] w-full sm:w-auto shrink-0">
-                Ver todos os produtos
+                Explorar produtos
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
