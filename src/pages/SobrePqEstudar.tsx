@@ -77,7 +77,7 @@ const SobrePqEstudar = () => {
               </Link>
             </div>
             <p className="text-sm text-muted-foreground/60 mt-4 text-center lg:text-left">
-              Sem enrolação. Sem excesso. Só o que ajuda na prática.
+              Ferramentas, oportunidades e conteúdos úteis em um só lugar.
             </p>
           </motion.div>
         </div>
