@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
@@ -6,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { PageHero } from "@/components/layout/PageHero";
 import { renderHighlightedTitle } from "@/lib/highlight-title";
+import { usePageSettings } from "@/hooks/usePageSettings";
 import {
   Search,
   ArrowRight,
