@@ -4,6 +4,7 @@ import { DualTrackSection } from "@/components/sections/dual-track-section";
 import { HomeProductsSection } from "@/components/sections/home-products-section";
 import { HomeFaqSection } from "@/components/sections/home-faq-section";
 import { SocialProofSection } from "@/components/sections/social-proof-section";
+import { FinalCtaSection } from "@/components/sections/final-cta-section";
 import { GlobalSeo } from "@/components/seo/GlobalSeo";
 import { usePageSettings } from "@/hooks/usePageSettings";
 
@@ -35,6 +36,7 @@ const Index = () => {
         <HomeProductsSection />
         <HomeFaqSection />
         <SocialProofSection />
+        <FinalCtaSection />
       </main>
     </>
   );

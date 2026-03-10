@@ -96,7 +96,7 @@ function ProductCard({
             {product.category}
           </Badge>
           <Button className="w-full" onClick={onClickSaibaMais}>
-            Saiba Mais
+            {product.title === "Mapa dos Benefícios Ocultos" ? "Ver o mapa completo" : "Saiba Mais"}
           </Button>
         </div>
       </div>
