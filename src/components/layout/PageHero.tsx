@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { ReactNode } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { renderHighlightedTitle } from "@/lib/highlight-title";
 
 interface PageHeroProps {
   title: string;
