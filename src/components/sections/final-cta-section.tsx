@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowRight, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { renderHighlightedTitle } from "@/lib/highlight-title";
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
@@ -18,7 +19,7 @@ export function FinalCtaSection() {
             className="flex flex-col items-center gap-6 max-w-3xl mx-auto"
           >
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
-              Encontre o próximo recurso certo para você
+              {renderHighlightedTitle("Encontre o próximo **recurso** certo para você")}
             </h2>
             <p className="text-muted-foreground sm:text-lg leading-relaxed">
               Ferramentas, concursos e conteúdos práticos reunidos em um só lugar para você aprender, se organizar e avançar mais rápido.
