@@ -537,12 +537,10 @@ export default function Produtos() {
 
   return (
     <>
-      {psReady && (
-        <Helmet>
-          <title>{titleTag}</title>
-          <meta name="description" content={metaDescription} />
-        </Helmet>
-      )}
+      <Helmet>
+        <title>{titleTag}</title>
+        <meta name="description" content={metaDescription} />
+      </Helmet>
 
       <PageHero title={headerTitle} description={headerDescription} isLoading={psLoading} />
 
