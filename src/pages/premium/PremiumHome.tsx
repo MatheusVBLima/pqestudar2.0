@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { motion } from 'framer-motion';
 import { PageHero } from '@/components/layout/PageHero';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -44,8 +45,10 @@ const PremiumHome = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      
-      
+      <Helmet>
+        <title>{ps.titleTag}</title>
+        <meta name="description" content={ps.metaDescription} />
+      </Helmet>
       <PageHero title={ps.headerTitle} description={ps.headerDescription} isLoading={ps.isLoading}>
         {isActive() && subscription && (
           <div className="flex flex-wrap items-center gap-4 mt-6">

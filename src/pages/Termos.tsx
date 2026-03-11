@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from "react";
+import { Helmet } from "react-helmet-async";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -40,11 +41,6 @@ const Termos = () => {
 
   // SEO + JSON-LD
   useEffect(() => {
-    if (!ps.isReady) return;
-    document.title = ps.titleTag;
-    const metaDescription = document.querySelector('meta[name="description"]');
-    if (metaDescription) metaDescription.setAttribute("content", ps.metaDescription);
-
     const jsonLd = {
       "@context": "https://schema.org",
       "@type": "WebPage",
@@ -62,13 +58,10 @@ const Termos = () => {
     document.head.appendChild(script);
 
     return () => {
-      document.title = "pqestudar - Cursos Gratuitos com Certificado";
-      if (metaDescription)
-        metaDescription.setAttribute("content", "Plataforma educacional completa com cursos online gratuitos e certificados válidos.");
       const scriptToRemove = document.getElementById("terms-jsonld");
       if (scriptToRemove) scriptToRemove.remove();
     };
-  }, [ps.titleTag, ps.metaDescription, ps.isReady, doc?.updated_at]);
+  }, [doc?.updated_at]);
 
   // Scroll spy
   useEffect(() => {
@@ -129,6 +122,10 @@ const Termos = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <Helmet>
+        <title>{ps.titleTag}</title>
+        <meta name="description" content={ps.metaDescription} />
+      </Helmet>
       <PageHero
         title={ps.headerTitle}
         description={ps.headerDescription}

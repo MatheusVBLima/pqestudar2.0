@@ -17,6 +17,7 @@ import {
   List,
 } from "lucide-react";
 import { useState, useEffect } from "react";
+import { Helmet } from "react-helmet-async";
 import { motion } from "framer-motion";
 import { PageHero } from "@/components/layout/PageHero";
 import { Button } from "@/components/ui/button";
@@ -114,11 +115,6 @@ const Privacidade = () => {
   });
 
   useEffect(() => {
-    if (!ps.isReady) return;
-    document.title = ps.titleTag;
-    const metaDesc = document.querySelector('meta[name="description"]');
-    if (metaDesc) metaDesc.setAttribute("content", ps.metaDescription);
-
     const script = document.createElement("script");
     script.type = "application/ld+json";
     script.textContent = JSON.stringify({
@@ -132,7 +128,7 @@ const Privacidade = () => {
     });
     document.head.appendChild(script);
     return () => { document.head.removeChild(script); };
-  }, [ps.titleTag, ps.metaDescription, ps.isReady, doc?.updated_at]);
+  }, [doc?.updated_at]);
 
   useEffect(() => {
     if (sections.length === 0) return;
@@ -235,6 +231,10 @@ const Privacidade = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <Helmet>
+        <title>{ps.titleTag}</title>
+        <meta name="description" content={ps.metaDescription} />
+      </Helmet>
       <PageHero
         title={ps.headerTitle}
         description={ps.headerDescription}
