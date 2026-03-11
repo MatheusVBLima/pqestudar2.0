@@ -115,11 +115,6 @@ const Privacidade = () => {
   });
 
   useEffect(() => {
-    if (!ps.isReady) return;
-    document.title = ps.titleTag;
-    const metaDesc = document.querySelector('meta[name="description"]');
-    if (metaDesc) metaDesc.setAttribute("content", ps.metaDescription);
-
     const script = document.createElement("script");
     script.type = "application/ld+json";
     script.textContent = JSON.stringify({
@@ -133,7 +128,7 @@ const Privacidade = () => {
     });
     document.head.appendChild(script);
     return () => { document.head.removeChild(script); };
-  }, [ps.titleTag, ps.metaDescription, ps.isReady, doc?.updated_at]);
+  }, [doc?.updated_at]);
 
   useEffect(() => {
     if (sections.length === 0) return;
