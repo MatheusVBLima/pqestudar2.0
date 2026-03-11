@@ -122,6 +122,10 @@ const Termos = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <Helmet>
+        <title>{ps.titleTag}</title>
+        <meta name="description" content={ps.metaDescription} />
+      </Helmet>
       <PageHero
         title={ps.headerTitle}
         description={ps.headerDescription}
