@@ -56,7 +56,10 @@ export function GuideModal({ open, onClose, onSave, guide }: GuideModalProps) {
       setSlugManual(true);
       setCategory(guide.category);
       setShortDescription(guide.short_description);
-      setContentMarkdown(guide.content_markdown);
+      // Convert HTML content to Markdown if needed
+      const content = guide.content_markdown || "";
+      const hasHtml = /<\s*(?:p|ol|ul|li|h[1-6]|div|br|strong|em)\b[^>]*>/i.test(content);
+      setContentMarkdown(hasHtml ? htmlToMarkdown(content) : content);
       setSeoTitle(guide.seo_title);
       setSeoDescription(guide.seo_description);
       setCtaTopLabel(guide.cta_top_label || "");
