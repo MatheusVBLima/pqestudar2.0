@@ -365,21 +365,23 @@ export default function MarkdownEditor({
         </TabsContent>
       </Tabs>
 
-      {/* Help text */}
-      <p className="text-xs text-muted-foreground flex items-start gap-1">
-        <Info className="h-3 w-3 mt-0.5 shrink-0 text-primary/60" />
-        <span>
-          <strong>Markdown (GFM):</strong>{" "}
-          <code className="bg-muted px-1 rounded">**negrito**</code>,{" "}
-          <code className="bg-muted px-1 rounded">*itálico*</code>,{" "}
-          <code className="bg-muted px-1 rounded">##</code> (H2),{" "}
-          <code className="bg-muted px-1 rounded">###</code> (H3),{" "}
-          <code className="bg-muted px-1 rounded">-</code> (lista),{" "}
-          <code className="bg-muted px-1 rounded">[texto](url)</code>,{" "}
-          <code className="bg-muted px-1 rounded">---</code> (linha).{" "}
-          <strong>Tabelas:</strong> <code className="bg-muted px-1 rounded">| col1 | col2 |</code> com linha separadora <code className="bg-muted px-1 rounded">|---|---|</code>.
-        </span>
-      </p>
+      {/* Help text - hidden in compact mode */}
+      {!compact && (
+        <p className="text-xs text-muted-foreground flex items-start gap-1">
+          <Info className="h-3 w-3 mt-0.5 shrink-0 text-primary/60" />
+          <span>
+            <strong>Markdown (GFM):</strong>{" "}
+            <code className="bg-muted px-1 rounded">**negrito**</code>,{" "}
+            <code className="bg-muted px-1 rounded">*itálico*</code>,{" "}
+            <code className="bg-muted px-1 rounded">##</code> (H2),{" "}
+            <code className="bg-muted px-1 rounded">###</code> (H3),{" "}
+            <code className="bg-muted px-1 rounded">-</code> (lista),{" "}
+            <code className="bg-muted px-1 rounded">[texto](url)</code>,{" "}
+            <code className="bg-muted px-1 rounded">---</code> (linha).{" "}
+            <strong>Tabelas:</strong> <code className="bg-muted px-1 rounded">| col1 | col2 |</code> com linha separadora <code className="bg-muted px-1 rounded">|---|---|</code>.
+          </span>
+        </p>
+      )}
     </div>
   );
 }
