@@ -186,6 +186,10 @@ const AppWithPixel = () => {
           {/* Curadoria Dinâmica */}
           <Route path="/curadoria/:slug" element={<CuradoriaPublic />} />
           
+          {/* Guias */}
+          <Route path="/guias" element={<Guias />} />
+          <Route path="/guias/:slug" element={<GuiaDetalhe />} />
+          
           {/* Premium Routes - Public */}
           <Route path="/premium/upgrade" element={<PremiumUpgrade />} />
           <Route path="/premium/resgatar" element={<PremiumRedeem />} />
