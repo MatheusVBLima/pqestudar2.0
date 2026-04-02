@@ -20,6 +20,7 @@ import {
 import { Search, Plus, BookOpen, ChevronDown } from "lucide-react";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { useGuides, Guide, useGuidesMutations } from "@/hooks/useGuides";
+import { usePageSettings } from "@/hooks/usePageSettings";
 import { GuideModal } from "@/components/admin/GuideModal";
 import { FeaturedGuideCard } from "@/components/guides/FeaturedGuideCard";
 import { GuideListItem } from "@/components/guides/GuideListItem";
