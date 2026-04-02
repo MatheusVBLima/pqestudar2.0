@@ -327,7 +327,16 @@ export default function GuiaDetalhe() {
                       aria-label={`Link útil: ${link.label}`}
                     >
                       <div className="w-20 h-16 sm:w-28 sm:h-20 shrink-0 rounded-md bg-accent flex items-center justify-center overflow-hidden">
+                      {link.imageUrl ? (
+                        <img
+                          src={link.imageUrl}
+                          alt={link.label}
+                          className="w-full h-full object-cover"
+                          referrerPolicy="no-referrer"
+                        />
+                      ) : (
                         <BookOpen className="h-6 w-6 text-primary/60" />
+                      )}
                       </div>
                       <div className="flex-1 min-w-0 pt-0.5">
                         <span className="text-[11px] font-bold uppercase tracking-wider text-primary">
