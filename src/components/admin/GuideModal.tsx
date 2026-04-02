@@ -94,6 +94,7 @@ export function GuideModal({ open, onClose, onSave, guide }: GuideModalProps) {
       setCtaMiddleLabel(""); setCtaMiddleUrl(""); setCtaMiddleText("");
       setCtaFinalLabel(""); setCtaFinalUrl(""); setCtaFinalText("");
       setIsPublished(false); setIsFeatured(false); setSortOrder(0);
+      setAuthorName("");
       setInternalLinks([]);
     }
     setErrors({});
