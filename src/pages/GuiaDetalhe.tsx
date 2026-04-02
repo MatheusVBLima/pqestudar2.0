@@ -152,12 +152,30 @@ export default function GuiaDetalhe() {
     [contentFirstHalf, contentSecondHalf] = splitContentForMiddleCta(fullHtml);
   }
 
+  const authorName = (guide as any).author_name || "Equipe PqEstudar";
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": guide.seo_title || guide.title,
+    "description": guide.seo_description || guide.short_description,
+    "author": { "@type": "Person", "name": authorName },
+    "dateModified": guide.updated_at,
+    "datePublished": guide.created_at,
+    "publisher": {
+      "@type": "Organization",
+      "name": "PqEstudar",
+      "url": "https://pqestudar.com.br"
+    }
+  };
+
   return (
     <>
       <GlobalSeo />
       <Helmet>
         <title>{guide.seo_title || guide.title}</title>
         <meta name="description" content={guide.seo_description || guide.short_description} />
+        <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
       </Helmet>
 
       <PageHero
