@@ -29,6 +29,7 @@ const FALLBACK_TITLE = "Guias | PqEstudar";
 const FALLBACK_DESCRIPTION = "Conteúdos práticos e evergreen para estudar com mais clareza e aproveitar oportunidades.";
 
 export default function Guias() {
+  const ps = usePageSettings("/guias");
   const { isAdmin } = useUserRoles();
   const [isManagementMode, setIsManagementMode] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
