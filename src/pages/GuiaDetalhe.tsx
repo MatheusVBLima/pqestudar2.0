@@ -64,7 +64,7 @@ export default function GuiaDetalhe() {
 
   return (
     <>
-      <GlobalSeo pageType="Article" />
+      <GlobalSeo />
       <Helmet>
         <title>{guide.seo_title || guide.title}</title>
         <meta name="description" content={guide.seo_description || guide.short_description} />

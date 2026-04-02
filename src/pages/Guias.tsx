@@ -105,7 +105,7 @@ export default function Guias() {
 
   return (
     <>
-      <GlobalSeo pageType="ItemList" />
+      <GlobalSeo />
       <Helmet>
         <title>{FALLBACK_TITLE}</title>
         <meta name="description" content={FALLBACK_DESCRIPTION} />
