@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,7 +9,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import MarkdownEditor, { htmlToMarkdown } from "@/components/admin/MarkdownEditor";
 import { Guide } from "@/hooks/useGuides";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Upload, Link2, X, ImageIcon } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 
 interface GuideModalProps {
   open: boolean;
@@ -32,6 +34,157 @@ const CATEGORIES = ["Concursos", "Ferramentas", "Oportunidades", "Produtividade"
 interface InternalLink {
   label: string;
   url: string;
+  imageUrl?: string | null;
+  imageSource?: 'url' | 'upload' | null;
+  imagePath?: string | null;
+}
+
+// ---------- Link Image Field ----------
+function LinkImageField({
+  link,
+  index,
+  guideId,
+  onUpdate,
+}: {
+  link: InternalLink;
+  index: number;
+  guideId?: string;
+  onUpdate: (field: string, value: string | null) => void;
+}) {
+  const [mode, setMode] = useState<'upload' | 'url'>(link.imageSource === 'url' ? 'url' : 'upload');
+  const [urlInput, setUrlInput] = useState(link.imageSource === 'url' ? (link.imageUrl || '') : '');
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const hasImage = !!link.imageUrl;
+
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const maxSize = 1.5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      toast({ title: "Arquivo muito grande", description: "Máximo 1.5MB", variant: "destructive" });
+      return;
+    }
+
+    const allowed = ['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml'];
+    if (!allowed.includes(file.type)) {
+      toast({ title: "Formato não suportado", description: "Use PNG, JPG, WEBP ou SVG", variant: "destructive" });
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const ext = file.name.split('.').pop() || 'png';
+      const id = guideId || 'new';
+      const path = `guides/${id}/links/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('guide-link-images')
+        .upload(path, file, { upsert: false });
+
+      if (uploadError) throw uploadError;
+
+      const { data: publicData } = supabase.storage
+        .from('guide-link-images')
+        .getPublicUrl(path);
+
+      onUpdate('imageUrl', publicData.publicUrl);
+      onUpdate('imageSource', 'upload');
+      onUpdate('imagePath', path);
+    } catch (err: any) {
+      toast({ title: "Erro no upload", description: err.message, variant: "destructive" });
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = '';
+    }
+  };
+
+  const handleUrlSave = () => {
+    if (!urlInput.trim()) return;
+    onUpdate('imageUrl', urlInput.trim());
+    onUpdate('imageSource', 'url');
+    onUpdate('imagePath', null);
+  };
+
+  const handleRemove = () => {
+    onUpdate('imageUrl', null);
+    onUpdate('imageSource', null);
+    onUpdate('imagePath', null);
+    setUrlInput('');
+  };
+
+  return (
+    <div className="mt-2 space-y-2">
+      <Label className="text-xs text-muted-foreground flex items-center gap-1">
+        <ImageIcon className="h-3 w-3" /> Imagem (opcional)
+      </Label>
+
+      {hasImage ? (
+        <div className="flex items-center gap-3">
+          <img
+            src={link.imageUrl!}
+            alt={`Preview ${link.label || `link ${index + 1}`}`}
+            className="w-14 h-14 rounded-md object-cover border border-border"
+            referrerPolicy="no-referrer"
+          />
+          <Button variant="ghost" size="sm" className="text-destructive" onClick={handleRemove}>
+            <X className="h-3.5 w-3.5 mr-1" /> Remover
+          </Button>
+        </div>
+      ) : (
+        <>
+          <div className="flex gap-1">
+            <Button
+              variant={mode === 'upload' ? 'default' : 'outline'}
+              size="sm"
+              type="button"
+              className="h-7 text-xs"
+              onClick={() => setMode('upload')}
+            >
+              <Upload className="h-3 w-3 mr-1" /> Upload
+            </Button>
+            <Button
+              variant={mode === 'url' ? 'default' : 'outline'}
+              size="sm"
+              type="button"
+              className="h-7 text-xs"
+              onClick={() => setMode('url')}
+            >
+              <Link2 className="h-3 w-3 mr-1" /> URL
+            </Button>
+          </div>
+
+          {mode === 'upload' ? (
+            <div>
+              <input
+                ref={fileRef}
+                type="file"
+                accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                className="text-xs file:mr-2 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-xs file:bg-primary/10 file:text-primary hover:file:bg-primary/20"
+                onChange={handleUpload}
+                disabled={uploading}
+              />
+              {uploading && <p className="text-xs text-muted-foreground mt-1">Enviando...</p>}
+            </div>
+          ) : (
+            <div className="flex gap-2">
+              <Input
+                value={urlInput}
+                onChange={e => setUrlInput(e.target.value)}
+                placeholder="https://..."
+                className="h-8 text-xs"
+              />
+              <Button size="sm" className="h-8 text-xs" onClick={handleUrlSave} disabled={!urlInput.trim()}>
+                OK
+              </Button>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
 }
 
 export function GuideModal({ open, onClose, onSave, guide }: GuideModalProps) {
@@ -85,7 +238,15 @@ export function GuideModal({ open, onClose, onSave, guide }: GuideModalProps) {
       setIsFeatured(guide.is_featured);
       setSortOrder(guide.sort_order);
       setAuthorName((guide as any).author_name || "");
-      setInternalLinks(Array.isArray((guide as any).internal_links) ? (guide as any).internal_links : []);
+      // Load links with image fields
+      const rawLinks = Array.isArray((guide as any).internal_links) ? (guide as any).internal_links : [];
+      setInternalLinks(rawLinks.map((l: any) => ({
+        label: l.label || '',
+        url: l.url || '',
+        imageUrl: l.imageUrl || null,
+        imageSource: l.imageSource || null,
+        imagePath: l.imagePath || null,
+      })));
     } else {
       setTitle(""); setSlug(""); setSlugManual(false);
       setCategory(CATEGORIES[0]); setShortDescription("");
@@ -118,7 +279,6 @@ export function GuideModal({ open, onClose, onSave, guide }: GuideModalProps) {
     if (!ctaMiddleLabel && ctaMiddleUrl) errs.ctaMiddleLabel = "Label obrigatório quando URL preenchida";
     if (ctaFinalLabel && !ctaFinalUrl) errs.ctaFinalUrl = "URL obrigatória quando label preenchido";
     if (!ctaFinalLabel && ctaFinalUrl) errs.ctaFinalLabel = "Label obrigatório quando URL preenchida";
-    // Validate internal links
     internalLinks.forEach((link, i) => {
       if (link.label && !link.url) errs[`link_${i}_url`] = "URL obrigatória";
       if (!link.label && link.url) errs[`link_${i}_label`] = "Texto obrigatório";
@@ -132,7 +292,15 @@ export function GuideModal({ open, onClose, onSave, guide }: GuideModalProps) {
     if (!validate()) return;
     setSaving(true);
     try {
-      const validLinks = internalLinks.filter(l => l.label.trim() && l.url.trim());
+      const validLinks = internalLinks
+        .filter(l => l.label.trim() && l.url.trim())
+        .map(l => ({
+          label: l.label.trim(),
+          url: l.url.trim(),
+          imageUrl: l.imageUrl || null,
+          imageSource: l.imageSource || null,
+          imagePath: l.imagePath || null,
+        }));
       const payload: Partial<Guide> = {
         title: title.trim(),
         slug: slug.trim(),
@@ -151,7 +319,6 @@ export function GuideModal({ open, onClose, onSave, guide }: GuideModalProps) {
         is_featured: isFeatured,
         sort_order: sortOrder,
       };
-      // Add new fields via any cast
       (payload as any).cta_top_text = ctaTopText.trim() || null;
       (payload as any).cta_middle_text = ctaMiddleText.trim() || null;
       (payload as any).cta_final_text = ctaFinalText.trim() || null;
@@ -165,9 +332,9 @@ export function GuideModal({ open, onClose, onSave, guide }: GuideModalProps) {
     }
   };
 
-  const addLink = () => setInternalLinks([...internalLinks, { label: "", url: "" }]);
+  const addLink = () => setInternalLinks([...internalLinks, { label: "", url: "", imageUrl: null, imageSource: null, imagePath: null }]);
   const removeLink = (i: number) => setInternalLinks(internalLinks.filter((_, idx) => idx !== i));
-  const updateLink = (i: number, field: keyof InternalLink, value: string) => {
+  const updateLink = (i: number, field: string, value: string | null) => {
     const updated = [...internalLinks];
     updated[i] = { ...updated[i], [field]: value };
     setInternalLinks(updated);
@@ -332,34 +499,43 @@ export function GuideModal({ open, onClose, onSave, guide }: GuideModalProps) {
           {/* Links Internos tab */}
           <TabsContent value="links" className="space-y-4 mt-4">
             <p className="text-sm text-muted-foreground">
-              Links internos exibidos na seção "Veja também:" ao final do guia. URLs devem começar com "/".
+              Links internos exibidos na seção "Links úteis" ao final do guia. URLs devem começar com "/".
             </p>
 
             {internalLinks.map((link, i) => (
-              <div key={i} className="flex items-start gap-2">
-                <div className="flex-1 space-y-2">
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <Input
-                        value={link.label}
-                        onChange={e => updateLink(i, "label", e.target.value)}
-                        placeholder="Texto do link"
-                      />
-                      {errors[`link_${i}_label`] && <p className="text-xs text-destructive mt-1">{errors[`link_${i}_label`]}</p>}
-                    </div>
-                    <div>
-                      <Input
-                        value={link.url}
-                        onChange={e => updateLink(i, "url", e.target.value)}
-                        placeholder="/guias/... ou /ferramentas"
-                      />
-                      {errors[`link_${i}_url`] && <p className="text-xs text-destructive mt-1">{errors[`link_${i}_url`]}</p>}
+              <div key={i} className="border border-border rounded-lg p-3 space-y-2">
+                <div className="flex items-start gap-2">
+                  <div className="flex-1 space-y-2">
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <Input
+                          value={link.label}
+                          onChange={e => updateLink(i, "label", e.target.value)}
+                          placeholder="Texto do link"
+                        />
+                        {errors[`link_${i}_label`] && <p className="text-xs text-destructive mt-1">{errors[`link_${i}_label`]}</p>}
+                      </div>
+                      <div>
+                        <Input
+                          value={link.url}
+                          onChange={e => updateLink(i, "url", e.target.value)}
+                          placeholder="/guias/... ou /ferramentas"
+                        />
+                        {errors[`link_${i}_url`] && <p className="text-xs text-destructive mt-1">{errors[`link_${i}_url`]}</p>}
+                      </div>
                     </div>
                   </div>
+                  <Button variant="ghost" size="icon" className="mt-0.5 text-destructive" onClick={() => removeLink(i)}>
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
                 </div>
-                <Button variant="ghost" size="icon" className="mt-0.5 text-destructive" onClick={() => removeLink(i)}>
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+
+                <LinkImageField
+                  link={link}
+                  index={i}
+                  guideId={guide?.id}
+                  onUpdate={(field, value) => updateLink(i, field, value)}
+                />
               </div>
             ))}
 

@@ -135,7 +135,7 @@ export default function GuiaDetalhe() {
     (relatedContests && relatedContests.length > 0) ||
     (relatedGuides && relatedGuides.length > 0);
 
-  const internalLinks: Array<{ label: string; url: string }> = Array.isArray(guide.internal_links)
+  const internalLinks: Array<{ label: string; url: string; imageUrl?: string | null }> = Array.isArray(guide.internal_links)
     ? (guide.internal_links as any[]).filter((l: any) => l.label && l.url)
     : [];
 
