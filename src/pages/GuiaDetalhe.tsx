@@ -310,13 +310,17 @@ export default function GuiaDetalhe() {
 
             {/* Veja também: internal links */}
             {internalLinks.length > 0 && (
-              <section className="mt-12">
-                <h2 className="text-lg font-bold mb-4">Veja também:</h2>
-                <ul className="space-y-2">
+              <section className="mt-10 pt-6 border-t border-border">
+                <p className="text-sm font-semibold text-muted-foreground mb-3">Veja também:</p>
+                <ul className="space-y-2 list-none pl-0">
                   {internalLinks.map((link, i) => (
-                    <li key={i} className="flex items-center gap-2">
-                      <span className="text-primary">•</span>
-                      <Link to={link.url} className="text-primary hover:underline transition-colors">
+                    <li key={i} className="flex items-start gap-2 text-sm">
+                      <span className="text-primary mt-0.5 shrink-0">•</span>
+                      <Link
+                        to={link.url}
+                        className="text-primary hover:underline hover:opacity-80 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded-sm"
+                        aria-label={`Veja também: ${link.label}`}
+                      >
                         {link.label}
                       </Link>
                     </li>
