@@ -193,7 +193,12 @@ export default function GuiaDetalhe() {
             )}
             {updatedDate && (
               <span className="text-xs text-muted-foreground">
-                Atualizado em {updatedDate}
+                Por {authorName} · Atualizado em {updatedDate}
+              </span>
+            )}
+            {!updatedDate && (
+              <span className="text-xs text-muted-foreground">
+                Por {authorName}
               </span>
             )}
           </div>
