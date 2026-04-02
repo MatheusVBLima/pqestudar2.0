@@ -965,6 +965,194 @@ export type Database = {
           },
         ]
       }
+      guide_related_contests: {
+        Row: {
+          contest_id: string
+          created_at: string
+          guide_id: string
+          id: string
+        }
+        Insert: {
+          contest_id: string
+          created_at?: string
+          guide_id: string
+          id?: string
+        }
+        Update: {
+          contest_id?: string
+          created_at?: string
+          guide_id?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guide_related_contests_contest_id_fkey"
+            columns: ["contest_id"]
+            isOneToOne: false
+            referencedRelation: "oportunidades"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "guide_related_contests_contest_id_fkey"
+            columns: ["contest_id"]
+            isOneToOne: false
+            referencedRelation: "oportunidades_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "guide_related_contests_guide_id_fkey"
+            columns: ["guide_id"]
+            isOneToOne: false
+            referencedRelation: "guides"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      guide_related_guides: {
+        Row: {
+          created_at: string
+          guide_id: string
+          id: string
+          related_guide_id: string
+        }
+        Insert: {
+          created_at?: string
+          guide_id: string
+          id?: string
+          related_guide_id: string
+        }
+        Update: {
+          created_at?: string
+          guide_id?: string
+          id?: string
+          related_guide_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guide_related_guides_guide_id_fkey"
+            columns: ["guide_id"]
+            isOneToOne: false
+            referencedRelation: "guides"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "guide_related_guides_related_guide_id_fkey"
+            columns: ["related_guide_id"]
+            isOneToOne: false
+            referencedRelation: "guides"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      guide_related_tools: {
+        Row: {
+          created_at: string
+          guide_id: string
+          id: string
+          tool_id: string
+        }
+        Insert: {
+          created_at?: string
+          guide_id: string
+          id?: string
+          tool_id: string
+        }
+        Update: {
+          created_at?: string
+          guide_id?: string
+          id?: string
+          tool_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guide_related_tools_guide_id_fkey"
+            columns: ["guide_id"]
+            isOneToOne: false
+            referencedRelation: "guides"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "guide_related_tools_tool_id_fkey"
+            columns: ["tool_id"]
+            isOneToOne: false
+            referencedRelation: "tools"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "guide_related_tools_tool_id_fkey"
+            columns: ["tool_id"]
+            isOneToOne: false
+            referencedRelation: "tools_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      guides: {
+        Row: {
+          category: string
+          content_markdown: string
+          created_at: string
+          cta_final_label: string | null
+          cta_final_url: string | null
+          cta_middle_label: string | null
+          cta_middle_url: string | null
+          cta_top_label: string | null
+          cta_top_url: string | null
+          id: string
+          is_featured: boolean
+          is_published: boolean
+          seo_description: string
+          seo_title: string
+          short_description: string
+          slug: string
+          sort_order: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          content_markdown?: string
+          created_at?: string
+          cta_final_label?: string | null
+          cta_final_url?: string | null
+          cta_middle_label?: string | null
+          cta_middle_url?: string | null
+          cta_top_label?: string | null
+          cta_top_url?: string | null
+          id?: string
+          is_featured?: boolean
+          is_published?: boolean
+          seo_description?: string
+          seo_title?: string
+          short_description: string
+          slug: string
+          sort_order?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          content_markdown?: string
+          created_at?: string
+          cta_final_label?: string | null
+          cta_final_url?: string | null
+          cta_middle_label?: string | null
+          cta_middle_url?: string | null
+          cta_top_label?: string | null
+          cta_top_url?: string | null
+          id?: string
+          is_featured?: boolean
+          is_published?: boolean
+          seo_description?: string
+          seo_title?: string
+          short_description?: string
+          slug?: string
+          sort_order?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       insights_audit_findings: {
         Row: {
           audit_type: string
