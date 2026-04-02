@@ -8,16 +8,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft, ExternalLink, Star, BookOpen, Wrench, FileText } from "lucide-react";
 import { useGuideBySlug, useGuideRelatedTools, useGuideRelatedContests, useGuideRelatedGuides } from "@/hooks/useGuides";
-import { sanitizeHtml } from "@/lib/utils";
-import { marked } from "marked";
+import { renderRichContentConcursos } from "@/lib/concursos-content-renderer";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-
-function renderMarkdown(md: string): string {
-  // Configure marked for safe rendering
-  marked.setOptions({ breaks: true, gfm: true });
-  return sanitizeHtml(marked.parse(md) as string);
-}
 
 export default function GuiaDetalhe() {
   const { slug } = useParams<{ slug: string }>();
