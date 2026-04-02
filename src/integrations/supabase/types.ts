@@ -1089,6 +1089,7 @@ export type Database = {
       }
       guides: {
         Row: {
+          author_name: string
           category: string
           content_markdown: string
           created_at: string
@@ -1115,6 +1116,7 @@ export type Database = {
           views_count: number
         }
         Insert: {
+          author_name?: string
           category: string
           content_markdown?: string
           created_at?: string
@@ -1141,6 +1143,7 @@ export type Database = {
           views_count?: number
         }
         Update: {
+          author_name?: string
           category?: string
           content_markdown?: string
           created_at?: string

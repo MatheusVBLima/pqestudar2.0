@@ -56,6 +56,7 @@ export function GuideModal({ open, onClose, onSave, guide }: GuideModalProps) {
   const [isFeatured, setIsFeatured] = useState(false);
   const [sortOrder, setSortOrder] = useState(0);
   const [internalLinks, setInternalLinks] = useState<InternalLink[]>([]);
+  const [authorName, setAuthorName] = useState("");
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -83,6 +84,7 @@ export function GuideModal({ open, onClose, onSave, guide }: GuideModalProps) {
       setIsPublished(guide.is_published);
       setIsFeatured(guide.is_featured);
       setSortOrder(guide.sort_order);
+      setAuthorName((guide as any).author_name || "");
       setInternalLinks(Array.isArray((guide as any).internal_links) ? (guide as any).internal_links : []);
     } else {
       setTitle(""); setSlug(""); setSlugManual(false);
@@ -92,6 +94,7 @@ export function GuideModal({ open, onClose, onSave, guide }: GuideModalProps) {
       setCtaMiddleLabel(""); setCtaMiddleUrl(""); setCtaMiddleText("");
       setCtaFinalLabel(""); setCtaFinalUrl(""); setCtaFinalText("");
       setIsPublished(false); setIsFeatured(false); setSortOrder(0);
+      setAuthorName("");
       setInternalLinks([]);
     }
     setErrors({});
@@ -153,6 +156,7 @@ export function GuideModal({ open, onClose, onSave, guide }: GuideModalProps) {
       (payload as any).cta_middle_text = ctaMiddleText.trim() || null;
       (payload as any).cta_final_text = ctaFinalText.trim() || null;
       (payload as any).internal_links = validLinks;
+      (payload as any).author_name = authorName.trim() || "Equipe PqEstudar";
       if (guide) payload.id = guide.id;
       await onSave(payload);
       onClose();
@@ -222,6 +226,11 @@ export function GuideModal({ open, onClose, onSave, guide }: GuideModalProps) {
             <div>
               <Label>Ordem</Label>
               <Input type="number" value={sortOrder} onChange={e => setSortOrder(Number(e.target.value))} />
+            </div>
+            <div>
+              <Label>Autor</Label>
+              <Input value={authorName} onChange={e => setAuthorName(e.target.value)} placeholder="Equipe PqEstudar" />
+              <p className="text-xs text-muted-foreground mt-1">Se vazio, será salvo como "Equipe PqEstudar"</p>
             </div>
           </TabsContent>
 

@@ -24,6 +24,7 @@ export interface Guide {
   is_published: boolean;
   is_featured: boolean;
   sort_order: number;
+  author_name: string;
   created_at: string;
   updated_at: string;
 }
