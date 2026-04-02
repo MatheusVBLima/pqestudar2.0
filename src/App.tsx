@@ -45,6 +45,8 @@ const ConcursoDetalhe = React.lazy(() => import("./pages/ConcursoDetalhe"));
 const Votacoes = React.lazy(() => import("./pages/Votacoes"));
 const Produtos = React.lazy(() => import("./pages/Produtos"));
 const CuradoriaPublic = React.lazy(() => import("./pages/CuradoriaPublic"));
+const Guias = React.lazy(() => import("./pages/Guias"));
+const GuiaDetalhe = React.lazy(() => import("./pages/GuiaDetalhe"));
 const AdminCuradoriasLista = React.lazy(() => import("./pages/AdminCuradoriasLista"));
 const AdminCuradoriasForm = React.lazy(() => import("./pages/AdminCuradoriasForm"));
 
