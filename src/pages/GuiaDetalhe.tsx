@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { GlobalSeo } from "@/components/seo/GlobalSeo";
@@ -9,6 +10,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft, ExternalLink, Star, BookOpen, Wrench, FileText } from "lucide-react";
 import { useGuideBySlug, useGuideRelatedTools, useGuideRelatedContests, useGuideRelatedGuides } from "@/hooks/useGuides";
 import { renderRichContentConcursos } from "@/lib/concursos-content-renderer";
+import { MostReadGuides } from "@/components/guides/MostReadGuides";
+import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -29,7 +32,6 @@ function CtaBlock({ label, url, text }: { label?: string | null; url?: string | 
 
 // ---------- Split content and insert middle CTA ----------
 function splitContentForMiddleCta(html: string): [string, string] {
-  // Split by top-level block elements to find a natural break near the middle
   const blockPattern = /(<\/(?:p|ul|ol|h[1-6]|blockquote|hr|table|div)>)/gi;
   const parts: { end: number }[] = [];
   let match: RegExpExecArray | null;
@@ -39,19 +41,16 @@ function splitContentForMiddleCta(html: string): [string, string] {
 
   if (parts.length < 2) return [html, ""];
 
-  // Count words in plain text to find midpoint
   const plainText = html.replace(/<[^>]+>/g, " ");
   const words = plainText.trim().split(/\s+/);
   const totalWords = words.length;
 
   if (totalWords < 120) {
-    // Short content: insert after 1st or 2nd block
     const splitIdx = Math.min(1, parts.length - 1);
     const splitPos = parts[splitIdx].end;
     return [html.slice(0, splitPos), html.slice(splitPos)];
   }
 
-  // Find the character position of the middle word
   const midWordIndex = Math.floor(totalWords / 2);
   let wordCount = 0;
   let charPos = 0;
@@ -66,8 +65,7 @@ function splitContentForMiddleCta(html: string): [string, string] {
     }
   }
 
-  // Find first block-end after charPos
-  let bestSplit = parts[Math.floor(parts.length / 2)].end; // fallback
+  let bestSplit = parts[Math.floor(parts.length / 2)].end;
   for (const p of parts) {
     if (p.end >= charPos) {
       bestSplit = p.end;
@@ -85,6 +83,17 @@ export default function GuiaDetalhe() {
   const { data: relatedTools } = useGuideRelatedTools(guide?.id);
   const { data: relatedContests } = useGuideRelatedContests(guide?.id);
   const { data: relatedGuides } = useGuideRelatedGuides(guide?.id);
+  const viewTracked = useRef<string | null>(null);
+
+  // Track view via RPC (once per slug per mount)
+  useEffect(() => {
+    if (slug && guide && viewTracked.current !== slug) {
+      viewTracked.current = slug;
+      supabase.rpc("increment_guide_view", { p_slug: slug }).then(({ error }) => {
+        if (error) console.warn("Guide view track error:", error.message);
+      });
+    }
+  }, [slug, guide]);
 
   if (isLoading) {
     return (
@@ -121,23 +130,17 @@ export default function GuiaDetalhe() {
     (relatedContests && relatedContests.length > 0) ||
     (relatedGuides && relatedGuides.length > 0);
 
-  // Internal links
-  const internalLinks: Array<{ label: string; url: string }> = Array.isArray((guide as any).internal_links)
-    ? (guide as any).internal_links.filter((l: any) => l.label && l.url)
+  const internalLinks: Array<{ label: string; url: string }> = Array.isArray(guide.internal_links)
+    ? (guide.internal_links as any[]).filter((l: any) => l.label && l.url)
     : [];
 
-  // CTA texts
-  const ctaTopText = (guide as any).cta_top_text || null;
-  const ctaMiddleText = (guide as any).cta_middle_text || null;
-  const ctaFinalText = (guide as any).cta_final_text || null;
+  const ctaTopText = guide.cta_top_text || null;
+  const ctaMiddleText = guide.cta_middle_text || null;
+  const ctaFinalText = guide.cta_final_text || null;
 
-  // Has middle CTA?
   const hasMiddleCta = !!(guide.cta_middle_label && guide.cta_middle_url);
-
-  // Render content HTML
   const fullHtml = renderRichContentConcursos(guide.content_markdown);
 
-  // Split content for middle CTA insertion
   let contentFirstHalf = fullHtml;
   let contentSecondHalf = "";
   if (hasMiddleCta) {
@@ -174,134 +177,142 @@ export default function GuiaDetalhe() {
         }
       />
 
-      <article className="container mx-auto px-6 pt-12 md:pt-16 pb-16 max-w-3xl">
-        {/* CTA Superior — after hero, before content */}
-        <CtaBlock label={guide.cta_top_label} url={guide.cta_top_url} text={ctaTopText} />
+      {/* 2-column layout: content + sidebar */}
+      <div className="container mx-auto px-6 pt-12 md:pt-16 pb-16">
+        <div className="flex flex-col lg:flex-row gap-10 lg:gap-12">
+          {/* Main content column */}
+          <article className="flex-1 min-w-0 max-w-3xl">
+            <CtaBlock label={guide.cta_top_label} url={guide.cta_top_url} text={ctaTopText} />
 
-        {/* Main content — first half */}
-        <div
-          className="text-foreground/80 leading-relaxed"
-          dangerouslySetInnerHTML={{ __html: contentFirstHalf }}
-        />
+            <div
+              className="text-foreground/80 leading-relaxed"
+              dangerouslySetInnerHTML={{ __html: contentFirstHalf }}
+            />
 
-        {/* CTA Intermediário — inserted at midpoint */}
-        {hasMiddleCta && (
-          <CtaBlock label={guide.cta_middle_label} url={guide.cta_middle_url} text={ctaMiddleText} />
-        )}
+            {hasMiddleCta && (
+              <CtaBlock label={guide.cta_middle_label} url={guide.cta_middle_url} text={ctaMiddleText} />
+            )}
 
-        {/* Main content — second half */}
-        {contentSecondHalf && (
-          <div
-            className="text-foreground/80 leading-relaxed"
-            dangerouslySetInnerHTML={{ __html: contentSecondHalf }}
-          />
-        )}
+            {contentSecondHalf && (
+              <div
+                className="text-foreground/80 leading-relaxed"
+                dangerouslySetInnerHTML={{ __html: contentSecondHalf }}
+              />
+            )}
 
-        {/* CTA Final — end of content */}
-        <CtaBlock label={guide.cta_final_label} url={guide.cta_final_url} text={ctaFinalText} />
+            <CtaBlock label={guide.cta_final_label} url={guide.cta_final_url} text={ctaFinalText} />
 
-        {/* Related sections */}
-        {hasRelated && (
-          <div className="mt-16 space-y-10">
-            {relatedTools && relatedTools.length > 0 && (
-              <section>
-                <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-                  <Wrench className="h-5 w-5" /> Ferramentas relacionadas
-                </h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {relatedTools.map((tool: any) => (
-                    <Card key={tool.id} className="flex flex-col">
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-base">{tool.name}</CardTitle>
-                      </CardHeader>
-                      <CardContent className="text-sm text-muted-foreground">
-                        {tool.description?.slice(0, 100)}
-                        {tool.url && (
-                          <a href={tool.url} target="_blank" rel="noopener noreferrer" className="block mt-2 text-primary underline text-xs">
-                            Acessar ferramenta
-                          </a>
-                        )}
-                      </CardContent>
-                    </Card>
+            {/* Related sections */}
+            {hasRelated && (
+              <div className="mt-16 space-y-10">
+                {relatedTools && relatedTools.length > 0 && (
+                  <section>
+                    <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+                      <Wrench className="h-5 w-5" /> Ferramentas relacionadas
+                    </h2>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {relatedTools.map((tool: any) => (
+                        <Card key={tool.id} className="flex flex-col">
+                          <CardHeader className="pb-2">
+                            <CardTitle className="text-base">{tool.name}</CardTitle>
+                          </CardHeader>
+                          <CardContent className="text-sm text-muted-foreground">
+                            {tool.description?.slice(0, 100)}
+                            {tool.url && (
+                              <a href={tool.url} target="_blank" rel="noopener noreferrer" className="block mt-2 text-primary underline text-xs">
+                                Acessar ferramenta
+                              </a>
+                            )}
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </section>
+                )}
+
+                {relatedContests && relatedContests.length > 0 && (
+                  <section>
+                    <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+                      <FileText className="h-5 w-5" /> Concursos relacionados
+                    </h2>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {relatedContests.map((contest: any) => (
+                        <Card key={contest.id}>
+                          <CardHeader className="pb-2">
+                            <CardTitle className="text-base">
+                              <Link to={`/concursos/${contest.slug}`} className="hover:text-primary transition-colors">
+                                {contest.titulo}
+                              </Link>
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="flex gap-2">
+                              <Badge variant="outline">{contest.situacao}</Badge>
+                              <Badge variant="outline">{contest.tipo}</Badge>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </section>
+                )}
+
+                {relatedGuides && relatedGuides.length > 0 && (
+                  <section>
+                    <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+                      <BookOpen className="h-5 w-5" /> Outros guias
+                    </h2>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {relatedGuides.map((g: any) => (
+                        <Card key={g.id} className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate(`/guias/${g.slug}`)}>
+                          <CardHeader className="pb-2">
+                            <Badge variant="outline" className="w-fit mb-1">{g.category}</Badge>
+                            <CardTitle className="text-base">{g.title}</CardTitle>
+                          </CardHeader>
+                          <CardContent className="text-sm text-muted-foreground">
+                            {g.short_description}
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </section>
+                )}
+              </div>
+            )}
+
+            {/* Veja também: internal links */}
+            {internalLinks.length > 0 && (
+              <section className="mt-12">
+                <h2 className="text-lg font-bold mb-4">Veja também:</h2>
+                <ul className="space-y-2">
+                  {internalLinks.map((link, i) => (
+                    <li key={i} className="flex items-center gap-2">
+                      <span className="text-primary">•</span>
+                      <Link to={link.url} className="text-primary hover:underline transition-colors">
+                        {link.label}
+                      </Link>
+                    </li>
                   ))}
-                </div>
+                </ul>
               </section>
             )}
 
-            {relatedContests && relatedContests.length > 0 && (
-              <section>
-                <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-                  <FileText className="h-5 w-5" /> Concursos relacionados
-                </h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {relatedContests.map((contest: any) => (
-                    <Card key={contest.id}>
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-base">
-                          <Link to={`/concursos/${contest.slug}`} className="hover:text-primary transition-colors">
-                            {contest.titulo}
-                          </Link>
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="flex gap-2">
-                          <Badge variant="outline">{contest.situacao}</Badge>
-                          <Badge variant="outline">{contest.tipo}</Badge>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </section>
-            )}
+            {/* Back link */}
+            <div className="mt-12">
+              <Button variant="outline" onClick={() => navigate("/guias")}>
+                <ArrowLeft className="h-4 w-4 mr-2" /> Voltar aos guias
+              </Button>
+            </div>
+          </article>
 
-            {relatedGuides && relatedGuides.length > 0 && (
-              <section>
-                <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-                  <BookOpen className="h-5 w-5" /> Outros guias
-                </h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {relatedGuides.map((g: any) => (
-                    <Card key={g.id} className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate(`/guias/${g.slug}`)}>
-                      <CardHeader className="pb-2">
-                        <Badge variant="outline" className="w-fit mb-1">{g.category}</Badge>
-                        <CardTitle className="text-base">{g.title}</CardTitle>
-                      </CardHeader>
-                      <CardContent className="text-sm text-muted-foreground">
-                        {g.short_description}
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </section>
-            )}
-          </div>
-        )}
-
-        {/* Veja também: internal links */}
-        {internalLinks.length > 0 && (
-          <section className="mt-12">
-            <h2 className="text-lg font-bold mb-4">Veja também:</h2>
-            <ul className="space-y-2">
-              {internalLinks.map((link, i) => (
-                <li key={i} className="flex items-center gap-2">
-                  <span className="text-primary">•</span>
-                  <Link to={link.url} className="text-primary hover:underline transition-colors">
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
-
-        {/* Back link */}
-        <div className="mt-12">
-          <Button variant="outline" onClick={() => navigate("/guias")}>
-            <ArrowLeft className="h-4 w-4 mr-2" /> Voltar aos guias
-          </Button>
+          {/* Sidebar — desktop: sticky right column, mobile: below content */}
+          <aside className="w-full lg:w-[340px] shrink-0">
+            <div className="lg:sticky lg:top-24">
+              <MostReadGuides excludeSlug={slug} />
+            </div>
+          </aside>
         </div>
-      </article>
+      </div>
     </>
   );
 }

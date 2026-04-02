@@ -1112,6 +1112,7 @@ export type Database = {
           sort_order: number
           title: string
           updated_at: string
+          views_count: number
         }
         Insert: {
           category: string
@@ -1137,6 +1138,7 @@ export type Database = {
           sort_order?: number
           title: string
           updated_at?: string
+          views_count?: number
         }
         Update: {
           category?: string
@@ -1162,6 +1164,7 @@ export type Database = {
           sort_order?: number
           title?: string
           updated_at?: string
+          views_count?: number
         }
         Relationships: []
       }
@@ -3318,6 +3321,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      increment_guide_view: { Args: { p_slug: string }; Returns: undefined }
       increment_product_click: {
         Args: { product_id: string }
         Returns: undefined
