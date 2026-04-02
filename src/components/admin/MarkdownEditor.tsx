@@ -141,6 +141,10 @@ interface MarkdownEditorProps {
   minWords?: number;
   rows?: number;
   isRequired?: boolean;
+  /** Compact mode: smaller height, hides help text and H2/H3 buttons */
+  compact?: boolean;
+  /** Whether to show heading shortcut buttons (default true) */
+  showHeadings?: boolean;
 }
 
 // Count words from markdown (strip syntax)
