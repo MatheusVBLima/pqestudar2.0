@@ -31,6 +31,7 @@ const MANAGED_ROUTES = [
   "/termos",
   "/produtos",
   "/sobre-pqestudar",
+  "/guias",
 ] as const;
 
 export type ManagedRoute = (typeof MANAGED_ROUTES)[number];
