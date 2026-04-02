@@ -141,6 +141,10 @@ interface MarkdownEditorProps {
   minWords?: number;
   rows?: number;
   isRequired?: boolean;
+  /** Compact mode: smaller height, hides help text and H2/H3 buttons */
+  compact?: boolean;
+  /** Whether to show heading shortcut buttons (default true) */
+  showHeadings?: boolean;
 }
 
 // Count words from markdown (strip syntax)
@@ -200,6 +204,8 @@ export default function MarkdownEditor({
   minWords = 0,
   rows = 16,
   isRequired = false,
+  compact = false,
+  showHeadings = true,
 }: MarkdownEditorProps) {
   const [activeTab, setActiveTab] = useState<string>("edit");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -284,30 +290,34 @@ export default function MarkdownEditor({
   }, [value, onChange]);
 
   return (
-    <div className="space-y-2">
+    <div className={compact ? "space-y-1.5" : "space-y-2"}>
       {/* Toolbar */}
       <div className="flex items-center justify-between gap-2 flex-wrap">
         <div className="flex items-center gap-1">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => insertHeading(2)}
-            title="Inserir título H2"
-          >
-            <Heading2 className="h-4 w-4" />
-            <span className="sr-only">H2</span>
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => insertHeading(3)}
-            title="Inserir subtítulo H3"
-          >
-            <Heading3 className="h-4 w-4" />
-            <span className="sr-only">H3</span>
-          </Button>
+          {showHeadings && !compact && (
+            <>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => insertHeading(2)}
+                title="Inserir título H2"
+              >
+                <Heading2 className="h-4 w-4" />
+                <span className="sr-only">H2</span>
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => insertHeading(3)}
+                title="Inserir subtítulo H3"
+              >
+                <Heading3 className="h-4 w-4" />
+                <span className="sr-only">H3</span>
+              </Button>
+            </>
+          )}
         </div>
         
         <Badge variant={isUnderMin ? "destructive" : "secondary"} className="text-xs font-normal">
@@ -342,7 +352,7 @@ export default function MarkdownEditor({
         
         <TabsContent value="preview" className="mt-2">
           <div 
-            className="min-h-[300px] max-h-[500px] overflow-y-auto p-4 border rounded-md bg-card prose prose-neutral dark:prose-invert max-w-none"
+            className={`${compact ? "min-h-[120px] max-h-[200px]" : "min-h-[300px] max-h-[500px]"} overflow-y-auto p-4 border rounded-md bg-card prose prose-neutral dark:prose-invert max-w-none`}
           >
             {value ? (
               <div dangerouslySetInnerHTML={{ __html: renderedHtml }} />
@@ -355,21 +365,23 @@ export default function MarkdownEditor({
         </TabsContent>
       </Tabs>
 
-      {/* Help text */}
-      <p className="text-xs text-muted-foreground flex items-start gap-1">
-        <Info className="h-3 w-3 mt-0.5 shrink-0 text-primary/60" />
-        <span>
-          <strong>Markdown (GFM):</strong>{" "}
-          <code className="bg-muted px-1 rounded">**negrito**</code>,{" "}
-          <code className="bg-muted px-1 rounded">*itálico*</code>,{" "}
-          <code className="bg-muted px-1 rounded">##</code> (H2),{" "}
-          <code className="bg-muted px-1 rounded">###</code> (H3),{" "}
-          <code className="bg-muted px-1 rounded">-</code> (lista),{" "}
-          <code className="bg-muted px-1 rounded">[texto](url)</code>,{" "}
-          <code className="bg-muted px-1 rounded">---</code> (linha).{" "}
-          <strong>Tabelas:</strong> <code className="bg-muted px-1 rounded">| col1 | col2 |</code> com linha separadora <code className="bg-muted px-1 rounded">|---|---|</code>.
-        </span>
-      </p>
+      {/* Help text - hidden in compact mode */}
+      {!compact && (
+        <p className="text-xs text-muted-foreground flex items-start gap-1">
+          <Info className="h-3 w-3 mt-0.5 shrink-0 text-primary/60" />
+          <span>
+            <strong>Markdown (GFM):</strong>{" "}
+            <code className="bg-muted px-1 rounded">**negrito**</code>,{" "}
+            <code className="bg-muted px-1 rounded">*itálico*</code>,{" "}
+            <code className="bg-muted px-1 rounded">##</code> (H2),{" "}
+            <code className="bg-muted px-1 rounded">###</code> (H3),{" "}
+            <code className="bg-muted px-1 rounded">-</code> (lista),{" "}
+            <code className="bg-muted px-1 rounded">[texto](url)</code>,{" "}
+            <code className="bg-muted px-1 rounded">---</code> (linha).{" "}
+            <strong>Tabelas:</strong> <code className="bg-muted px-1 rounded">| col1 | col2 |</code> com linha separadora <code className="bg-muted px-1 rounded">|---|---|</code>.
+          </span>
+        </p>
+      )}
     </div>
   );
 }

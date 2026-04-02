@@ -269,7 +269,7 @@ export function GuideModal({ open, onClose, onSave, guide }: GuideModalProps) {
               </div>
               <div>
                 <Label>Texto/descrição (opcional)</Label>
-                <Textarea value={ctaTopText} onChange={e => setCtaTopText(e.target.value)} placeholder="Frase exibida acima do botão..." rows={2} />
+                <MarkdownEditor value={ctaTopText} onChange={setCtaTopText} placeholder="Frase exibida acima do botão..." rows={4} compact showHeadings={false} />
               </div>
             </div>
 
@@ -292,7 +292,7 @@ export function GuideModal({ open, onClose, onSave, guide }: GuideModalProps) {
               </div>
               <div>
                 <Label>Texto/descrição (opcional)</Label>
-                <Textarea value={ctaMiddleText} onChange={e => setCtaMiddleText(e.target.value)} placeholder="Frase exibida acima do botão..." rows={2} />
+                <MarkdownEditor value={ctaMiddleText} onChange={setCtaMiddleText} placeholder="Frase exibida acima do botão..." rows={4} compact showHeadings={false} />
               </div>
             </div>
 
@@ -315,7 +315,7 @@ export function GuideModal({ open, onClose, onSave, guide }: GuideModalProps) {
               </div>
               <div>
                 <Label>Texto/descrição (opcional)</Label>
-                <Textarea value={ctaFinalText} onChange={e => setCtaFinalText(e.target.value)} placeholder="Frase exibida acima do botão..." rows={2} />
+                <MarkdownEditor value={ctaFinalText} onChange={setCtaFinalText} placeholder="Frase exibida acima do botão..." rows={4} compact showHeadings={false} />
               </div>
             </div>
           </TabsContent>
