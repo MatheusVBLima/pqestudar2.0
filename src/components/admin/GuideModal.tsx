@@ -84,6 +84,7 @@ export function GuideModal({ open, onClose, onSave, guide }: GuideModalProps) {
       setIsPublished(guide.is_published);
       setIsFeatured(guide.is_featured);
       setSortOrder(guide.sort_order);
+      setAuthorName((guide as any).author_name || "");
       setInternalLinks(Array.isArray((guide as any).internal_links) ? (guide as any).internal_links : []);
     } else {
       setTitle(""); setSlug(""); setSlugManual(false);
