@@ -352,7 +352,7 @@ export default function MarkdownEditor({
         
         <TabsContent value="preview" className="mt-2">
           <div 
-            className="min-h-[300px] max-h-[500px] overflow-y-auto p-4 border rounded-md bg-card prose prose-neutral dark:prose-invert max-w-none"
+            className={`${compact ? "min-h-[120px] max-h-[200px]" : "min-h-[300px] max-h-[500px]"} overflow-y-auto p-4 border rounded-md bg-card prose prose-neutral dark:prose-invert max-w-none`}
           >
             {value ? (
               <div dangerouslySetInnerHTML={{ __html: renderedHtml }} />
