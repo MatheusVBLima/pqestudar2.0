@@ -20,6 +20,7 @@ import {
 import { Search, Plus, BookOpen, ChevronDown } from "lucide-react";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { useGuides, Guide, useGuidesMutations } from "@/hooks/useGuides";
+import { usePageSettings } from "@/hooks/usePageSettings";
 import { GuideModal } from "@/components/admin/GuideModal";
 import { FeaturedGuideCard } from "@/components/guides/FeaturedGuideCard";
 import { GuideListItem } from "@/components/guides/GuideListItem";
@@ -28,6 +29,7 @@ const FALLBACK_TITLE = "Guias | PqEstudar";
 const FALLBACK_DESCRIPTION = "Conteúdos práticos e evergreen para estudar com mais clareza e aproveitar oportunidades.";
 
 export default function Guias() {
+  const ps = usePageSettings("/guias");
   const { isAdmin } = useUserRoles();
   const [isManagementMode, setIsManagementMode] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -122,13 +124,13 @@ export default function Guias() {
     <>
       <GlobalSeo />
       <Helmet>
-        <title>{FALLBACK_TITLE}</title>
-        <meta name="description" content={FALLBACK_DESCRIPTION} />
+        <title>{ps.titleTag || FALLBACK_TITLE}</title>
+        <meta name="description" content={ps.metaDescription || FALLBACK_DESCRIPTION} />
       </Helmet>
 
       <PageHero
-        title="Guias"
-        description="Conteúdos práticos e evergreen para estudar com mais clareza e aproveitar oportunidades."
+        title={ps.headerTitle || "Guias"}
+        description={ps.headerDescription || "Conteúdos práticos e evergreen para estudar com mais clareza e aproveitar oportunidades."}
       />
 
       <div className="container mx-auto px-6 pt-12 md:pt-16 pb-16">
