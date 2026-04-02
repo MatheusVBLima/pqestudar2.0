@@ -227,6 +227,11 @@ export function GuideModal({ open, onClose, onSave, guide }: GuideModalProps) {
               <Label>Ordem</Label>
               <Input type="number" value={sortOrder} onChange={e => setSortOrder(Number(e.target.value))} />
             </div>
+            <div>
+              <Label>Autor</Label>
+              <Input value={authorName} onChange={e => setAuthorName(e.target.value)} placeholder="Equipe PqEstudar" />
+              <p className="text-xs text-muted-foreground mt-1">Se vazio, será salvo como "Equipe PqEstudar"</p>
+            </div>
           </TabsContent>
 
           <TabsContent value="seo" className="space-y-4 mt-4">
