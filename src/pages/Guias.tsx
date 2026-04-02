@@ -124,13 +124,13 @@ export default function Guias() {
     <>
       <GlobalSeo />
       <Helmet>
-        <title>{FALLBACK_TITLE}</title>
-        <meta name="description" content={FALLBACK_DESCRIPTION} />
+        <title>{ps.titleTag || FALLBACK_TITLE}</title>
+        <meta name="description" content={ps.metaDescription || FALLBACK_DESCRIPTION} />
       </Helmet>
 
       <PageHero
-        title="Guias"
-        description="Conteúdos práticos e evergreen para estudar com mais clareza e aproveitar oportunidades."
+        title={ps.headerTitle || "Guias"}
+        description={ps.headerDescription || "Conteúdos práticos e evergreen para estudar com mais clareza e aproveitar oportunidades."}
       />
 
       <div className="container mx-auto px-6 pt-12 md:pt-16 pb-16">
