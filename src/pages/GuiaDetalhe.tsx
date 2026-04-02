@@ -287,20 +287,26 @@ export default function GuiaDetalhe() {
 
                 {relatedGuides && relatedGuides.length > 0 && (
                   <section>
-                    <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-                      <BookOpen className="h-5 w-5" /> Outros guias
-                    </h2>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <p className="text-sm font-bold uppercase tracking-wide text-primary mb-5">Veja também</p>
+                    <div className="space-y-5">
                       {relatedGuides.map((g: any) => (
-                        <Card key={g.id} className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate(`/guias/${g.slug}`)}>
-                          <CardHeader className="pb-2">
-                            <Badge variant="outline" className="w-fit mb-1">{g.category}</Badge>
-                            <CardTitle className="text-base">{g.title}</CardTitle>
-                          </CardHeader>
-                          <CardContent className="text-sm text-muted-foreground">
-                            {g.short_description}
-                          </CardContent>
-                        </Card>
+                        <Link
+                          key={g.id}
+                          to={`/guias/${g.slug}`}
+                          className="flex items-start gap-4 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded-md"
+                        >
+                          <div className="w-20 h-16 sm:w-28 sm:h-20 shrink-0 rounded-md bg-accent flex items-center justify-center overflow-hidden">
+                            <BookOpen className="h-6 w-6 text-primary/60" />
+                          </div>
+                          <div className="flex-1 min-w-0 pt-0.5">
+                            <span className="text-[11px] font-bold uppercase tracking-wider text-primary">
+                              {g.category}
+                            </span>
+                            <h3 className="text-base font-semibold leading-snug mt-0.5 group-hover:text-primary transition-colors line-clamp-2">
+                              {g.title}
+                            </h3>
+                          </div>
+                        </Link>
                       ))}
                     </div>
                   </section>
@@ -308,10 +314,10 @@ export default function GuiaDetalhe() {
               </div>
             )}
 
-            {/* Veja também: internal links */}
+            {/* Internal links (simple list) */}
             {internalLinks.length > 0 && (
               <section className="mt-10 pt-6 border-t border-border">
-                <p className="text-sm font-semibold text-muted-foreground mb-3">Veja também:</p>
+                <p className="text-sm font-semibold text-muted-foreground mb-3">Links úteis:</p>
                 <ul className="space-y-2 list-none pl-0">
                   {internalLinks.map((link, i) => (
                     <li key={i} className="flex items-start gap-2 text-sm">
@@ -319,7 +325,7 @@ export default function GuiaDetalhe() {
                       <Link
                         to={link.url}
                         className="text-primary hover:underline hover:opacity-80 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded-sm"
-                        aria-label={`Veja também: ${link.label}`}
+                        aria-label={`Link útil: ${link.label}`}
                       >
                         {link.label}
                       </Link>
