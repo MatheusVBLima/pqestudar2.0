@@ -290,30 +290,34 @@ export default function MarkdownEditor({
   }, [value, onChange]);
 
   return (
-    <div className="space-y-2">
+    <div className={compact ? "space-y-1.5" : "space-y-2"}>
       {/* Toolbar */}
       <div className="flex items-center justify-between gap-2 flex-wrap">
         <div className="flex items-center gap-1">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => insertHeading(2)}
-            title="Inserir título H2"
-          >
-            <Heading2 className="h-4 w-4" />
-            <span className="sr-only">H2</span>
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => insertHeading(3)}
-            title="Inserir subtítulo H3"
-          >
-            <Heading3 className="h-4 w-4" />
-            <span className="sr-only">H3</span>
-          </Button>
+          {showHeadings && !compact && (
+            <>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => insertHeading(2)}
+                title="Inserir título H2"
+              >
+                <Heading2 className="h-4 w-4" />
+                <span className="sr-only">H2</span>
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => insertHeading(3)}
+                title="Inserir subtítulo H3"
+              >
+                <Heading3 className="h-4 w-4" />
+                <span className="sr-only">H3</span>
+              </Button>
+            </>
+          )}
         </div>
         
         <Badge variant={isUnderMin ? "destructive" : "secondary"} className="text-xs font-normal">
