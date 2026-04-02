@@ -1,12 +1,9 @@
 import { useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { PageHero } from "@/components/layout/PageHero";
 import { GlobalSeo } from "@/components/seo/GlobalSeo";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -27,34 +24,17 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import {
-  Search,
-  Plus,
-  Edit,
-  Trash2,
-  Eye,
-  EyeOff,
-  Star,
-  StarOff,
-  BookOpen,
-} from "lucide-react";
+import { Search, Plus, BookOpen } from "lucide-react";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { useGuides, Guide, useGuidesMutations } from "@/hooks/useGuides";
 import { GuideModal } from "@/components/admin/GuideModal";
+import { FeaturedGuideCard } from "@/components/guides/FeaturedGuideCard";
+import { GuideListItem } from "@/components/guides/GuideListItem";
 
 const FALLBACK_TITLE = "Guias | PqEstudar";
 const FALLBACK_DESCRIPTION = "Conteúdos práticos e evergreen para estudar com mais clareza e aproveitar oportunidades.";
 
-const CATEGORY_COLORS: Record<string, string> = {
-  Concursos: "bg-blue-500/10 text-blue-600 border-blue-500/20",
-  Ferramentas: "bg-purple-500/10 text-purple-600 border-purple-500/20",
-  Oportunidades: "bg-green-500/10 text-green-600 border-green-500/20",
-  Produtividade: "bg-amber-500/10 text-amber-600 border-amber-500/20",
-  Carreira: "bg-rose-500/10 text-rose-600 border-rose-500/20",
-};
-
 export default function Guias() {
-  const navigate = useNavigate();
   const { isAdmin } = useUserRoles();
   const [isManagementMode, setIsManagementMode] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -85,6 +65,39 @@ export default function Guias() {
     return list;
   }, [guides, searchTerm, categoryFilter]);
 
+  // Determine featured guide and remaining list
+  const { featuredGuide, listGuides } = useMemo(() => {
+    if (!filtered || filtered.length === 0) return { featuredGuide: null, listGuides: [] };
+
+    // Find featured: is_featured=true, lowest sort_order, then newest updated_at
+    const featuredCandidates = filtered
+      .filter(g => g.is_featured)
+      .sort((a, b) => {
+        if (a.sort_order !== b.sort_order) return a.sort_order - b.sort_order;
+        return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
+      });
+
+    let featured: Guide | null = featuredCandidates[0] || null;
+
+    // Fallback: most recent published
+    if (!featured) {
+      const sorted = [...filtered].sort(
+        (a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
+      );
+      featured = sorted[0] || null;
+    }
+
+    const rest = featured ? filtered.filter(g => g.id !== featured!.id) : filtered;
+
+    // Sort rest: sort_order ASC, then updated_at DESC
+    const sortedRest = [...rest].sort((a, b) => {
+      if (a.sort_order !== b.sort_order) return a.sort_order - b.sort_order;
+      return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
+    });
+
+    return { featuredGuide: featured, listGuides: sortedRest };
+  }, [filtered]);
+
   const handleSave = async (data: Partial<Guide>) => {
     if (data.id) {
       await updateGuide.mutateAsync(data as any);
@@ -101,6 +114,15 @@ export default function Guias() {
   const handleNew = () => {
     setEditGuide(null);
     setModalOpen(true);
+  };
+
+  const adminActions = {
+    onEdit: handleEdit,
+    onDelete: (guide: Guide) => setDeleteTarget(guide),
+    onTogglePublished: (guide: Guide) =>
+      togglePublished.mutate({ id: guide.id, is_published: !guide.is_published }),
+    onToggleFeatured: (guide: Guide) =>
+      toggleFeatured.mutate({ id: guide.id, is_featured: !guide.is_featured }),
   };
 
   return (
@@ -162,10 +184,10 @@ export default function Guias() {
 
         {/* Loading */}
         {isLoading && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[1, 2, 3].map(i => (
-              <Skeleton key={i} className="h-64 rounded-[1.2rem]" />
-            ))}
+          <div className="space-y-6">
+            <Skeleton className="h-64 rounded-[1.2rem]" />
+            <Skeleton className="h-24 rounded-[1.2rem]" />
+            <Skeleton className="h-24 rounded-[1.2rem]" />
           </div>
         )}
 
@@ -181,85 +203,30 @@ export default function Guias() {
           </div>
         )}
 
-        {/* Grid */}
+        {/* Featured + List */}
         {!isLoading && filtered.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
-            {filtered.map(guide => (
-              <Card
-                key={guide.id}
-                className="flex flex-col h-full cursor-pointer hover:shadow-lg transition-shadow"
-                onClick={() => !showAdmin && navigate(`/guias/${guide.slug}`)}
-              >
-                <CardHeader className="pb-3">
-                  <div className="flex items-center gap-2 flex-wrap mb-2">
-                    <Badge
-                      variant="outline"
-                      className={CATEGORY_COLORS[guide.category] || ""}
-                    >
-                      {guide.category}
-                    </Badge>
-                    {guide.is_featured && (
-                      <Badge className="bg-amber-500/10 text-amber-600 border-amber-500/20" variant="outline">
-                        <Star className="h-3 w-3 mr-1" /> Destaque
-                      </Badge>
-                    )}
-                    {showAdmin && !guide.is_published && (
-                      <Badge variant="secondary">Rascunho</Badge>
-                    )}
-                  </div>
-                  <CardTitle className="text-lg leading-tight">{guide.title}</CardTitle>
-                  <CardDescription className="line-clamp-2 mt-1">
-                    {guide.short_description}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="flex flex-col mt-auto pt-0">
-                  {showAdmin ? (
-                    <div className="flex flex-wrap gap-2">
-                      <Button size="sm" variant="outline" onClick={(e) => { e.stopPropagation(); handleEdit(guide); }}>
-                        <Edit className="h-3.5 w-3.5 mr-1" /> Editar
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          togglePublished.mutate({ id: guide.id, is_published: !guide.is_published });
-                        }}
-                      >
-                        {guide.is_published ? <EyeOff className="h-3.5 w-3.5 mr-1" /> : <Eye className="h-3.5 w-3.5 mr-1" />}
-                        {guide.is_published ? "Despublicar" : "Publicar"}
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleFeatured.mutate({ id: guide.id, is_featured: !guide.is_featured });
-                        }}
-                      >
-                        {guide.is_featured ? <StarOff className="h-3.5 w-3.5 mr-1" /> : <Star className="h-3.5 w-3.5 mr-1" />}
-                        {guide.is_featured ? "Remover destaque" : "Destacar"}
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        onClick={(e) => { e.stopPropagation(); setDeleteTarget(guide); }}
-                      >
-                        <Trash2 className="h-3.5 w-3.5 mr-1" /> Excluir
-                      </Button>
-                    </div>
-                  ) : (
-                    <Button
-                      className="w-full"
-                      onClick={(e) => { e.stopPropagation(); navigate(`/guias/${guide.slug}`); }}
-                    >
-                      Ler guia
-                    </Button>
-                  )}
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          <>
+            {featuredGuide && (
+              <FeaturedGuideCard
+                guide={featuredGuide}
+                showAdmin={showAdmin}
+                {...adminActions}
+              />
+            )}
+
+            {listGuides.length > 0 && (
+              <div className="space-y-4">
+                {listGuides.map(guide => (
+                  <GuideListItem
+                    key={guide.id}
+                    guide={guide}
+                    showAdmin={showAdmin}
+                    {...adminActions}
+                  />
+                ))}
+              </div>
+            )}
+          </>
         )}
       </div>
 
