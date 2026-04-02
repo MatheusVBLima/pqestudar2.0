@@ -8,16 +8,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft, ExternalLink, Star, BookOpen, Wrench, FileText } from "lucide-react";
 import { useGuideBySlug, useGuideRelatedTools, useGuideRelatedContests, useGuideRelatedGuides } from "@/hooks/useGuides";
-import { sanitizeHtml } from "@/lib/utils";
-import { marked } from "marked";
+import { renderRichContentConcursos } from "@/lib/concursos-content-renderer";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-
-function renderMarkdown(md: string): string {
-  // Configure marked for safe rendering
-  marked.setOptions({ breaks: true, gfm: true });
-  return sanitizeHtml(marked.parse(md) as string);
-}
 
 export default function GuiaDetalhe() {
   const { slug } = useParams<{ slug: string }>();
@@ -105,11 +98,8 @@ export default function GuiaDetalhe() {
       <article className="container mx-auto px-6 pt-12 md:pt-16 pb-16 max-w-3xl">
         {/* Main content */}
         <div
-          className="prose prose-lg dark:prose-invert max-w-none
-            prose-headings:font-bold prose-headings:text-foreground
-            prose-p:text-foreground/80 prose-a:text-primary prose-a:underline
-            prose-li:text-foreground/80"
-          dangerouslySetInnerHTML={{ __html: renderMarkdown(guide.content_markdown) }}
+          className="text-foreground/80 leading-relaxed"
+          dangerouslySetInnerHTML={{ __html: renderRichContentConcursos(guide.content_markdown) }}
         />
 
         {/* CTA middle */}

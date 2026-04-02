@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
+import MarkdownEditor, { htmlToMarkdown } from "@/components/admin/MarkdownEditor";
 import { Guide } from "@/hooks/useGuides";
 
 interface GuideModalProps {
@@ -55,7 +56,10 @@ export function GuideModal({ open, onClose, onSave, guide }: GuideModalProps) {
       setSlugManual(true);
       setCategory(guide.category);
       setShortDescription(guide.short_description);
-      setContentMarkdown(guide.content_markdown);
+      // Convert HTML content to Markdown if needed
+      const content = guide.content_markdown || "";
+      const hasHtml = /<\s*(?:p|ol|ul|li|h[1-6]|div|br|strong|em)\b[^>]*>/i.test(content);
+      setContentMarkdown(hasHtml ? htmlToMarkdown(content) : content);
       setSeoTitle(guide.seo_title);
       setSeoDescription(guide.seo_description);
       setCtaTopLabel(guide.cta_top_label || "");
@@ -237,16 +241,12 @@ export function GuideModal({ open, onClose, onSave, guide }: GuideModalProps) {
           <TabsContent value="content" className="space-y-4 mt-4">
             <div>
               <Label>Conteúdo (Markdown)</Label>
-              <Textarea
+              <MarkdownEditor
                 value={contentMarkdown}
-                onChange={e => setContentMarkdown(e.target.value)}
+                onChange={setContentMarkdown}
                 placeholder="## Seção&#10;&#10;Conteúdo do guia em Markdown..."
                 rows={16}
-                className="font-mono text-sm"
               />
-              <p className="text-xs text-muted-foreground mt-1">
-                Suporta: ## H2, ### H3, listas, links, parágrafos
-              </p>
             </div>
           </TabsContent>
 
