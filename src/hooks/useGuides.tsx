@@ -17,6 +17,10 @@ export interface Guide {
   cta_middle_url: string | null;
   cta_final_label: string | null;
   cta_final_url: string | null;
+  cta_top_text: string | null;
+  cta_middle_text: string | null;
+  cta_final_text: string | null;
+  internal_links: Array<{ label: string; url: string }>;
   is_published: boolean;
   is_featured: boolean;
   sort_order: number;

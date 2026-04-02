@@ -1093,12 +1093,16 @@ export type Database = {
           content_markdown: string
           created_at: string
           cta_final_label: string | null
+          cta_final_text: string | null
           cta_final_url: string | null
           cta_middle_label: string | null
+          cta_middle_text: string | null
           cta_middle_url: string | null
           cta_top_label: string | null
+          cta_top_text: string | null
           cta_top_url: string | null
           id: string
+          internal_links: Json | null
           is_featured: boolean
           is_published: boolean
           seo_description: string
@@ -1114,12 +1118,16 @@ export type Database = {
           content_markdown?: string
           created_at?: string
           cta_final_label?: string | null
+          cta_final_text?: string | null
           cta_final_url?: string | null
           cta_middle_label?: string | null
+          cta_middle_text?: string | null
           cta_middle_url?: string | null
           cta_top_label?: string | null
+          cta_top_text?: string | null
           cta_top_url?: string | null
           id?: string
+          internal_links?: Json | null
           is_featured?: boolean
           is_published?: boolean
           seo_description?: string
@@ -1135,12 +1143,16 @@ export type Database = {
           content_markdown?: string
           created_at?: string
           cta_final_label?: string | null
+          cta_final_text?: string | null
           cta_final_url?: string | null
           cta_middle_label?: string | null
+          cta_middle_text?: string | null
           cta_middle_url?: string | null
           cta_top_label?: string | null
+          cta_top_text?: string | null
           cta_top_url?: string | null
           id?: string
+          internal_links?: Json | null
           is_featured?: boolean
           is_published?: boolean
           seo_description?: string

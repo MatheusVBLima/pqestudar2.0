@@ -12,6 +12,72 @@ import { renderRichContentConcursos } from "@/lib/concursos-content-renderer";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
+// ---------- CTA Block component ----------
+function CtaBlock({ label, url, text }: { label?: string | null; url?: string | null; text?: string | null }) {
+  if (!label || !url) return null;
+  return (
+    <div className="my-10 p-6 rounded-[1.2rem] bg-primary/5 border text-center space-y-3">
+      {text && <p className="text-sm text-muted-foreground leading-relaxed">{text}</p>}
+      <Button asChild size="lg">
+        <a href={url} target="_blank" rel="noopener noreferrer">
+          {label} <ExternalLink className="h-4 w-4 ml-2" />
+        </a>
+      </Button>
+    </div>
+  );
+}
+
+// ---------- Split content and insert middle CTA ----------
+function splitContentForMiddleCta(html: string): [string, string] {
+  // Split by top-level block elements to find a natural break near the middle
+  const blockPattern = /(<\/(?:p|ul|ol|h[1-6]|blockquote|hr|table|div)>)/gi;
+  const parts: { end: number }[] = [];
+  let match: RegExpExecArray | null;
+  while ((match = blockPattern.exec(html)) !== null) {
+    parts.push({ end: match.index + match[0].length });
+  }
+
+  if (parts.length < 2) return [html, ""];
+
+  // Count words in plain text to find midpoint
+  const plainText = html.replace(/<[^>]+>/g, " ");
+  const words = plainText.trim().split(/\s+/);
+  const totalWords = words.length;
+
+  if (totalWords < 120) {
+    // Short content: insert after 1st or 2nd block
+    const splitIdx = Math.min(1, parts.length - 1);
+    const splitPos = parts[splitIdx].end;
+    return [html.slice(0, splitPos), html.slice(splitPos)];
+  }
+
+  // Find the character position of the middle word
+  const midWordIndex = Math.floor(totalWords / 2);
+  let wordCount = 0;
+  let charPos = 0;
+  const textForCounting = html.replace(/<[^>]+>/g, (tag) => " ".repeat(tag.length));
+  const wordRegex = /\S+/g;
+  let wm: RegExpExecArray | null;
+  while ((wm = wordRegex.exec(textForCounting)) !== null) {
+    wordCount++;
+    if (wordCount >= midWordIndex) {
+      charPos = wm.index;
+      break;
+    }
+  }
+
+  // Find first block-end after charPos
+  let bestSplit = parts[Math.floor(parts.length / 2)].end; // fallback
+  for (const p of parts) {
+    if (p.end >= charPos) {
+      bestSplit = p.end;
+      break;
+    }
+  }
+
+  return [html.slice(0, bestSplit), html.slice(bestSplit)];
+}
+
 export default function GuiaDetalhe() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
@@ -55,6 +121,29 @@ export default function GuiaDetalhe() {
     (relatedContests && relatedContests.length > 0) ||
     (relatedGuides && relatedGuides.length > 0);
 
+  // Internal links
+  const internalLinks: Array<{ label: string; url: string }> = Array.isArray((guide as any).internal_links)
+    ? (guide as any).internal_links.filter((l: any) => l.label && l.url)
+    : [];
+
+  // CTA texts
+  const ctaTopText = (guide as any).cta_top_text || null;
+  const ctaMiddleText = (guide as any).cta_middle_text || null;
+  const ctaFinalText = (guide as any).cta_final_text || null;
+
+  // Has middle CTA?
+  const hasMiddleCta = !!(guide.cta_middle_label && guide.cta_middle_url);
+
+  // Render content HTML
+  const fullHtml = renderRichContentConcursos(guide.content_markdown);
+
+  // Split content for middle CTA insertion
+  let contentFirstHalf = fullHtml;
+  let contentSecondHalf = "";
+  if (hasMiddleCta) {
+    [contentFirstHalf, contentSecondHalf] = splitContentForMiddleCta(fullHtml);
+  }
+
   return (
     <>
       <GlobalSeo />
@@ -83,35 +172,33 @@ export default function GuiaDetalhe() {
             )}
           </div>
         }
-      >
-        {guide.cta_top_label && guide.cta_top_url && (
-          <div className="mt-6">
-            <Button asChild size="lg">
-              <a href={guide.cta_top_url} target="_blank" rel="noopener noreferrer">
-                {guide.cta_top_label} <ExternalLink className="h-4 w-4 ml-2" />
-              </a>
-            </Button>
-          </div>
-        )}
-      </PageHero>
+      />
 
       <article className="container mx-auto px-6 pt-12 md:pt-16 pb-16 max-w-3xl">
-        {/* Main content */}
+        {/* CTA Superior — after hero, before content */}
+        <CtaBlock label={guide.cta_top_label} url={guide.cta_top_url} text={ctaTopText} />
+
+        {/* Main content — first half */}
         <div
           className="text-foreground/80 leading-relaxed"
-          dangerouslySetInnerHTML={{ __html: renderRichContentConcursos(guide.content_markdown) }}
+          dangerouslySetInnerHTML={{ __html: contentFirstHalf }}
         />
 
-        {/* CTA middle */}
-        {guide.cta_middle_label && guide.cta_middle_url && (
-          <div className="my-10 p-6 rounded-[1.2rem] bg-primary/5 border text-center">
-            <Button asChild size="lg">
-              <a href={guide.cta_middle_url} target="_blank" rel="noopener noreferrer">
-                {guide.cta_middle_label} <ExternalLink className="h-4 w-4 ml-2" />
-              </a>
-            </Button>
-          </div>
+        {/* CTA Intermediário — inserted at midpoint */}
+        {hasMiddleCta && (
+          <CtaBlock label={guide.cta_middle_label} url={guide.cta_middle_url} text={ctaMiddleText} />
         )}
+
+        {/* Main content — second half */}
+        {contentSecondHalf && (
+          <div
+            className="text-foreground/80 leading-relaxed"
+            dangerouslySetInnerHTML={{ __html: contentSecondHalf }}
+          />
+        )}
+
+        {/* CTA Final — end of content */}
+        <CtaBlock label={guide.cta_final_label} url={guide.cta_final_url} text={ctaFinalText} />
 
         {/* Related sections */}
         {hasRelated && (
@@ -191,15 +278,21 @@ export default function GuiaDetalhe() {
           </div>
         )}
 
-        {/* CTA final */}
-        {guide.cta_final_label && guide.cta_final_url && (
-          <div className="mt-12 p-8 rounded-[1.2rem] bg-primary/5 border text-center">
-            <Button asChild size="lg">
-              <a href={guide.cta_final_url} target="_blank" rel="noopener noreferrer">
-                {guide.cta_final_label} <ExternalLink className="h-4 w-4 ml-2" />
-              </a>
-            </Button>
-          </div>
+        {/* Veja também: internal links */}
+        {internalLinks.length > 0 && (
+          <section className="mt-12">
+            <h2 className="text-lg font-bold mb-4">Veja também:</h2>
+            <ul className="space-y-2">
+              {internalLinks.map((link, i) => (
+                <li key={i} className="flex items-center gap-2">
+                  <span className="text-primary">•</span>
+                  <Link to={link.url} className="text-primary hover:underline transition-colors">
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
         )}
 
         {/* Back link */}
