@@ -269,7 +269,7 @@ export function GuideModal({ open, onClose, onSave, guide }: GuideModalProps) {
               </div>
               <div>
                 <Label>Texto/descrição (opcional)</Label>
-                <Textarea value={ctaTopText} onChange={e => setCtaTopText(e.target.value)} placeholder="Frase exibida acima do botão..." rows={2} />
+                <MarkdownEditor value={ctaTopText} onChange={setCtaTopText} placeholder="Frase exibida acima do botão..." rows={4} compact showHeadings={false} />
               </div>
             </div>
 
