@@ -98,11 +98,8 @@ export default function GuiaDetalhe() {
       <article className="container mx-auto px-6 pt-12 md:pt-16 pb-16 max-w-3xl">
         {/* Main content */}
         <div
-          className="prose prose-lg dark:prose-invert max-w-none
-            prose-headings:font-bold prose-headings:text-foreground
-            prose-p:text-foreground/80 prose-a:text-primary prose-a:underline
-            prose-li:text-foreground/80"
-          dangerouslySetInnerHTML={{ __html: renderMarkdown(guide.content_markdown) }}
+          className="text-foreground/80 leading-relaxed"
+          dangerouslySetInnerHTML={{ __html: renderRichContentConcursos(guide.content_markdown) }}
         />
 
         {/* CTA middle */}

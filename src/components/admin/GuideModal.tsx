@@ -241,16 +241,12 @@ export function GuideModal({ open, onClose, onSave, guide }: GuideModalProps) {
           <TabsContent value="content" className="space-y-4 mt-4">
             <div>
               <Label>Conteúdo (Markdown)</Label>
-              <Textarea
+              <MarkdownEditor
                 value={contentMarkdown}
-                onChange={e => setContentMarkdown(e.target.value)}
+                onChange={setContentMarkdown}
                 placeholder="## Seção&#10;&#10;Conteúdo do guia em Markdown..."
                 rows={16}
-                className="font-mono text-sm"
               />
-              <p className="text-xs text-muted-foreground mt-1">
-                Suporta: ## H2, ### H3, listas, links, parágrafos
-              </p>
             </div>
           </TabsContent>
 
