@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import MarkdownEditor, { htmlToMarkdown } from "@/components/admin/MarkdownEditor";
 import { Guide } from "@/hooks/useGuides";
+import { Plus, Trash2 } from "lucide-react";
 
 interface GuideModalProps {
   open: boolean;
@@ -28,6 +29,11 @@ function slugify(text: string): string {
 
 const CATEGORIES = ["Concursos", "Ferramentas", "Oportunidades", "Produtividade", "Carreira"];
 
+interface InternalLink {
+  label: string;
+  url: string;
+}
+
 export function GuideModal({ open, onClose, onSave, guide }: GuideModalProps) {
   const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");
@@ -39,13 +45,17 @@ export function GuideModal({ open, onClose, onSave, guide }: GuideModalProps) {
   const [seoDescription, setSeoDescription] = useState("");
   const [ctaTopLabel, setCtaTopLabel] = useState("");
   const [ctaTopUrl, setCtaTopUrl] = useState("");
+  const [ctaTopText, setCtaTopText] = useState("");
   const [ctaMiddleLabel, setCtaMiddleLabel] = useState("");
   const [ctaMiddleUrl, setCtaMiddleUrl] = useState("");
+  const [ctaMiddleText, setCtaMiddleText] = useState("");
   const [ctaFinalLabel, setCtaFinalLabel] = useState("");
   const [ctaFinalUrl, setCtaFinalUrl] = useState("");
+  const [ctaFinalText, setCtaFinalText] = useState("");
   const [isPublished, setIsPublished] = useState(false);
   const [isFeatured, setIsFeatured] = useState(false);
   const [sortOrder, setSortOrder] = useState(0);
+  const [internalLinks, setInternalLinks] = useState<InternalLink[]>([]);
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -56,7 +66,6 @@ export function GuideModal({ open, onClose, onSave, guide }: GuideModalProps) {
       setSlugManual(true);
       setCategory(guide.category);
       setShortDescription(guide.short_description);
-      // Convert HTML content to Markdown if needed
       const content = guide.content_markdown || "";
       const hasHtml = /<\s*(?:p|ol|ul|li|h[1-6]|div|br|strong|em)\b[^>]*>/i.test(content);
       setContentMarkdown(hasHtml ? htmlToMarkdown(content) : content);
@@ -64,39 +73,32 @@ export function GuideModal({ open, onClose, onSave, guide }: GuideModalProps) {
       setSeoDescription(guide.seo_description);
       setCtaTopLabel(guide.cta_top_label || "");
       setCtaTopUrl(guide.cta_top_url || "");
+      setCtaTopText((guide as any).cta_top_text || "");
       setCtaMiddleLabel(guide.cta_middle_label || "");
       setCtaMiddleUrl(guide.cta_middle_url || "");
+      setCtaMiddleText((guide as any).cta_middle_text || "");
       setCtaFinalLabel(guide.cta_final_label || "");
       setCtaFinalUrl(guide.cta_final_url || "");
+      setCtaFinalText((guide as any).cta_final_text || "");
       setIsPublished(guide.is_published);
       setIsFeatured(guide.is_featured);
       setSortOrder(guide.sort_order);
+      setInternalLinks(Array.isArray((guide as any).internal_links) ? (guide as any).internal_links : []);
     } else {
-      setTitle("");
-      setSlug("");
-      setSlugManual(false);
-      setCategory(CATEGORIES[0]);
-      setShortDescription("");
-      setContentMarkdown("");
-      setSeoTitle("");
-      setSeoDescription("");
-      setCtaTopLabel("");
-      setCtaTopUrl("");
-      setCtaMiddleLabel("");
-      setCtaMiddleUrl("");
-      setCtaFinalLabel("");
-      setCtaFinalUrl("");
-      setIsPublished(false);
-      setIsFeatured(false);
-      setSortOrder(0);
+      setTitle(""); setSlug(""); setSlugManual(false);
+      setCategory(CATEGORIES[0]); setShortDescription("");
+      setContentMarkdown(""); setSeoTitle(""); setSeoDescription("");
+      setCtaTopLabel(""); setCtaTopUrl(""); setCtaTopText("");
+      setCtaMiddleLabel(""); setCtaMiddleUrl(""); setCtaMiddleText("");
+      setCtaFinalLabel(""); setCtaFinalUrl(""); setCtaFinalText("");
+      setIsPublished(false); setIsFeatured(false); setSortOrder(0);
+      setInternalLinks([]);
     }
     setErrors({});
   }, [guide, open]);
 
   useEffect(() => {
-    if (!slugManual && title) {
-      setSlug(slugify(title));
-    }
+    if (!slugManual && title) setSlug(slugify(title));
   }, [title, slugManual]);
 
   const validate = () => {
@@ -107,13 +109,18 @@ export function GuideModal({ open, onClose, onSave, guide }: GuideModalProps) {
     if (!shortDescription.trim()) errs.shortDescription = "Descrição curta obrigatória";
     if (!seoTitle.trim()) errs.seoTitle = "SEO Title obrigatório";
     if (!seoDescription.trim()) errs.seoDescription = "SEO Description obrigatória";
-    // CTA validation: if label, url required and vice-versa
     if (ctaTopLabel && !ctaTopUrl) errs.ctaTopUrl = "URL obrigatória quando label preenchido";
     if (!ctaTopLabel && ctaTopUrl) errs.ctaTopLabel = "Label obrigatório quando URL preenchida";
     if (ctaMiddleLabel && !ctaMiddleUrl) errs.ctaMiddleUrl = "URL obrigatória quando label preenchido";
     if (!ctaMiddleLabel && ctaMiddleUrl) errs.ctaMiddleLabel = "Label obrigatório quando URL preenchida";
     if (ctaFinalLabel && !ctaFinalUrl) errs.ctaFinalUrl = "URL obrigatória quando label preenchido";
     if (!ctaFinalLabel && ctaFinalUrl) errs.ctaFinalLabel = "Label obrigatório quando URL preenchida";
+    // Validate internal links
+    internalLinks.forEach((link, i) => {
+      if (link.label && !link.url) errs[`link_${i}_url`] = "URL obrigatória";
+      if (!link.label && link.url) errs[`link_${i}_label`] = "Texto obrigatório";
+      if (link.url && !link.url.startsWith("/")) errs[`link_${i}_url`] = "URL deve ser interna (começar com /)";
+    });
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };
@@ -122,6 +129,7 @@ export function GuideModal({ open, onClose, onSave, guide }: GuideModalProps) {
     if (!validate()) return;
     setSaving(true);
     try {
+      const validLinks = internalLinks.filter(l => l.label.trim() && l.url.trim());
       const payload: Partial<Guide> = {
         title: title.trim(),
         slug: slug.trim(),
@@ -140,12 +148,25 @@ export function GuideModal({ open, onClose, onSave, guide }: GuideModalProps) {
         is_featured: isFeatured,
         sort_order: sortOrder,
       };
+      // Add new fields via any cast
+      (payload as any).cta_top_text = ctaTopText.trim() || null;
+      (payload as any).cta_middle_text = ctaMiddleText.trim() || null;
+      (payload as any).cta_final_text = ctaFinalText.trim() || null;
+      (payload as any).internal_links = validLinks;
       if (guide) payload.id = guide.id;
       await onSave(payload);
       onClose();
     } finally {
       setSaving(false);
     }
+  };
+
+  const addLink = () => setInternalLinks([...internalLinks, { label: "", url: "" }]);
+  const removeLink = (i: number) => setInternalLinks(internalLinks.filter((_, idx) => idx !== i));
+  const updateLink = (i: number, field: keyof InternalLink, value: string) => {
+    const updated = [...internalLinks];
+    updated[i] = { ...updated[i], [field]: value };
+    setInternalLinks(updated);
   };
 
   return (
@@ -156,11 +177,12 @@ export function GuideModal({ open, onClose, onSave, guide }: GuideModalProps) {
         </DialogHeader>
 
         <Tabs defaultValue="basic" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="basic">Básico</TabsTrigger>
             <TabsTrigger value="seo">SEO</TabsTrigger>
             <TabsTrigger value="content">Conteúdo</TabsTrigger>
             <TabsTrigger value="ctas">CTAs</TabsTrigger>
+            <TabsTrigger value="links">Links</TabsTrigger>
           </TabsList>
 
           <TabsContent value="basic" className="space-y-4 mt-4">
@@ -171,37 +193,22 @@ export function GuideModal({ open, onClose, onSave, guide }: GuideModalProps) {
             </div>
             <div>
               <Label>Slug *</Label>
-              <Input
-                value={slug}
-                onChange={e => { setSlug(e.target.value); setSlugManual(true); }}
-                placeholder="slug-do-guia"
-              />
+              <Input value={slug} onChange={e => { setSlug(e.target.value); setSlugManual(true); }} placeholder="slug-do-guia" />
               {errors.slug && <p className="text-xs text-destructive mt-1">{errors.slug}</p>}
             </div>
             <div>
               <Label>Categoria *</Label>
-              <select
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                value={category}
-                onChange={e => setCategory(e.target.value)}
-              >
+              <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" value={category} onChange={e => setCategory(e.target.value)}>
                 {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
               {errors.category && <p className="text-xs text-destructive mt-1">{errors.category}</p>}
             </div>
             <div>
               <Label>Descrição curta *</Label>
-              <Textarea
-                value={shortDescription}
-                onChange={e => setShortDescription(e.target.value)}
-                placeholder="Resumo que aparece no card"
-                rows={3}
-              />
+              <Textarea value={shortDescription} onChange={e => setShortDescription(e.target.value)} placeholder="Resumo que aparece no card" rows={3} />
               {errors.shortDescription && <p className="text-xs text-destructive mt-1">{errors.shortDescription}</p>}
             </div>
-
             <Separator />
-
             <div className="flex items-center gap-6">
               <div className="flex items-center gap-2">
                 <Switch checked={isPublished} onCheckedChange={setIsPublished} />
@@ -227,12 +234,7 @@ export function GuideModal({ open, onClose, onSave, guide }: GuideModalProps) {
             </div>
             <div>
               <Label>SEO Description *</Label>
-              <Textarea
-                value={seoDescription}
-                onChange={e => setSeoDescription(e.target.value)}
-                placeholder="Descrição para mecanismos de busca"
-                rows={3}
-              />
+              <Textarea value={seoDescription} onChange={e => setSeoDescription(e.target.value)} placeholder="Descrição para mecanismos de busca" rows={3} />
               {errors.seoDescription && <p className="text-xs text-destructive mt-1">{errors.seoDescription}</p>}
               <p className="text-xs text-muted-foreground mt-1">{seoDescription.length}/160 caracteres</p>
             </div>
@@ -241,20 +243,16 @@ export function GuideModal({ open, onClose, onSave, guide }: GuideModalProps) {
           <TabsContent value="content" className="space-y-4 mt-4">
             <div>
               <Label>Conteúdo (Markdown)</Label>
-              <MarkdownEditor
-                value={contentMarkdown}
-                onChange={setContentMarkdown}
-                placeholder="## Seção&#10;&#10;Conteúdo do guia em Markdown..."
-                rows={16}
-              />
+              <MarkdownEditor value={contentMarkdown} onChange={setContentMarkdown} placeholder="## Seção&#10;&#10;Conteúdo do guia em Markdown..." rows={16} />
             </div>
           </TabsContent>
 
           <TabsContent value="ctas" className="space-y-4 mt-4">
             <p className="text-sm text-muted-foreground">
-              CTAs são opcionais. Se preencher o label, a URL é obrigatória (e vice-versa).
+              CTAs são opcionais. Se preencher o label, a URL é obrigatória (e vice-versa). O texto é exibido acima do botão.
             </p>
 
+            {/* CTA Superior */}
             <div className="space-y-3">
               <p className="text-sm font-medium">CTA Superior</p>
               <div className="grid grid-cols-2 gap-3">
@@ -269,10 +267,15 @@ export function GuideModal({ open, onClose, onSave, guide }: GuideModalProps) {
                   {errors.ctaTopUrl && <p className="text-xs text-destructive mt-1">{errors.ctaTopUrl}</p>}
                 </div>
               </div>
+              <div>
+                <Label>Texto/descrição (opcional)</Label>
+                <Textarea value={ctaTopText} onChange={e => setCtaTopText(e.target.value)} placeholder="Frase exibida acima do botão..." rows={2} />
+              </div>
             </div>
 
             <Separator />
 
+            {/* CTA Intermediário */}
             <div className="space-y-3">
               <p className="text-sm font-medium">CTA Intermediário</p>
               <div className="grid grid-cols-2 gap-3">
@@ -287,10 +290,15 @@ export function GuideModal({ open, onClose, onSave, guide }: GuideModalProps) {
                   {errors.ctaMiddleUrl && <p className="text-xs text-destructive mt-1">{errors.ctaMiddleUrl}</p>}
                 </div>
               </div>
+              <div>
+                <Label>Texto/descrição (opcional)</Label>
+                <Textarea value={ctaMiddleText} onChange={e => setCtaMiddleText(e.target.value)} placeholder="Frase exibida acima do botão..." rows={2} />
+              </div>
             </div>
 
             <Separator />
 
+            {/* CTA Final */}
             <div className="space-y-3">
               <p className="text-sm font-medium">CTA Final</p>
               <div className="grid grid-cols-2 gap-3">
@@ -305,7 +313,50 @@ export function GuideModal({ open, onClose, onSave, guide }: GuideModalProps) {
                   {errors.ctaFinalUrl && <p className="text-xs text-destructive mt-1">{errors.ctaFinalUrl}</p>}
                 </div>
               </div>
+              <div>
+                <Label>Texto/descrição (opcional)</Label>
+                <Textarea value={ctaFinalText} onChange={e => setCtaFinalText(e.target.value)} placeholder="Frase exibida acima do botão..." rows={2} />
+              </div>
             </div>
+          </TabsContent>
+
+          {/* Links Internos tab */}
+          <TabsContent value="links" className="space-y-4 mt-4">
+            <p className="text-sm text-muted-foreground">
+              Links internos exibidos na seção "Veja também:" ao final do guia. URLs devem começar com "/".
+            </p>
+
+            {internalLinks.map((link, i) => (
+              <div key={i} className="flex items-start gap-2">
+                <div className="flex-1 space-y-2">
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <Input
+                        value={link.label}
+                        onChange={e => updateLink(i, "label", e.target.value)}
+                        placeholder="Texto do link"
+                      />
+                      {errors[`link_${i}_label`] && <p className="text-xs text-destructive mt-1">{errors[`link_${i}_label`]}</p>}
+                    </div>
+                    <div>
+                      <Input
+                        value={link.url}
+                        onChange={e => updateLink(i, "url", e.target.value)}
+                        placeholder="/guias/... ou /ferramentas"
+                      />
+                      {errors[`link_${i}_url`] && <p className="text-xs text-destructive mt-1">{errors[`link_${i}_url`]}</p>}
+                    </div>
+                  </div>
+                </div>
+                <Button variant="ghost" size="icon" className="mt-0.5 text-destructive" onClick={() => removeLink(i)}>
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            ))}
+
+            <Button variant="outline" size="sm" onClick={addLink}>
+              <Plus className="h-4 w-4 mr-1" /> Adicionar link
+            </Button>
           </TabsContent>
         </Tabs>
 
