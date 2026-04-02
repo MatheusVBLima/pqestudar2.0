@@ -56,6 +56,7 @@ export function GuideModal({ open, onClose, onSave, guide }: GuideModalProps) {
   const [isFeatured, setIsFeatured] = useState(false);
   const [sortOrder, setSortOrder] = useState(0);
   const [internalLinks, setInternalLinks] = useState<InternalLink[]>([]);
+  const [authorName, setAuthorName] = useState("");
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
