@@ -156,6 +156,7 @@ export function GuideModal({ open, onClose, onSave, guide }: GuideModalProps) {
       (payload as any).cta_middle_text = ctaMiddleText.trim() || null;
       (payload as any).cta_final_text = ctaFinalText.trim() || null;
       (payload as any).internal_links = validLinks;
+      (payload as any).author_name = authorName.trim() || "Equipe PqEstudar";
       if (guide) payload.id = guide.id;
       await onSave(payload);
       onClose();
