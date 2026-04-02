@@ -204,6 +204,8 @@ export default function MarkdownEditor({
   minWords = 0,
   rows = 16,
   isRequired = false,
+  compact = false,
+  showHeadings = true,
 }: MarkdownEditorProps) {
   const [activeTab, setActiveTab] = useState<string>("edit");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
