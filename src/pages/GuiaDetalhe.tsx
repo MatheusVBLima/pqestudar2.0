@@ -20,7 +20,12 @@ function CtaBlock({ label, url, text }: { label?: string | null; url?: string | 
   if (!label || !url) return null;
   return (
     <div className="my-10 p-6 rounded-[1.2rem] bg-primary/5 border text-center space-y-3">
-      {text && <p className="text-sm text-muted-foreground leading-relaxed">{text}</p>}
+      {text && (
+        <div
+          className="text-sm text-muted-foreground leading-relaxed prose prose-sm dark:prose-invert max-w-none [&>ul]:list-disc [&>ul]:pl-5 [&>ol]:list-decimal [&>ol]:pl-5 [&>p]:mb-2"
+          dangerouslySetInnerHTML={{ __html: renderRichContentConcursos(text) }}
+        />
+      )}
       <Button asChild size="lg">
         <a href={url} target="_blank" rel="noopener noreferrer">
           {label} <ExternalLink className="h-4 w-4 ml-2" />
