@@ -314,24 +314,32 @@ export default function GuiaDetalhe() {
               </div>
             )}
 
-            {/* Internal links (simple list) */}
+            {/* Internal links */}
             {internalLinks.length > 0 && (
               <section className="mt-10 pt-6 border-t border-border">
-                <p className="text-sm font-semibold text-muted-foreground mb-3">Links úteis:</p>
-                <ul className="space-y-2 list-none pl-0">
+                <p className="text-sm font-bold uppercase tracking-wide text-primary mb-5">Links úteis</p>
+                <div className="space-y-5">
                   {internalLinks.map((link, i) => (
-                    <li key={i} className="flex items-start gap-2 text-sm">
-                      <span className="text-primary mt-0.5 shrink-0">•</span>
-                      <Link
-                        to={link.url}
-                        className="text-primary hover:underline hover:opacity-80 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded-sm"
-                        aria-label={`Link útil: ${link.label}`}
-                      >
-                        {link.label}
-                      </Link>
-                    </li>
+                    <Link
+                      key={i}
+                      to={link.url}
+                      className="flex items-start gap-4 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded-md"
+                      aria-label={`Link útil: ${link.label}`}
+                    >
+                      <div className="w-20 h-16 sm:w-28 sm:h-20 shrink-0 rounded-md bg-accent flex items-center justify-center overflow-hidden">
+                        <BookOpen className="h-6 w-6 text-primary/60" />
+                      </div>
+                      <div className="flex-1 min-w-0 pt-0.5">
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-primary">
+                          Link útil
+                        </span>
+                        <h3 className="text-base font-semibold leading-snug mt-0.5 group-hover:text-primary transition-colors line-clamp-2">
+                          {link.label}
+                        </h3>
+                      </div>
+                    </Link>
                   ))}
-                </ul>
+                </div>
               </section>
             )}
 
