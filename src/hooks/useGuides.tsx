@@ -22,6 +22,7 @@ export interface Guide {
   cta_final_text: string | null;
   internal_links: Array<{ label: string; url: string }>;
   is_published: boolean;
+  is_published: boolean;
   is_featured: boolean;
   sort_order: number;
   created_at: string;
