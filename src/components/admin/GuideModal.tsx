@@ -210,6 +210,11 @@ export function GuideModal({ open, onClose, onSave, guide }: GuideModalProps) {
   const [sortOrder, setSortOrder] = useState(0);
   const [internalLinks, setInternalLinks] = useState<InternalLink[]>([]);
   const [authorName, setAuthorName] = useState("");
+  const [coverImageUrl, setCoverImageUrl] = useState<string | null>(null);
+  const [coverMode, setCoverMode] = useState<'upload' | 'url'>('upload');
+  const [coverUrlInput, setCoverUrlInput] = useState("");
+  const [coverUploading, setCoverUploading] = useState(false);
+  const coverFileRef = useRef<HTMLInputElement>(null);
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
