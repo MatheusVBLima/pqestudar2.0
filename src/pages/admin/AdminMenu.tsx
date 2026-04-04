@@ -48,6 +48,15 @@ interface NavSettings {
   id: string;
   logo_light_url: string;
   logo_dark_url: string;
+  logo_href?: string;
+  scrolled_width?: string;
+  scrolled_mt?: string;
+  scrolled_px?: string;
+  scrolled_rounded?: string;
+  scrolled_h?: string;
+  default_h?: string;
+  scrolled_bg_opacity?: string;
+  scrolled_backdrop_blur?: string;
 }
 
 // ─── Sortable Row ───
@@ -150,32 +159,65 @@ export default function AdminMenu() {
     },
   });
 
-  // ── Logo form state ──
+  // ── Logo and Appearance form state ──
   const [logoLight, setLogoLight] = useState("");
   const [logoDark, setLogoDark] = useState("");
+  const [logoHref, setLogoHref] = useState("/");
+  const [scrolledWidth, setScrolledWidth] = useState("85%");
+  const [scrolledMt, setScrolledMt] = useState("2");
+  const [scrolledPx, setScrolledPx] = useState("3");
+  const [scrolledRounded, setScrolledRounded] = useState("1.2rem");
+  const [scrolledH, setScrolledH] = useState("14");
+  const [defaultH, setDefaultH] = useState("16");
+  const [scrolledBgOpacity, setScrolledBgOpacity] = useState("75");
+  const [scrolledBackdropBlur, setScrolledBackdropBlur] = useState("md");
+
   useEffect(() => {
     if (settingsQuery.data) {
       setLogoLight(settingsQuery.data.logo_light_url ?? "");
       setLogoDark(settingsQuery.data.logo_dark_url ?? "");
+      setLogoHref(settingsQuery.data.logo_href ?? "/");
+      setScrolledWidth(settingsQuery.data.scrolled_width ?? "85%");
+      setScrolledMt(settingsQuery.data.scrolled_mt ?? "2");
+      setScrolledPx(settingsQuery.data.scrolled_px ?? "3");
+      setScrolledRounded(settingsQuery.data.scrolled_rounded ?? "1.2rem");
+      setScrolledH(settingsQuery.data.scrolled_h ?? "14");
+      setDefaultH(settingsQuery.data.default_h ?? "16");
+      setScrolledBgOpacity(settingsQuery.data.scrolled_bg_opacity ?? "75");
+      setScrolledBackdropBlur(settingsQuery.data.scrolled_backdrop_blur ?? "md");
     }
   }, [settingsQuery.data]);
 
-  const saveLogo = useMutation({
+  const saveSettings = useMutation({
     mutationFn: async () => {
+      const payload = {
+        logo_light_url: logoLight,
+        logo_dark_url: logoDark,
+        logo_href: logoHref,
+        scrolled_width: scrolledWidth,
+        scrolled_mt: scrolledMt,
+        scrolled_px: scrolledPx,
+        scrolled_rounded: scrolledRounded,
+        scrolled_h: scrolledH,
+        default_h: defaultH,
+        scrolled_bg_opacity: scrolledBgOpacity,
+        scrolled_backdrop_blur: scrolledBackdropBlur,
+      } as any;
+
       if (!settingsQuery.data) {
-        const { error } = await supabase.from("nav_settings").insert({ logo_light_url: logoLight, logo_dark_url: logoDark } as any);
+        const { error } = await supabase.from("nav_settings").insert(payload);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from("nav_settings").update({ logo_light_url: logoLight, logo_dark_url: logoDark } as any).eq("id", settingsQuery.data.id);
+        const { error } = await supabase.from("nav_settings").update(payload).eq("id", settingsQuery.data.id);
         if (error) throw error;
       }
     },
     onSuccess: () => {
-      toast.success("Logos atualizadas!");
+      toast.success("Configurações atualizadas!");
       qc.invalidateQueries({ queryKey: ["admin-nav-settings"] });
       qc.invalidateQueries({ queryKey: ["nav-settings-public"] });
     },
-    onError: (e: any) => toast.error(e.message ?? "Erro ao salvar logos"),
+    onError: (e: any) => toast.error(e.message ?? "Erro ao salvar configurações"),
   });
 
   // ── Items state ──
@@ -322,15 +364,15 @@ export default function AdminMenu() {
       ) : (
         <Tabs defaultValue="logo" className="space-y-4">
           <TabsList>
-            <TabsTrigger value="logo"><Image className="h-4 w-4 mr-1.5" />Logo</TabsTrigger>
+            <TabsTrigger value="logo"><Image className="h-4 w-4 mr-1.5" />Aparência</TabsTrigger>
             <TabsTrigger value="items"><GripVertical className="h-4 w-4 mr-1.5" />Itens</TabsTrigger>
           </TabsList>
-
-          {/* ── Logo Tab ── */}
+ 
+          {/* ── Appearance Tab ── */}
           <TabsContent value="logo">
             <Card>
-              <CardHeader><CardTitle className="text-lg">Configuração de Logo</CardTitle></CardHeader>
-              <CardContent className="space-y-4">
+              <CardHeader><CardTitle className="text-lg">Configuração de Logo e Estilo</CardTitle></CardHeader>
+              <CardContent className="space-y-6">
                 <div className="grid sm:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <Label>Logo Light (URL)</Label>
@@ -350,10 +392,53 @@ export default function AdminMenu() {
                       </div>
                     )}
                   </div>
+                  <div className="space-y-2">
+                    <Label>Logo Href</Label>
+                    <Input value={logoHref} onChange={(e) => setLogoHref(e.target.value)} placeholder="/" />
+                  </div>
                 </div>
-                <Button onClick={() => saveLogo.mutate()} disabled={saveLogo.isPending}>
+
+                <div className="border-t pt-6">
+                  <h3 className="text-sm font-medium mb-4">Estilo do Navbar (Scroll)</h3>
+                  <div className="grid sm:grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <Label>Largura Scrolled</Label>
+                      <Input value={scrolledWidth} onChange={(e) => setScrolledWidth(e.target.value)} placeholder="85%" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Margem Superior (mt-X)</Label>
+                      <Input value={scrolledMt} onChange={(e) => setScrolledMt(e.target.value)} placeholder="2" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Padding Horizontal (px-X)</Label>
+                      <Input value={scrolledPx} onChange={(e) => setScrolledPx(e.target.value)} placeholder="3" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Arredondamento (rem/px)</Label>
+                      <Input value={scrolledRounded} onChange={(e) => setScrolledRounded(e.target.value)} placeholder="1.2rem" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Altura Scrolled (h-X)</Label>
+                      <Input value={scrolledH} onChange={(e) => setScrolledH(e.target.value)} placeholder="14" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Altura Padrão (h-X)</Label>
+                      <Input value={defaultH} onChange={(e) => setDefaultH(e.target.value)} placeholder="16" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Opacidade Fundo (X/100)</Label>
+                      <Input value={scrolledBgOpacity} onChange={(e) => setScrolledBgOpacity(e.target.value)} placeholder="75" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Desfoque (backdrop-blur-X)</Label>
+                      <Input value={scrolledBackdropBlur} onChange={(e) => setScrolledBackdropBlur(e.target.value)} placeholder="md" />
+                    </div>
+                  </div>
+                </div>
+
+                <Button onClick={() => saveSettings.mutate()} disabled={saveSettings.isPending}>
                   <Save className="h-4 w-4 mr-1.5" />
-                  {saveLogo.isPending ? "Salvando..." : "Salvar Logos"}
+                  {saveSettings.isPending ? "Salvando..." : "Salvar Configurações"}
                 </Button>
               </CardContent>
             </Card>
