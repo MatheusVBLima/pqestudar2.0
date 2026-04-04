@@ -35,6 +35,7 @@ const navLinksBottom = [
 ];
 
 export function Footer() {
+  const { logos } = useNavConfig();
   return (
     <footer className="border-t border-border bg-background mt-16 w-full">
       <div className="container mx-auto max-w-7xl px-4 py-8">
