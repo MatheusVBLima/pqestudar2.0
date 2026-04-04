@@ -117,7 +117,7 @@ export function Navbar() {
           {/* LEFT BLOCK: Logo + Navigation (Desktop) */}
           <div className="flex items-center gap-1">
             <button
-              onClick={() => handleNavigation("/")}
+              onClick={() => handleNavigation(settings.logo_href || "/")}
               className="flex items-center p-2 hover:opacity-80 transition-opacity duration-200 mr-2"
               aria-label="Ir para a página inicial"
             >
