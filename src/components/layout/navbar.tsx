@@ -107,12 +107,12 @@ export function Navbar() {
       <nav className={cn(
         "mx-auto transition-all duration-300 ease-out",
         isScrolled
-          ? "w-[85%] mt-2 px-3 rounded-[1.2rem] border border-border/40 bg-background/75 backdrop-blur-md shadow-sm"
+          ? `w-[${settings.scrolled_width || '85%'}] mt-${settings.scrolled_mt || '2'} px-${settings.scrolled_px || '3'} rounded-[${settings.scrolled_rounded || '1.2rem'}] border border-border/40 bg-background/${settings.scrolled_bg_opacity || '75'} backdrop-blur-${settings.scrolled_backdrop_blur || 'md'} shadow-sm`
           : "w-full bg-background border-b border-border/40"
       )}>
         <div className={cn(
           "flex items-center justify-between transition-all duration-300 ease-out px-4",
-          isScrolled ? "h-14" : "h-16"
+          isScrolled ? `h-${settings.scrolled_h || '14'}` : `h-${settings.default_h || '16'}`
         )}>
           {/* LEFT BLOCK: Logo + Navigation (Desktop) */}
           <div className="flex items-center gap-1">
