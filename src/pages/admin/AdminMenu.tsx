@@ -364,14 +364,14 @@ export default function AdminMenu() {
       ) : (
         <Tabs defaultValue="logo" className="space-y-4">
           <TabsList>
-            <TabsTrigger value="logo"><Image className="h-4 w-4 mr-1.5" />Logo</TabsTrigger>
+            <TabsTrigger value="logo"><Image className="h-4 w-4 mr-1.5" />Aparência</TabsTrigger>
             <TabsTrigger value="items"><GripVertical className="h-4 w-4 mr-1.5" />Itens</TabsTrigger>
           </TabsList>
-
-          {/* ── Logo Tab ── */}
+ 
+          {/* ── Appearance Tab ── */}
           <TabsContent value="logo">
             <Card>
-              <CardHeader><CardTitle className="text-lg">Configuração de Logo</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-lg">Configuração de Logo e Estilo</CardTitle></CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid sm:grid-cols-2 gap-6">
                   <div className="space-y-2">
