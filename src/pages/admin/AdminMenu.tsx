@@ -48,6 +48,15 @@ interface NavSettings {
   id: string;
   logo_light_url: string;
   logo_dark_url: string;
+  logo_href?: string;
+  scrolled_width?: string;
+  scrolled_mt?: string;
+  scrolled_px?: string;
+  scrolled_rounded?: string;
+  scrolled_h?: string;
+  default_h?: string;
+  scrolled_bg_opacity?: string;
+  scrolled_backdrop_blur?: string;
 }
 
 // ─── Sortable Row ───
