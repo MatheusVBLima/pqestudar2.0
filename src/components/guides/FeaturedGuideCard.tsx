@@ -57,8 +57,17 @@ export function FeaturedGuideCard({
       >
         <div className="flex flex-col md:flex-row">
           {/* Thumbnail */}
-          <div className="md:w-2/5 bg-accent flex items-center justify-center min-h-[200px] md:min-h-[260px]">
-            <BookOpen className="h-16 w-16 text-primary/30" />
+          <div className="md:w-2/5 bg-accent flex items-center justify-center min-h-[200px] md:min-h-[260px] overflow-hidden">
+            {(guide as any).cover_image_url ? (
+              <img
+                src={(guide as any).cover_image_url}
+                alt={guide.title}
+                className="w-full h-full object-cover"
+                referrerPolicy="no-referrer"
+              />
+            ) : (
+              <BookOpen className="h-16 w-16 text-primary/30" />
+            )}
           </div>
 
           {/* Content */}
