@@ -93,8 +93,8 @@ export function Footer() {
           {/* Top row: logo + socials */}
           <div className="flex items-center justify-between mb-8">
             <Link to="/" aria-label="Ir para a página inicial">
-              <img src={logoLight} alt="PqEstudar" className="h-11 block dark:hidden" />
-              <img src={logoDark} alt="PqEstudar" className="h-11 hidden dark:block" />
+              <img src={logos.light} alt="PqEstudar" className="h-11 block dark:hidden" />
+              <img src={logos.dark} alt="PqEstudar" className="h-11 hidden dark:block" />
             </Link>
 
             <div className="flex items-center gap-3">
