@@ -333,6 +333,7 @@ export function GuideModal({ open, onClose, onSave, guide }: GuideModalProps) {
       (payload as any).cta_final_text = ctaFinalText.trim() || null;
       (payload as any).internal_links = validLinks;
       (payload as any).author_name = authorName.trim() || "Equipe PqEstudar";
+      (payload as any).cover_image_url = coverImageUrl || null;
       if (guide) payload.id = guide.id;
       await onSave(payload);
       onClose();
