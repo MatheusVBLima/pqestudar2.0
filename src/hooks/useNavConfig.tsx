@@ -121,6 +121,7 @@ export function useNavConfig() {
   return {
     items,
     logos: { light: resolvedLogoLight, dark: resolvedLogoDark },
+    settings,
     loading: !ready,
     error: itemsQuery.error || settingsQuery.error,
   };
