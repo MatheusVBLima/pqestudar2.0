@@ -159,32 +159,65 @@ export default function AdminMenu() {
     },
   });
 
-  // ── Logo form state ──
+  // ── Logo and Appearance form state ──
   const [logoLight, setLogoLight] = useState("");
   const [logoDark, setLogoDark] = useState("");
+  const [logoHref, setLogoHref] = useState("/");
+  const [scrolledWidth, setScrolledWidth] = useState("85%");
+  const [scrolledMt, setScrolledMt] = useState("2");
+  const [scrolledPx, setScrolledPx] = useState("3");
+  const [scrolledRounded, setScrolledRounded] = useState("1.2rem");
+  const [scrolledH, setScrolledH] = useState("14");
+  const [defaultH, setDefaultH] = useState("16");
+  const [scrolledBgOpacity, setScrolledBgOpacity] = useState("75");
+  const [scrolledBackdropBlur, setScrolledBackdropBlur] = useState("md");
+
   useEffect(() => {
     if (settingsQuery.data) {
       setLogoLight(settingsQuery.data.logo_light_url ?? "");
       setLogoDark(settingsQuery.data.logo_dark_url ?? "");
+      setLogoHref(settingsQuery.data.logo_href ?? "/");
+      setScrolledWidth(settingsQuery.data.scrolled_width ?? "85%");
+      setScrolledMt(settingsQuery.data.scrolled_mt ?? "2");
+      setScrolledPx(settingsQuery.data.scrolled_px ?? "3");
+      setScrolledRounded(settingsQuery.data.scrolled_rounded ?? "1.2rem");
+      setScrolledH(settingsQuery.data.scrolled_h ?? "14");
+      setDefaultH(settingsQuery.data.default_h ?? "16");
+      setScrolledBgOpacity(settingsQuery.data.scrolled_bg_opacity ?? "75");
+      setScrolledBackdropBlur(settingsQuery.data.scrolled_backdrop_blur ?? "md");
     }
   }, [settingsQuery.data]);
 
-  const saveLogo = useMutation({
+  const saveSettings = useMutation({
     mutationFn: async () => {
+      const payload = {
+        logo_light_url: logoLight,
+        logo_dark_url: logoDark,
+        logo_href: logoHref,
+        scrolled_width: scrolledWidth,
+        scrolled_mt: scrolledMt,
+        scrolled_px: scrolledPx,
+        scrolled_rounded: scrolledRounded,
+        scrolled_h: scrolledH,
+        default_h: defaultH,
+        scrolled_bg_opacity: scrolledBgOpacity,
+        scrolled_backdrop_blur: scrolledBackdropBlur,
+      } as any;
+
       if (!settingsQuery.data) {
-        const { error } = await supabase.from("nav_settings").insert({ logo_light_url: logoLight, logo_dark_url: logoDark } as any);
+        const { error } = await supabase.from("nav_settings").insert(payload);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from("nav_settings").update({ logo_light_url: logoLight, logo_dark_url: logoDark } as any).eq("id", settingsQuery.data.id);
+        const { error } = await supabase.from("nav_settings").update(payload).eq("id", settingsQuery.data.id);
         if (error) throw error;
       }
     },
     onSuccess: () => {
-      toast.success("Logos atualizadas!");
+      toast.success("Configurações atualizadas!");
       qc.invalidateQueries({ queryKey: ["admin-nav-settings"] });
       qc.invalidateQueries({ queryKey: ["nav-settings-public"] });
     },
-    onError: (e: any) => toast.error(e.message ?? "Erro ao salvar logos"),
+    onError: (e: any) => toast.error(e.message ?? "Erro ao salvar configurações"),
   });
 
   // ── Items state ──
