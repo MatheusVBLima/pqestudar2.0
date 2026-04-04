@@ -45,7 +45,7 @@ export function Navbar() {
   const { isAdmin } = useUserRoles();
   const { isActive } = useSubscription();
   const { isDark, toggleTheme } = useTheme();
-  const { items: navItems, logos, loading: navLoading } = useNavConfig();
+  const { items: navItems, logos, settings, loading: navLoading } = useNavConfig();
   const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
