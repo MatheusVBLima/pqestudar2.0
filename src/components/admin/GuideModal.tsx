@@ -243,6 +243,9 @@ export function GuideModal({ open, onClose, onSave, guide }: GuideModalProps) {
       setIsFeatured(guide.is_featured);
       setSortOrder(guide.sort_order);
       setAuthorName((guide as any).author_name || "");
+      setCoverImageUrl((guide as any).cover_image_url || null);
+      setCoverUrlInput((guide as any).cover_image_url || "");
+      setCoverMode('upload');
       // Load links with image fields
       const rawLinks = Array.isArray((guide as any).internal_links) ? (guide as any).internal_links : [];
       setInternalLinks(rawLinks.map((l: any) => ({
@@ -261,6 +264,7 @@ export function GuideModal({ open, onClose, onSave, guide }: GuideModalProps) {
       setCtaFinalLabel(""); setCtaFinalUrl(""); setCtaFinalText("");
       setIsPublished(false); setIsFeatured(false); setSortOrder(0);
       setAuthorName("");
+      setCoverImageUrl(null); setCoverUrlInput(""); setCoverMode('upload');
       setInternalLinks([]);
     }
     setErrors({});
