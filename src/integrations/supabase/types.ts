@@ -1092,6 +1092,7 @@ export type Database = {
           author_name: string
           category: string
           content_markdown: string
+          cover_image_url: string | null
           created_at: string
           cta_final_label: string | null
           cta_final_text: string | null
@@ -1119,6 +1120,7 @@ export type Database = {
           author_name?: string
           category: string
           content_markdown?: string
+          cover_image_url?: string | null
           created_at?: string
           cta_final_label?: string | null
           cta_final_text?: string | null
@@ -1146,6 +1148,7 @@ export type Database = {
           author_name?: string
           category?: string
           content_markdown?: string
+          cover_image_url?: string | null
           created_at?: string
           cta_final_label?: string | null
           cta_final_text?: string | null

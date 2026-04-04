@@ -210,6 +210,11 @@ export function GuideModal({ open, onClose, onSave, guide }: GuideModalProps) {
   const [sortOrder, setSortOrder] = useState(0);
   const [internalLinks, setInternalLinks] = useState<InternalLink[]>([]);
   const [authorName, setAuthorName] = useState("");
+  const [coverImageUrl, setCoverImageUrl] = useState<string | null>(null);
+  const [coverMode, setCoverMode] = useState<'upload' | 'url'>('upload');
+  const [coverUrlInput, setCoverUrlInput] = useState("");
+  const [coverUploading, setCoverUploading] = useState(false);
+  const coverFileRef = useRef<HTMLInputElement>(null);
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -238,6 +243,9 @@ export function GuideModal({ open, onClose, onSave, guide }: GuideModalProps) {
       setIsFeatured(guide.is_featured);
       setSortOrder(guide.sort_order);
       setAuthorName((guide as any).author_name || "");
+      setCoverImageUrl((guide as any).cover_image_url || null);
+      setCoverUrlInput((guide as any).cover_image_url || "");
+      setCoverMode('upload');
       // Load links with image fields
       const rawLinks = Array.isArray((guide as any).internal_links) ? (guide as any).internal_links : [];
       setInternalLinks(rawLinks.map((l: any) => ({
@@ -256,6 +264,7 @@ export function GuideModal({ open, onClose, onSave, guide }: GuideModalProps) {
       setCtaFinalLabel(""); setCtaFinalUrl(""); setCtaFinalText("");
       setIsPublished(false); setIsFeatured(false); setSortOrder(0);
       setAuthorName("");
+      setCoverImageUrl(null); setCoverUrlInput(""); setCoverMode('upload');
       setInternalLinks([]);
     }
     setErrors({});
@@ -324,6 +333,7 @@ export function GuideModal({ open, onClose, onSave, guide }: GuideModalProps) {
       (payload as any).cta_final_text = ctaFinalText.trim() || null;
       (payload as any).internal_links = validLinks;
       (payload as any).author_name = authorName.trim() || "Equipe PqEstudar";
+      (payload as any).cover_image_url = coverImageUrl || null;
       if (guide) payload.id = guide.id;
       await onSave(payload);
       onClose();
@@ -357,6 +367,120 @@ export function GuideModal({ open, onClose, onSave, guide }: GuideModalProps) {
           </TabsList>
 
           <TabsContent value="basic" className="space-y-4 mt-4">
+            {/* Cover Image */}
+            <div>
+              <Label className="flex items-center gap-1.5 mb-2">
+                <ImageIcon className="h-4 w-4" /> Imagem de capa (opcional)
+              </Label>
+              {coverImageUrl ? (
+                <div className="space-y-2">
+                  <div className="relative w-full aspect-video rounded-lg overflow-hidden border border-border bg-accent">
+                    <img
+                      src={coverImageUrl}
+                      alt="Capa do guia"
+                      className="w-full h-full object-cover"
+                      referrerPolicy="no-referrer"
+                    />
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="text-destructive"
+                    onClick={() => { setCoverImageUrl(null); setCoverUrlInput(""); }}
+                  >
+                    <X className="h-3.5 w-3.5 mr-1" /> Remover imagem
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <div className="flex gap-1">
+                    <Button
+                      variant={coverMode === 'upload' ? 'default' : 'outline'}
+                      size="sm"
+                      type="button"
+                      className="h-8 text-xs"
+                      onClick={() => setCoverMode('upload')}
+                    >
+                      <Upload className="h-3.5 w-3.5 mr-1" /> Upload
+                    </Button>
+                    <Button
+                      variant={coverMode === 'url' ? 'default' : 'outline'}
+                      size="sm"
+                      type="button"
+                      className="h-8 text-xs"
+                      onClick={() => setCoverMode('url')}
+                    >
+                      <Link2 className="h-3.5 w-3.5 mr-1" /> URL
+                    </Button>
+                  </div>
+
+                  {coverMode === 'upload' ? (
+                    <div>
+                      <input
+                        ref={coverFileRef}
+                        type="file"
+                        accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                        className="text-sm file:mr-2 file:py-1.5 file:px-4 file:rounded-md file:border-0 file:text-sm file:bg-primary/10 file:text-primary hover:file:bg-primary/20"
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          if (file.size > 2 * 1024 * 1024) {
+                            toast({ title: "Arquivo muito grande", description: "Máximo 2MB", variant: "destructive" });
+                            return;
+                          }
+                          const allowed = ['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml'];
+                          if (!allowed.includes(file.type)) {
+                            toast({ title: "Formato não suportado", description: "Use PNG, JPG, WEBP ou SVG", variant: "destructive" });
+                            return;
+                          }
+                          setCoverUploading(true);
+                          try {
+                            const ext = file.name.split('.').pop() || 'png';
+                            const id = guide?.id || 'new';
+                            const path = `${id}/${Date.now()}.${ext}`;
+                            const { error: uploadError } = await supabase.storage
+                              .from('guide-covers')
+                              .upload(path, file, { upsert: false });
+                            if (uploadError) throw uploadError;
+                            const { data: publicData } = supabase.storage
+                              .from('guide-covers')
+                              .getPublicUrl(path);
+                            setCoverImageUrl(publicData.publicUrl);
+                          } catch (err: any) {
+                            toast({ title: "Erro no upload", description: err.message, variant: "destructive" });
+                          } finally {
+                            setCoverUploading(false);
+                            if (coverFileRef.current) coverFileRef.current.value = '';
+                          }
+                        }}
+                        disabled={coverUploading}
+                      />
+                      {coverUploading && <p className="text-xs text-muted-foreground mt-1">Enviando...</p>}
+                    </div>
+                  ) : (
+                    <div className="flex gap-2">
+                      <Input
+                        value={coverUrlInput}
+                        onChange={e => setCoverUrlInput(e.target.value)}
+                        placeholder="https://..."
+                        className="h-9"
+                      />
+                      <Button
+                        size="sm"
+                        className="h-9"
+                        type="button"
+                        onClick={() => { if (coverUrlInput.trim()) setCoverImageUrl(coverUrlInput.trim()); }}
+                        disabled={!coverUrlInput.trim()}
+                      >
+                        OK
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+            <Separator />
             <div>
               <Label>Título *</Label>
               <Input value={title} onChange={e => setTitle(e.target.value)} placeholder="Título do guia" />

@@ -25,6 +25,7 @@ export interface Guide {
   is_featured: boolean;
   sort_order: number;
   author_name: string;
+  cover_image_url: string | null;
   created_at: string;
   updated_at: string;
 }

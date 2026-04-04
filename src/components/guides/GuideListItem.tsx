@@ -47,8 +47,17 @@ export function GuideListItem({
       onClick={handleClick}
     >
       {/* Thumbnail */}
-      <div className="w-20 h-20 sm:w-28 sm:h-24 shrink-0 rounded-lg bg-accent flex items-center justify-center">
-        <BookOpen className="h-7 w-7 text-primary/40" />
+      <div className="w-20 h-20 sm:w-28 sm:h-24 shrink-0 rounded-lg bg-accent flex items-center justify-center overflow-hidden">
+        {(guide as any).cover_image_url ? (
+          <img
+            src={(guide as any).cover_image_url}
+            alt={guide.title}
+            className="w-full h-full object-cover"
+            referrerPolicy="no-referrer"
+          />
+        ) : (
+          <BookOpen className="h-7 w-7 text-primary/40" />
+        )}
       </div>
 
       {/* Content */}
