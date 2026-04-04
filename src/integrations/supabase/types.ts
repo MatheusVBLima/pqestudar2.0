@@ -1414,51 +1414,21 @@ export type Database = {
       }
       nav_settings: {
         Row: {
-          default_h: string | null
           id: string
           logo_dark_url: string
-          logo_href: string | null
           logo_light_url: string
-          scrolled_backdrop_blur: string | null
-          scrolled_bg_opacity: string | null
-          scrolled_h: string | null
-          scrolled_mt: string | null
-          scrolled_px: string | null
-          scrolled_rounded: string | null
-          scrolled_width: string | null
-          social_links: Json | null
           updated_at: string
         }
         Insert: {
-          default_h?: string | null
           id?: string
           logo_dark_url?: string
-          logo_href?: string | null
           logo_light_url?: string
-          scrolled_backdrop_blur?: string | null
-          scrolled_bg_opacity?: string | null
-          scrolled_h?: string | null
-          scrolled_mt?: string | null
-          scrolled_px?: string | null
-          scrolled_rounded?: string | null
-          scrolled_width?: string | null
-          social_links?: Json | null
           updated_at?: string
         }
         Update: {
-          default_h?: string | null
           id?: string
           logo_dark_url?: string
-          logo_href?: string | null
           logo_light_url?: string
-          scrolled_backdrop_blur?: string | null
-          scrolled_bg_opacity?: string | null
-          scrolled_h?: string | null
-          scrolled_mt?: string | null
-          scrolled_px?: string | null
-          scrolled_rounded?: string | null
-          scrolled_width?: string | null
-          social_links?: Json | null
           updated_at?: string
         }
         Relationships: []
@@ -3115,19 +3085,9 @@ export type Database = {
       }
       nav_settings_public: {
         Row: {
-          default_h: string | null
           id: string | null
           logo_dark_url: string | null
-          logo_href: string | null
           logo_light_url: string | null
-          scrolled_backdrop_blur: string | null
-          scrolled_bg_opacity: string | null
-          scrolled_h: string | null
-          scrolled_mt: string | null
-          scrolled_px: string | null
-          scrolled_rounded: string | null
-          scrolled_width: string | null
-          social_links: Json | null
         }
         Relationships: []
       }

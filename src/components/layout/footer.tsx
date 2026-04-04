@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { Instagram, Youtube, Facebook } from "lucide-react";
-import { useNavConfig } from "@/hooks/useNavConfig";
+import logoLight from "@/assets/logo-light.png";
+import logoDark from "@/assets/logo-dark.png";
 
 const ThreadsIcon = ({ className }: { className?: string }) => (
   <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
@@ -35,7 +36,6 @@ const navLinksBottom = [
 ];
 
 export function Footer() {
-  const { logos } = useNavConfig();
   return (
     <footer className="border-t border-border bg-background mt-16 w-full">
       <div className="container mx-auto max-w-7xl px-4 py-8">
@@ -45,8 +45,8 @@ export function Footer() {
           {/* Logo + Socials on same line */}
           <div className="flex items-center justify-between">
             <Link to="/" aria-label="Ir para a página inicial">
-              <img src={logos.light} alt="PqEstudar" className="h-8 block dark:hidden" />
-              <img src={logos.dark} alt="PqEstudar" className="h-8 hidden dark:block" />
+              <img src={logoLight} alt="PqEstudar" className="h-8 block dark:hidden" />
+              <img src={logoDark} alt="PqEstudar" className="h-8 hidden dark:block" />
             </Link>
             <div className="flex items-center gap-3">
               {socialLinks.map((s) => (
@@ -93,8 +93,8 @@ export function Footer() {
           {/* Top row: logo + socials */}
           <div className="flex items-center justify-between mb-8">
             <Link to="/" aria-label="Ir para a página inicial">
-              <img src={logos.light} alt="PqEstudar" className="h-11 block dark:hidden" />
-              <img src={logos.dark} alt="PqEstudar" className="h-11 hidden dark:block" />
+              <img src={logoLight} alt="PqEstudar" className="h-11 block dark:hidden" />
+              <img src={logoDark} alt="PqEstudar" className="h-11 hidden dark:block" />
             </Link>
 
             <div className="flex items-center gap-3">
