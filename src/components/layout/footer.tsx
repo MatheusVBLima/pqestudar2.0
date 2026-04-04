@@ -45,8 +45,8 @@ export function Footer() {
           {/* Logo + Socials on same line */}
           <div className="flex items-center justify-between">
             <Link to="/" aria-label="Ir para a página inicial">
-              <img src={logoLight} alt="PqEstudar" className="h-8 block dark:hidden" />
-              <img src={logoDark} alt="PqEstudar" className="h-8 hidden dark:block" />
+              <img src={logos.light} alt="PqEstudar" className="h-8 block dark:hidden" />
+              <img src={logos.dark} alt="PqEstudar" className="h-8 hidden dark:block" />
             </Link>
             <div className="flex items-center gap-3">
               {socialLinks.map((s) => (
