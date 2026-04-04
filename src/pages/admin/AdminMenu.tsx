@@ -372,7 +372,7 @@ export default function AdminMenu() {
           <TabsContent value="logo">
             <Card>
               <CardHeader><CardTitle className="text-lg">Configuração de Logo e Estilo</CardTitle></CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-6">
                 <div className="grid sm:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <Label>Logo Light (URL)</Label>
@@ -392,10 +392,53 @@ export default function AdminMenu() {
                       </div>
                     )}
                   </div>
+                  <div className="space-y-2">
+                    <Label>Logo Href</Label>
+                    <Input value={logoHref} onChange={(e) => setLogoHref(e.target.value)} placeholder="/" />
+                  </div>
                 </div>
-                <Button onClick={() => saveLogo.mutate()} disabled={saveLogo.isPending}>
+
+                <div className="border-t pt-6">
+                  <h3 className="text-sm font-medium mb-4">Estilo do Navbar (Scroll)</h3>
+                  <div className="grid sm:grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <Label>Largura Scrolled</Label>
+                      <Input value={scrolledWidth} onChange={(e) => setScrolledWidth(e.target.value)} placeholder="85%" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Margem Superior (mt-X)</Label>
+                      <Input value={scrolledMt} onChange={(e) => setScrolledMt(e.target.value)} placeholder="2" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Padding Horizontal (px-X)</Label>
+                      <Input value={scrolledPx} onChange={(e) => setScrolledPx(e.target.value)} placeholder="3" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Arredondamento (rem/px)</Label>
+                      <Input value={scrolledRounded} onChange={(e) => setScrolledRounded(e.target.value)} placeholder="1.2rem" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Altura Scrolled (h-X)</Label>
+                      <Input value={scrolledH} onChange={(e) => setScrolledH(e.target.value)} placeholder="14" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Altura Padrão (h-X)</Label>
+                      <Input value={defaultH} onChange={(e) => setDefaultH(e.target.value)} placeholder="16" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Opacidade Fundo (X/100)</Label>
+                      <Input value={scrolledBgOpacity} onChange={(e) => setScrolledBgOpacity(e.target.value)} placeholder="75" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Desfoque (backdrop-blur-X)</Label>
+                      <Input value={scrolledBackdropBlur} onChange={(e) => setScrolledBackdropBlur(e.target.value)} placeholder="md" />
+                    </div>
+                  </div>
+                </div>
+
+                <Button onClick={() => saveSettings.mutate()} disabled={saveSettings.isPending}>
                   <Save className="h-4 w-4 mr-1.5" />
-                  {saveLogo.isPending ? "Salvando..." : "Salvar Logos"}
+                  {saveSettings.isPending ? "Salvando..." : "Salvar Configurações"}
                 </Button>
               </CardContent>
             </Card>
