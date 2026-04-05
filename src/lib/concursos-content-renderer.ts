@@ -3,8 +3,8 @@
  * Provides parity between preview (admin) and public rendering.
  * 
  * Pipeline:
- * 1. Detect if content is HTML or Markdown
- * 2. If Markdown → convert to HTML using markdown-it with GFM tables (html:false, linkify:true)
+ * 1. Detect legacy HTML-only content vs Markdown/mixed content
+ * 2. Parse Markdown with HTML support enabled to preserve inline tags in mixed content
  * 3. Sanitize with sanitize-html (whitelist approach)
  * 4. Wrap tables for responsive scroll
  * 5. Return safe HTML for dangerouslySetInnerHTML
@@ -15,7 +15,7 @@ import sanitizeHtmlLib from "sanitize-html";
 
 // Configure markdown-it with GFM tables enabled (built-in)
 const md = new MarkdownIt({
-  html: false,        // Disable raw HTML input for security
+  html: true,         // Allow inline/block HTML, sanitize afterwards
   linkify: true,      // Auto-convert URLs to links
   breaks: true,       // Convert \n to <br>
   typographer: false, // Disable smart quotes/dashes
@@ -141,7 +141,30 @@ function hasSignificantHtml(content: string): boolean {
 }
 
 /**
- * Convert Markdown to HTML using markdown-it (GFM tables enabled by default)
+ * Detect Markdown syntax so mixed HTML + Markdown content is parsed correctly.
+ */
+function hasMarkdownSyntax(content: string): boolean {
+  if (!content) return false;
+
+  return (
+    /(^|\n)\s{0,3}(#{1,6}\s|[-*+]\s|\d+\.\s|>\s|```|~~~)/m.test(content) ||
+    /(^|\n)\s*\|.+\|\s*$/m.test(content) ||
+    /\[[^\]]+\]\([^)]+\)/.test(content) ||
+    /\*\*[^*]+\*\*|__[^_]+__|`[^`]+`/.test(content) ||
+    /(^|\n)\s*---+\s*($|\n)/m.test(content)
+  );
+}
+
+/**
+ * Detect content that is already an HTML fragment/document and does not need Markdown parsing.
+ */
+function isLegacyHtmlOnly(content: string): boolean {
+  if (!content) return false;
+  return /^\s*</.test(content) && hasSignificantHtml(content) && !hasMarkdownSyntax(content);
+}
+
+/**
+ * Convert Markdown (and mixed Markdown + inline HTML) to HTML.
  */
 function markdownToHtml(markdown: string): string {
   if (!markdown) return "";
@@ -173,10 +196,10 @@ function wrapTablesForResponsive(html: string): string {
 
 /**
  * Main render function for /concursos rich content.
- * Unified function that handles both legacy HTML and Markdown content.
+ * Unified function that handles legacy HTML, Markdown, and mixed HTML + Markdown content.
  * 
- * - If content starts with < (HTML) → sanitize only
- * - If content is Markdown → convert to HTML then sanitize
+ * - If content is legacy HTML-only → sanitize only
+ * - Otherwise → parse as Markdown with HTML support, then sanitize
  * - Wrap tables for responsive scroll
  * 
  * @param content The raw content (HTML or Markdown)
@@ -188,16 +211,9 @@ export function renderRichContentConcursos(content: string | null | undefined): 
   const trimmed = content.trim();
   if (!trimmed) return "";
   
-  let html: string;
-  
-  // Detect if content is already HTML (starts with < or has significant HTML tags)
-  if (trimmed.startsWith("<") || hasSignificantHtml(trimmed)) {
-    // Already HTML - just sanitize for compatibility with legacy records
-    html = sanitize(trimmed);
-  } else {
-    // Markdown content - convert then sanitize
-    html = sanitize(markdownToHtml(trimmed));
-  }
+  const html = isLegacyHtmlOnly(trimmed)
+    ? sanitize(trimmed)
+    : sanitize(markdownToHtml(trimmed));
   
   // Wrap tables for responsive scroll
   return wrapTablesForResponsive(html);
