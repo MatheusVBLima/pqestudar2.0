@@ -220,6 +220,19 @@ export function renderRichContentConcursos(content: string | null | undefined): 
 }
 
 /**
+ * Render content that is known to be Markdown (e.g. guides content_markdown).
+ * Always runs through markdown-it regardless of HTML detection heuristics.
+ * This prevents the legacy-HTML detector from skipping Markdown parsing.
+ */
+export function renderMarkdownContent(content: string | null | undefined): string {
+  if (!content) return "";
+  const trimmed = content.trim();
+  if (!trimmed) return "";
+  const html = sanitize(markdownToHtml(trimmed));
+  return wrapTablesForResponsive(html);
+}
+
+/**
  * Alias for renderRichContentConcursos - unified entry point
  */
 export function renderContentUnified(content: string | null | undefined): string {

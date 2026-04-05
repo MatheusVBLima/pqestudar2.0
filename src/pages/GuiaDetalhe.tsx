@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft, ExternalLink, Star, BookOpen, Wrench, FileText } from "lucide-react";
 import { useGuideBySlug, useGuideRelatedTools, useGuideRelatedContests, useGuideRelatedGuides } from "@/hooks/useGuides";
-import { renderRichContentConcursos } from "@/lib/concursos-content-renderer";
+import { renderMarkdownContent } from "@/lib/concursos-content-renderer";
 import { MostReadGuides } from "@/components/guides/MostReadGuides";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
@@ -23,7 +23,7 @@ function CtaBlock({ label, url, text }: { label?: string | null; url?: string | 
       {text && (
         <div
           className="text-sm text-muted-foreground leading-relaxed prose prose-sm dark:prose-invert max-w-none [&>ul]:list-disc [&>ul]:pl-5 [&>ol]:list-decimal [&>ol]:pl-5 [&>p]:mb-2"
-          dangerouslySetInnerHTML={{ __html: renderRichContentConcursos(text) }}
+          dangerouslySetInnerHTML={{ __html: renderMarkdownContent(text) }}
         />
       )}
       <Button asChild size="lg">
@@ -144,7 +144,7 @@ export default function GuiaDetalhe() {
   const ctaFinalText = guide.cta_final_text || null;
 
   const hasMiddleCta = !!(guide.cta_middle_label && guide.cta_middle_url);
-  const fullHtml = renderRichContentConcursos(guide.content_markdown);
+  const fullHtml = renderMarkdownContent(guide.content_markdown);
 
   let contentFirstHalf = fullHtml;
   let contentSecondHalf = "";
