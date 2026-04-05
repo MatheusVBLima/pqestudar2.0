@@ -9,7 +9,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import MarkdownEditor, { htmlToMarkdown } from "@/components/admin/MarkdownEditor";
 import { Guide } from "@/hooks/useGuides";
-import { Plus, Trash2, Upload, Link2, X, ImageIcon } from "lucide-react";
+import { Plus, Trash2, Upload, Link2, X, ImageIcon, Copy, Check } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
@@ -183,6 +184,51 @@ function LinkImageField({
           )}
         </>
       )}
+    </div>
+  );
+}
+
+// ---------- Internal Code Field ----------
+function InternalCodeField({ code }: { code?: string }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    if (!code) return;
+    navigator.clipboard.writeText(code);
+    setCopied(true);
+    toast({ title: "Código copiado" });
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div>
+      <Label className="text-xs text-muted-foreground mb-1.5 block">Código interno</Label>
+      <div className="flex items-center gap-2">
+        <Input
+          value={code || "—"}
+          readOnly
+          disabled
+          className="font-mono text-sm tracking-wider max-w-[180px]"
+        />
+        {code && (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  className="h-9 w-9 shrink-0"
+                  onClick={handleCopy}
+                >
+                  {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Copiar código</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        )}
+      </div>
     </div>
   );
 }
@@ -367,6 +413,11 @@ export function GuideModal({ open, onClose, onSave, guide }: GuideModalProps) {
           </TabsList>
 
           <TabsContent value="basic" className="space-y-4 mt-4">
+            {/* Internal Code (read-only) */}
+            {guide && (
+              <InternalCodeField code={(guide as any).internal_code} />
+            )}
+            <Separator />
             {/* Cover Image */}
             <div>
               <Label className="flex items-center gap-1.5 mb-2">

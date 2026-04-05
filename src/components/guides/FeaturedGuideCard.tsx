@@ -92,7 +92,10 @@ export function FeaturedGuideCard({
               {guide.short_description}
             </p>
 
-            <div className="flex items-center gap-3 text-sm text-muted-foreground mb-5">
+            <div className="flex items-center gap-3 text-sm text-muted-foreground mb-5 flex-wrap">
+              {showAdmin && (guide as any).internal_code && (
+                <span className="font-mono text-xs bg-muted px-1.5 py-0.5 rounded">{(guide as any).internal_code}</span>
+              )}
               {guide.author_name && (
                 <span className="font-medium">{guide.author_name}</span>
               )}
