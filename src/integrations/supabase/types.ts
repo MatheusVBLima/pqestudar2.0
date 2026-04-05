@@ -1104,6 +1104,7 @@ export type Database = {
           cta_top_text: string | null
           cta_top_url: string | null
           id: string
+          internal_code: string
           internal_links: Json | null
           is_featured: boolean
           is_published: boolean
@@ -1132,6 +1133,7 @@ export type Database = {
           cta_top_text?: string | null
           cta_top_url?: string | null
           id?: string
+          internal_code: string
           internal_links?: Json | null
           is_featured?: boolean
           is_published?: boolean
@@ -1160,6 +1162,7 @@ export type Database = {
           cta_top_text?: string | null
           cta_top_url?: string | null
           id?: string
+          internal_code?: string
           internal_links?: Json | null
           is_featured?: boolean
           is_published?: boolean
