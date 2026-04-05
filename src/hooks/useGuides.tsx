@@ -4,6 +4,7 @@ import { toast } from '@/hooks/use-toast';
 
 export interface Guide {
   id: string;
+  internal_code: string;
   title: string;
   slug: string;
   category: string;

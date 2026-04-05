@@ -9,7 +9,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import MarkdownEditor, { htmlToMarkdown } from "@/components/admin/MarkdownEditor";
 import { Guide } from "@/hooks/useGuides";
-import { Plus, Trash2, Upload, Link2, X, ImageIcon } from "lucide-react";
+import { Plus, Trash2, Upload, Link2, X, ImageIcon, Copy, Check } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
@@ -367,6 +368,11 @@ export function GuideModal({ open, onClose, onSave, guide }: GuideModalProps) {
           </TabsList>
 
           <TabsContent value="basic" className="space-y-4 mt-4">
+            {/* Internal Code (read-only) */}
+            {guide && (
+              <InternalCodeField code={(guide as any).internal_code} />
+            )}
+            <Separator />
             {/* Cover Image */}
             <div>
               <Label className="flex items-center gap-1.5 mb-2">
