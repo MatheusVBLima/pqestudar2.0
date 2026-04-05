@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft, ExternalLink, Star, BookOpen, Wrench, FileText } from "lucide-react";
 import { useGuideBySlug, useGuideRelatedTools, useGuideRelatedContests, useGuideRelatedGuides } from "@/hooks/useGuides";
-import { renderRichContentConcursos } from "@/lib/concursos-content-renderer";
+import { renderMarkdownContent, renderRichContentConcursos } from "@/lib/concursos-content-renderer";
 import { MostReadGuides } from "@/components/guides/MostReadGuides";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
