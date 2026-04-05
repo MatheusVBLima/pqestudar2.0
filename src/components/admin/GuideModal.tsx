@@ -188,6 +188,51 @@ function LinkImageField({
   );
 }
 
+// ---------- Internal Code Field ----------
+function InternalCodeField({ code }: { code?: string }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    if (!code) return;
+    navigator.clipboard.writeText(code);
+    setCopied(true);
+    toast({ title: "Código copiado" });
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div>
+      <Label className="text-xs text-muted-foreground mb-1.5 block">Código interno</Label>
+      <div className="flex items-center gap-2">
+        <Input
+          value={code || "—"}
+          readOnly
+          disabled
+          className="font-mono text-sm tracking-wider max-w-[180px]"
+        />
+        {code && (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  className="h-9 w-9 shrink-0"
+                  onClick={handleCopy}
+                >
+                  {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Copiar código</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export function GuideModal({ open, onClose, onSave, guide }: GuideModalProps) {
   const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");

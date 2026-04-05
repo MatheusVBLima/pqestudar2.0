@@ -87,7 +87,10 @@ export function GuideListItem({
           {guide.short_description}
         </p>
 
-        <div className="flex items-center gap-2 text-xs text-muted-foreground mt-auto">
+        <div className="flex items-center gap-2 text-xs text-muted-foreground mt-auto flex-wrap">
+          {showAdmin && (guide as any).internal_code && (
+            <span className="font-mono text-[11px] bg-muted px-1.5 py-0.5 rounded">{(guide as any).internal_code}</span>
+          )}
           {guide.author_name && <span>{guide.author_name}</span>}
           {updatedDate && (
             <>
