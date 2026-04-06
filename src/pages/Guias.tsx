@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -28,12 +29,93 @@ import { GuideListItem } from "@/components/guides/GuideListItem";
 const FALLBACK_TITLE = "Guias | PqEstudar";
 const FALLBACK_DESCRIPTION = "Conteúdos práticos e evergreen para estudar com mais clareza e aproveitar oportunidades.";
 
+function GuidesList({
+  guides,
+  showAdmin,
+  adminActions,
+  showFeatured,
+}: {
+  guides: Guide[];
+  showAdmin: boolean;
+  adminActions: Record<string, (g: Guide) => void>;
+  showFeatured: boolean;
+}) {
+  const { featuredGuide, listGuides } = useMemo(() => {
+    if (!guides.length) return { featuredGuide: null, listGuides: [] as Guide[] };
+
+    if (!showFeatured) {
+      const sorted = [...guides].sort((a, b) => {
+        if (a.sort_order !== b.sort_order) return a.sort_order - b.sort_order;
+        return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
+      });
+      return { featuredGuide: null, listGuides: sorted };
+    }
+
+    const featuredCandidates = guides
+      .filter((g) => g.is_featured)
+      .sort((a, b) => {
+        if (a.sort_order !== b.sort_order) return a.sort_order - b.sort_order;
+        return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
+      });
+
+    const featured =
+      featuredCandidates[0] ??
+      [...guides].sort(
+        (a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
+      )[0] ??
+      null;
+
+    const rest = guides
+      .filter((g) => g.id !== featured?.id)
+      .sort((a, b) => {
+        if (a.sort_order !== b.sort_order) return a.sort_order - b.sort_order;
+        return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
+      });
+
+    return { featuredGuide: featured, listGuides: rest };
+  }, [guides, showFeatured]);
+
+  if (guides.length === 0) {
+    return (
+      <div className="py-16 text-center">
+        <BookOpen className="mx-auto mb-4 h-12 w-12 text-muted-foreground/50" />
+        <p className="text-lg text-muted-foreground">Nenhum guia encontrado.</p>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      {featuredGuide && (
+        <FeaturedGuideCard
+          guide={featuredGuide}
+          showAdmin={showAdmin}
+          {...adminActions}
+        />
+      )}
+      {listGuides.length > 0 && (
+        <div className="space-y-4">
+          {listGuides.map((guide) => (
+            <GuideListItem
+              key={guide.id}
+              guide={guide}
+              showAdmin={showAdmin}
+              {...adminActions}
+            />
+          ))}
+        </div>
+      )}
+    </>
+  );
+}
+
 export default function Guias() {
   const ps = usePageSettings("/guias");
   const { isAdmin } = useUserRoles();
   const [isManagementMode, setIsManagementMode] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
+  const [adminTab, setAdminTab] = useState<"published" | "drafts">("published");
   const [modalOpen, setModalOpen] = useState(false);
   const [editGuide, setEditGuide] = useState<Guide | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Guide | null>(null);
@@ -42,14 +124,26 @@ export default function Guias() {
   const { data: guides, isLoading } = useGuides(showAdmin);
   const { createGuide, updateGuide, deleteGuide, togglePublished, toggleFeatured } = useGuidesMutations();
 
+  // Total counts per status (unfiltered) for tab badges
+  const publishedCount = useMemo(() => guides?.filter((g) => g.is_published).length ?? 0, [guides]);
+  const draftsCount = useMemo(() => guides?.filter((g) => !g.is_published).length ?? 0, [guides]);
+
   const categories = useMemo(() => {
     if (!guides) return [];
     return [...new Set(guides.map((g) => g.category))].sort();
   }, [guides]);
 
+  // Apply status filter (admin tabs), then search + category
   const filtered = useMemo(() => {
     if (!guides) return [];
     let list = guides;
+
+    // In admin mode, filter by tab status
+    if (showAdmin) {
+      list = list.filter((g) =>
+        adminTab === "published" ? g.is_published : !g.is_published
+      );
+    }
 
     if (searchTerm) {
       const lower = searchTerm.toLowerCase();
@@ -61,43 +155,13 @@ export default function Guias() {
     }
 
     return list;
-  }, [guides, searchTerm, categoryFilter]);
-
-  const { featuredGuide, listGuides } = useMemo(() => {
-    if (!filtered.length) {
-      return { featuredGuide: null, listGuides: [] as Guide[] };
-    }
-
-    const featuredCandidates = filtered
-      .filter((g) => g.is_featured)
-      .sort((a, b) => {
-        if (a.sort_order !== b.sort_order) return a.sort_order - b.sort_order;
-        return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
-      });
-
-    const featured =
-      featuredCandidates[0] ??
-      [...filtered].sort(
-        (a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
-      )[0] ??
-      null;
-
-    const listGuides = filtered
-      .filter((g) => g.id !== featured?.id)
-      .sort((a, b) => {
-        if (a.sort_order !== b.sort_order) return a.sort_order - b.sort_order;
-        return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
-      });
-
-    return { featuredGuide: featured, listGuides };
-  }, [filtered]);
+  }, [guides, showAdmin, adminTab, searchTerm, categoryFilter]);
 
   const handleSave = async (data: Partial<Guide>) => {
     if (data.id) {
       await updateGuide.mutateAsync(data as Partial<Guide> & { id: string });
       return;
     }
-
     await createGuide.mutateAsync(data);
   };
 
@@ -118,6 +182,27 @@ export default function Guias() {
       togglePublished.mutate({ id: guide.id, is_published: !guide.is_published }),
     onToggleFeatured: (guide: Guide) =>
       toggleFeatured.mutate({ id: guide.id, is_featured: !guide.is_featured }),
+  };
+
+  const renderContent = () => {
+    if (isLoading) {
+      return (
+        <div className="space-y-6">
+          <Skeleton className="h-64 rounded-[1.2rem]" />
+          <Skeleton className="h-24 rounded-[1.2rem]" />
+          <Skeleton className="h-24 rounded-[1.2rem]" />
+        </div>
+      );
+    }
+
+    return (
+      <GuidesList
+        guides={filtered}
+        showAdmin={showAdmin}
+        adminActions={adminActions}
+        showFeatured={!showAdmin || adminTab === "published"}
+      />
+    );
   };
 
   return (
@@ -182,48 +267,21 @@ export default function Guias() {
           )}
         </div>
 
-        {isLoading && (
-          <div className="space-y-6">
-            <Skeleton className="h-64 rounded-[1.2rem]" />
-            <Skeleton className="h-24 rounded-[1.2rem]" />
-            <Skeleton className="h-24 rounded-[1.2rem]" />
-          </div>
-        )}
-
-        {!isLoading && filtered.length === 0 && (
-          <div className="py-16 text-center">
-            <BookOpen className="mx-auto mb-4 h-12 w-12 text-muted-foreground/50" />
-            <p className="text-lg text-muted-foreground">
-              {searchTerm || categoryFilter !== "all"
-                ? "Nenhum guia encontrado com esses filtros."
-                : "Nenhum guia disponível no momento."}
-            </p>
-          </div>
-        )}
-
-        {!isLoading && filtered.length > 0 && (
-          <>
-            {featuredGuide && (
-              <FeaturedGuideCard
-                guide={featuredGuide}
-                showAdmin={showAdmin}
-                {...adminActions}
-              />
-            )}
-
-            {listGuides.length > 0 && (
-              <div className="space-y-4">
-                {listGuides.map((guide) => (
-                  <GuideListItem
-                    key={guide.id}
-                    guide={guide}
-                    showAdmin={showAdmin}
-                    {...adminActions}
-                  />
-                ))}
-              </div>
-            )}
-          </>
+        {showAdmin ? (
+          <Tabs value={adminTab} onValueChange={(v) => setAdminTab(v as "published" | "drafts")}>
+            <TabsList className="mb-6">
+              <TabsTrigger value="published">
+                Publicados ({publishedCount})
+              </TabsTrigger>
+              <TabsTrigger value="drafts">
+                Rascunhos ({draftsCount})
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent value="published">{renderContent()}</TabsContent>
+            <TabsContent value="drafts">{renderContent()}</TabsContent>
+          </Tabs>
+        ) : (
+          renderContent()
         )}
       </div>
 
