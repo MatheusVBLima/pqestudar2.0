@@ -37,7 +37,12 @@ function GuidesList({
 }: {
   guides: Guide[];
   showAdmin: boolean;
-  adminActions: Record<string, (g: Guide) => void>;
+  adminActions: {
+    onEdit: (g: Guide) => void;
+    onDelete: (g: Guide) => void;
+    onTogglePublished: (g: Guide) => void;
+    onToggleFeatured: (g: Guide) => void;
+  };
   showFeatured: boolean;
 }) {
   const { featuredGuide, listGuides } = useMemo(() => {
