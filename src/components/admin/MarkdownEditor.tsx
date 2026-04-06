@@ -128,9 +128,11 @@ const purifyConfig = {
     "ul", "ol", "li", "a", "strong", "em", "b", "i",
     "code", "pre", "blockquote", "span", "div",
     // GFM table tags
-    "table", "thead", "tbody", "tr", "th", "td"
+    "table", "thead", "tbody", "tr", "th", "td",
+    // Images
+    "img",
   ],
-  ALLOWED_ATTR: ["href", "target", "rel", "class", "style"],
+  ALLOWED_ATTR: ["href", "target", "rel", "class", "style", "src", "alt", "title", "width", "height", "loading", "decoding"],
   ALLOW_DATA_ATTR: false,
 };
 
