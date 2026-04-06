@@ -33,13 +33,17 @@ const SANITIZE_CONFIG: sanitizeHtmlLib.IOptions = {
     "code", "pre",
     // GFM table tags
     "table", "thead", "tbody", "tr", "th", "td",
+    // Images
+    "img",
   ],
   allowedAttributes: {
     a: ["href", "target", "rel", "title"],
     th: ["align", "style"],
     td: ["align", "style"],
+    img: ["src", "alt", "title", "width", "height", "loading", "decoding"],
     "*": ["class"],
   },
+  allowedSchemes: ["http", "https"],
   // Allow only text-align style for table cells
   allowedStyles: {
     th: { "text-align": [/^left$/, /^right$/, /^center$/] },
@@ -102,6 +106,18 @@ const SANITIZE_CONFIG: sanitizeHtmlLib.IOptions = {
     hr: () => ({
       tagName: "hr",
       attribs: { class: "my-6 border-border" },
+    }),
+    // Images
+    img: (tagName, attribs) => ({
+      tagName: "img",
+      attribs: {
+        ...attribs,
+        src: attribs.src || "",
+        alt: attribs.alt || "",
+        loading: attribs.loading || "lazy",
+        decoding: attribs.decoding || "async",
+        class: "rounded-md my-4 max-w-full h-auto",
+      },
     }),
     // Table styling
     table: () => ({
