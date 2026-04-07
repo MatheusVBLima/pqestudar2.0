@@ -340,3 +340,9 @@ All colors MUST be HSL.
   font-size: 1.25rem; /* 20px */
   line-height: 1.7;
 }
+
+.guide-content img,
+.guide-content-primary img {
+  margin-top: 2rem; /* 32px */
+  margin-bottom: 2rem; /* 32px */
+}
