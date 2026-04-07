@@ -346,3 +346,19 @@ All colors MUST be HSL.
   margin-top: 2rem; /* 32px */
   margin-bottom: 2rem; /* 32px */
 }
+
+/* ── Guide mobile overrides ── */
+@media (max-width: 639px) {
+  .guide-content-primary h2:first-of-type {
+    font-size: 1.875rem; /* 30px */
+  }
+
+  .guide-content h2 {
+    font-size: 1.5rem; /* 24px */
+  }
+
+  .guide-content p,
+  .guide-content li {
+    font-size: 1rem; /* 16px */
+  }
+}
