@@ -343,7 +343,7 @@ export default function MarkdownEditor({
                 variant="outline"
                 size="sm"
                 onClick={() => insertHeading(2)}
-                title="Inserir título H2"
+                title="Inserir título H2 em negrito"
               >
                 <Heading2 className="h-4 w-4" />
                 <span className="sr-only">H2</span>
@@ -353,10 +353,30 @@ export default function MarkdownEditor({
                 variant="outline"
                 size="sm"
                 onClick={() => insertHeading(3)}
-                title="Inserir subtítulo H3"
+                title="Inserir subtítulo H3 em negrito"
               >
                 <Heading3 className="h-4 w-4" />
                 <span className="sr-only">H3</span>
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={insertHr}
+                title="Inserir linha horizontal"
+              >
+                <Minus className="h-4 w-4" />
+                <span className="sr-only">HR</span>
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={insertImage}
+                title="Inserir imagem inline"
+              >
+                <ImageIcon className="h-4 w-4" />
+                <span className="sr-only">Imagem</span>
               </Button>
             </>
           )}
