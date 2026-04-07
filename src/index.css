@@ -323,3 +323,20 @@ All colors MUST be HSL.
 }
 
 /* Collapsed admin sidebar: offcanvas mode hides completely, no icon-mode rules needed */
+
+/* ── Guide detail typography (/guias/:slug) ── */
+.guide-content h2 {
+  font-size: 2.25rem; /* 36px */
+  line-height: 1.2;
+}
+
+.guide-content-primary h2:first-of-type {
+  font-size: 3rem; /* 48px */
+  line-height: 1.15;
+}
+
+.guide-content p,
+.guide-content li {
+  font-size: 1.25rem; /* 20px */
+  line-height: 1.7;
+}
