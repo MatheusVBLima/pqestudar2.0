@@ -269,24 +269,64 @@ export default function MarkdownEditor({
     
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
-    const prefix = level === 2 ? "## " : "### ";
+    const prefix = level === 2 ? "## **" : "### **";
+    const suffix = "**";
     
-    // Find start of current line
     const beforeCursor = value.substring(0, start);
     const lineStart = beforeCursor.lastIndexOf("\n") + 1;
-    
-    // Check if we're at the start of a line or after whitespace
     const currentLineStart = value.substring(lineStart, start);
     const needsNewline = currentLineStart.trim().length > 0 && start > 0;
     
-    const insertion = (needsNewline ? "\n" : "") + prefix;
+    const insertion = (needsNewline ? "\n" : "") + prefix + suffix;
     const newValue = value.substring(0, start) + insertion + value.substring(end);
     
     onChange(newValue);
     
+    // Place cursor between the ** **
+    const cursorPos = start + (needsNewline ? 1 : 0) + prefix.length;
     setTimeout(() => {
-      const newCursorPos = start + insertion.length;
-      textarea.selectionStart = textarea.selectionEnd = newCursorPos;
+      textarea.selectionStart = textarea.selectionEnd = cursorPos;
+      textarea.focus();
+    }, 0);
+  }, [value, onChange]);
+
+  const insertHr = useCallback(() => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const beforeCursor = value.substring(0, start);
+    const lineStart = beforeCursor.lastIndexOf("\n") + 1;
+    const currentLineStart = value.substring(lineStart, start);
+    const needsNewline = currentLineStart.trim().length > 0 && start > 0;
+    const insertion = (needsNewline ? "\n" : "") + "---\n";
+    const newValue = value.substring(0, start) + insertion + value.substring(end);
+    onChange(newValue);
+    setTimeout(() => {
+      textarea.selectionStart = textarea.selectionEnd = start + insertion.length;
+      textarea.focus();
+    }, 0);
+  }, [value, onChange]);
+
+  const insertImage = useCallback(() => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const beforeCursor = value.substring(0, start);
+    const lineStart = beforeCursor.lastIndexOf("\n") + 1;
+    const currentLineStart = value.substring(lineStart, start);
+    const needsNewline = currentLineStart.trim().length > 0 && start > 0;
+    const tag = '<img src="URL" alt="descrição" width="100%" />';
+    const insertion = (needsNewline ? "\n" : "") + tag;
+    const newValue = value.substring(0, start) + insertion + value.substring(end);
+    onChange(newValue);
+    // Place cursor selecting "URL" for immediate replacement
+    const urlStart = start + (needsNewline ? 1 : 0) + 10; // length of '<img src="'
+    const urlEnd = urlStart + 3; // length of 'URL'
+    setTimeout(() => {
+      textarea.selectionStart = urlStart;
+      textarea.selectionEnd = urlEnd;
       textarea.focus();
     }, 0);
   }, [value, onChange]);
