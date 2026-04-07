@@ -88,6 +88,12 @@ export default function GuiaDetalhe() {
   const { data: relatedTools } = useGuideRelatedTools(guide?.id);
   const { data: relatedContests } = useGuideRelatedContests(guide?.id);
   const { data: relatedGuides } = useGuideRelatedGuides(guide?.id);
+
+  const rawInternalLinks: Array<{ label: string; url: string; imageUrl?: string | null }> = Array.isArray((guide as any)?.internal_links)
+    ? ((guide as any).internal_links as any[]).filter((l: any) => l.label && l.url)
+    : [];
+  const resolvedLinks = useGuideLinkPreviews(rawInternalLinks);
+
   const viewTracked = useRef<string | null>(null);
 
   // Track view via RPC (once per slug per mount)
