@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft, ExternalLink, Star, BookOpen, Wrench, FileText } from "lucide-react";
-import { useGuideBySlug, useGuideRelatedTools, useGuideRelatedContests, useGuideRelatedGuides } from "@/hooks/useGuides";
+import { useGuideBySlug, useGuideRelatedTools, useGuideRelatedContests, useGuideRelatedGuides, useGuideLinkPreviews } from "@/hooks/useGuides";
 import { renderMarkdownContent } from "@/lib/concursos-content-renderer";
 import { MostReadGuides } from "@/components/guides/MostReadGuides";
 import { supabase } from "@/integrations/supabase/client";
@@ -88,6 +88,12 @@ export default function GuiaDetalhe() {
   const { data: relatedTools } = useGuideRelatedTools(guide?.id);
   const { data: relatedContests } = useGuideRelatedContests(guide?.id);
   const { data: relatedGuides } = useGuideRelatedGuides(guide?.id);
+
+  const rawInternalLinks: Array<{ label: string; url: string; imageUrl?: string | null }> = Array.isArray((guide as any)?.internal_links)
+    ? ((guide as any).internal_links as any[]).filter((l: any) => l.label && l.url)
+    : [];
+  const resolvedLinks = useGuideLinkPreviews(rawInternalLinks);
+
   const viewTracked = useRef<string | null>(null);
 
   // Track view via RPC (once per slug per mount)
@@ -134,10 +140,6 @@ export default function GuiaDetalhe() {
   const hasRelated = (relatedTools && relatedTools.length > 0) ||
     (relatedContests && relatedContests.length > 0) ||
     (relatedGuides && relatedGuides.length > 0);
-
-  const internalLinks: Array<{ label: string; url: string; imageUrl?: string | null }> = Array.isArray(guide.internal_links)
-    ? (guide.internal_links as any[]).filter((l: any) => l.label && l.url)
-    : [];
 
   const ctaTopText = guide.cta_top_text || null;
   const ctaMiddleText = guide.cta_middle_text || null;
@@ -315,39 +317,43 @@ export default function GuiaDetalhe() {
             )}
 
             {/* Internal links */}
-            {internalLinks.length > 0 && (
+            {resolvedLinks.length > 0 && (
               <section className="mt-10 pt-6 border-t border-border">
                 <p className="text-sm font-bold uppercase tracking-wide text-primary mb-5">Links úteis</p>
                 <div className="space-y-5">
-                  {internalLinks.map((link, i) => (
-                    <Link
-                      key={i}
-                      to={link.url}
-                      className="flex items-start gap-4 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded-md"
-                      aria-label={`Link útil: ${link.label}`}
-                    >
-                      <div className="w-20 h-16 sm:w-28 sm:h-20 shrink-0 rounded-md bg-accent flex items-center justify-center overflow-hidden">
-                      {link.imageUrl ? (
-                        <img
-                          src={link.imageUrl}
-                          alt={link.label}
-                          className="w-full h-full object-cover"
-                          referrerPolicy="no-referrer"
-                        />
-                      ) : (
-                        <BookOpen className="h-6 w-6 text-primary/60" />
-                      )}
-                      </div>
-                      <div className="flex-1 min-w-0 pt-0.5">
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-primary">
-                          Link útil
-                        </span>
-                        <h3 className="text-base font-semibold leading-snug mt-0.5 group-hover:text-primary transition-colors line-clamp-2">
-                          {link.label}
-                        </h3>
-                      </div>
-                    </Link>
-                  ))}
+                  {resolvedLinks.map((link, i) => {
+                    const thumbUrl = link.coverImageUrl || link.imageUrl;
+                    return (
+                      <Link
+                        key={i}
+                        to={link.url}
+                        className="flex items-start gap-4 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded-md"
+                        aria-label={`Link útil: ${link.label}`}
+                      >
+                        <div className="w-20 h-16 sm:w-28 sm:h-20 shrink-0 rounded-md overflow-hidden flex items-center justify-center bg-primary/10">
+                          {thumbUrl ? (
+                            <img
+                              src={thumbUrl}
+                              alt={link.label}
+                              className="w-full h-full object-cover"
+                              referrerPolicy="no-referrer"
+                              loading="lazy"
+                            />
+                          ) : (
+                            <BookOpen className="h-6 w-6 text-primary/60" />
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0 pt-0.5">
+                          <span className="text-[11px] font-bold uppercase tracking-wider text-primary">
+                            {link.category || "Link útil"}
+                          </span>
+                          <h3 className="text-base font-semibold leading-snug mt-0.5 group-hover:text-primary transition-colors line-clamp-2">
+                            {link.label}
+                          </h3>
+                        </div>
+                      </Link>
+                    );
+                  })}
                 </div>
               </section>
             )}
