@@ -215,7 +215,7 @@ export default function GuiaDetalhe() {
             <CtaBlock label={guide.cta_top_label} url={guide.cta_top_url} text={ctaTopText} />
 
             <div
-              className="text-foreground/80 leading-relaxed"
+              className="guide-content guide-content-primary text-foreground/80 leading-relaxed"
               dangerouslySetInnerHTML={{ __html: contentFirstHalf }}
             />
 
@@ -225,7 +225,7 @@ export default function GuiaDetalhe() {
 
             {contentSecondHalf && (
               <div
-                className="text-foreground/80 leading-relaxed"
+                className="guide-content text-foreground/80 leading-relaxed"
                 dangerouslySetInnerHTML={{ __html: contentSecondHalf }}
               />
             )}
