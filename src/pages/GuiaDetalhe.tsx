@@ -317,39 +317,43 @@ export default function GuiaDetalhe() {
             )}
 
             {/* Internal links */}
-            {internalLinks.length > 0 && (
+            {resolvedLinks.length > 0 && (
               <section className="mt-10 pt-6 border-t border-border">
                 <p className="text-sm font-bold uppercase tracking-wide text-primary mb-5">Links úteis</p>
                 <div className="space-y-5">
-                  {internalLinks.map((link, i) => (
-                    <Link
-                      key={i}
-                      to={link.url}
-                      className="flex items-start gap-4 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded-md"
-                      aria-label={`Link útil: ${link.label}`}
-                    >
-                      <div className="w-20 h-16 sm:w-28 sm:h-20 shrink-0 rounded-md bg-accent flex items-center justify-center overflow-hidden">
-                      {link.imageUrl ? (
-                        <img
-                          src={link.imageUrl}
-                          alt={link.label}
-                          className="w-full h-full object-cover"
-                          referrerPolicy="no-referrer"
-                        />
-                      ) : (
-                        <BookOpen className="h-6 w-6 text-primary/60" />
-                      )}
-                      </div>
-                      <div className="flex-1 min-w-0 pt-0.5">
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-primary">
-                          Link útil
-                        </span>
-                        <h3 className="text-base font-semibold leading-snug mt-0.5 group-hover:text-primary transition-colors line-clamp-2">
-                          {link.label}
-                        </h3>
-                      </div>
-                    </Link>
-                  ))}
+                  {resolvedLinks.map((link, i) => {
+                    const thumbUrl = link.coverImageUrl || link.imageUrl;
+                    return (
+                      <Link
+                        key={i}
+                        to={link.url}
+                        className="flex items-start gap-4 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded-md"
+                        aria-label={`Link útil: ${link.label}`}
+                      >
+                        <div className="w-20 h-16 sm:w-28 sm:h-20 shrink-0 rounded-md overflow-hidden flex items-center justify-center bg-primary/10">
+                          {thumbUrl ? (
+                            <img
+                              src={thumbUrl}
+                              alt={link.label}
+                              className="w-full h-full object-cover"
+                              referrerPolicy="no-referrer"
+                              loading="lazy"
+                            />
+                          ) : (
+                            <BookOpen className="h-6 w-6 text-primary/60" />
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0 pt-0.5">
+                          <span className="text-[11px] font-bold uppercase tracking-wider text-primary">
+                            {link.category || "Link útil"}
+                          </span>
+                          <h3 className="text-base font-semibold leading-snug mt-0.5 group-hover:text-primary transition-colors line-clamp-2">
+                            {link.label}
+                          </h3>
+                        </div>
+                      </Link>
+                    );
+                  })}
                 </div>
               </section>
             )}
