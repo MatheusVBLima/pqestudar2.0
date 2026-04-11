@@ -362,3 +362,22 @@ All colors MUST be HSL.
     font-size: 1rem; /* 16px */
   }
 }
+
+/* ── Guide Flow Canvas ── */
+.guide-flow-canvas .react-flow__node {
+  border: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
+.guide-flow-canvas .react-flow__edge-path {
+  stroke-width: 2;
+}
+
+.guide-flow-canvas .react-flow__controls {
+  border-radius: 1.2rem;
+}
+
+.guide-flow-canvas .react-flow__minimap {
+  border-radius: 1.2rem;
+}
