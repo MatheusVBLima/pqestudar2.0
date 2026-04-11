@@ -2,7 +2,7 @@ import { useLocation, Link } from 'react-router-dom';
 import {
   LayoutDashboard, BarChart3, Wrench, BookOpen, MousePointerClick, Search, FileText,
   Crown, Package, CalendarDays, Users, Ticket, ChevronDown, Settings2,
-  Database, ClipboardCheck, Shield, Bot, History, Menu as MenuIcon, Moon, Sun, Sparkles,
+  Database, ClipboardCheck, Shield, Bot, History, Menu as MenuIcon, Moon, Sun, Sparkles, BookOpen,
 } from 'lucide-react';
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent,
@@ -172,6 +172,22 @@ export function AdminSidebar() {
                   <Link to="/admin/fluxo-guias">
                     <Sparkles className="h-4 w-4" />
                     <span>Fluxo de Guias</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  isActive={pathname === '/admin/fluxo-guias/biblioteca'}
+                  tooltip="Biblioteca de Conhecimento"
+                  className={cn(
+                    'rounded-[var(--admin-radius)] font-medium text-xs',
+                    pathname === '/admin/fluxo-guias/biblioteca' && 'bg-primary/10 text-primary font-semibold border border-primary/20'
+                  )}
+                >
+                  <Link to="/admin/fluxo-guias/biblioteca">
+                    <BookOpen className="h-4 w-4" />
+                    <span>Biblioteca</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
