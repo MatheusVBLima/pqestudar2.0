@@ -1,10 +1,11 @@
 import { memo } from 'react';
 import { Handle, Position } from '@xyflow/react';
 import { Badge } from '@/components/ui/badge';
-import { FileText, FolderOpen, CheckCircle2, AlertTriangle, Loader2, BookOpen, RefreshCw, XCircle } from 'lucide-react';
+import { FileText, FolderOpen, CheckCircle2, AlertTriangle, Loader2, BookOpen, RefreshCw, XCircle, Link2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { StorageFile } from '@/hooks/useGuideStorageSources';
 import { Button } from '@/components/ui/button';
+import { resolveStructureMapping, type StructureMapping } from '@/lib/guide-structure-mapping';
 
 interface SourcesNodeData {
   structureFiles: StorageFile[];
@@ -30,13 +31,17 @@ function SourcesNodeComponent({ data }: { data: any }) {
   } = data as SourcesNodeData;
 
   const hasStructure = structureFiles.length > 0;
-  // For library: either has root files or a selected folder with files
-  const totalLibraryItems = libraryFolders.length + libraryFiles.length;
   const hasLibrary = libraryFiles.length > 0;
   const isReady = hasStructure && hasLibrary;
 
+  // Resolve explicit mapping
+  const fileNames = structureFiles.map(f => f.name);
+  const mapping = resolveStructureMapping(fileNames);
+  const resolved = mapping.filter(m => m.resolvedFile);
+  const missing = mapping.filter(m => !m.resolvedFile);
+
   return (
-    <div className="bg-card border border-border rounded-[1.2rem] shadow-card w-[360px] overflow-hidden">
+    <div className="bg-card border border-border rounded-[1.2rem] shadow-card w-[380px] overflow-hidden">
       <Handle type="source" position={Position.Right} className="!bg-primary !w-3 !h-3 !border-2 !border-card" />
 
       {/* Header */}
@@ -58,7 +63,7 @@ function SourcesNodeComponent({ data }: { data: any }) {
       </div>
 
       <div className="p-3 space-y-3">
-        {/* guide-structure section */}
+        {/* guide-structure: Explicit mapping */}
         <div className="space-y-1.5">
           <div className="flex items-center gap-1.5">
             {isLoadingStructure ? (
@@ -72,11 +77,10 @@ function SourcesNodeComponent({ data }: { data: any }) {
             )}
             <span className="text-xs font-medium">guide-structure</span>
             <span className="text-[10px] text-muted-foreground ml-auto">
-              {structureFiles.length} arquivo{structureFiles.length !== 1 ? 's' : ''}
+              {resolved.length}/{mapping.length} mapeados
             </span>
           </div>
 
-          {/* Status badge */}
           {structureStatus && structureStatus !== 'loading' && (
             <div className="pl-4">
               <span className={cn(
@@ -85,7 +89,7 @@ function SourcesNodeComponent({ data }: { data: any }) {
                 structureStatus === 'error' ? 'bg-destructive/10 text-destructive' :
                 'bg-muted text-muted-foreground'
               )}>
-                {structureStatus === 'success' ? '✓ Bucket lido com sucesso' : 
+                {structureStatus === 'success' ? `✓ ${structureFiles.length} arquivo(s) no bucket` :
                  structureStatus === 'error' ? '✗ Falha na leitura' : '…'}
               </span>
             </div>
@@ -94,24 +98,46 @@ function SourcesNodeComponent({ data }: { data: any }) {
           {structureError && (
             <p className="text-[10px] text-destructive pl-4 break-all">Erro: {structureError}</p>
           )}
+
+          {/* Dimension mapping table */}
           {hasStructure && (
-            <div className="max-h-[120px] overflow-y-auto space-y-0.5 pl-4">
-              {structureFiles.map(f => (
-                <div key={f.name} className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-                  <FileText className="h-2.5 w-2.5 shrink-0" />
-                  <span className="truncate">{f.name}</span>
+            <div className="max-h-[200px] overflow-y-auto space-y-0.5 pl-2">
+              {mapping.map(dim => (
+                <div key={dim.key} className="flex items-start gap-1.5 text-[10px] py-0.5">
+                  {dim.resolvedFile ? (
+                    <CheckCircle2 className="h-2.5 w-2.5 shrink-0 text-emerald-500 mt-0.5" />
+                  ) : (
+                    <AlertTriangle className="h-2.5 w-2.5 shrink-0 text-amber-500 mt-0.5" />
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <span className="font-medium text-foreground">{dim.label}</span>
+                    {dim.resolvedFile ? (
+                      <div className="flex items-center gap-1 text-muted-foreground">
+                        <Link2 className="h-2 w-2 shrink-0" />
+                        <span className="truncate">{dim.resolvedFile}</span>
+                      </div>
+                    ) : (
+                      <p className="text-amber-600">Arquivo não encontrado</p>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
           )}
+
           {!hasStructure && !isLoadingStructure && !structureError && (
             <p className="text-[10px] text-amber-600 pl-4">
-              Leitura concluída — nenhum arquivo encontrado no bucket guide-structure.
+              Nenhum arquivo encontrado no bucket guide-structure.
             </p>
+          )}
+
+          {missing.length > 0 && hasStructure && (
+            <div className="bg-amber-500/10 rounded-md px-2 py-1 text-[9px] text-amber-700 dark:text-amber-400 ml-2">
+              ⚠ {missing.length} dimensão(ões) sem arquivo fonte — geração parcial
+            </div>
           )}
         </div>
 
-        {/* Divider */}
         <div className="border-t border-border" />
 
         {/* guide-library section */}
@@ -135,7 +161,6 @@ function SourcesNodeComponent({ data }: { data: any }) {
             </span>
           </div>
 
-          {/* Status badge */}
           {libraryStatus && libraryStatus !== 'loading' && (
             <div className="pl-4">
               <span className={cn(
@@ -154,7 +179,6 @@ function SourcesNodeComponent({ data }: { data: any }) {
             <p className="text-[10px] text-destructive pl-4 break-all">Erro: {libraryError}</p>
           )}
 
-          {/* Library folder selector */}
           {libraryFolders.length > 0 && (
             <div className="pl-4 space-y-1">
               {libraryFolders.map(folder => (
@@ -178,7 +202,6 @@ function SourcesNodeComponent({ data }: { data: any }) {
             </div>
           )}
 
-          {/* Root-level library files (when no folders exist, files ARE the libraries) */}
           {libraryFolders.length === 0 && libraryFiles.length > 0 && (
             <div className="pl-4 space-y-1">
               {libraryFiles.map(f => (
@@ -202,7 +225,6 @@ function SourcesNodeComponent({ data }: { data: any }) {
             </div>
           )}
 
-          {/* Selected folder files */}
           {selectedLibrary && libraryFolders.length > 0 && libraryFiles.length > 0 && (
             <div className="max-h-[80px] overflow-y-auto space-y-0.5 pl-6 mt-1">
               {libraryFiles.map(f => (
@@ -216,7 +238,7 @@ function SourcesNodeComponent({ data }: { data: any }) {
 
           {!isLoadingLibrary && libraryFolders.length === 0 && libraryFiles.length === 0 && !libraryError && (
             <p className="text-[10px] text-amber-600 pl-4">
-              Leitura concluída — nenhum arquivo encontrado no bucket guide-library.
+              Nenhum arquivo encontrado no bucket guide-library.
             </p>
           )}
 
@@ -230,12 +252,14 @@ function SourcesNodeComponent({ data }: { data: any }) {
         {/* Overall status */}
         <div className={cn(
           'rounded-lg px-3 py-2 text-[10px]',
-          isReady ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400' :
+          isReady && missing.length === 0 ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400' :
           hasStructure || hasLibrary ? 'bg-amber-500/10 text-amber-700 dark:text-amber-400' :
           'bg-destructive/10 text-destructive'
         )}>
-          {isReady
-            ? '✅ Fontes completas — pronto para geração fundamentada'
+          {isReady && missing.length === 0
+            ? '✅ Fontes completas — todas as dimensões mapeadas'
+            : isReady && missing.length > 0
+            ? `⚠ ${resolved.length}/${mapping.length} dimensões mapeadas — geração parcial`
             : !hasStructure && !hasLibrary
             ? '⚠ Sem fontes — geração será genérica e não validada'
             : !hasStructure
