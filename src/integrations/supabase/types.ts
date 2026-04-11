@@ -971,6 +971,7 @@ export type Database = {
           content: string
           created_at: string
           created_by: string | null
+          extraction_status: string
           id: string
           is_active: boolean
           sort_order: number
@@ -986,6 +987,7 @@ export type Database = {
           content: string
           created_at?: string
           created_by?: string | null
+          extraction_status?: string
           id?: string
           is_active?: boolean
           sort_order?: number
@@ -1001,6 +1003,7 @@ export type Database = {
           content?: string
           created_at?: string
           created_by?: string | null
+          extraction_status?: string
           id?: string
           is_active?: boolean
           sort_order?: number
