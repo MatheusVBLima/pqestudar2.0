@@ -7,10 +7,12 @@ import { PageHeader } from '@/components/admin/dashboard/PageHeader';
 import { GuideFlowForm, type GuideFlowInputs } from '@/components/admin/guide-flow/GuideFlowForm';
 import { GuideFlowPreview, type GeneratedGuideData } from '@/components/admin/guide-flow/GuideFlowPreview';
 import { GuideFlowValidation, hasValidationErrors } from '@/components/admin/guide-flow/GuideFlowValidation';
+import { GuideFlowNodes } from '@/components/admin/guide-flow/GuideFlowNodes';
 import { useGuidesMutations } from '@/hooks/useGuides';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import { Save, Send, ArrowLeft, Sparkles, RotateCcw } from 'lucide-react';
+import { Save, Send, ArrowLeft, Sparkles, RotateCcw, LayoutList, Network } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 const EMPTY_GUIDE: GeneratedGuideData = {
   title: '',
@@ -33,6 +35,7 @@ export default function GuideFlow() {
   const { createGuide } = useGuidesMutations();
 
   const [step, setStep] = useState<'input' | 'review'>('input');
+  const [viewMode, setViewMode] = useState<'tabs' | 'nodes'>('nodes');
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [guideData, setGuideData] = useState<GeneratedGuideData>(EMPTY_GUIDE);
@@ -150,7 +153,6 @@ export default function GuideFlow() {
             <div className="flex items-center gap-2 mb-6">
               <Sparkles className="h-5 w-5 text-primary" />
               <h2 className="text-lg font-semibold">Dados iniciais</h2>
-              <Badge variant="secondary" className="text-xs">Fase 1</Badge>
             </div>
             <GuideFlowForm onGenerate={handleGenerate} isGenerating={isGenerating} />
           </CardContent>
@@ -169,7 +171,35 @@ export default function GuideFlow() {
                 <ArrowLeft className="h-4 w-4" /> Voltar
               </Button>
 
-              <div className="flex gap-2">
+              <div className="flex items-center gap-2">
+                {/* View mode toggle */}
+                <div className="flex items-center bg-muted rounded-[var(--admin-radius)] p-0.5">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setViewMode('nodes')}
+                    className={cn(
+                      'h-7 gap-1.5 text-xs rounded-[calc(var(--admin-radius)-2px)] px-2.5',
+                      viewMode === 'nodes' && 'bg-background shadow-sm text-foreground',
+                      viewMode !== 'nodes' && 'text-muted-foreground hover:text-foreground',
+                    )}
+                  >
+                    <Network className="h-3 w-3" /> Nós
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setViewMode('tabs')}
+                    className={cn(
+                      'h-7 gap-1.5 text-xs rounded-[calc(var(--admin-radius)-2px)] px-2.5',
+                      viewMode === 'tabs' && 'bg-background shadow-sm text-foreground',
+                      viewMode !== 'tabs' && 'text-muted-foreground hover:text-foreground',
+                    )}
+                  >
+                    <LayoutList className="h-3 w-3" /> Campos
+                  </Button>
+                </div>
+
                 <Button
                   variant="ghost"
                   size="sm"
@@ -183,7 +213,11 @@ export default function GuideFlow() {
 
             <Card className="rounded-[var(--admin-radius)]">
               <CardContent className="pt-6">
-                <GuideFlowPreview data={guideData} onChange={setGuideData} />
+                {viewMode === 'nodes' ? (
+                  <GuideFlowNodes data={guideData} onChange={setGuideData} />
+                ) : (
+                  <GuideFlowPreview data={guideData} onChange={setGuideData} />
+                )}
               </CardContent>
             </Card>
 
