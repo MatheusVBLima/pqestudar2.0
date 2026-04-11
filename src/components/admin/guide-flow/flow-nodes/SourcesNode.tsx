@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { Handle, Position } from '@xyflow/react';
 import { Badge } from '@/components/ui/badge';
-import { FileText, FolderOpen, CheckCircle2, AlertTriangle, Loader2, BookOpen, RefreshCw } from 'lucide-react';
+import { FileText, FolderOpen, CheckCircle2, AlertTriangle, Loader2, BookOpen, RefreshCw, XCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { StorageFile } from '@/hooks/useGuideStorageSources';
 import { Button } from '@/components/ui/button';
@@ -15,6 +15,8 @@ interface SourcesNodeData {
   isLoadingLibrary: boolean;
   structureError: string | null;
   libraryError: string | null;
+  structureStatus?: 'idle' | 'loading' | 'success' | 'error';
+  libraryStatus?: 'idle' | 'loading' | 'success' | 'error';
   onSelectLibrary?: (folder: string) => void;
   onRefresh?: () => void;
 }
@@ -23,15 +25,18 @@ function SourcesNodeComponent({ data }: { data: any }) {
   const {
     structureFiles, libraryFiles, selectedLibrary, libraryFolders,
     isLoadingStructure, isLoadingLibrary, structureError, libraryError,
+    structureStatus, libraryStatus,
     onSelectLibrary, onRefresh,
   } = data as SourcesNodeData;
 
   const hasStructure = structureFiles.length > 0;
-  const hasLibrary = libraryFiles.length > 0 && selectedLibrary;
+  // For library: either has root files or a selected folder with files
+  const totalLibraryItems = libraryFolders.length + libraryFiles.length;
+  const hasLibrary = libraryFiles.length > 0;
   const isReady = hasStructure && hasLibrary;
 
   return (
-    <div className="bg-card border border-border rounded-[1.2rem] shadow-card w-[340px] overflow-hidden">
+    <div className="bg-card border border-border rounded-[1.2rem] shadow-card w-[360px] overflow-hidden">
       <Handle type="source" position={Position.Right} className="!bg-primary !w-3 !h-3 !border-2 !border-card" />
 
       {/* Header */}
@@ -58,6 +63,8 @@ function SourcesNodeComponent({ data }: { data: any }) {
           <div className="flex items-center gap-1.5">
             {isLoadingStructure ? (
               <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
+            ) : structureStatus === 'error' ? (
+              <XCircle className="h-3 w-3 text-destructive" />
             ) : hasStructure ? (
               <CheckCircle2 className="h-3 w-3 text-emerald-500" />
             ) : (
@@ -68,11 +75,27 @@ function SourcesNodeComponent({ data }: { data: any }) {
               {structureFiles.length} arquivo{structureFiles.length !== 1 ? 's' : ''}
             </span>
           </div>
+
+          {/* Status badge */}
+          {structureStatus && structureStatus !== 'loading' && (
+            <div className="pl-4">
+              <span className={cn(
+                'text-[9px] px-1.5 py-0.5 rounded-full',
+                structureStatus === 'success' ? 'bg-emerald-500/10 text-emerald-600' :
+                structureStatus === 'error' ? 'bg-destructive/10 text-destructive' :
+                'bg-muted text-muted-foreground'
+              )}>
+                {structureStatus === 'success' ? '✓ Bucket lido com sucesso' : 
+                 structureStatus === 'error' ? '✗ Falha na leitura' : '…'}
+              </span>
+            </div>
+          )}
+
           {structureError && (
-            <p className="text-[10px] text-destructive">{structureError}</p>
+            <p className="text-[10px] text-destructive pl-4 break-all">Erro: {structureError}</p>
           )}
           {hasStructure && (
-            <div className="max-h-[100px] overflow-y-auto space-y-0.5 pl-4">
+            <div className="max-h-[120px] overflow-y-auto space-y-0.5 pl-4">
               {structureFiles.map(f => (
                 <div key={f.name} className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
                   <FileText className="h-2.5 w-2.5 shrink-0" />
@@ -81,9 +104,9 @@ function SourcesNodeComponent({ data }: { data: any }) {
               ))}
             </div>
           )}
-          {!hasStructure && !isLoadingStructure && (
+          {!hasStructure && !isLoadingStructure && !structureError && (
             <p className="text-[10px] text-amber-600 pl-4">
-              Nenhuma diretriz encontrada. Envie arquivos ao bucket guide-structure.
+              Leitura concluída — nenhum arquivo encontrado no bucket guide-structure.
             </p>
           )}
         </div>
@@ -96,6 +119,8 @@ function SourcesNodeComponent({ data }: { data: any }) {
           <div className="flex items-center gap-1.5">
             {isLoadingLibrary ? (
               <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
+            ) : libraryStatus === 'error' ? (
+              <XCircle className="h-3 w-3 text-destructive" />
             ) : hasLibrary ? (
               <CheckCircle2 className="h-3 w-3 text-emerald-500" />
             ) : (
@@ -103,15 +128,33 @@ function SourcesNodeComponent({ data }: { data: any }) {
             )}
             <span className="text-xs font-medium">guide-library</span>
             <span className="text-[10px] text-muted-foreground ml-auto">
-              {libraryFolders.length} biblioteca{libraryFolders.length !== 1 ? 's' : ''}
+              {libraryFolders.length > 0
+                ? `${libraryFolders.length} pasta${libraryFolders.length !== 1 ? 's' : ''}`
+                : `${libraryFiles.length} arquivo${libraryFiles.length !== 1 ? 's' : ''}`
+              }
             </span>
           </div>
 
-          {libraryError && (
-            <p className="text-[10px] text-destructive">{libraryError}</p>
+          {/* Status badge */}
+          {libraryStatus && libraryStatus !== 'loading' && (
+            <div className="pl-4">
+              <span className={cn(
+                'text-[9px] px-1.5 py-0.5 rounded-full',
+                libraryStatus === 'success' ? 'bg-emerald-500/10 text-emerald-600' :
+                libraryStatus === 'error' ? 'bg-destructive/10 text-destructive' :
+                'bg-muted text-muted-foreground'
+              )}>
+                {libraryStatus === 'success' ? '✓ Bucket lido com sucesso' :
+                 libraryStatus === 'error' ? '✗ Falha na leitura' : '…'}
+              </span>
+            </div>
           )}
 
-          {/* Library selector */}
+          {libraryError && (
+            <p className="text-[10px] text-destructive pl-4 break-all">Erro: {libraryError}</p>
+          )}
+
+          {/* Library folder selector */}
           {libraryFolders.length > 0 && (
             <div className="pl-4 space-y-1">
               {libraryFolders.map(folder => (
@@ -135,8 +178,32 @@ function SourcesNodeComponent({ data }: { data: any }) {
             </div>
           )}
 
-          {/* Selected library files */}
-          {selectedLibrary && libraryFiles.length > 0 && (
+          {/* Root-level library files (when no folders exist, files ARE the libraries) */}
+          {libraryFolders.length === 0 && libraryFiles.length > 0 && (
+            <div className="pl-4 space-y-1">
+              {libraryFiles.map(f => (
+                <button
+                  key={f.name}
+                  onClick={() => onSelectLibrary?.(f.name)}
+                  className={cn(
+                    'flex items-center gap-1.5 text-[10px] w-full text-left px-2 py-1 rounded-md transition-colors',
+                    selectedLibrary === f.name
+                      ? 'bg-primary/10 text-primary font-medium'
+                      : 'text-muted-foreground hover:bg-muted'
+                  )}
+                >
+                  <FileText className="h-2.5 w-2.5 shrink-0" />
+                  <span className="truncate">{f.name}</span>
+                  {selectedLibrary === f.name && (
+                    <CheckCircle2 className="h-2.5 w-2.5 ml-auto shrink-0 text-emerald-500" />
+                  )}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Selected folder files */}
+          {selectedLibrary && libraryFolders.length > 0 && libraryFiles.length > 0 && (
             <div className="max-h-[80px] overflow-y-auto space-y-0.5 pl-6 mt-1">
               {libraryFiles.map(f => (
                 <div key={f.name} className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
@@ -147,15 +214,15 @@ function SourcesNodeComponent({ data }: { data: any }) {
             </div>
           )}
 
-          {!selectedLibrary && !isLoadingLibrary && libraryFolders.length > 0 && (
+          {!isLoadingLibrary && libraryFolders.length === 0 && libraryFiles.length === 0 && !libraryError && (
             <p className="text-[10px] text-amber-600 pl-4">
-              Selecione uma biblioteca para gerar com base factual.
+              Leitura concluída — nenhum arquivo encontrado no bucket guide-library.
             </p>
           )}
 
-          {!isLoadingLibrary && libraryFolders.length === 0 && libraryFiles.length === 0 && (
+          {!selectedLibrary && !isLoadingLibrary && (libraryFolders.length > 0 || libraryFiles.length > 0) && (
             <p className="text-[10px] text-amber-600 pl-4">
-              Nenhuma biblioteca encontrada. Envie arquivos ao bucket guide-library.
+              Selecione uma biblioteca para gerar com base factual.
             </p>
           )}
         </div>
@@ -173,7 +240,7 @@ function SourcesNodeComponent({ data }: { data: any }) {
             ? '⚠ Sem fontes — geração será genérica e não validada'
             : !hasStructure
             ? '⚠ Sem diretrizes editoriais — validação incompleta'
-            : '⚠ Sem biblioteca factual — conteúdo sem base verificável'
+            : '⚠ Selecione uma biblioteca factual para geração fundamentada'
           }
         </div>
       </div>
