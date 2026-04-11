@@ -48,20 +48,38 @@ serve(async (req) => {
       });
     }
 
-    // Fetch real data for contextual suggestions
-    const [guidesRes, toolsRes, contestsRes] = await Promise.all([
+    // Fetch real data + knowledge base in parallel
+    const [guidesRes, toolsRes, contestsRes, knowledgeRes] = await Promise.all([
       supabase.from("guides").select("id, title, slug, category, short_description").eq("is_published", true).limit(30),
       supabase.from("tools").select("id, name, description, url").eq("is_visible", true).limit(30),
       supabase.from("oportunidades").select("id, titulo, slug, situacao, tipo").eq("publicado", true).limit(20),
+      supabase.from("guide_flow_knowledge").select("title, content, category").eq("is_active", true).order("sort_order"),
     ]);
 
     const existingGuides = (guidesRes.data ?? []).map((g: any) => `- "${g.title}" (/guias/${g.slug}) [${g.category}]`).join("\n");
     const existingTools = (toolsRes.data ?? []).map((t: any) => `- "${t.name}": ${t.description?.slice(0, 80) ?? ""} (${t.url})`).join("\n");
     const existingContests = (contestsRes.data ?? []).map((c: any) => `- "${c.titulo}" (/concursos/${c.slug}) [${c.situacao}]`).join("\n");
 
+    // Build knowledge base section from DB entries
+    const knowledgeEntries = knowledgeRes.data ?? [];
+    let knowledgeSection = "";
+    if (knowledgeEntries.length > 0) {
+      const grouped: Record<string, typeof knowledgeEntries> = {};
+      for (const entry of knowledgeEntries) {
+        const cat = entry.category || "geral";
+        if (!grouped[cat]) grouped[cat] = [];
+        grouped[cat].push(entry);
+      }
+      const sections = Object.entries(grouped).map(([cat, entries]) => {
+        const items = entries.map((e: any) => `### ${e.title}\n${e.content}`).join("\n\n");
+        return `## Biblioteca: ${cat}\n\n${items}`;
+      });
+      knowledgeSection = `\n\n## Base de conhecimento e diretrizes do editor\nAs regras e referências abaixo foram cadastradas pelo administrador e DEVEM ser seguidas na geração do conteúdo.\n\n${sections.join("\n\n")}`;
+    }
+
     const systemPrompt = `Você é um editor assistente do portal PqEstudar, especializado em criar guias práticos e educativos para concurseiros.
 
-## Diretrizes editoriais
+## Diretrizes editoriais base
 - Tom: direto, profissional, amigável e empático com quem estuda para concursos
 - Idioma: PT-BR
 - Estrutura: H2 para seções principais (sempre em negrito: ## **Título**), H3 para subseções
@@ -71,12 +89,19 @@ serve(async (req) => {
 - Imagens: sugerir onde inserir imagens com placeholder <img src="URL" alt="descrição" width="100%" />
 - Separar seções com --- quando fizer sentido
 - Incluir FAQ no final quando relevante
+- Evitar buzzwords vazias (disruptivo, inovador, revolucionário, incrível)
+- Evitar frases genéricas de abertura ("neste artigo vamos falar sobre...")
+- Manter frases curtas (média de 22 palavras por frase)
+- Usar voz ativa sempre que possível
 
 ## CTAs contextuais
 - CTA superior: mais leve, convite suave (ex: newsletter, kit gratuito)
 - CTA intermediária: relacionada ao conteúdo sendo lido (ex: ferramenta, curadoria)
 - CTA final: mais forte, conversão direta (ex: premium, curso)
 - Todas devem ter relação real com o tema do guia
+- Labels de CTA devem ser específicas e acionáveis (evitar "Saiba mais", "Clique aqui")
+- URLs de CTA devem ser internas (começar com /)
+${knowledgeSection}
 
 ## Dados reais disponíveis para links e CTAs
 

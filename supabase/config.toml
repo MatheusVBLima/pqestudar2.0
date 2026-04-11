@@ -44,3 +44,6 @@ verify_jwt = false
 
 [functions.guide-flow-generate]
 verify_jwt = false
+
+[functions.guide-flow-knowledge]
+verify_jwt = false

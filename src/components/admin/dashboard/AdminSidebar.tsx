@@ -175,6 +175,22 @@ export function AdminSidebar() {
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  isActive={pathname === '/admin/fluxo-guias/biblioteca'}
+                  tooltip="Biblioteca de Conhecimento"
+                  className={cn(
+                    'rounded-[var(--admin-radius)] font-medium text-xs',
+                    pathname === '/admin/fluxo-guias/biblioteca' && 'bg-primary/10 text-primary font-semibold border border-primary/20'
+                  )}
+                >
+                  <Link to="/admin/fluxo-guias/biblioteca">
+                    <BookOpen className="h-4 w-4" />
+                    <span>Biblioteca</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
