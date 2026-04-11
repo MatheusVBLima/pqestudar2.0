@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/admin/dashboard/PageHeader';
-import { FlowCanvas, buildGeneratedLayout } from '@/components/admin/guide-flow/FlowCanvas';
+import { FlowCanvas } from '@/components/admin/guide-flow/FlowCanvas';
 import type { GeneratedGuideData } from '@/components/admin/guide-flow/GuideFlowPreview';
 import type { GuideFlowInputs } from '@/components/admin/guide-flow/GuideFlowForm';
 import { hasValidationErrors } from '@/components/admin/guide-flow/GuideFlowValidation';
