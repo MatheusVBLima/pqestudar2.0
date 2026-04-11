@@ -1,88 +1,83 @@
 
-## Diagnóstico do Problema
 
-O `tailwind.config.ts` tem um bug de posicionamento: o bloco `boxShadow` está com indentação incorreta — ele foi inserido **fora** do bloco `extend`, em vez de dentro. Isso faz com que o Tailwind ignore ou trate incorretamente o token `shadow-card`.
+## Plano: Biblioteca indexada a partir do Supabase Storage
 
-### Estrutura atual (com bug):
+### Contexto
 
-```
-theme: {
-  extend: {
-    colors: { ... },
-    backgroundImage: { ... },
-  // ← indentação quebrada aqui
-  boxShadow: {           <-- FORA do extend
-    'card': '...',
-  },
-    transitionTimingFunction: { ... },  <-- voltou para dentro
-```
+A página **Biblioteca de Conhecimento** (`/admin/biblioteca`) hoje opera apenas com cadastro manual na tabela `guide_flow_knowledge`. Os buckets `guide-structure` e `guide-library` contêm arquivos reais, mas não há conexão entre eles e a Biblioteca. O objetivo é transformar a Biblioteca em uma camada indexada desses arquivos.
 
-Quando `boxShadow` fica fora de `extend`, ele substitui o sistema completo de sombras do Tailwind em vez de adicionar ao existente — e pode ser ignorado por parsers dependendo da versão.
+### Problema adicional conhecido
 
-### Solução
-
-**1. Corrigir `tailwind.config.ts`**: mover `boxShadow` para dentro de `theme.extend` com indentação correta, garantindo que `shadow-card` seja gerado como utilidade Tailwind válida.
-
-**2. Garantir aplicação em `src/components/ui/card.tsx`**: o `<Card />` base já tem `shadow-card` na classe padrão — isso está correto e não precisa mudar.
-
-**3. Verificar `src/pages/Ferramentas.tsx`**: o `SortableToolCard` usa `<Card className="h-full shadow-card ...">` — isso está correto. Com o config corrigido, o `shadow-card` passará a ser uma utilidade válida reconhecida pelo Tailwind e será aplicado.
-
-### O que será alterado
-
-| Arquivo | Mudança |
-|---|---|
-| `tailwind.config.ts` | Mover `boxShadow` para dentro de `theme.extend` com indentação correta |
-
-### O que NÃO será alterado
-
-- Nenhuma página além das 3 rotas afetadas indiretamente pelo token
-- Nenhuma lógica, rota, menu ou componente de negócio
-- Nenhum novo efeito visual além da sombra já especificada
-- O valor do shadow permanece exatamente: `0 4px 10px hsl(240 30% 25% / 0.12)`
-
-### Por que só o config precisa mudar?
-
-O `card.tsx` e `Ferramentas.tsx` já estão corretos — eles usam `shadow-card`. O problema é que a classe `shadow-card` não existe de fato no CSS gerado porque o token está mal posicionado no config. Corrigindo o config, a classe passa a existir e os arquivos já a consomem corretamente.
+A leitura client-side dos buckets está bloqueada por RLS (retorna 0 arquivos). A sincronização precisa ser feita via Edge Function com service role.
 
 ---
 
-## Performance Guardrails — Home `/` (Sprint 2)
+### Fase 1 — Migração: adicionar colunas de origem na tabela
 
-### Regras anti-regressão (o que NÃO pode voltar)
+Adicionar colunas à tabela `guide_flow_knowledge` para rastrear origem Storage:
 
-1. **Scripts síncronos no `<head>`**: Meta Pixel e qualquer outro terceiro devem ser adiados via `requestIdleCallback` ou `setTimeout`. NUNCA inserir `<script>` síncrono que bloqueie render.
+- `source_type` (`text`, default `'manual'`) — valores: `manual`, `storage`
+- `source_bucket` (`text`, nullable) — ex: `guide-structure`, `guide-library`
+- `source_path` (`text`, nullable) — path completo do arquivo no bucket
+- `synced_at` (`timestamptz`, nullable) — data da última sincronização
+- Constraint `UNIQUE(source_bucket, source_path)` para evitar duplicação
 
-2. **Framer-motion no elemento LCP**: O `<h1>` da hero-section NÃO pode ter animação framer-motion (motion.h1). Animações atrasam o primeiro paint do LCP.
+### Fase 2 — Edge Function: ação `sync` no `guide-flow-knowledge`
 
-3. **Importar rotas estaticamente em App.tsx**: Apenas `Index` (home) é importado estaticamente. Todas as demais rotas DEVEM usar `React.lazy()`.
+Adicionar ação `sync` à Edge Function existente que:
 
-4. **Skeleton no H1 da hero**: O `<h1>` DEVE renderizar imediatamente com texto de fallback. NUNCA mostrar Skeleton no lugar do H1 — isso atrasa o LCP.
+1. Lista arquivos de `guide-structure` e `guide-library` usando service role
+2. Para cada arquivo encontrado:
+   - Verifica se já existe entrada com mesmo `source_bucket` + `source_path`
+   - Se não existe: cria entrada com `source_type = 'storage'`, título derivado do nome do arquivo, categoria inferida do bucket (`estrutura` para guide-structure, `referencia` para guide-library), conteúdo = texto extraído ou placeholder indicando que é PDF
+   - Se já existe: atualiza `synced_at`
+3. Retorna resumo: total encontrado, novos importados, já existentes, erros
 
-5. **Below-fold na home sem lazy**: Seções abaixo da dobra (`DualTrackSection`, `HomeProductsSection`, etc.) DEVEM ser lazy-loaded via `React.lazy` + `Suspense`.
+### Fase 3 — UI: botão de sincronização e indicadores de origem
 
-### Checklist de release para Home `/` (5 itens)
+Na página `GuideFlowKnowledge.tsx`:
 
-- [ ] H1 renderiza no primeiro paint (sem skeleton, sem esperar rede)
-- [ ] Nenhum `<script>` síncrono no `<head>` (exceto stub inline mínimo)
-- [ ] Seções below-fold usam `React.lazy`
-- [ ] Imagens na navbar têm `width`/`height` explícitos
-- [ ] Cookie banner usa `position: fixed` + `contain: layout` (sem CLS)
+- Adicionar botão **"Sincronizar Storage"** ao lado de "Nova entrada"
+- Cada card mostra badge de origem: `📦 Storage` ou `✍️ Manual`
+- Entradas de Storage mostram bucket e path de origem
+- Filtro por origem (manual / storage / todos)
+- Badge de status de sincronização no topo
 
-### Limites operacionais
+### Fase 4 — Consumo pelo Fluxo de Guias
 
-| Métrica | Limite |
-|---|---|
-| Chunk inicial (JS) | Deve conter apenas: React, Router, Home, Navbar, Hero |
-| Scripts terceiros na primeira dobra | 0 (todos adiados) |
-| Imagens acima da dobra sem dimensões | 0 |
-| Animações no elemento LCP | 0 |
+Atualizar o `guide-flow-generate` para buscar entradas da `guide_flow_knowledge` com `source_type = 'storage'` como fontes primárias, em vez de ler Storage diretamente no client.
 
-### Baseline registrada
+---
 
-| Métrica | Sprint 0 (antes) | Sprint 1 (depois) | Meta |
-|---|---|---|---|
-| LCP (lab) | 6.6s | — (medir) | ≤ 2.5s |
-| FCP (lab) | 4.6s | — (medir) | ≤ 1.8s |
-| TTFB (lab) | 2.0s | — (infra) | ≤ 0.8s |
-| CLS (campo) | 0.13 | — (medir) | ≤ 0.1 |
-| TBT (lab) | 100ms | — (medir) | ≤ 200ms |
+### Detalhes técnicos
+
+**Migração SQL:**
+```sql
+ALTER TABLE guide_flow_knowledge
+  ADD COLUMN source_type text NOT NULL DEFAULT 'manual',
+  ADD COLUMN source_bucket text,
+  ADD COLUMN source_path text,
+  ADD COLUMN synced_at timestamptz;
+
+ALTER TABLE guide_flow_knowledge
+  ADD CONSTRAINT uq_knowledge_source UNIQUE (source_bucket, source_path);
+```
+
+**Edge Function `sync` (lógica central):**
+- Usa `supabase.storage.from(bucket).list()` com service role (sem RLS)
+- Para PDFs, armazena referência (não extrai conteúdo inline — o `guide-flow-generate` já faz download server-side)
+- Categoria automática: `guide-structure` → `estrutura`, `guide-library` → `referencia`
+- Título: nome do arquivo sem extensão
+
+**Interface — indicadores visuais:**
+- Badge `📦 guide-structure` ou `📦 guide-library` para entradas importadas
+- Badge `✍️ Manual` para entradas criadas à mão
+- Tooltip com path completo e data de sincronização
+- Novo filtro dropdown: "Todas" / "Storage" / "Manual"
+
+**Arquivos a criar/editar:**
+- Migração SQL (nova)
+- `supabase/functions/guide-flow-knowledge/index.ts` (adicionar ação `sync`)
+- `src/hooks/useGuideFlowKnowledge.tsx` (adicionar `syncStorage`, tipar novas colunas)
+- `src/pages/admin/GuideFlowKnowledge.tsx` (botão sync, badges, filtro)
+
