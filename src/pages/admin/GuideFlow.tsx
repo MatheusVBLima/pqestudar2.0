@@ -1,46 +1,31 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { PageHeader } from '@/components/admin/dashboard/PageHeader';
-import { GuideFlowForm, type GuideFlowInputs } from '@/components/admin/guide-flow/GuideFlowForm';
-import { GuideFlowPreview, type GeneratedGuideData } from '@/components/admin/guide-flow/GuideFlowPreview';
-import { GuideFlowValidation, hasValidationErrors } from '@/components/admin/guide-flow/GuideFlowValidation';
-import { GuideFlowNodes } from '@/components/admin/guide-flow/GuideFlowNodes';
+import { FlowCanvas, buildGeneratedLayout } from '@/components/admin/guide-flow/FlowCanvas';
+import type { GeneratedGuideData } from '@/components/admin/guide-flow/GuideFlowPreview';
+import type { GuideFlowInputs } from '@/components/admin/guide-flow/GuideFlowForm';
+import { hasValidationErrors } from '@/components/admin/guide-flow/GuideFlowValidation';
 import { useGuidesMutations } from '@/hooks/useGuides';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import { Save, Send, ArrowLeft, Sparkles, RotateCcw, LayoutList, Network } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Save, Send, RotateCcw } from 'lucide-react';
 
 const EMPTY_GUIDE: GeneratedGuideData = {
-  title: '',
-  slug: '',
-  short_description: '',
-  seo_title: '',
-  seo_description: '',
-  category: '',
-  author_name: 'Equipe PqEstudar',
-  content_markdown: '',
-  cta_top: null,
-  cta_middle: null,
-  cta_final: null,
-  internal_links: [],
-  cover_image_suggestion: '',
+  title: '', slug: '', short_description: '', seo_title: '', seo_description: '',
+  category: '', author_name: 'Equipe PqEstudar', content_markdown: '',
+  cta_top: null, cta_middle: null, cta_final: null, internal_links: [], cover_image_suggestion: '',
 };
 
 export default function GuideFlow() {
   const navigate = useNavigate();
   const { createGuide } = useGuidesMutations();
 
-  const [step, setStep] = useState<'input' | 'review'>('input');
-  const [viewMode, setViewMode] = useState<'tabs' | 'nodes'>('nodes');
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [guideData, setGuideData] = useState<GeneratedGuideData>(EMPTY_GUIDE);
+  const [guideData, setGuideData] = useState<GeneratedGuideData | null>(null);
 
-  const handleGenerate = async (inputs: GuideFlowInputs) => {
+  const handleGenerate = useCallback(async (inputs: GuideFlowInputs) => {
     setIsGenerating(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -53,10 +38,7 @@ export default function GuideFlow() {
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/guide-flow-generate`,
         {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${session.access_token}`,
-          },
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
           body: JSON.stringify(inputs),
         }
       );
@@ -85,16 +67,16 @@ export default function GuideFlow() {
         cover_image_suggestion: generated.cover_image_suggestion ?? '',
       });
 
-      setStep('review');
-      toast({ title: 'Guia gerado com sucesso', description: 'Revise o conteúdo antes de salvar.' });
+      toast({ title: 'Guia gerado com sucesso', description: 'Explore os nós no canvas para revisar.' });
     } catch (err: any) {
       toast({ title: 'Erro', description: err.message, variant: 'destructive' });
     } finally {
       setIsGenerating(false);
     }
-  };
+  }, []);
 
   const handleSave = async (publish: boolean) => {
+    if (!guideData) return;
     if (hasValidationErrors(guideData)) {
       toast({ title: 'Erros de validação', description: 'Corrija os campos obrigatórios antes de salvar.', variant: 'destructive' });
       return;
@@ -102,7 +84,7 @@ export default function GuideFlow() {
 
     setIsSaving(true);
     try {
-      const guidePayload: any = {
+      await createGuide.mutateAsync({
         title: guideData.title,
         slug: guideData.slug,
         short_description: guideData.short_description,
@@ -125,12 +107,10 @@ export default function GuideFlow() {
         cta_final_label: guideData.cta_final?.label || null,
         cta_final_url: guideData.cta_final?.url || null,
         cta_final_text: guideData.cta_final?.text || null,
-      };
-
-      await createGuide.mutateAsync(guidePayload);
+      });
       toast({
         title: publish ? 'Guia publicado!' : 'Rascunho salvo!',
-        description: `O guia "${guideData.title}" foi ${publish ? 'publicado' : 'salvo como rascunho'}.`,
+        description: `"${guideData.title}" foi ${publish ? 'publicado' : 'salvo como rascunho'}.`,
       });
       navigate('/guias');
     } catch (err: any) {
@@ -140,119 +120,56 @@ export default function GuideFlow() {
     }
   };
 
-  return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Fluxo de Guias"
-        description="Criação assistida de guias com IA — gere, revise e publique em minutos."
-      />
+  const handleReset = () => {
+    setGuideData(null);
+  };
 
-      {step === 'input' ? (
-        <Card className="rounded-[var(--admin-radius)]">
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-2 mb-6">
-              <Sparkles className="h-5 w-5 text-primary" />
-              <h2 className="text-lg font-semibold">Dados iniciais</h2>
-            </div>
-            <GuideFlowForm onGenerate={handleGenerate} isGenerating={isGenerating} />
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-6">
-          {/* Main content */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <PageHeader
+          title="Fluxo de Guias"
+          description="Criação assistida de guias com IA — gere, revise e publique em minutos."
+        />
+        <div className="flex items-center gap-2">
+          {guideData && (
+            <>
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setStep('input')}
-                className="gap-1 rounded-[var(--admin-radius)]"
+                onClick={handleReset}
+                className="gap-1.5 rounded-[var(--admin-radius)]"
               >
-                <ArrowLeft className="h-4 w-4" /> Voltar
+                <RotateCcw className="h-3.5 w-3.5" /> Recomeçar
               </Button>
-
-              <div className="flex items-center gap-2">
-                {/* View mode toggle */}
-                <div className="flex items-center bg-muted rounded-[var(--admin-radius)] p-0.5">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setViewMode('nodes')}
-                    className={cn(
-                      'h-7 gap-1.5 text-xs rounded-[calc(var(--admin-radius)-2px)] px-2.5',
-                      viewMode === 'nodes' && 'bg-background shadow-sm text-foreground',
-                      viewMode !== 'nodes' && 'text-muted-foreground hover:text-foreground',
-                    )}
-                  >
-                    <Network className="h-3 w-3" /> Nós
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setViewMode('tabs')}
-                    className={cn(
-                      'h-7 gap-1.5 text-xs rounded-[calc(var(--admin-radius)-2px)] px-2.5',
-                      viewMode === 'tabs' && 'bg-background shadow-sm text-foreground',
-                      viewMode !== 'tabs' && 'text-muted-foreground hover:text-foreground',
-                    )}
-                  >
-                    <LayoutList className="h-3 w-3" /> Campos
-                  </Button>
-                </div>
-
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => { setGuideData(EMPTY_GUIDE); setStep('input'); }}
-                  className="gap-1 rounded-[var(--admin-radius)]"
-                >
-                  <RotateCcw className="h-3 w-3" /> Recomeçar
-                </Button>
-              </div>
-            </div>
-
-            <Card className="rounded-[var(--admin-radius)]">
-              <CardContent className="pt-6">
-                {viewMode === 'nodes' ? (
-                  <GuideFlowNodes data={guideData} onChange={setGuideData} />
-                ) : (
-                  <GuideFlowPreview data={guideData} onChange={setGuideData} />
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Save actions */}
-            <div className="flex gap-3 justify-end">
               <Button
                 variant="outline"
+                size="sm"
                 onClick={() => handleSave(false)}
                 disabled={isSaving}
-                className="gap-2 rounded-[var(--admin-radius)]"
+                className="gap-1.5 rounded-[var(--admin-radius)]"
               >
-                <Save className="h-4 w-4" />
-                Salvar como rascunho
+                <Save className="h-3.5 w-3.5" /> Rascunho
               </Button>
               <Button
+                size="sm"
                 onClick={() => handleSave(true)}
                 disabled={isSaving}
-                className="gap-2 rounded-[var(--admin-radius)]"
+                className="gap-1.5 rounded-[var(--admin-radius)]"
               >
-                <Send className="h-4 w-4" />
-                Criar e publicar
+                <Send className="h-3.5 w-3.5" /> Publicar
               </Button>
-            </div>
-          </div>
-
-          {/* Validation sidebar */}
-          <div className="lg:sticky lg:top-6 h-fit">
-            <Card className="rounded-[var(--admin-radius)]">
-              <CardContent className="pt-4 pb-4">
-                <GuideFlowValidation data={guideData} />
-              </CardContent>
-            </Card>
-          </div>
+            </>
+          )}
         </div>
-      )}
+      </div>
+
+      <FlowCanvas
+        guideData={guideData}
+        isGenerating={isGenerating}
+        onGenerate={handleGenerate}
+        onGuideDataChange={setGuideData}
+      />
     </div>
   );
 }
