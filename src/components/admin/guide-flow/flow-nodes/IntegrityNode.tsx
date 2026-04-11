@@ -1,107 +1,69 @@
 import { memo, useMemo } from 'react';
 import { Handle, Position } from '@xyflow/react';
 import { Badge } from '@/components/ui/badge';
-import { ShieldCheck, CheckCircle2, AlertTriangle, XCircle, MinusCircle, HelpCircle } from 'lucide-react';
+import { ShieldCheck, CheckCircle2, AlertTriangle, XCircle, MinusCircle, HelpCircle, Link2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { GeneratedGuideData } from '../GuideFlowPreview';
+import { resolveStructureMapping, STRUCTURE_DIMENSIONS, type StructureMapping } from '@/lib/guide-structure-mapping';
 
-type ComplianceStatus = 'conforme' | 'parcial' | 'nao_conforme' | 'nao_verificado' | 'nao_aplicavel';
+type ComplianceStatus = 'conforme' | 'parcial' | 'nao_conforme' | 'nao_verificado' | 'nao_aplicavel' | 'sem_fonte';
 
 interface DirectiveCheck {
   directive: string;
-  sourceFile: string;
+  sourceFile: string | null;
   status: ComplianceStatus;
   observation: string;
 }
 
 function evaluateDirectives(data: GeneratedGuideData, structureFiles: string[]): DirectiveCheck[] {
   const checks: DirectiveCheck[] = [];
+  const mapping = resolveStructureMapping(structureFiles);
 
-  // Map known directive file names to checks
-  const hasFile = (pattern: string) => structureFiles.some(f => f.toLowerCase().includes(pattern.toLowerCase()));
+  const getMapping = (key: string) => mapping.find(m => m.key === key);
 
-  // 1. Estrutura Textual
-  if (hasFile('Estrutura') || hasFile('estrutura')) {
-    const hasH2 = /^## /m.test(data.content_markdown);
-    const hasH3 = /^### /m.test(data.content_markdown);
-    const sections = (data.content_markdown.match(/^## /gm) || []).length;
-    checks.push({
-      directive: 'Estrutura Textual',
-      sourceFile: structureFiles.find(f => f.toLowerCase().includes('estrutura')) || 'guide-structure',
-      status: hasH2 && sections >= 3 ? 'conforme' : hasH2 ? 'parcial' : 'nao_conforme',
-      observation: hasH2
-        ? `${sections} seções H2${hasH3 ? ', com sub-seções H3' : ''}`
-        : 'Faltam seções H2 na hierarquia',
-    });
-  }
-
-  // 2. Estilo de Títulos
-  if (hasFile('Título') || hasFile('titulo') || hasFile('Titulos')) {
+  // 1. Títulos
+  const titulos = getMapping('titulos');
+  if (titulos?.resolvedFile) {
     const titleLen = data.title.length;
     const hasBoldH2 = /^## \*\*/m.test(data.content_markdown);
     checks.push({
       directive: 'Estilo de Títulos',
-      sourceFile: structureFiles.find(f => f.toLowerCase().includes('titul')) || 'guide-structure',
+      sourceFile: titulos.resolvedFile,
       status: titleLen > 10 && titleLen <= 70 && hasBoldH2 ? 'conforme' : titleLen > 10 ? 'parcial' : 'nao_conforme',
       observation: hasBoldH2
         ? `Título com ${titleLen} chars, H2 em negrito`
         : `Título com ${titleLen} chars${!hasBoldH2 ? ', H2 sem negrito' : ''}`,
     });
+  } else {
+    checks.push({ directive: 'Estilo de Títulos', sourceFile: null, status: 'sem_fonte', observation: 'Arquivo de diretriz não encontrado no bucket' });
   }
 
-  // 3. Linguagem Padrão
-  if (hasFile('Linguagem') || hasFile('linguagem')) {
-    const buzzwords = ['disruptivo', 'inovador', 'revolucionário', 'incrível', 'fantástico'];
-    const found = buzzwords.filter(w => data.content_markdown.toLowerCase().includes(w));
-    const genericOpeners = ['neste artigo', 'nesse artigo', 'vamos falar sobre'];
-    const hasGeneric = genericOpeners.some(g => data.content_markdown.toLowerCase().includes(g));
+  // 2. Estrutura Textual
+  const estrutura = getMapping('estrutura');
+  if (estrutura?.resolvedFile) {
+    const hasH2 = /^## /m.test(data.content_markdown);
+    const hasH3 = /^### /m.test(data.content_markdown);
+    const sections = (data.content_markdown.match(/^## /gm) || []).length;
     checks.push({
-      directive: 'Linguagem Padrão',
-      sourceFile: structureFiles.find(f => f.toLowerCase().includes('linguagem')) || 'guide-structure',
-      status: found.length === 0 && !hasGeneric ? 'conforme' : 'parcial',
-      observation: found.length > 0
-        ? `Buzzwords encontradas: ${found.join(', ')}`
-        : hasGeneric
-        ? 'Abertura genérica detectada'
-        : 'Linguagem aderente ao padrão',
+      directive: 'Estrutura Textual',
+      sourceFile: estrutura.resolvedFile,
+      status: hasH2 && sections >= 3 ? 'conforme' : hasH2 ? 'parcial' : 'nao_conforme',
+      observation: hasH2
+        ? `${sections} seções H2${hasH3 ? ', com sub-seções H3' : ''}`
+        : 'Faltam seções H2 na hierarquia',
     });
+  } else {
+    checks.push({ directive: 'Estrutura Textual', sourceFile: null, status: 'sem_fonte', observation: 'Arquivo de diretriz não encontrado no bucket' });
   }
 
-  // 4. Ritmo de Leitura
-  if (hasFile('Ritmo') || hasFile('ritmo')) {
-    const sentences = data.content_markdown.split(/[.!?]+/).filter(s => s.trim().length > 5);
-    const avgWords = sentences.length > 0
-      ? sentences.reduce((sum, s) => sum + s.trim().split(/\s+/).length, 0) / sentences.length
-      : 0;
-    checks.push({
-      directive: 'Ritmo de Leitura',
-      sourceFile: structureFiles.find(f => f.toLowerCase().includes('ritmo')) || 'guide-structure',
-      status: avgWords > 0 && avgWords <= 25 ? 'conforme' : avgWords <= 30 ? 'parcial' : 'nao_conforme',
-      observation: `Média de ${Math.round(avgWords)} palavras/frase (ideal ≤ 22)`,
-    });
-  }
-
-  // 5. Sistema de Links Internos
-  if (hasFile('Links') || hasFile('links')) {
-    const linkCount = data.internal_links.length;
-    const allInternal = data.internal_links.every(l => l.url.startsWith('/'));
-    checks.push({
-      directive: 'Sistema de Links Internos',
-      sourceFile: structureFiles.find(f => f.toLowerCase().includes('link')) || 'guide-structure',
-      status: linkCount >= 2 && allInternal ? 'conforme' : linkCount >= 1 ? 'parcial' : 'nao_conforme',
-      observation: linkCount === 0
-        ? 'Nenhum link interno sugerido'
-        : `${linkCount} link${linkCount > 1 ? 's' : ''} interno${linkCount > 1 ? 's' : ''}${!allInternal ? ' (alguns externos)' : ''}`,
-    });
-  }
-
-  // 6. Diretriz de Imagens
-  if (hasFile('Imagem') || hasFile('imagem') || hasFile('Imagens')) {
+  // 3. Imagens
+  const imagens = getMapping('imagens');
+  if (imagens?.resolvedFile) {
     const hasImageTag = /<img/i.test(data.content_markdown);
     const hasImageSuggestion = !!data.cover_image_suggestion;
     checks.push({
       directive: 'Diretriz de Imagens',
-      sourceFile: structureFiles.find(f => f.toLowerCase().includes('imag')) || 'guide-structure',
+      sourceFile: imagens.resolvedFile,
       status: hasImageTag || hasImageSuggestion ? 'conforme' : 'parcial',
       observation: hasImageTag
         ? 'Referências de imagem encontradas no conteúdo'
@@ -109,20 +71,80 @@ function evaluateDirectives(data: GeneratedGuideData, structureFiles: string[]):
         ? 'Sugestão de capa presente, sem imagens no corpo'
         : 'Sem referências de imagem',
     });
+  } else {
+    checks.push({ directive: 'Diretriz de Imagens', sourceFile: null, status: 'sem_fonte', observation: 'Arquivo de diretriz não encontrado no bucket' });
   }
 
-  // 7. Função do Tipo de Guia
-  if (hasFile('Função') || hasFile('funcao') || hasFile('Tipo')) {
+  // 4. Tipo de Guia
+  const tipoGuia = getMapping('tipo_guia');
+  if (tipoGuia?.resolvedFile) {
     const words = data.content_markdown.split(/\s+/).length;
     checks.push({
       directive: 'Função do Tipo de Guia',
-      sourceFile: structureFiles.find(f => f.toLowerCase().includes('fun') || f.toLowerCase().includes('tipo')) || 'guide-structure',
+      sourceFile: tipoGuia.resolvedFile,
       status: words >= 500 ? 'conforme' : words >= 300 ? 'parcial' : 'nao_conforme',
       observation: `${words} palavras no conteúdo`,
     });
+  } else {
+    checks.push({ directive: 'Função do Tipo de Guia', sourceFile: null, status: 'sem_fonte', observation: 'Arquivo de diretriz não encontrado no bucket' });
   }
 
-  // SEO checks (always)
+  // 5. Linguagem
+  const linguagem = getMapping('linguagem');
+  if (linguagem?.resolvedFile) {
+    const buzzwords = ['disruptivo', 'inovador', 'revolucionário', 'incrível', 'fantástico'];
+    const found = buzzwords.filter(w => data.content_markdown.toLowerCase().includes(w));
+    const genericOpeners = ['neste artigo', 'nesse artigo', 'vamos falar sobre'];
+    const hasGeneric = genericOpeners.some(g => data.content_markdown.toLowerCase().includes(g));
+    checks.push({
+      directive: 'Linguagem Padrão',
+      sourceFile: linguagem.resolvedFile,
+      status: found.length === 0 && !hasGeneric ? 'conforme' : 'parcial',
+      observation: found.length > 0
+        ? `Buzzwords encontradas: ${found.join(', ')}`
+        : hasGeneric
+        ? 'Abertura genérica detectada'
+        : 'Linguagem aderente ao padrão',
+    });
+  } else {
+    checks.push({ directive: 'Linguagem Padrão', sourceFile: null, status: 'sem_fonte', observation: 'Arquivo de diretriz não encontrado no bucket' });
+  }
+
+  // 6. Ritmo
+  const ritmo = getMapping('ritmo');
+  if (ritmo?.resolvedFile) {
+    const sentences = data.content_markdown.split(/[.!?]+/).filter(s => s.trim().length > 5);
+    const avgWords = sentences.length > 0
+      ? sentences.reduce((sum, s) => sum + s.trim().split(/\s+/).length, 0) / sentences.length
+      : 0;
+    checks.push({
+      directive: 'Ritmo de Leitura',
+      sourceFile: ritmo.resolvedFile,
+      status: avgWords > 0 && avgWords <= 25 ? 'conforme' : avgWords <= 30 ? 'parcial' : 'nao_conforme',
+      observation: `Média de ${Math.round(avgWords)} palavras/frase (ideal ≤ 22)`,
+    });
+  } else {
+    checks.push({ directive: 'Ritmo de Leitura', sourceFile: null, status: 'sem_fonte', observation: 'Arquivo de diretriz não encontrado no bucket' });
+  }
+
+  // 7. Links Internos
+  const links = getMapping('links');
+  if (links?.resolvedFile) {
+    const linkCount = data.internal_links.length;
+    const allInternal = data.internal_links.every(l => l.url.startsWith('/'));
+    checks.push({
+      directive: 'Sistema de Links Internos',
+      sourceFile: links.resolvedFile,
+      status: linkCount >= 2 && allInternal ? 'conforme' : linkCount >= 1 ? 'parcial' : 'nao_conforme',
+      observation: linkCount === 0
+        ? 'Nenhum link interno sugerido'
+        : `${linkCount} link${linkCount > 1 ? 's' : ''} interno${linkCount > 1 ? 's' : ''}${!allInternal ? ' (alguns externos)' : ''}`,
+    });
+  } else {
+    checks.push({ directive: 'Sistema de Links Internos', sourceFile: null, status: 'sem_fonte', observation: 'Arquivo de diretriz não encontrado no bucket' });
+  }
+
+  // ─── Internal validations (always present) ───
   const seoTitleLen = data.seo_title?.length ?? 0;
   const seoDescLen = data.seo_description?.length ?? 0;
   checks.push({
@@ -138,7 +160,6 @@ function evaluateDirectives(data: GeneratedGuideData, structureFiles: string[]):
     observation: seoDescLen === 0 ? 'Meta description vazia' : `${seoDescLen}/160 caracteres`,
   });
 
-  // CTAs
   const ctaCount = [data.cta_top, data.cta_middle, data.cta_final].filter(Boolean).length;
   checks.push({
     directive: 'CTAs Contextuais',
@@ -147,7 +168,6 @@ function evaluateDirectives(data: GeneratedGuideData, structureFiles: string[]):
     observation: `${ctaCount}/3 CTAs definidas`,
   });
 
-  // Campos obrigatórios
   const missing: string[] = [];
   if (!data.title) missing.push('título');
   if (!data.slug) missing.push('slug');
@@ -161,25 +181,6 @@ function evaluateDirectives(data: GeneratedGuideData, structureFiles: string[]):
     observation: missing.length === 0 ? 'Todos preenchidos' : `Faltam: ${missing.join(', ')}`,
   });
 
-  // Add "não verificado" for structure files without a matching check
-  for (const file of structureFiles) {
-    const name = file.toLowerCase();
-    const alreadyCovered = checks.some(c => c.sourceFile.toLowerCase() === file.toLowerCase());
-    if (!alreadyCovered) {
-      // Check if it matches any known pattern
-      const knownPatterns = ['estrutura', 'titul', 'linguagem', 'ritmo', 'link', 'imag', 'fun', 'tipo'];
-      const isKnown = knownPatterns.some(p => name.includes(p));
-      if (!isKnown) {
-        checks.push({
-          directive: file.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' '),
-          sourceFile: file,
-          status: 'nao_verificado',
-          observation: 'Diretriz reconhecida mas sem verificação automática',
-        });
-      }
-    }
-  }
-
   return checks;
 }
 
@@ -189,6 +190,7 @@ const statusConfig: Record<ComplianceStatus, { icon: typeof CheckCircle2; color:
   nao_conforme: { icon: XCircle, color: 'text-red-500', label: 'Não conforme' },
   nao_verificado: { icon: HelpCircle, color: 'text-muted-foreground', label: 'Não verificado' },
   nao_aplicavel: { icon: MinusCircle, color: 'text-muted-foreground', label: 'N/A' },
+  sem_fonte: { icon: XCircle, color: 'text-red-400', label: 'Sem fonte' },
 };
 
 function IntegrityNodeComponent({ data }: { data: any }) {
@@ -201,14 +203,16 @@ function IntegrityNodeComponent({ data }: { data: any }) {
 
   const checks = useMemo(() => evaluateDirectives(guideData, structureFileNames), [guideData, structureFileNames]);
 
-  const conforme = checks.filter(c => c.status === 'conforme').length;
-  const total = checks.filter(c => c.status !== 'nao_aplicavel' && c.status !== 'nao_verificado').length;
+  const scorable = checks.filter(c => c.status !== 'nao_aplicavel' && c.status !== 'nao_verificado' && c.status !== 'sem_fonte');
+  const conforme = scorable.filter(c => c.status === 'conforme').length;
+  const total = scorable.length;
   const score = total > 0 ? Math.round((conforme / total) * 100) : 0;
+  const missingSource = checks.filter(c => c.status === 'sem_fonte').length;
 
   const color = score >= 80 ? 'emerald' : score >= 60 ? 'amber' : 'red';
 
   return (
-    <div className="bg-card border border-emerald-500/30 rounded-[1.2rem] shadow-card w-[300px] overflow-hidden">
+    <div className="bg-card border border-emerald-500/30 rounded-[1.2rem] shadow-card w-[320px] overflow-hidden">
       <Handle type="target" position={Position.Left} className="!bg-emerald-500 !w-2.5 !h-2.5 !border-2 !border-card" />
 
       <div className="bg-emerald-500/8 px-3 py-2 border-b border-emerald-500/15 flex items-center gap-2">
@@ -240,8 +244,16 @@ function IntegrityNodeComponent({ data }: { data: any }) {
           {hasLibrary ? `Base factual: ${libraryName}` : 'Sem biblioteca — geração não validada'}
         </div>
 
+        {/* Missing sources warning */}
+        {missingSource > 0 && (
+          <div className="rounded-md px-2 py-1 text-[9px] bg-red-500/10 text-red-600 flex items-center gap-1">
+            <XCircle className="h-2.5 w-2.5" />
+            {missingSource} dimensão(ões) sem arquivo fonte no bucket
+          </div>
+        )}
+
         {/* Directive checks */}
-        <div className="max-h-[300px] overflow-y-auto space-y-1 pr-1">
+        <div className="max-h-[320px] overflow-y-auto space-y-1 pr-1">
           {checks.map((check, i) => {
             const cfg = statusConfig[check.status];
             const Icon = cfg.icon;
@@ -250,9 +262,17 @@ function IntegrityNodeComponent({ data }: { data: any }) {
                 <div className="flex items-center gap-1.5">
                   <Icon className={cn('h-3 w-3 shrink-0', cfg.color)} />
                   <span className="text-[10px] font-medium truncate flex-1">{check.directive}</span>
+                  <span className={cn('text-[8px] px-1 py-0.5 rounded', cfg.color, 'bg-current/10')}>
+                    {cfg.label}
+                  </span>
                 </div>
                 <p className="text-[9px] text-muted-foreground pl-[18px]">{check.observation}</p>
-                <p className="text-[8px] text-muted-foreground/60 pl-[18px] italic">{check.sourceFile}</p>
+                {check.sourceFile && (
+                  <div className="flex items-center gap-1 pl-[18px]">
+                    <Link2 className="h-2 w-2 text-muted-foreground/60" />
+                    <p className="text-[8px] text-muted-foreground/60 italic truncate">{check.sourceFile}</p>
+                  </div>
+                )}
               </div>
             );
           })}

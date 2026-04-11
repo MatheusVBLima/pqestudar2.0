@@ -7,6 +7,21 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+// ─── Explicit file-to-function mapping ───
+const DIMENSION_MAP: Record<string, { label: string; pattern: string }> = {
+  titulos:   { label: "Títulos",             pattern: "estilo de titulos" },
+  estrutura: { label: "Estrutura Textual",   pattern: "estrutura textual" },
+  imagens:   { label: "Imagens",             pattern: "diretriz editorial de imagens" },
+  tipo_guia: { label: "Tipo de Guia",        pattern: "funcao de cada tipo de guia" },
+  linguagem: { label: "Linguagem",           pattern: "linguagem padrao" },
+  ritmo:     { label: "Ritmo de Leitura",    pattern: "ritmo de leitura" },
+  links:     { label: "Links Internos",      pattern: "sistema de links internos" },
+};
+
+function normalize(s: string): string {
+  return s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+}
+
 async function downloadTextFile(supabase: any, bucket: string, path: string): Promise<string> {
   const { data, error } = await supabase.storage.from(bucket).download(path);
   if (error || !data) return "";
@@ -49,15 +64,32 @@ serve(async (req) => {
       });
     }
 
-    // ─── 1. Load guide-structure files ───
+    // ─── 1. Load guide-structure files and map explicitly ───
     const { data: structureList } = await supabase.storage.from("guide-structure").list("", { sortBy: { column: "name", order: "asc" } });
-    const structureFiles = (structureList ?? []).filter((f: any) => f.name !== ".emptyFolderPlaceholder" && f.id);
-    const structureContents: { name: string; content: string }[] = [];
+    const structureFiles = (structureList ?? []).filter((f: any) => f.name !== ".emptyFolderPlaceholder");
 
+    // Resolve each dimension to its matching file
+    const dimensionResolved: Record<string, { file: string | null; content: string }> = {};
+
+    for (const [key, dim] of Object.entries(DIMENSION_MAP)) {
+      const match = structureFiles.find((f: any) => normalize(f.name).includes(dim.pattern));
+      dimensionResolved[key] = { file: match?.name ?? null, content: "" };
+    }
+
+    // Download matched files
+    for (const [key, info] of Object.entries(dimensionResolved)) {
+      if (info.file) {
+        info.content = (await downloadTextFile(supabase, "guide-structure", info.file)).trim();
+      }
+    }
+
+    // Also download any extra structure files not matched by the mapping
+    const mappedFiles = new Set(Object.values(dimensionResolved).map(d => d.file).filter(Boolean));
+    const extraStructure: { name: string; content: string }[] = [];
     for (const file of structureFiles) {
-      const content = await downloadTextFile(supabase, "guide-structure", file.name);
-      if (content.trim()) {
-        structureContents.push({ name: file.name, content: content.trim() });
+      if (!mappedFiles.has(file.name)) {
+        const content = (await downloadTextFile(supabase, "guide-structure", file.name)).trim();
+        if (content) extraStructure.push({ name: file.name, content });
       }
     }
 
@@ -68,12 +100,9 @@ serve(async (req) => {
     if (selectedLibrary) {
       const { data: libFiles } = await supabase.storage.from("guide-library").list(selectedLibrary, { sortBy: { column: "name", order: "asc" } });
       const validFiles = (libFiles ?? []).filter((f: any) => f.name !== ".emptyFolderPlaceholder" && f.id);
-
       for (const file of validFiles) {
         const content = await downloadTextFile(supabase, "guide-library", `${selectedLibrary}/${file.name}`);
-        if (content.trim()) {
-          libraryContents.push({ name: file.name, content: content.trim() });
-        }
+        if (content.trim()) libraryContents.push({ name: file.name, content: content.trim() });
       }
       libraryLoaded = libraryContents.length > 0;
     }
@@ -89,11 +118,19 @@ serve(async (req) => {
     const existingTools = (toolsRes.data ?? []).map((t: any) => `- "${t.name}": ${t.description?.slice(0, 80) ?? ""} (${t.url})`).join("\n");
     const existingContests = (contestsRes.data ?? []).map((c: any) => `- "${c.titulo}" (/concursos/${c.slug}) [${c.situacao}]`).join("\n");
 
-    // ─── 4. Build system prompt with Storage sources ───
-    let structureSection = "";
-    if (structureContents.length > 0) {
-      const entries = structureContents.map(f => `### Diretriz: ${f.name}\n${f.content}`).join("\n\n---\n\n");
-      structureSection = `\n\n## DIRETRIZES EDITORIAIS (guide-structure)\nOs arquivos abaixo definem as regras de estrutura, estilo, linguagem e validação. Você DEVE seguir todas essas diretrizes rigorosamente.\n\n${entries}`;
+    // ─── 4. Build system prompt with explicit dimension mapping ───
+    const dimensionSections = Object.entries(DIMENSION_MAP).map(([key, dim]) => {
+      const info = dimensionResolved[key];
+      if (!info.file || !info.content) {
+        return `### ${dim.label}\n⚠ ARQUIVO NÃO ENCONTRADO — aplique boas práticas genéricas para esta dimensão.`;
+      }
+      return `### ${dim.label}\n**Arquivo fonte:** ${info.file}\n\n${info.content}`;
+    }).join("\n\n---\n\n");
+
+    let extraSection = "";
+    if (extraStructure.length > 0) {
+      const entries = extraStructure.map(f => `### ${f.name}\n${f.content}`).join("\n\n---\n\n");
+      extraSection = `\n\n## DIRETRIZES ADICIONAIS (sem mapeamento fixo)\n${entries}`;
     }
 
     let librarySection = "";
@@ -102,39 +139,29 @@ serve(async (req) => {
       librarySection = `\n\n## BASE FACTUAL (guide-library: ${selectedLibrary})\nOs arquivos abaixo contêm a base factual e contextual. O conteúdo gerado DEVE ser fundamentado nessas fontes. Não invente informações que não estejam presentes aqui.\n\n${entries}`;
     }
 
-    const sourceStatus = structureContents.length > 0 && libraryLoaded
-      ? "AMBAS as fontes estão carregadas. Gere conteúdo fundamentado e aderente."
-      : structureContents.length > 0
-      ? "APENAS diretrizes editoriais carregadas. Sem base factual — marque claramente onde falta informação verificável."
-      : libraryLoaded
-      ? "APENAS base factual carregada. Sem diretrizes editoriais — use padrões genéricos de qualidade."
-      : "NENHUMA fonte carregada. Geração genérica — não afirme conformidade editorial.";
+    // Build mapping status for the response
+    const mappingStatus: Record<string, { label: string; file: string | null; found: boolean }> = {};
+    for (const [key, dim] of Object.entries(DIMENSION_MAP)) {
+      mappingStatus[key] = { label: dim.label, file: dimensionResolved[key].file, found: !!dimensionResolved[key].file };
+    }
+
+    const allMapped = Object.values(dimensionResolved).every(d => !!d.file);
+    const mappedCount = Object.values(dimensionResolved).filter(d => !!d.file).length;
+    const totalDims = Object.keys(DIMENSION_MAP).length;
 
     const systemPrompt = `Você é um editor assistente do portal PqEstudar, especializado em criar guias práticos e educativos para concurseiros.
 
-## Status das fontes
-${sourceStatus}
+## Status do mapeamento editorial
+${mappedCount}/${totalDims} dimensões mapeadas a arquivos reais.
+${!allMapped ? "⚠ Dimensões sem arquivo fonte devem usar boas práticas genéricas — mas o conteúdo NÃO será considerado plenamente validado nessas áreas." : "✅ Todas as dimensões possuem fonte explícita."}
+Biblioteca factual: ${selectedLibrary ?? "nenhuma selecionada"}${!libraryLoaded ? " (⚠ sem base factual — NÃO afirme fatos sem fonte)" : ""}
 
-Arquivos de guide-structure carregados: ${structureContents.length > 0 ? structureContents.map(f => f.name).join(", ") : "nenhum"}
-Biblioteca factual (guide-library): ${selectedLibrary ?? "nenhuma selecionada"}
-Arquivos da biblioteca carregados: ${libraryContents.length > 0 ? libraryContents.map(f => f.name).join(", ") : "nenhum"}
-${structureSection}
+## DIRETRIZES EDITORIAIS POR DIMENSÃO
+Abaixo estão as regras organizadas por função. Para cada dimensão, siga RIGOROSAMENTE o conteúdo do arquivo vinculado.
+
+${dimensionSections}
+${extraSection}
 ${librarySection}
-
-## Diretrizes base (fallback se guide-structure não estiver carregado)
-- Tom: direto, profissional, amigável e empático com quem estuda para concursos
-- Idioma: PT-BR
-- Estrutura: H2 para seções principais (sempre em negrito: ## **Título**), H3 para subseções
-- Conteúdo: prático, acionável, sem enrolação
-- Primeiro parágrafo: resposta rápida e direta ao tema
-- Usar listas quando ajudar na escaneabilidade
-- Imagens: sugerir onde inserir imagens com placeholder <img src="URL" alt="descrição" width="100%" />
-- Separar seções com --- quando fizer sentido
-- Incluir FAQ no final quando relevante
-- Evitar buzzwords vazias (disruptivo, inovador, revolucionário, incrível)
-- Evitar frases genéricas de abertura ("neste artigo vamos falar sobre...")
-- Manter frases curtas (média de 22 palavras por frase)
-- Usar voz ativa sempre que possível
 
 ## CTAs contextuais
 - CTA superior: mais leve, convite suave (ex: newsletter, kit gratuito)
@@ -182,13 +209,7 @@ Retorne um JSON com esta estrutura exata:
   "cta_middle": { "label": "texto do botão", "url": "/caminho-interno", "text": "texto descritivo (Markdown)" },
   "cta_final": { "label": "texto do botão", "url": "/caminho-interno", "text": "texto descritivo (Markdown)" },
   "internal_links": [{ "label": "texto do link", "url": "/guias/slug" }],
-  "cover_image_suggestion": "descrição da imagem de capa ideal",
-  "sources_used": {
-    "structure_files": ["nomes dos arquivos de guide-structure usados"],
-    "library_files": ["nomes dos arquivos de guide-library usados"],
-    "library_name": "${selectedLibrary || "nenhuma"}",
-    "is_factually_grounded": ${libraryLoaded}
-  }
+  "cover_image_suggestion": "descrição da imagem de capa ideal"
 }`;
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
@@ -246,13 +267,16 @@ Retorne um JSON com esta estrutura exata:
       });
     }
 
-    // Attach source metadata to response
+    // Attach explicit mapping metadata
     guideData._sources = {
-      structure_files: structureContents.map(f => f.name),
+      mapping: mappingStatus,
+      mapped_count: mappedCount,
+      total_dimensions: totalDims,
+      all_mapped: allMapped,
+      extra_structure_files: extraStructure.map(f => f.name),
       library_name: selectedLibrary || null,
       library_files: libraryContents.map(f => f.name),
       is_factually_grounded: libraryLoaded,
-      structure_loaded: structureContents.length > 0,
     };
 
     return new Response(JSON.stringify(guideData), {
