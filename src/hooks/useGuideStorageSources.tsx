@@ -20,6 +20,8 @@ export interface StorageSources {
   selectedLibrary: string | null;
   setSelectedLibrary: (folder: string | null) => void;
   refreshAll: () => void;
+  structureStatus: 'idle' | 'loading' | 'success' | 'error';
+  libraryStatus: 'idle' | 'loading' | 'success' | 'error';
 }
 
 export function useGuideStorageSources(): StorageSources {
@@ -31,21 +33,37 @@ export function useGuideStorageSources(): StorageSources {
   const [structureError, setStructureError] = useState<string | null>(null);
   const [libraryError, setLibraryError] = useState<string | null>(null);
   const [selectedLibrary, setSelectedLibrary] = useState<string | null>(null);
+  const [structureStatus, setStructureStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [libraryStatus, setLibraryStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
 
   const loadStructure = useCallback(async () => {
     setIsLoadingStructure(true);
     setStructureError(null);
+    setStructureStatus('loading');
     try {
       const { data, error } = await supabase.storage.from('guide-structure').list('', {
         sortBy: { column: 'name', order: 'asc' },
       });
       if (error) throw error;
-      // Filter out .emptyFolderPlaceholder and folders
-      const files = (data ?? []).filter(f => f.name !== '.emptyFolderPlaceholder' && (f.metadata?.size ?? f.id));
-      setStructureFiles(files.map(f => ({ name: f.name, id: f.id, size: f.metadata?.size, created_at: f.created_at, updated_at: f.updated_at })));
+
+      // Accept ALL items except the placeholder — don't filter by metadata.size or id
+      const files = (data ?? []).filter(f => f.name !== '.emptyFolderPlaceholder');
+      
+      console.log('[guide-structure] Raw items from Storage:', data?.length, 'Filtered:', files.length, files.map(f => f.name));
+
+      setStructureFiles(files.map(f => ({
+        name: f.name,
+        id: f.id ?? undefined,
+        size: f.metadata?.size ?? undefined,
+        created_at: f.created_at ?? undefined,
+        updated_at: f.updated_at ?? undefined,
+      })));
+      setStructureStatus('success');
     } catch (err: any) {
+      console.error('[guide-structure] Error:', err.message);
       setStructureError(err.message);
       setStructureFiles([]);
+      setStructureStatus('error');
     } finally {
       setIsLoadingStructure(false);
     }
@@ -54,32 +72,53 @@ export function useGuideStorageSources(): StorageSources {
   const loadLibraryFolders = useCallback(async () => {
     setIsLoadingLibrary(true);
     setLibraryError(null);
+    setLibraryStatus('loading');
     try {
       const { data, error } = await supabase.storage.from('guide-library').list('', {
         sortBy: { column: 'name', order: 'asc' },
       });
       if (error) throw error;
-      // Items without metadata.size are folders; items with it are root files
-      const items = data ?? [];
+
+      const items = (data ?? []).filter(i => i.name !== '.emptyFolderPlaceholder');
+
+      console.log('[guide-library] Raw items from Storage:', data?.length, 'Filtered:', items.length, items.map(i => ({ name: i.name, id: i.id, metaSize: i.metadata?.size })));
+
       const folders: string[] = [];
       const rootFiles: StorageFile[] = [];
+
       for (const item of items) {
-        if (item.name === '.emptyFolderPlaceholder') continue;
-        if (!item.id) {
+        // In Supabase Storage, folders have no id (null) and no metadata
+        // Files (PDFs etc.) have an id. Treat root-level files as "libraries"
+        if (!item.id && !item.metadata?.size) {
           // It's a folder
           folders.push(item.name);
         } else {
-          rootFiles.push({ name: item.name, id: item.id, size: item.metadata?.size, created_at: item.created_at, updated_at: item.updated_at });
+          // It's a file — treat as a library entry
+          rootFiles.push({
+            name: item.name,
+            id: item.id ?? undefined,
+            size: item.metadata?.size ?? undefined,
+            created_at: item.created_at ?? undefined,
+            updated_at: item.updated_at ?? undefined,
+          });
         }
       }
+
       setLibraryFolders(folders);
-      // If no folder selected, show root files
+
+      // Root-level files are treated as libraries themselves
+      // Show them when no folder is selected
       if (!selectedLibrary) {
         setLibraryFiles(rootFiles);
       }
+
+      setLibraryStatus('success');
     } catch (err: any) {
+      console.error('[guide-library] Error:', err.message);
       setLibraryError(err.message);
       setLibraryFolders([]);
+      setLibraryFiles([]);
+      setLibraryStatus('error');
     } finally {
       setIsLoadingLibrary(false);
     }
@@ -95,8 +134,14 @@ export function useGuideStorageSources(): StorageSources {
           sortBy: { column: 'name', order: 'asc' },
         });
         if (error) throw error;
-        const files = (data ?? []).filter(f => f.name !== '.emptyFolderPlaceholder' && f.id);
-        setLibraryFiles(files.map(f => ({ name: f.name, id: f.id, size: f.metadata?.size, created_at: f.created_at, updated_at: f.updated_at })));
+        const files = (data ?? []).filter(f => f.name !== '.emptyFolderPlaceholder');
+        setLibraryFiles(files.map(f => ({
+          name: f.name,
+          id: f.id ?? undefined,
+          size: f.metadata?.size ?? undefined,
+          created_at: f.created_at ?? undefined,
+          updated_at: f.updated_at ?? undefined,
+        })));
       } catch (err: any) {
         setLibraryError(err.message);
         setLibraryFiles([]);
@@ -128,5 +173,7 @@ export function useGuideStorageSources(): StorageSources {
     selectedLibrary,
     setSelectedLibrary,
     refreshAll,
+    structureStatus,
+    libraryStatus,
   };
 }

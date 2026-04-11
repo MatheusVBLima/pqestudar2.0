@@ -222,6 +222,8 @@ export function FlowCanvas({ guideData, isGenerating, onGenerate, onGuideDataCha
             isLoadingLibrary: storageSources.isLoadingLibrary,
             structureError: storageSources.structureError,
             libraryError: storageSources.libraryError,
+            structureStatus: storageSources.structureStatus,
+            libraryStatus: storageSources.libraryStatus,
             onSelectLibrary: storageSources.setSelectedLibrary,
             onRefresh: storageSources.refreshAll,
           },
