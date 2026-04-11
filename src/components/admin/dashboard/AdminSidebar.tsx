@@ -155,6 +155,30 @@ export function AdminSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
+        {/* Fluxo de Guias */}
+        <SidebarGroup>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  isActive={pathname === '/admin/fluxo-guias'}
+                  tooltip="Fluxo de Guias"
+                  className={cn(
+                    'rounded-[var(--admin-radius)] font-medium',
+                    pathname === '/admin/fluxo-guias' && 'bg-primary/10 text-primary font-semibold border border-primary/20'
+                  )}
+                >
+                  <Link to="/admin/fluxo-guias">
+                    <Sparkles className="h-4 w-4" />
+                    <span>Fluxo de Guias</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
         {/* Concursos */}
         <SidebarGroup>
           <Collapsible defaultOpen={isConcursosActive}>
