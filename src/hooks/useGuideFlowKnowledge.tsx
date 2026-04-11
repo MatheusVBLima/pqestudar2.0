@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 
+export type ExtractionStatus = 'pending' | 'success' | 'partial' | 'no_text' | 'error' | 'not_applicable';
+
 export interface KnowledgeEntry {
   id: string;
   title: string;
@@ -13,6 +15,7 @@ export interface KnowledgeEntry {
   source_bucket: string | null;
   source_path: string | null;
   synced_at: string | null;
+  extraction_status: ExtractionStatus;
   created_at: string;
   updated_at: string;
 }
@@ -21,8 +24,9 @@ export interface SyncResult {
   totalFound: number;
   totalCreated: number;
   totalExisting: number;
+  totalExtracted: number;
   totalErrors: number;
-  details: Array<{ bucket: string; file: string; status: string; error?: string }>;
+  details: Array<{ bucket: string; file: string; status: string; extraction_status?: string; error?: string }>;
 }
 
 export function useGuideFlowKnowledge() {
@@ -59,7 +63,7 @@ export function useGuideFlowKnowledge() {
 
   useEffect(() => { fetchEntries(); }, [fetchEntries]);
 
-  const createEntry = async (entry: Omit<KnowledgeEntry, 'id' | 'created_at' | 'updated_at' | 'source_type' | 'source_bucket' | 'source_path' | 'synced_at'>) => {
+  const createEntry = async (entry: Omit<KnowledgeEntry, 'id' | 'created_at' | 'updated_at' | 'source_type' | 'source_bucket' | 'source_path' | 'synced_at' | 'extraction_status'>) => {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return;
     const resp = await fetch(

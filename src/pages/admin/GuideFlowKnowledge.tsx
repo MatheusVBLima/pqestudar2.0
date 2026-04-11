@@ -10,9 +10,9 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { PageHeader } from '@/components/admin/dashboard/PageHeader';
-import { useGuideFlowKnowledge, type KnowledgeEntry } from '@/hooks/useGuideFlowKnowledge';
+import { useGuideFlowKnowledge, type KnowledgeEntry, type ExtractionStatus } from '@/hooks/useGuideFlowKnowledge';
 import { toast } from '@/hooks/use-toast';
-import { Plus, Pencil, Trash2, BookOpen, Loader2, Eye, EyeOff, RefreshCw, Package, PenTool } from 'lucide-react';
+import { Plus, Pencil, Trash2, BookOpen, Loader2, Eye, EyeOff, RefreshCw, Package, PenTool, CheckCircle2, AlertCircle, FileQuestion, Clock } from 'lucide-react';
 
 const CATEGORIES = [
   { value: 'editorial', label: '✍️ Editorial' },
@@ -25,6 +25,15 @@ const CATEGORIES = [
 ];
 
 const categoryLabel = (cat: string) => CATEGORIES.find((c) => c.value === cat)?.label || cat;
+
+const EXTRACTION_CONFIG: Record<ExtractionStatus, { label: string; icon: typeof CheckCircle2; className: string; description: string }> = {
+  success: { label: 'Extraído', icon: CheckCircle2, className: 'text-emerald-600 bg-emerald-500/10 border-emerald-500/20', description: 'Conteúdo textual extraído com sucesso do arquivo.' },
+  partial: { label: 'Parcial', icon: AlertCircle, className: 'text-amber-600 bg-amber-500/10 border-amber-500/20', description: 'Extração parcial — parte do conteúdo pode estar ausente.' },
+  no_text: { label: 'Sem texto', icon: FileQuestion, className: 'text-orange-600 bg-orange-500/10 border-orange-500/20', description: 'Arquivo não contém texto extraível (ex: PDF escaneado).' },
+  error: { label: 'Erro', icon: AlertCircle, className: 'text-red-600 bg-red-500/10 border-red-500/20', description: 'Erro durante a extração do conteúdo.' },
+  pending: { label: 'Pendente', icon: Clock, className: 'text-blue-600 bg-blue-500/10 border-blue-500/20', description: 'Conteúdo ainda não foi extraído. Sincronize novamente.' },
+  not_applicable: { label: 'Manual', icon: PenTool, className: 'text-muted-foreground bg-muted/50 border-muted', description: 'Entrada criada manualmente — sem extração automática.' },
+};
 
 type SourceFilter = 'all' | 'storage' | 'manual';
 
@@ -110,13 +119,15 @@ export default function GuideFlowKnowledge() {
     if (result) {
       toast({
         title: 'Sincronização concluída',
-        description: `${result.totalFound} arquivo(s) encontrados — ${result.totalCreated} novo(s), ${result.totalExisting} já existente(s)${result.totalErrors > 0 ? `, ${result.totalErrors} erro(s)` : ''}`,
+        description: `${result.totalFound} arquivo(s) — ${result.totalCreated} novo(s), ${result.totalExtracted} extraído(s), ${result.totalExisting} existente(s)${result.totalErrors > 0 ? `, ${result.totalErrors} erro(s)` : ''}`,
       });
     }
   };
 
   const storageCount = entries.filter((e) => e.source_type === 'storage').length;
   const manualCount = entries.filter((e) => e.source_type === 'manual').length;
+  const extractedCount = entries.filter((e) => e.extraction_status === 'success').length;
+  const pendingCount = entries.filter((e) => e.extraction_status === 'pending').length;
 
   let filtered = entries;
   if (filterCategory !== 'all') filtered = filtered.filter((e) => e.category === filterCategory);
@@ -124,11 +135,31 @@ export default function GuideFlowKnowledge() {
 
   const activeCount = entries.filter((e) => e.is_active).length;
 
+  const ExtractionBadge = ({ status }: { status: ExtractionStatus }) => {
+    const config = EXTRACTION_CONFIG[status];
+    const Icon = config.icon;
+    return (
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Badge variant="outline" className={`text-[10px] shrink-0 gap-0.5 border ${config.className}`}>
+              <Icon className="h-2.5 w-2.5" />
+              {config.label}
+            </Badge>
+          </TooltipTrigger>
+          <TooltipContent side="top" className="text-xs max-w-xs">
+            {config.description}
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    );
+  };
+
   return (
     <div className="space-y-6">
       <PageHeader
         title="Biblioteca de Conhecimento"
-        description="Regras editoriais e referências usadas pela IA na geração de guias. Sincronize com o Storage para importar arquivos automaticamente."
+        description="Regras editoriais e referências usadas pela IA na geração de guias. Sincronize com o Storage para importar e extrair conteúdo dos arquivos automaticamente."
       />
 
       {/* Stats + actions */}
@@ -144,6 +175,14 @@ export default function GuideFlowKnowledge() {
           <Badge variant="outline" className="gap-1 text-[10px]">
             <PenTool className="h-3 w-3" /> {manualCount} Manual
           </Badge>
+          <Badge variant="outline" className="gap-1 text-[10px] text-emerald-600 border-emerald-500/20">
+            <CheckCircle2 className="h-3 w-3" /> {extractedCount} extraído(s)
+          </Badge>
+          {pendingCount > 0 && (
+            <Badge variant="outline" className="gap-1 text-[10px] text-blue-600 border-blue-500/20">
+              <Clock className="h-3 w-3" /> {pendingCount} pendente(s)
+            </Badge>
+          )}
 
           <Select value={filterCategory} onValueChange={setFilterCategory}>
             <SelectTrigger className="w-[160px] h-8 text-xs rounded-[var(--admin-radius)]">
@@ -248,13 +287,27 @@ export default function GuideFlowKnowledge() {
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
+                      {/* Extraction status badge */}
+                      {entry.source_type === 'storage' && (
+                        <ExtractionBadge status={entry.extraction_status} />
+                      )}
                       {!entry.is_active && (
                         <Badge variant="secondary" className="text-[10px] shrink-0">
                           <EyeOff className="h-2.5 w-2.5 mr-0.5" /> Inativa
                         </Badge>
                       )}
                     </div>
-                    <p className="text-xs text-muted-foreground line-clamp-2">{entry.content}</p>
+                    <p className="text-xs text-muted-foreground line-clamp-2">
+                      {entry.extraction_status === 'success'
+                        ? entry.content.substring(0, 200) + (entry.content.length > 200 ? '...' : '')
+                        : entry.content
+                      }
+                    </p>
+                    {entry.source_type === 'storage' && entry.content.length > 0 && entry.extraction_status === 'success' && (
+                      <p className="text-[10px] text-muted-foreground/60 mt-0.5">
+                        {entry.content.length.toLocaleString('pt-BR')} caracteres extraídos
+                      </p>
+                    )}
                   </div>
                   <div className="flex items-center gap-1 shrink-0">
                     <Button
