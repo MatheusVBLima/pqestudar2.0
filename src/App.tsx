@@ -82,6 +82,7 @@ const AdminConcursosBusca = React.lazy(() => import("./pages/admin/concursos/bus
 const AdminConcursosAntiRepeticao = React.lazy(() => import("./pages/admin/concursos/anti-repeticao"));
 const AdminConcursosOrquestracaoIA = React.lazy(() => import("./pages/admin/concursos/orquestracao-ia"));
 const AdminConcursosHistorico = React.lazy(() => import("./pages/admin/concursos/historico"));
+const AdminGuideFlow = React.lazy(() => import("./pages/admin/GuideFlow"));
 
 // Admin Premium imports
 const AdminPremiumDashboard = React.lazy(() => import("./pages/admin/premium/AdminPremiumDashboard"));
@@ -152,6 +153,7 @@ const AppWithPixel = () => {
           <Route path="pages" element={<AdminPages />} />
           <Route path="menu" element={<AdminMenu />} />
           <Route path="legal" element={<AdminLegal />} />
+          <Route path="fluxo-guias" element={<AdminGuideFlow />} />
         </Route>
 
         {/* All pages with persistent Navbar + Footer layout */}

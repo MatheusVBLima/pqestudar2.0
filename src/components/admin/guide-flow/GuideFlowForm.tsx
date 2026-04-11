@@ -1,0 +1,170 @@
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Sparkles, Loader2 } from 'lucide-react';
+
+const CATEGORIAS = [
+  'Planejamento de Estudos',
+  'Ferramentas e Recursos',
+  'Estratégias de Prova',
+  'Carreira Pública',
+  'Saúde e Produtividade',
+  'Materiais e Cursos',
+  'Legislação e Editais',
+  'Dicas Gerais',
+];
+
+const TIPOS_GUIA = [
+  'Prático (passo a passo)',
+  'Lista (top N, comparativo)',
+  'Explicativo (conceito ou processo)',
+  'Tutorial (como fazer)',
+  'FAQ (perguntas e respostas)',
+];
+
+const INTENCOES = [
+  'Informar e orientar',
+  'Comparar opções',
+  'Ensinar uma habilidade',
+  'Convencer/motivar',
+  'Resolver um problema específico',
+];
+
+export interface GuideFlowInputs {
+  tema: string;
+  tipo: string;
+  categoria: string;
+  palavraChave: string;
+  intencao: string;
+  contextoAdicional: string;
+}
+
+interface Props {
+  onGenerate: (inputs: GuideFlowInputs) => void;
+  isGenerating: boolean;
+}
+
+export function GuideFlowForm({ onGenerate, isGenerating }: Props) {
+  const [inputs, setInputs] = useState<GuideFlowInputs>({
+    tema: '',
+    tipo: '',
+    categoria: '',
+    palavraChave: '',
+    intencao: '',
+    contextoAdicional: '',
+  });
+
+  const canSubmit = inputs.tema.trim() && inputs.categoria && !isGenerating;
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (canSubmit) onGenerate(inputs);
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-5">
+      <div className="space-y-1.5">
+        <Label htmlFor="tema">Tema do guia *</Label>
+        <Input
+          id="tema"
+          placeholder="Ex: Como organizar uma rotina de estudos para concursos"
+          value={inputs.tema}
+          onChange={(e) => setInputs((p) => ({ ...p, tema: e.target.value }))}
+          className="rounded-[var(--admin-radius)]"
+        />
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="space-y-1.5">
+          <Label>Tipo de guia</Label>
+          <Select value={inputs.tipo} onValueChange={(v) => setInputs((p) => ({ ...p, tipo: v }))}>
+            <SelectTrigger className="rounded-[var(--admin-radius)]">
+              <SelectValue placeholder="Selecione..." />
+            </SelectTrigger>
+            <SelectContent>
+              {TIPOS_GUIA.map((t) => (
+                <SelectItem key={t} value={t}>{t}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-1.5">
+          <Label>Categoria *</Label>
+          <Select value={inputs.categoria} onValueChange={(v) => setInputs((p) => ({ ...p, categoria: v }))}>
+            <SelectTrigger className="rounded-[var(--admin-radius)]">
+              <SelectValue placeholder="Selecione..." />
+            </SelectTrigger>
+            <SelectContent>
+              {CATEGORIAS.map((c) => (
+                <SelectItem key={c} value={c}>{c}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="space-y-1.5">
+          <Label htmlFor="palavraChave">Palavra-chave principal</Label>
+          <Input
+            id="palavraChave"
+            placeholder="Ex: rotina de estudos"
+            value={inputs.palavraChave}
+            onChange={(e) => setInputs((p) => ({ ...p, palavraChave: e.target.value }))}
+            className="rounded-[var(--admin-radius)]"
+          />
+        </div>
+
+        <div className="space-y-1.5">
+          <Label>Intenção do conteúdo</Label>
+          <Select value={inputs.intencao} onValueChange={(v) => setInputs((p) => ({ ...p, intencao: v }))}>
+            <SelectTrigger className="rounded-[var(--admin-radius)]">
+              <SelectValue placeholder="Selecione..." />
+            </SelectTrigger>
+            <SelectContent>
+              {INTENCOES.map((i) => (
+                <SelectItem key={i} value={i}>{i}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      <div className="space-y-1.5">
+        <Label htmlFor="contexto">Contexto adicional / biblioteca</Label>
+        <Textarea
+          id="contexto"
+          placeholder="Cole aqui referências, notas, regras editoriais específicas ou qualquer contexto relevante para este guia..."
+          value={inputs.contextoAdicional}
+          onChange={(e) => setInputs((p) => ({ ...p, contextoAdicional: e.target.value }))}
+          rows={4}
+          className="rounded-[var(--admin-radius)]"
+        />
+        <p className="text-xs text-muted-foreground">Opcional. Informações extras que a IA deve considerar na geração.</p>
+      </div>
+
+      <Button
+        type="submit"
+        disabled={!canSubmit}
+        className="w-full rounded-[var(--admin-radius)] gap-2"
+        size="lg"
+      >
+        {isGenerating ? (
+          <>
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Gerando guia...
+          </>
+        ) : (
+          <>
+            <Sparkles className="h-4 w-4" />
+            Gerar guia assistido
+          </>
+        )}
+      </Button>
+    </form>
+  );
+}
