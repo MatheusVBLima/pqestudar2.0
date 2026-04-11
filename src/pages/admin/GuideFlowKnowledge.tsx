@@ -8,10 +8,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { PageHeader } from '@/components/admin/dashboard/PageHeader';
 import { useGuideFlowKnowledge, type KnowledgeEntry } from '@/hooks/useGuideFlowKnowledge';
 import { toast } from '@/hooks/use-toast';
-import { Plus, Pencil, Trash2, BookOpen, Loader2, Eye, EyeOff } from 'lucide-react';
+import { Plus, Pencil, Trash2, BookOpen, Loader2, Eye, EyeOff, RefreshCw, Package, PenTool } from 'lucide-react';
 
 const CATEGORIES = [
   { value: 'editorial', label: '✍️ Editorial' },
@@ -25,6 +26,8 @@ const CATEGORIES = [
 
 const categoryLabel = (cat: string) => CATEGORIES.find((c) => c.value === cat)?.label || cat;
 
+type SourceFilter = 'all' | 'storage' | 'manual';
+
 interface FormData {
   title: string;
   content: string;
@@ -36,12 +39,13 @@ interface FormData {
 const EMPTY_FORM: FormData = { title: '', content: '', category: 'geral', is_active: true, sort_order: 0 };
 
 export default function GuideFlowKnowledge() {
-  const { entries, isLoading, createEntry, updateEntry, deleteEntry } = useGuideFlowKnowledge();
+  const { entries, isLoading, isSyncing, createEntry, updateEntry, deleteEntry, syncStorage } = useGuideFlowKnowledge();
   const [modalOpen, setModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<FormData>(EMPTY_FORM);
   const [isSaving, setIsSaving] = useState(false);
   const [filterCategory, setFilterCategory] = useState<string>('all');
+  const [filterSource, setFilterSource] = useState<SourceFilter>('all');
 
   const openCreate = () => {
     setEditingId(null);
@@ -101,38 +105,85 @@ export default function GuideFlowKnowledge() {
     }
   };
 
-  const filtered = filterCategory === 'all' ? entries : entries.filter((e) => e.category === filterCategory);
+  const handleSync = async () => {
+    const result = await syncStorage();
+    if (result) {
+      toast({
+        title: 'Sincronização concluída',
+        description: `${result.totalFound} arquivo(s) encontrados — ${result.totalCreated} novo(s), ${result.totalExisting} já existente(s)${result.totalErrors > 0 ? `, ${result.totalErrors} erro(s)` : ''}`,
+      });
+    }
+  };
+
+  const storageCount = entries.filter((e) => e.source_type === 'storage').length;
+  const manualCount = entries.filter((e) => e.source_type === 'manual').length;
+
+  let filtered = entries;
+  if (filterCategory !== 'all') filtered = filtered.filter((e) => e.category === filterCategory);
+  if (filterSource !== 'all') filtered = filtered.filter((e) => e.source_type === filterSource);
+
   const activeCount = entries.filter((e) => e.is_active).length;
 
   return (
     <div className="space-y-6">
       <PageHeader
         title="Biblioteca de Conhecimento"
-        description="Regras editoriais e referências usadas pela IA na geração de guias."
+        description="Regras editoriais e referências usadas pela IA na geração de guias. Sincronize com o Storage para importar arquivos automaticamente."
       />
 
       {/* Stats + actions */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 flex-wrap">
           <Badge variant="secondary" className="gap-1">
             <BookOpen className="h-3 w-3" />
             {entries.length} entrada(s) — {activeCount} ativa(s)
           </Badge>
+          <Badge variant="outline" className="gap-1 text-[10px]">
+            <Package className="h-3 w-3" /> {storageCount} Storage
+          </Badge>
+          <Badge variant="outline" className="gap-1 text-[10px]">
+            <PenTool className="h-3 w-3" /> {manualCount} Manual
+          </Badge>
+
           <Select value={filterCategory} onValueChange={setFilterCategory}>
-            <SelectTrigger className="w-[180px] h-8 text-xs rounded-[var(--admin-radius)]">
+            <SelectTrigger className="w-[160px] h-8 text-xs rounded-[var(--admin-radius)]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Todas as categorias</SelectItem>
+              <SelectItem value="all">Todas categorias</SelectItem>
               {CATEGORIES.map((c) => (
                 <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
               ))}
             </SelectContent>
           </Select>
+
+          <Select value={filterSource} onValueChange={(v) => setFilterSource(v as SourceFilter)}>
+            <SelectTrigger className="w-[130px] h-8 text-xs rounded-[var(--admin-radius)]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todas origens</SelectItem>
+              <SelectItem value="storage">📦 Storage</SelectItem>
+              <SelectItem value="manual">✍️ Manual</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
-        <Button onClick={openCreate} className="gap-1.5 rounded-[var(--admin-radius)]" size="sm">
-          <Plus className="h-4 w-4" /> Nova entrada
-        </Button>
+
+        <div className="flex items-center gap-2">
+          <Button
+            onClick={handleSync}
+            disabled={isSyncing}
+            variant="outline"
+            size="sm"
+            className="gap-1.5 rounded-[var(--admin-radius)]"
+          >
+            <RefreshCw className={`h-3.5 w-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
+            {isSyncing ? 'Sincronizando...' : 'Sincronizar Storage'}
+          </Button>
+          <Button onClick={openCreate} className="gap-1.5 rounded-[var(--admin-radius)]" size="sm">
+            <Plus className="h-4 w-4" /> Nova entrada
+          </Button>
+        </div>
       </div>
 
       {/* List */}
@@ -146,8 +197,8 @@ export default function GuideFlowKnowledge() {
             <BookOpen className="h-8 w-8 mx-auto text-muted-foreground mb-3" />
             <p className="text-sm text-muted-foreground">
               {entries.length === 0
-                ? 'Nenhuma entrada na biblioteca. Crie regras editoriais para melhorar a geração de guias.'
-                : 'Nenhuma entrada nesta categoria.'}
+                ? 'Nenhuma entrada na biblioteca. Sincronize o Storage ou crie regras editoriais manualmente.'
+                : 'Nenhuma entrada com os filtros selecionados.'}
             </p>
           </CardContent>
         </Card>
@@ -161,11 +212,42 @@ export default function GuideFlowKnowledge() {
               <CardContent className="py-3 px-4">
                 <div className="flex items-start gap-3">
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
+                    <div className="flex items-center gap-2 mb-1 flex-wrap">
                       <h3 className="text-sm font-medium truncate">{entry.title}</h3>
                       <Badge variant="outline" className="text-[10px] shrink-0">
                         {categoryLabel(entry.category)}
                       </Badge>
+                      {/* Source badge */}
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            {entry.source_type === 'storage' ? (
+                              <Badge variant="secondary" className="text-[10px] shrink-0 gap-0.5">
+                                <Package className="h-2.5 w-2.5" />
+                                {entry.source_bucket}
+                              </Badge>
+                            ) : (
+                              <Badge variant="secondary" className="text-[10px] shrink-0 gap-0.5">
+                                <PenTool className="h-2.5 w-2.5" />
+                                Manual
+                              </Badge>
+                            )}
+                          </TooltipTrigger>
+                          <TooltipContent side="top" className="text-xs max-w-xs">
+                            {entry.source_type === 'storage' ? (
+                              <div>
+                                <p><strong>Bucket:</strong> {entry.source_bucket}</p>
+                                <p><strong>Arquivo:</strong> {entry.source_path}</p>
+                                {entry.synced_at && (
+                                  <p><strong>Sincronizado:</strong> {new Date(entry.synced_at).toLocaleString('pt-BR')}</p>
+                                )}
+                              </div>
+                            ) : (
+                              <p>Entrada criada manualmente</p>
+                            )}
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                       {!entry.is_active && (
                         <Badge variant="secondary" className="text-[10px] shrink-0">
                           <EyeOff className="h-2.5 w-2.5 mr-0.5" /> Inativa

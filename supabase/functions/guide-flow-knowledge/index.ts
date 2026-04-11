@@ -53,6 +53,126 @@ serve(async (req) => {
       });
     }
 
+    // SYNC — import files from Storage buckets into knowledge entries
+    if (action === "sync") {
+      const buckets = ["guide-structure", "guide-library"];
+      const categoryMap: Record<string, string> = {
+        "guide-structure": "estrutura",
+        "guide-library": "referencia",
+      };
+
+      let totalFound = 0;
+      let totalCreated = 0;
+      let totalExisting = 0;
+      let totalErrors = 0;
+      const details: Array<{ bucket: string; file: string; status: string; error?: string }> = [];
+
+      for (const bucket of buckets) {
+        // List root files
+        const { data: items, error: listErr } = await supabase.storage.from(bucket).list("", {
+          sortBy: { column: "name", order: "asc" },
+        });
+
+        if (listErr) {
+          totalErrors++;
+          details.push({ bucket, file: "*", status: "error", error: listErr.message });
+          continue;
+        }
+
+        // Filter real files (not placeholders, not folders)
+        const files = (items ?? []).filter(
+          (f) => f.name !== ".emptyFolderPlaceholder" && f.id
+        );
+
+        // Also list subfolders for guide-library
+        const subfolderFiles: Array<{ name: string; path: string }> = [];
+        if (bucket === "guide-library") {
+          const folders = (items ?? []).filter(
+            (f) => f.name !== ".emptyFolderPlaceholder" && !f.id && !f.metadata?.size
+          );
+          for (const folder of folders) {
+            const { data: subItems } = await supabase.storage.from(bucket).list(folder.name, {
+              sortBy: { column: "name", order: "asc" },
+            });
+            const subFiles = (subItems ?? []).filter(
+              (f) => f.name !== ".emptyFolderPlaceholder" && f.id
+            );
+            for (const sf of subFiles) {
+              subfolderFiles.push({ name: sf.name, path: `${folder.name}/${sf.name}` });
+            }
+          }
+        }
+
+        // Combine root files and subfolder files
+        const allFiles = [
+          ...files.map((f) => ({ name: f.name, path: f.name })),
+          ...subfolderFiles,
+        ];
+
+        totalFound += allFiles.length;
+
+        for (const file of allFiles) {
+          // Check if already exists
+          const { data: existing } = await supabase
+            .from("guide_flow_knowledge")
+            .select("id")
+            .eq("source_bucket", bucket)
+            .eq("source_path", file.path)
+            .maybeSingle();
+
+          if (existing) {
+            // Update synced_at
+            await supabase
+              .from("guide_flow_knowledge")
+              .update({ synced_at: new Date().toISOString() })
+              .eq("id", existing.id);
+            totalExisting++;
+            details.push({ bucket, file: file.path, status: "existing" });
+          } else {
+            // Create new entry
+            const titleFromName = file.name
+              .replace(/\.[^.]+$/, "") // remove extension
+              .replace(/[-_]/g, " ")
+              .trim();
+
+            const { error: insertErr } = await supabase
+              .from("guide_flow_knowledge")
+              .insert({
+                title: titleFromName,
+                content: `[Arquivo importado do Storage: ${bucket}/${file.path}]`,
+                category: categoryMap[bucket] || "geral",
+                is_active: true,
+                sort_order: 0,
+                source_type: "storage",
+                source_bucket: bucket,
+                source_path: file.path,
+                synced_at: new Date().toISOString(),
+                created_by: user.id,
+              });
+
+            if (insertErr) {
+              totalErrors++;
+              details.push({ bucket, file: file.path, status: "error", error: insertErr.message });
+            } else {
+              totalCreated++;
+              details.push({ bucket, file: file.path, status: "created" });
+            }
+          }
+        }
+      }
+
+      return new Response(
+        JSON.stringify({
+          totalFound,
+          totalCreated,
+          totalExisting,
+          totalErrors,
+          details,
+        }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     // CREATE
     if (action === "create") {
       const { title, content, category, is_active, sort_order } = body;
@@ -69,6 +189,7 @@ serve(async (req) => {
           category: category?.trim() || "geral",
           is_active: is_active ?? true,
           sort_order: sort_order ?? 0,
+          source_type: "manual",
           created_by: user.id,
         })
         .select()
