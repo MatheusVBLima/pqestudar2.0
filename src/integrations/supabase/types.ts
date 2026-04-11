@@ -974,6 +974,10 @@ export type Database = {
           id: string
           is_active: boolean
           sort_order: number
+          source_bucket: string | null
+          source_path: string | null
+          source_type: string
+          synced_at: string | null
           title: string
           updated_at: string
         }
@@ -985,6 +989,10 @@ export type Database = {
           id?: string
           is_active?: boolean
           sort_order?: number
+          source_bucket?: string | null
+          source_path?: string | null
+          source_type?: string
+          synced_at?: string | null
           title: string
           updated_at?: string
         }
@@ -996,6 +1004,10 @@ export type Database = {
           id?: string
           is_active?: boolean
           sort_order?: number
+          source_bucket?: string | null
+          source_path?: string | null
+          source_type?: string
+          synced_at?: string | null
           title?: string
           updated_at?: string
         }

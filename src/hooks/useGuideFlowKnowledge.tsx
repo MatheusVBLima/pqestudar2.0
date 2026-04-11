@@ -9,13 +9,26 @@ export interface KnowledgeEntry {
   category: string;
   is_active: boolean;
   sort_order: number;
+  source_type: 'manual' | 'storage';
+  source_bucket: string | null;
+  source_path: string | null;
+  synced_at: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface SyncResult {
+  totalFound: number;
+  totalCreated: number;
+  totalExisting: number;
+  totalErrors: number;
+  details: Array<{ bucket: string; file: string; status: string; error?: string }>;
 }
 
 export function useGuideFlowKnowledge() {
   const [entries, setEntries] = useState<KnowledgeEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSyncing, setIsSyncing] = useState(false);
 
   const fetchEntries = useCallback(async () => {
     setIsLoading(true);
@@ -46,7 +59,7 @@ export function useGuideFlowKnowledge() {
 
   useEffect(() => { fetchEntries(); }, [fetchEntries]);
 
-  const createEntry = async (entry: Omit<KnowledgeEntry, 'id' | 'created_at' | 'updated_at'>) => {
+  const createEntry = async (entry: Omit<KnowledgeEntry, 'id' | 'created_at' | 'updated_at' | 'source_type' | 'source_bucket' | 'source_path' | 'synced_at'>) => {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return;
     const resp = await fetch(
@@ -91,5 +104,30 @@ export function useGuideFlowKnowledge() {
     await fetchEntries();
   };
 
-  return { entries, isLoading, fetchEntries, createEntry, updateEntry, deleteEntry };
+  const syncStorage = async (): Promise<SyncResult | null> => {
+    setIsSyncing(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return null;
+      const resp = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/guide-flow-knowledge`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+          body: JSON.stringify({ action: 'sync' }),
+        }
+      );
+      if (!resp.ok) { const e = await resp.json(); throw new Error(e.error); }
+      const result: SyncResult = await resp.json();
+      await fetchEntries();
+      return result;
+    } catch (err: any) {
+      toast({ title: 'Erro na sincronização', description: err.message, variant: 'destructive' });
+      return null;
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  return { entries, isLoading, isSyncing, fetchEntries, createEntry, updateEntry, deleteEntry, syncStorage };
 }
