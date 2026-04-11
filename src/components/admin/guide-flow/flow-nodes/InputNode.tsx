@@ -5,7 +5,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Sparkles, Loader2 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Sparkles, Loader2, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import type { GuideFlowInputs } from '../GuideFlowForm';
 
 const CATEGORIAS = [
@@ -25,7 +26,7 @@ const INTENCOES = [
 ];
 
 function InputNodeComponent({ data }: { data: any }) {
-  const { onGenerate, isGenerating } = data;
+  const { onGenerate, isGenerating, hasValidSources, hasLibrary, selectedLibrary } = data;
   const [inputs, setInputs] = useState<GuideFlowInputs>({
     tema: '', tipo: '', categoria: '', palavraChave: '', intencao: '', contextoAdicional: '',
   });
@@ -34,12 +35,34 @@ function InputNodeComponent({ data }: { data: any }) {
 
   return (
     <div className="bg-card border-2 border-primary/40 rounded-[1.2rem] shadow-card w-[400px] overflow-hidden">
+      <Handle type="target" position={Position.Left} className="!bg-primary !w-3 !h-3 !border-2 !border-card" />
+
       <div className="bg-primary/10 px-4 py-2.5 border-b border-primary/20 flex items-center gap-2">
         <Sparkles className="h-4 w-4 text-primary" />
         <span className="text-sm font-semibold text-foreground">Dados Iniciais</span>
       </div>
 
       <div className="p-4 space-y-3">
+        {/* Source status indicators */}
+        <div className="flex gap-2">
+          <div className="flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-muted">
+            {hasValidSources ? (
+              <CheckCircle2 className="h-2.5 w-2.5 text-emerald-500" />
+            ) : (
+              <AlertTriangle className="h-2.5 w-2.5 text-amber-500" />
+            )}
+            <span>Diretrizes</span>
+          </div>
+          <div className="flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-muted">
+            {hasLibrary ? (
+              <CheckCircle2 className="h-2.5 w-2.5 text-emerald-500" />
+            ) : (
+              <AlertTriangle className="h-2.5 w-2.5 text-amber-500" />
+            )}
+            <span>{selectedLibrary ? selectedLibrary : 'Biblioteca'}</span>
+          </div>
+        </div>
+
         <div className="space-y-1">
           <Label className="text-xs">Tema do guia *</Label>
           <Input
@@ -109,6 +132,12 @@ function InputNodeComponent({ data }: { data: any }) {
             <><Sparkles className="h-3.5 w-3.5" /> Gerar guia assistido</>
           )}
         </Button>
+
+        {!hasLibrary && !isGenerating && (
+          <p className="text-[10px] text-amber-600 text-center">
+            ⚠ Sem biblioteca selecionada — geração será genérica
+          </p>
+        )}
       </div>
 
       <Handle type="source" position={Position.Right} className="!bg-primary !w-3 !h-3 !border-2 !border-primary-foreground" />

@@ -7,6 +7,7 @@ import type { GeneratedGuideData } from '@/components/admin/guide-flow/GuideFlow
 import type { GuideFlowInputs } from '@/components/admin/guide-flow/GuideFlowForm';
 import { hasValidationErrors } from '@/components/admin/guide-flow/GuideFlowValidation';
 import { useGuidesMutations } from '@/hooks/useGuides';
+import { useGuideStorageSources } from '@/hooks/useGuideStorageSources';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { Save, Send, RotateCcw } from 'lucide-react';
@@ -20,6 +21,7 @@ const EMPTY_GUIDE: GeneratedGuideData = {
 export default function GuideFlow() {
   const navigate = useNavigate();
   const { createGuide } = useGuidesMutations();
+  const storageSources = useGuideStorageSources();
 
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -39,7 +41,10 @@ export default function GuideFlow() {
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
-          body: JSON.stringify(inputs),
+          body: JSON.stringify({
+            ...inputs,
+            selectedLibrary: storageSources.selectedLibrary,
+          }),
         }
       );
 
@@ -67,13 +72,19 @@ export default function GuideFlow() {
         cover_image_suggestion: generated.cover_image_suggestion ?? '',
       });
 
-      toast({ title: 'Guia gerado com sucesso', description: 'Explore os nós no canvas para revisar.' });
+      const hasLib = !!storageSources.selectedLibrary;
+      toast({
+        title: 'Guia gerado com sucesso',
+        description: hasLib
+          ? `Gerado com base na biblioteca "${storageSources.selectedLibrary}".`
+          : 'Gerado sem biblioteca factual — revisão manual recomendada.',
+      });
     } catch (err: any) {
       toast({ title: 'Erro', description: err.message, variant: 'destructive' });
     } finally {
       setIsGenerating(false);
     }
-  }, []);
+  }, [storageSources.selectedLibrary]);
 
   const handleSave = async (publish: boolean) => {
     if (!guideData) return;
@@ -129,34 +140,18 @@ export default function GuideFlow() {
       <div className="flex items-center justify-between">
         <PageHeader
           title="Fluxo de Guias"
-          description="Criação assistida de guias com IA — gere, revise e publique em minutos."
+          description="Criação assistida com base em diretrizes e bibliotecas do Storage."
         />
         <div className="flex items-center gap-2">
           {guideData && (
             <>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleReset}
-                className="gap-1.5 rounded-[var(--admin-radius)]"
-              >
+              <Button variant="ghost" size="sm" onClick={handleReset} className="gap-1.5 rounded-[var(--admin-radius)]">
                 <RotateCcw className="h-3.5 w-3.5" /> Recomeçar
               </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handleSave(false)}
-                disabled={isSaving}
-                className="gap-1.5 rounded-[var(--admin-radius)]"
-              >
+              <Button variant="outline" size="sm" onClick={() => handleSave(false)} disabled={isSaving} className="gap-1.5 rounded-[var(--admin-radius)]">
                 <Save className="h-3.5 w-3.5" /> Rascunho
               </Button>
-              <Button
-                size="sm"
-                onClick={() => handleSave(true)}
-                disabled={isSaving}
-                className="gap-1.5 rounded-[var(--admin-radius)]"
-              >
+              <Button size="sm" onClick={() => handleSave(true)} disabled={isSaving} className="gap-1.5 rounded-[var(--admin-radius)]">
                 <Send className="h-3.5 w-3.5" /> Publicar
               </Button>
             </>
@@ -169,6 +164,7 @@ export default function GuideFlow() {
         isGenerating={isGenerating}
         onGenerate={handleGenerate}
         onGuideDataChange={setGuideData}
+        storageSources={storageSources}
       />
     </div>
   );
