@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Pencil, Eye, Plus, Trash2, GripVertical } from 'lucide-react';
-import { MarkdownEditor } from '@/components/admin/MarkdownEditor';
+import MarkdownEditor from '@/components/admin/MarkdownEditor';
 
 export interface GeneratedGuideData {
   title: string;
