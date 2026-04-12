@@ -1,6 +1,6 @@
 import { memo, useState } from 'react';
 import { Handle, Position } from '@xyflow/react';
-import { Image as ImageIcon, RefreshCw, Copy, Check, AlertTriangle, Loader2 } from 'lucide-react';
+import { Image as ImageIcon, RefreshCw, Copy, Check, AlertTriangle, Loader2, Pencil } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -15,6 +15,7 @@ interface ImageNodeData {
   url?: string;
   error?: string;
   onRegenerate?: (prompt: string, position: string) => void;
+  onEditPrompt?: (position: string) => void;
 }
 
 export const ImageNode = memo(({ data }: { data: ImageNodeData }) => {
@@ -105,11 +106,28 @@ export const ImageNode = memo(({ data }: { data: ImageNodeData }) => {
                 onClick={handleCopyPrompt}
               >
                 {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
-                <span className="ml-1">{copied ? 'Copiado' : 'Copiar prompt'}</span>
+                <span className="ml-1">{copied ? 'Copiado' : 'Copiar'}</span>
               </Button>
             </TooltipTrigger>
-            <TooltipContent side="bottom">Copiar prompt para regerar manualmente</TooltipContent>
+            <TooltipContent side="bottom">Copiar prompt</TooltipContent>
           </Tooltip>
+
+          {data.onEditPrompt && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 px-2 text-[10px]"
+                  onClick={() => data.onEditPrompt?.(data.position)}
+                >
+                  <Pencil className="h-3 w-3" />
+                  <span className="ml-1">Editar</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">Editar prompt e regenerar</TooltipContent>
+            </Tooltip>
+          )}
 
           {data.onRegenerate && (
             <Tooltip>
@@ -125,7 +143,7 @@ export const ImageNode = memo(({ data }: { data: ImageNodeData }) => {
                   <span className="ml-1">Regerar</span>
                 </Button>
               </TooltipTrigger>
-              <TooltipContent side="bottom">Gerar nova imagem com o mesmo prompt</TooltipContent>
+              <TooltipContent side="bottom">Regenerar com o mesmo prompt</TooltipContent>
             </Tooltip>
           )}
         </div>

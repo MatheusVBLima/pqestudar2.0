@@ -9,10 +9,12 @@ import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PageHeader } from '@/components/admin/dashboard/PageHeader';
+import { ImageGalleryTab } from '@/components/admin/guide-flow/ImageGalleryTab';
 import { useGuideFlowKnowledge, type KnowledgeEntry, type ExtractionStatus } from '@/hooks/useGuideFlowKnowledge';
 import { toast } from '@/hooks/use-toast';
-import { Plus, Pencil, Trash2, BookOpen, Loader2, Eye, EyeOff, RefreshCw, Package, PenTool, CheckCircle2, AlertCircle, FileQuestion, Clock } from 'lucide-react';
+import { Plus, Pencil, Trash2, BookOpen, Loader2, Eye, EyeOff, RefreshCw, Package, PenTool, CheckCircle2, AlertCircle, FileQuestion, Clock, Image as ImageIcon } from 'lucide-react';
 
 const CATEGORIES = [
   { value: 'editorial', label: '✍️ Editorial' },
@@ -159,8 +161,26 @@ export default function GuideFlowKnowledge() {
     <div className="space-y-6">
       <PageHeader
         title="Biblioteca de Conhecimento"
-        description="Regras editoriais e referências usadas pela IA na geração de guias. Sincronize com o Storage para importar e extrair conteúdo dos arquivos automaticamente."
+        description="Regras editoriais, referências e imagens usadas pela IA na geração de guias."
       />
+
+      <Tabs defaultValue="knowledge" className="w-full">
+        <TabsList className="rounded-[var(--admin-radius)]">
+          <TabsTrigger value="knowledge" className="gap-1.5 rounded-[var(--admin-radius)]">
+            <BookOpen className="h-3.5 w-3.5" />
+            Conteúdo
+          </TabsTrigger>
+          <TabsTrigger value="images" className="gap-1.5 rounded-[var(--admin-radius)]">
+            <ImageIcon className="h-3.5 w-3.5" />
+            Imagens
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="images" className="mt-4">
+          <ImageGalleryTab />
+        </TabsContent>
+
+        <TabsContent value="knowledge" className="mt-4 space-y-4">
 
       {/* Stats + actions */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
@@ -413,6 +433,8 @@ export default function GuideFlowKnowledge() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
