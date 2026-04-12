@@ -119,10 +119,12 @@ A diretriz editorial de imagens está ativa. Você DEVE gerar prompts visuais pa
 Para cada imagem necessária (conforme a diretriz), inclua no campo "image_prompts" do JSON:
 - "type": "cover" para a imagem de capa, "internal" para imagens internas
 - "position": "cover" para capa, ou "after_section_N" (ex: "after_section_0") para internas
-- "prompt": descrição visual detalhada em inglês para geração por IA (estilo flat illustration, cores vibrantes, sem texto na imagem, fundo limpo)
+- "prompt": descrição visual detalhada em inglês para geração por IA (estilo flat illustration, cores vibrantes, sem texto na imagem, fundo limpo). OBRIGATÓRIO: cada prompt DEVE começar com "Wide 16:9 landscape format." para garantir a proporção correta.
 - "alt_text": texto alternativo em português para acessibilidade
+- "editorial_function": breve descrição da função editorial da imagem no contexto do guia (ex: "Ilustrar o conceito principal de organização de estudos")
 
 Regras dos prompts visuais:
+- PROPORÇÃO OBRIGATÓRIA: todas as imagens devem ser geradas em formato 16:9 (landscape, widescreen). Nunca gerar imagens quadradas ou verticais.
 - Estilo consistente: flat illustration, moderno, com cores vibrantes e fundo limpo
 - NÃO incluir texto na imagem — a imagem deve comunicar visualmente o conceito
 - Cada prompt deve ser específico ao conteúdo da seção correspondente
@@ -183,8 +185,8 @@ Retorne EXCLUSIVAMENTE um JSON válido (sem markdown code fences) com a estrutur
     const imageSchema = hasImageDirective
       ? `,
   "image_prompts": [
-    { "type": "cover", "position": "cover", "prompt": "detailed visual description in English for AI image generation", "alt_text": "texto alternativo em português" },
-    { "type": "internal", "position": "after_section_0", "prompt": "...", "alt_text": "..." }
+    { "type": "cover", "position": "cover", "prompt": "Wide 16:9 landscape format. detailed visual description in English for AI image generation", "alt_text": "texto alternativo em português", "editorial_function": "função editorial da imagem" },
+    { "type": "internal", "position": "after_section_0", "prompt": "Wide 16:9 landscape format. ...", "alt_text": "...", "editorial_function": "..." }
   ]`
       : `,
   "cover_image_suggestion": "descrição da imagem de capa ideal"`;

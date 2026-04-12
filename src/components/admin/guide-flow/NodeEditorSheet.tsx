@@ -19,9 +19,8 @@ import type { GeneratedGuideData } from './GuideFlowPreview';
 
 const KNOWN_AUTHORS = [
   'Equipe PqEstudar',
-  'Ana Souza',
-  'Carlos Mendes',
-  'Marina Lima',
+  'Matheus Dias',
+  'Marília Brasileiro',
 ];
 
 type EditorNodeType = 'meta' | 'seo' | 'content' | 'cta' | 'links';
