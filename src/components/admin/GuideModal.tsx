@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import MarkdownEditor, { htmlToMarkdown } from "@/components/admin/MarkdownEditor";
 import { Guide } from "@/hooks/useGuides";
-import { Plus, Trash2, Upload, Link2, X, ImageIcon, Copy, Check } from "lucide-react";
+import { Plus, Trash2, Upload, Link2, X, ImageIcon, Copy, Check, Workflow } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
