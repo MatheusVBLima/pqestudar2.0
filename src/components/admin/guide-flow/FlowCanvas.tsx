@@ -23,6 +23,7 @@ import { CtaNode } from './flow-nodes/CtaNode';
 import { LinksNode } from './flow-nodes/LinksNode';
 import { IntegrityNode } from './flow-nodes/IntegrityNode';
 import { SourcesNode } from './flow-nodes/SourcesNode';
+import { ImageNode } from './flow-nodes/ImageNode';
 import { NodeEditorSheet } from './NodeEditorSheet';
 import type { GeneratedGuideData } from './GuideFlowPreview';
 import type { GuideFlowInputs } from './GuideFlowForm';
@@ -37,6 +38,7 @@ const nodeTypes: NodeTypes = {
   linksNode: LinksNode,
   integrityNode: IntegrityNode,
   sourcesNode: SourcesNode,
+  imageNode: ImageNode,
 };
 
 const NODE_W = 320;
