@@ -236,9 +236,10 @@ interface FlowCanvasProps {
   onGuideDataChange: (data: GeneratedGuideData) => void;
   sources: GuideFlowSources;
   onInputsChange?: (inputs: GuideFlowInputs) => void;
+  onRegenerateImage?: (prompt: string, position: string) => void;
 }
 
-export function FlowCanvas({ guideData, isGenerating, onGenerate, onGuideDataChange, sources, onInputsChange }: FlowCanvasProps) {
+export function FlowCanvas({ guideData, isGenerating, onGenerate, onGuideDataChange, sources, onInputsChange, onRegenerateImage }: FlowCanvasProps) {
   const [editorOpen, setEditorOpen] = useState(false);
   const [editorData, setEditorData] = useState<any>(null);
 
@@ -258,7 +259,7 @@ export function FlowCanvas({ guideData, isGenerating, onGenerate, onGuideDataCha
     if (!guideData || !guideData.title) {
       return { nodes: buildInitialNodes(), edges: buildInitialEdges() };
     }
-    return buildGeneratedLayout(guideData, structureNames, libraryName);
+    return buildGeneratedLayout(guideData, structureNames, libraryName, onRegenerateImage);
   }, []);
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initial.nodes);
@@ -266,11 +267,11 @@ export function FlowCanvas({ guideData, isGenerating, onGenerate, onGuideDataCha
 
   useEffect(() => {
     if (guideData && guideData.title) {
-      const layout = buildGeneratedLayout(guideData, structureNames, libraryName);
+      const layout = buildGeneratedLayout(guideData, structureNames, libraryName, onRegenerateImage);
       setNodes(layout.nodes);
       setEdges(layout.edges);
     }
-  }, [guideData?.title, guideData?.slug, guideData?.content_markdown, structureNames, libraryName]);
+  }, [guideData?.title, guideData?.slug, guideData?.content_markdown, guideData?.generated_images, structureNames, libraryName, onRegenerateImage]);
 
   const onConnect = useCallback((params: Connection) => {
     setEdges((eds) => addEdge(params, eds));
