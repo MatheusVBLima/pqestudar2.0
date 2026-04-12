@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/admin/dashboard/PageHeader';
 import { FlowCanvas } from '@/components/admin/guide-flow/FlowCanvas';
 import { EditorialSummaryPanel } from '@/components/admin/guide-flow/EditorialSummaryPanel';
-import type { GeneratedGuideData } from '@/components/admin/guide-flow/GuideFlowPreview';
+import type { GeneratedGuideData, ImagePrompt } from '@/components/admin/guide-flow/GuideFlowPreview';
 import type { GuideFlowInputs } from '@/components/admin/guide-flow/GuideFlowForm';
 import { hasValidationErrors } from '@/components/admin/guide-flow/GuideFlowValidation';
 import { findOption, TIPOS_GUIA, CATEGORIAS, INTENCOES } from '@/lib/guide-editorial-options';
@@ -173,6 +173,18 @@ export default function GuideFlow() {
     }
   }, [guideData]);
 
+  const handleUpdateImagePrompt = useCallback((position: string, newPrompt: string) => {
+    if (!guideData) return;
+    const updateList = (list: ImagePrompt[] | undefined) =>
+      (list ?? []).map(img => img.position === position ? { ...img, prompt: newPrompt } : img);
+    setGuideData({
+      ...guideData,
+      image_prompts: updateList(guideData.image_prompts),
+      generated_images: updateList(guideData.generated_images),
+    });
+    toast({ title: 'Prompt atualizado', description: `Posição: ${position}` });
+  }, [guideData]);
+
   /** Inject internal images into the markdown content at their correct positions */
   const buildFinalMarkdown = (data: GeneratedGuideData): string => {
     const internalImages = (data.generated_images ?? data.image_prompts ?? [])
@@ -320,6 +332,7 @@ export default function GuideFlow() {
         sources={sources}
         onInputsChange={handleInputsChange}
         onRegenerateImage={handleRegenerateImage}
+        onUpdateImagePrompt={handleUpdateImagePrompt}
       />
 
       <EditorialSummaryPanel
