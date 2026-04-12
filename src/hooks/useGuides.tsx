@@ -27,6 +27,7 @@ export interface Guide {
   sort_order: number;
   author_name: string;
   cover_image_url: string | null;
+  flow_data: Record<string, any> | null;
   created_at: string;
   updated_at: string;
 }
