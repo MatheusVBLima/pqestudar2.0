@@ -161,8 +161,26 @@ export default function GuideFlowKnowledge() {
     <div className="space-y-6">
       <PageHeader
         title="Biblioteca de Conhecimento"
-        description="Regras editoriais e referências usadas pela IA na geração de guias. Sincronize com o Storage para importar e extrair conteúdo dos arquivos automaticamente."
+        description="Regras editoriais, referências e imagens usadas pela IA na geração de guias."
       />
+
+      <Tabs defaultValue="knowledge" className="w-full">
+        <TabsList className="rounded-[var(--admin-radius)]">
+          <TabsTrigger value="knowledge" className="gap-1.5 rounded-[var(--admin-radius)]">
+            <BookOpen className="h-3.5 w-3.5" />
+            Conteúdo
+          </TabsTrigger>
+          <TabsTrigger value="images" className="gap-1.5 rounded-[var(--admin-radius)]">
+            <ImageIcon className="h-3.5 w-3.5" />
+            Imagens
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="images" className="mt-4">
+          <ImageGalleryTab />
+        </TabsContent>
+
+        <TabsContent value="knowledge" className="mt-4 space-y-4">
 
       {/* Stats + actions */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
