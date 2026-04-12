@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useEffect } from 'react';
+import { useCallback, useMemo, useEffect, useState } from 'react';
 import {
   ReactFlow,
   Background,
@@ -23,6 +23,7 @@ import { CtaNode } from './flow-nodes/CtaNode';
 import { LinksNode } from './flow-nodes/LinksNode';
 import { IntegrityNode } from './flow-nodes/IntegrityNode';
 import { SourcesNode } from './flow-nodes/SourcesNode';
+import { NodeEditorSheet } from './NodeEditorSheet';
 import type { GeneratedGuideData } from './GuideFlowPreview';
 import type { GuideFlowInputs } from './GuideFlowForm';
 import type { GuideFlowSources } from '@/hooks/useGuideFlowSources';
@@ -161,6 +162,34 @@ export function buildGeneratedLayout(data: GeneratedGuideData, structureNames: s
   return { nodes, edges };
 }
 
+// Map a clicked node to the editor data shape
+function nodeToEditorData(nodeId: string, nodeType: string, nodeData: any): {
+  nodeType: 'meta' | 'seo' | 'content' | 'cta' | 'links';
+  nodeId: string;
+  label: string;
+  sectionIndex?: number;
+} | null {
+  switch (nodeType) {
+    case 'metaNode':
+      return { nodeType: 'meta', nodeId, label: 'Metadados' };
+    case 'seoNode':
+      return { nodeType: 'seo', nodeId, label: 'SEO' };
+    case 'contentNode':
+      return {
+        nodeType: 'content',
+        nodeId,
+        label: nodeData.label ?? 'Seção',
+        sectionIndex: nodeData.sectionIndex ?? 0,
+      };
+    case 'ctaNode':
+      return { nodeType: 'cta', nodeId, label: `CTA ${nodeData.ctaType ?? ''}` };
+    case 'linksNode':
+      return { nodeType: 'links', nodeId, label: 'Links Internos' };
+    default:
+      return null;
+  }
+}
+
 interface FlowCanvasProps {
   guideData: GeneratedGuideData | null;
   isGenerating: boolean;
@@ -171,6 +200,9 @@ interface FlowCanvasProps {
 }
 
 export function FlowCanvas({ guideData, isGenerating, onGenerate, onGuideDataChange, sources, onInputsChange }: FlowCanvasProps) {
+  const [editorOpen, setEditorOpen] = useState(false);
+  const [editorData, setEditorData] = useState<any>(null);
+
   const structureNames = useMemo(
     () => sources.activeStructureEntries.map(e => e.source_path ?? e.title),
     [sources.activeStructureEntries]
@@ -199,11 +231,24 @@ export function FlowCanvas({ guideData, isGenerating, onGenerate, onGuideDataCha
       setNodes(layout.nodes);
       setEdges(layout.edges);
     }
-  }, [guideData?.title, structureNames, libraryName]);
+  }, [guideData?.title, guideData?.slug, guideData?.content_markdown, structureNames, libraryName]);
 
   const onConnect = useCallback((params: Connection) => {
     setEdges((eds) => addEdge(params, eds));
   }, [setEdges]);
+
+  const handleNodeClick = useCallback((_event: React.MouseEvent, node: Node) => {
+    if (!guideData) return;
+    const mapped = nodeToEditorData(node.id, node.type ?? '', node.data);
+    if (mapped) {
+      setEditorData(mapped);
+      setEditorOpen(true);
+    }
+  }, [guideData]);
+
+  const handleEditorSave = useCallback((updated: GeneratedGuideData) => {
+    onGuideDataChange(updated);
+  }, [onGuideDataChange]);
 
   // Inject dynamic data into special nodes
   const nodesWithCallbacks = useMemo(() => {
@@ -256,6 +301,7 @@ export function FlowCanvas({ guideData, isGenerating, onGenerate, onGuideDataCha
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
+        onNodeClick={handleNodeClick}
         nodeTypes={nodeTypes}
         fitView
         fitViewOptions={{ padding: 0.2 }}
@@ -278,6 +324,16 @@ export function FlowCanvas({ guideData, isGenerating, onGenerate, onGuideDataCha
           zoomable
         />
       </ReactFlow>
+
+      {guideData && (
+        <NodeEditorSheet
+          open={editorOpen}
+          onClose={() => setEditorOpen(false)}
+          data={editorData}
+          guideData={guideData}
+          onSave={handleEditorSave}
+        />
+      )}
     </div>
   );
 }

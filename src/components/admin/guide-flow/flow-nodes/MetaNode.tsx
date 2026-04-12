@@ -1,19 +1,20 @@
 import { memo } from 'react';
 import { Handle, Position } from '@xyflow/react';
 import { Badge } from '@/components/ui/badge';
-import { Type, Tag, User, FileText } from 'lucide-react';
+import { Type, Tag, User, FileText, Pencil } from 'lucide-react';
 
 function MetaNodeComponent({ data }: { data: any }) {
   const { title, slug, category, author_name, short_description } = data;
 
   return (
-    <div className="bg-card border border-primary/30 rounded-[1.2rem] shadow-card w-[320px] overflow-hidden">
+    <div className="bg-card border border-primary/30 rounded-[1.2rem] shadow-card w-[320px] overflow-hidden cursor-pointer hover:shadow-lg hover:border-primary/50 transition-all group">
       <Handle type="target" position={Position.Left} className="!bg-primary !w-2.5 !h-2.5 !border-2 !border-card" />
 
       <div className="bg-primary/8 px-3 py-2 border-b border-primary/15 flex items-center gap-2">
         <Type className="h-3.5 w-3.5 text-primary" />
         <span className="text-xs font-semibold">Metadados</span>
-        <Badge variant="outline" className="ml-auto text-[9px] px-1.5 h-4 border-primary/30 text-primary">
+        <Pencil className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity ml-auto mr-1" />
+        <Badge variant="outline" className="text-[9px] px-1.5 h-4 border-primary/30 text-primary">
           META
         </Badge>
       </div>

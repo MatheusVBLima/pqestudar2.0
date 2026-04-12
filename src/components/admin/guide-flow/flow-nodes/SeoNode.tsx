@@ -10,7 +10,7 @@ function SeoNodeComponent({ data }: { data: any }) {
   const descLen = seo_description?.length ?? 0;
 
   return (
-    <div className="bg-card border border-blue-500/30 rounded-[1.2rem] shadow-card w-[320px] overflow-hidden">
+    <div className="bg-card border border-blue-500/30 rounded-[1.2rem] shadow-card w-[320px] overflow-hidden cursor-pointer hover:shadow-lg hover:border-blue-500/50 transition-all">
       <Handle type="target" position={Position.Top} className="!bg-blue-500 !w-2.5 !h-2.5 !border-2 !border-card" />
 
       <div className="bg-blue-500/8 px-3 py-2 border-b border-blue-500/15 flex items-center gap-2">
