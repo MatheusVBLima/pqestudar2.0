@@ -9,6 +9,17 @@ import { Badge } from '@/components/ui/badge';
 import { Pencil, Eye, Plus, Trash2, GripVertical } from 'lucide-react';
 import MarkdownEditor from '@/components/admin/MarkdownEditor';
 
+export interface ImagePrompt {
+  type: 'cover' | 'internal';
+  position: string;
+  prompt: string;
+  alt_text: string;
+  status: 'success' | 'error' | 'generating' | 'pending';
+  url?: string;
+  storage_path?: string;
+  error?: string;
+}
+
 export interface GeneratedGuideData {
   title: string;
   slug: string;
@@ -23,6 +34,9 @@ export interface GeneratedGuideData {
   cta_final: { label: string; url: string; text: string } | null;
   internal_links: Array<{ label: string; url: string }>;
   cover_image_suggestion?: string;
+  cover_image_url?: string;
+  image_prompts?: ImagePrompt[];
+  generated_images?: ImagePrompt[];
 }
 
 interface Props {

@@ -18,6 +18,7 @@ const EMPTY_GUIDE: GeneratedGuideData = {
   title: '', slug: '', short_description: '', seo_title: '', seo_description: '',
   category: '', author_name: 'Equipe PqEstudar', content_markdown: '',
   cta_top: null, cta_middle: null, cta_final: null, internal_links: [], cover_image_suggestion: '',
+  image_prompts: [], generated_images: [],
 };
 
 export default function GuideFlow() {
@@ -118,6 +119,9 @@ export default function GuideFlow() {
         cta_final: generated.cta_final ?? null,
         internal_links: generated.internal_links ?? [],
         cover_image_suggestion: generated.cover_image_suggestion ?? '',
+        cover_image_url: generated.cover_image_url ?? '',
+        image_prompts: generated.image_prompts ?? [],
+        generated_images: generated.generated_images ?? [],
       });
 
       const hasLib = sources.activeLibraryEntries.length > 0;
@@ -137,6 +141,38 @@ export default function GuideFlow() {
     }
   }, [sources.activeStructureEntries, sources.activeLibraryEntries, sources.autoSuggest]);
 
+  const handleRegenerateImage = useCallback(async (prompt: string, position: string) => {
+    if (!guideData) return;
+    
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      toast({ title: 'Regenerando imagem...', description: `Posição: ${position}` });
+
+      const resp = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/guide-flow-generate`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+          body: JSON.stringify({
+            action: 'regenerate-image',
+            prompt,
+            position,
+            slug: guideData.slug,
+          }),
+        }
+      );
+
+      // For now, we use a simplified approach - call the image API directly via a dedicated mechanism
+      // The edge function handles image generation internally during guide generation
+      // For regeneration, we update the prompt and re-trigger
+      toast({ title: 'Use o prompt copiado', description: 'Cole o prompt em uma ferramenta de geração de imagem e atualize manualmente.', });
+    } catch (err: any) {
+      toast({ title: 'Erro', description: err.message, variant: 'destructive' });
+    }
+  }, [guideData]);
+
   const handleSave = async (publish: boolean) => {
     if (!guideData) return;
     if (hasValidationErrors(guideData)) {
@@ -155,6 +191,7 @@ export default function GuideFlow() {
         category: guideData.category,
         author_name: guideData.author_name,
         content_markdown: guideData.content_markdown,
+        cover_image_url: guideData.cover_image_url || null,
         internal_code: `FLOW-${Date.now()}`,
         is_published: publish,
         is_featured: false,
@@ -217,6 +254,7 @@ export default function GuideFlow() {
         onGuideDataChange={setGuideData}
         sources={sources}
         onInputsChange={handleInputsChange}
+        onRegenerateImage={handleRegenerateImage}
       />
 
       <EditorialSummaryPanel

@@ -23,6 +23,7 @@ import { CtaNode } from './flow-nodes/CtaNode';
 import { LinksNode } from './flow-nodes/LinksNode';
 import { IntegrityNode } from './flow-nodes/IntegrityNode';
 import { SourcesNode } from './flow-nodes/SourcesNode';
+import { ImageNode } from './flow-nodes/ImageNode';
 import { NodeEditorSheet } from './NodeEditorSheet';
 import type { GeneratedGuideData } from './GuideFlowPreview';
 import type { GuideFlowInputs } from './GuideFlowForm';
@@ -37,6 +38,7 @@ const nodeTypes: NodeTypes = {
   linksNode: LinksNode,
   integrityNode: IntegrityNode,
   sourcesNode: SourcesNode,
+  imageNode: ImageNode,
 };
 
 const NODE_W = 320;
@@ -74,7 +76,7 @@ function buildInitialEdges(): Edge[] {
   ];
 }
 
-export function buildGeneratedLayout(data: GeneratedGuideData, structureNames: string[], libraryName: string | null): { nodes: Node[]; edges: Edge[] } {
+export function buildGeneratedLayout(data: GeneratedGuideData, structureNames: string[], libraryName: string | null, onRegenerateImage?: (prompt: string, position: string) => void): { nodes: Node[]; edges: Edge[] } {
   const nodes: Node[] = [];
   const edges: Edge[] = [];
   let col = 0;
@@ -94,6 +96,17 @@ export function buildGeneratedLayout(data: GeneratedGuideData, structureNames: s
   addNode('seo', 'seoNode', {
     seo_title: data.seo_title, seo_description: data.seo_description,
   }, 0, 1);
+
+  // Cover image node (column 0, row 2)
+  const images = data.generated_images ?? data.image_prompts ?? [];
+  const coverImage = images.find(img => img.type === 'cover');
+  if (coverImage) {
+    addNode('img-cover', 'imageNode', {
+      ...coverImage,
+      onRegenerate: onRegenerateImage,
+    }, 0, 2);
+    edges.push({ id: 'e-seo-imgcover', source: 'seo', target: 'img-cover', style: { stroke: 'hsl(var(--primary) / 0.3)' } });
+  }
 
   // Column 1: Content sections
   const lines = data.content_markdown.split('\n');
@@ -118,24 +131,50 @@ export function buildGeneratedLayout(data: GeneratedGuideData, structureNames: s
   }
   flush();
 
+  // Internal images mapped by position
+  const internalImages = images.filter(img => img.type === 'internal');
+
   sections.forEach((sec, i) => {
     addNode(`section-${i}`, 'contentNode', { label: sec.title, content: sec.content, sectionIndex: i }, 1, i);
+
+    // Check if there's an internal image for after this section
+    const imgForSection = internalImages.find(img => img.position === `after_section_${i}`);
+    if (imgForSection) {
+      const imgRow = i + 0.6; // Offset slightly
+      const imgX = START_X + 1 * (NODE_W + GAP_X) + NODE_W + 20;
+      const imgY = START_Y + imgRow * (280 + GAP_Y);
+      const imgId = `img-section-${i}`;
+      nodes.push({
+        id: imgId,
+        type: 'imageNode',
+        position: { x: imgX, y: imgY },
+        data: { ...imgForSection, onRegenerate: onRegenerateImage },
+      });
+      edges.push({
+        id: `e-s${i}-img${i}`,
+        source: `section-${i}`,
+        target: imgId,
+        style: { stroke: 'hsl(var(--primary) / 0.2)', strokeDasharray: '4 4' },
+      });
+    }
   });
 
-  // Column 2: CTAs + Links
+  // Column 2 (shifted to 3 if images exist): CTAs + Links
+  const ctaCol = internalImages.length > 0 ? 3 : 2;
   let ctaRow = 0;
-  if (data.cta_top) addNode('cta_top', 'ctaNode', { ...data.cta_top, ctaType: 'Superior' }, 2, ctaRow++);
-  if (data.cta_middle) addNode('cta_middle', 'ctaNode', { ...data.cta_middle, ctaType: 'Intermediária' }, 2, ctaRow++);
-  if (data.cta_final) addNode('cta_final', 'ctaNode', { ...data.cta_final, ctaType: 'Final' }, 2, ctaRow++);
-  if (data.internal_links.length > 0) addNode('links', 'linksNode', { links: data.internal_links }, 2, ctaRow++);
+  if (data.cta_top) addNode('cta_top', 'ctaNode', { ...data.cta_top, ctaType: 'Superior' }, ctaCol, ctaRow++);
+  if (data.cta_middle) addNode('cta_middle', 'ctaNode', { ...data.cta_middle, ctaType: 'Intermediária' }, ctaCol, ctaRow++);
+  if (data.cta_final) addNode('cta_final', 'ctaNode', { ...data.cta_final, ctaType: 'Final' }, ctaCol, ctaRow++);
+  if (data.internal_links.length > 0) addNode('links', 'linksNode', { links: data.internal_links }, ctaCol, ctaRow++);
 
-  // Column 3: Integrity panel
+  // Integrity panel
+  const integrityCol = ctaCol + 1;
   addNode('integrity', 'integrityNode', {
     guideData: data,
     structureFileNames: structureNames,
     hasLibrary: !!libraryName,
     libraryName,
-  }, 3, 0);
+  }, integrityCol, 0);
 
   // Edges
   edges.push({ id: 'e-meta-seo', source: 'meta', target: 'seo', animated: true, style: { stroke: 'hsl(var(--primary))' } });
@@ -197,9 +236,10 @@ interface FlowCanvasProps {
   onGuideDataChange: (data: GeneratedGuideData) => void;
   sources: GuideFlowSources;
   onInputsChange?: (inputs: GuideFlowInputs) => void;
+  onRegenerateImage?: (prompt: string, position: string) => void;
 }
 
-export function FlowCanvas({ guideData, isGenerating, onGenerate, onGuideDataChange, sources, onInputsChange }: FlowCanvasProps) {
+export function FlowCanvas({ guideData, isGenerating, onGenerate, onGuideDataChange, sources, onInputsChange, onRegenerateImage }: FlowCanvasProps) {
   const [editorOpen, setEditorOpen] = useState(false);
   const [editorData, setEditorData] = useState<any>(null);
 
@@ -219,7 +259,7 @@ export function FlowCanvas({ guideData, isGenerating, onGenerate, onGuideDataCha
     if (!guideData || !guideData.title) {
       return { nodes: buildInitialNodes(), edges: buildInitialEdges() };
     }
-    return buildGeneratedLayout(guideData, structureNames, libraryName);
+    return buildGeneratedLayout(guideData, structureNames, libraryName, onRegenerateImage);
   }, []);
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initial.nodes);
@@ -227,11 +267,11 @@ export function FlowCanvas({ guideData, isGenerating, onGenerate, onGuideDataCha
 
   useEffect(() => {
     if (guideData && guideData.title) {
-      const layout = buildGeneratedLayout(guideData, structureNames, libraryName);
+      const layout = buildGeneratedLayout(guideData, structureNames, libraryName, onRegenerateImage);
       setNodes(layout.nodes);
       setEdges(layout.edges);
     }
-  }, [guideData?.title, guideData?.slug, guideData?.content_markdown, structureNames, libraryName]);
+  }, [guideData?.title, guideData?.slug, guideData?.content_markdown, guideData?.generated_images, structureNames, libraryName, onRegenerateImage]);
 
   const onConnect = useCallback((params: Connection) => {
     setEdges((eds) => addEdge(params, eds));
