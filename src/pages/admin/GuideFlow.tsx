@@ -3,9 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/admin/dashboard/PageHeader';
 import { FlowCanvas } from '@/components/admin/guide-flow/FlowCanvas';
+import { EditorialSummaryPanel } from '@/components/admin/guide-flow/EditorialSummaryPanel';
 import type { GeneratedGuideData } from '@/components/admin/guide-flow/GuideFlowPreview';
 import type { GuideFlowInputs } from '@/components/admin/guide-flow/GuideFlowForm';
 import { hasValidationErrors } from '@/components/admin/guide-flow/GuideFlowValidation';
+import { findOption, TIPOS_GUIA, CATEGORIAS, INTENCOES } from '@/lib/guide-editorial-options';
 import { useGuidesMutations } from '@/hooks/useGuides';
 import { useGuideFlowSources } from '@/hooks/useGuideFlowSources';
 import { supabase } from '@/integrations/supabase/client';
@@ -26,11 +28,16 @@ export default function GuideFlow() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [guideData, setGuideData] = useState<GeneratedGuideData | null>(null);
+  const [currentInputs, setCurrentInputs] = useState<GuideFlowInputs>({
+    tema: '', tipo: '', categoria: '', palavraChave: '', intencao: '', contextoAdicional: '',
+  });
+
+  const handleInputsChange = useCallback((inputs: GuideFlowInputs) => {
+    setCurrentInputs(inputs);
+  }, []);
 
   const handleGenerate = useCallback(async (inputs: GuideFlowInputs) => {
     setIsGenerating(true);
-
-    // Trigger auto-suggestion for library based on inputs
     sources.autoSuggest(inputs.tema, inputs.palavraChave);
 
     try {
@@ -53,6 +60,11 @@ export default function GuideFlow() {
         ? sources.activeLibraryEntries.map(e => e.title).join(', ')
         : null;
 
+      // Resolve editorial metadata for the prompt
+      const tipoOption = findOption(TIPOS_GUIA, inputs.tipo);
+      const categoriaOption = findOption(CATEGORIAS, inputs.categoria);
+      const intencaoOption = findOption(INTENCOES, inputs.intencao);
+
       const resp = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/guide-flow-generate`,
         {
@@ -63,6 +75,23 @@ export default function GuideFlow() {
             selectedLibrary: selectedLibraryName,
             structureContext,
             libraryContext,
+            // Send structured editorial metadata
+            editorialMeta: {
+              tipo: tipoOption ? {
+                label: tipoOption.label,
+                meaning: tipoOption.editorialMeaning,
+                impact: tipoOption.generationImpact,
+              } : null,
+              categoria: categoriaOption ? {
+                label: categoriaOption.label,
+                context: categoriaOption.editorialContext,
+                impact: categoriaOption.generationImpact,
+              } : null,
+              intencao: intencaoOption ? {
+                label: intencaoOption.label,
+                impact: intencaoOption.generationImpact,
+              } : null,
+            },
           }),
         }
       );
@@ -81,7 +110,7 @@ export default function GuideFlow() {
         short_description: generated.short_description ?? '',
         seo_title: generated.seo_title ?? '',
         seo_description: generated.seo_description ?? '',
-        category: generated.category ?? inputs.categoria,
+        category: generated.category ?? (categoriaOption?.label || inputs.categoria),
         author_name: generated.author_name ?? 'Equipe PqEstudar',
         content_markdown: generated.content_markdown ?? '',
         cta_top: generated.cta_top ?? null,
@@ -187,6 +216,17 @@ export default function GuideFlow() {
         onGenerate={handleGenerate}
         onGuideDataChange={setGuideData}
         sources={sources}
+        onInputsChange={handleInputsChange}
+      />
+
+      <EditorialSummaryPanel
+        tipo={currentInputs.tipo}
+        categoria={currentInputs.categoria}
+        intencao={currentInputs.intencao}
+        activeStructureCount={sources.activeStructureEntries.length}
+        totalStructureCount={sources.structureEntries.length}
+        activeLibraryNames={sources.activeLibraryEntries.map(e => e.title)}
+        selectionMode={sources.selectionMode}
       />
     </div>
   );
