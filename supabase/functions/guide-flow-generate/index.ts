@@ -209,7 +209,7 @@ Retorne um JSON com esta estrutura exata:
   "seo_title": "título SEO (max 60 chars)",
   "seo_description": "meta description (max 160 chars)",
   "category": "${editorialMeta?.categoria?.label || categoria}",
-  "author_name": "Equipe PqEstudar",
+  "author_name": "Matheus Dias",
   "content_markdown": "conteúdo completo em Markdown com H2 em negrito (## **Título**), H3, listas, FAQ, etc.",
   "cta_top": { "label": "texto do botão", "url": "/caminho-interno", "text": "texto descritivo (Markdown)" },
   "cta_middle": { "label": "texto do botão", "url": "/caminho-interno", "text": "texto descritivo (Markdown)" },
