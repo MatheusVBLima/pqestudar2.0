@@ -329,7 +329,13 @@ export default function GuideFlow() {
     try {
       const finalMarkdown = buildFinalMarkdown(guideData);
 
-      await createGuide.mutateAsync({
+      // Persist the full flow state for future re-opening
+      const flowDataPayload = {
+        ...guideData,
+        inputs: currentInputs,
+      };
+
+      const guidePayload: any = {
         title: guideData.title,
         slug: guideData.slug,
         short_description: guideData.short_description,
@@ -339,10 +345,7 @@ export default function GuideFlow() {
         author_name: guideData.author_name,
         content_markdown: finalMarkdown,
         cover_image_url: guideData.cover_image_url || null,
-        internal_code: `FLOW-${Date.now()}`,
         is_published: publish,
-        is_featured: false,
-        sort_order: 0,
         internal_links: guideData.internal_links,
         cta_top_label: guideData.cta_top?.label || null,
         cta_top_url: guideData.cta_top?.url || null,
@@ -353,7 +356,20 @@ export default function GuideFlow() {
         cta_final_label: guideData.cta_final?.label || null,
         cta_final_url: guideData.cta_final?.url || null,
         cta_final_text: guideData.cta_final?.text || null,
-      });
+        flow_data: flowDataPayload,
+      };
+
+      if (linkedGuideId) {
+        // Update existing guide
+        await updateGuide.mutateAsync({ id: linkedGuideId, ...guidePayload });
+      } else {
+        // Create new guide
+        guidePayload.internal_code = `FLOW-${Date.now()}`;
+        guidePayload.is_featured = false;
+        guidePayload.sort_order = 0;
+        await createGuide.mutateAsync(guidePayload);
+      }
+
       toast({
         title: publish ? 'Guia publicado!' : 'Rascunho salvo!',
         description: `"${guideData.title}" foi ${publish ? 'publicado' : 'salvo como rascunho'}.`,
