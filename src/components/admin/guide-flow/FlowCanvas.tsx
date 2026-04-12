@@ -219,6 +219,7 @@ export function FlowCanvas({ guideData, isGenerating, onGenerate, onGuideDataCha
             hasLibrary: sources.activeLibraryEntries.length > 0,
             selectedLibrary: libraryName,
             onAutoSuggest: sources.autoSuggest,
+            onInputsChange,
           },
         };
       }
