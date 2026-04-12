@@ -167,9 +167,10 @@ interface FlowCanvasProps {
   onGenerate: (inputs: GuideFlowInputs) => void;
   onGuideDataChange: (data: GeneratedGuideData) => void;
   sources: GuideFlowSources;
+  onInputsChange?: (inputs: GuideFlowInputs) => void;
 }
 
-export function FlowCanvas({ guideData, isGenerating, onGenerate, onGuideDataChange, sources }: FlowCanvasProps) {
+export function FlowCanvas({ guideData, isGenerating, onGenerate, onGuideDataChange, sources, onInputsChange }: FlowCanvasProps) {
   const structureNames = useMemo(
     () => sources.activeStructureEntries.map(e => e.source_path ?? e.title),
     [sources.activeStructureEntries]
