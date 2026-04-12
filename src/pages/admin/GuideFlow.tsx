@@ -191,6 +191,7 @@ export default function GuideFlow() {
         category: guideData.category,
         author_name: guideData.author_name,
         content_markdown: guideData.content_markdown,
+        cover_image_url: guideData.cover_image_url || null,
         internal_code: `FLOW-${Date.now()}`,
         is_published: publish,
         is_featured: false,
@@ -253,6 +254,7 @@ export default function GuideFlow() {
         onGuideDataChange={setGuideData}
         sources={sources}
         onInputsChange={handleInputsChange}
+        onRegenerateImage={handleRegenerateImage}
       />
 
       <EditorialSummaryPanel
