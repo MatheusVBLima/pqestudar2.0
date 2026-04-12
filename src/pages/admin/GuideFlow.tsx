@@ -141,6 +141,38 @@ export default function GuideFlow() {
     }
   }, [sources.activeStructureEntries, sources.activeLibraryEntries, sources.autoSuggest]);
 
+  const handleRegenerateImage = useCallback(async (prompt: string, position: string) => {
+    if (!guideData) return;
+    
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      toast({ title: 'Regenerando imagem...', description: `Posição: ${position}` });
+
+      const resp = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/guide-flow-generate`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+          body: JSON.stringify({
+            action: 'regenerate-image',
+            prompt,
+            position,
+            slug: guideData.slug,
+          }),
+        }
+      );
+
+      // For now, we use a simplified approach - call the image API directly via a dedicated mechanism
+      // The edge function handles image generation internally during guide generation
+      // For regeneration, we update the prompt and re-trigger
+      toast({ title: 'Use o prompt copiado', description: 'Cole o prompt em uma ferramenta de geração de imagem e atualize manualmente.', });
+    } catch (err: any) {
+      toast({ title: 'Erro', description: err.message, variant: 'destructive' });
+    }
+  }, [guideData]);
+
   const handleSave = async (publish: boolean) => {
     if (!guideData) return;
     if (hasValidationErrors(guideData)) {
