@@ -273,11 +273,27 @@ Retorne um JSON com esta estrutura exata:
     }
 
     // ─── Generate images if prompts are available ───
+    // Ensure all image_prompts always exist as nodes (even on failure)
     if (guideData.image_prompts && Array.isArray(guideData.image_prompts) && guideData.image_prompts.length > 0) {
       console.log(`Generating ${guideData.image_prompts.length} images...`);
       const generatedImages: any[] = [];
 
       for (const imgPrompt of guideData.image_prompts) {
+        // Ensure prompt enforces 16:9 landscape
+        let visualPrompt = imgPrompt.prompt || "";
+        if (!visualPrompt.toLowerCase().includes("16:9") && !visualPrompt.toLowerCase().includes("landscape")) {
+          visualPrompt = `Wide 16:9 landscape format. ${visualPrompt}`;
+        }
+
+        // Base node data — always present regardless of generation outcome
+        const nodeBase = {
+          type: imgPrompt.type,
+          position: imgPrompt.position,
+          prompt: visualPrompt,
+          alt_text: imgPrompt.alt_text || "",
+          editorial_function: imgPrompt.editorial_function || "",
+        };
+
         try {
           const imgResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
             method: "POST",
@@ -287,18 +303,14 @@ Retorne um JSON com esta estrutura exata:
             },
             body: JSON.stringify({
               model: "google/gemini-2.5-flash-image",
-              messages: [{ role: "user", content: imgPrompt.prompt }],
+              messages: [{ role: "user", content: `${visualPrompt}\n\nIMPORTANT: The image MUST be in 16:9 widescreen landscape aspect ratio (e.g. 1344x768 or similar). Do NOT generate a square image.` }],
               modalities: ["image", "text"],
             }),
           });
 
           if (!imgResponse.ok) {
             console.error(`Image generation failed for ${imgPrompt.position}: ${imgResponse.status}`);
-            generatedImages.push({
-              ...imgPrompt,
-              status: "error",
-              error: `HTTP ${imgResponse.status}`,
-            });
+            generatedImages.push({ ...nodeBase, status: "error", error: `HTTP ${imgResponse.status}` });
             continue;
           }
 
@@ -307,11 +319,7 @@ Retorne um JSON com esta estrutura exata:
 
           if (!base64Url) {
             console.error(`No image data returned for ${imgPrompt.position}`);
-            generatedImages.push({
-              ...imgPrompt,
-              status: "error",
-              error: "No image data",
-            });
+            generatedImages.push({ ...nodeBase, status: "error", error: "No image data returned" });
             continue;
           }
 
@@ -319,34 +327,26 @@ Retorne um JSON com esta estrutura exata:
           const base64Data = base64Url.replace(/^data:image\/\w+;base64,/, "");
           const imageBytes = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
           const slug = guideData.slug || "guide";
-          const bucket = imgPrompt.type === "cover" ? "guide-covers" : "guide-covers";
           const fileName = imgPrompt.type === "cover"
             ? `${slug}-cover-${Date.now()}.png`
             : `${slug}-${imgPrompt.position}-${Date.now()}.png`;
 
-          const { data: uploadData, error: uploadErr } = await supabase.storage
-            .from(bucket)
-            .upload(fileName, imageBytes, {
-              contentType: "image/png",
-              upsert: false,
-            });
+          const { error: uploadErr } = await supabase.storage
+            .from("guide-covers")
+            .upload(fileName, imageBytes, { contentType: "image/png", upsert: false });
 
           if (uploadErr) {
             console.error(`Upload failed for ${fileName}:`, uploadErr.message);
-            generatedImages.push({
-              ...imgPrompt,
-              status: "uploaded_failed",
-              base64_preview: base64Url.slice(0, 200) + "...",
-            });
+            generatedImages.push({ ...nodeBase, status: "error", error: `Upload failed: ${uploadErr.message}` });
             continue;
           }
 
           const { data: publicUrlData } = supabase.storage
-            .from(bucket)
+            .from("guide-covers")
             .getPublicUrl(fileName);
 
           generatedImages.push({
-            ...imgPrompt,
+            ...nodeBase,
             status: "success",
             url: publicUrlData.publicUrl,
             storage_path: fileName,
@@ -357,11 +357,11 @@ Retorne um JSON com esta estrutura exata:
             guideData.cover_image_url = publicUrlData.publicUrl;
           }
 
-          console.log(`Image uploaded: ${fileName}`);
+          console.log(`Image uploaded: ${fileName} (16:9 enforced)`);
         } catch (imgErr) {
           console.error(`Image generation error for ${imgPrompt.position}:`, imgErr);
           generatedImages.push({
-            ...imgPrompt,
+            ...nodeBase,
             status: "error",
             error: imgErr instanceof Error ? imgErr.message : "Unknown error",
           });
