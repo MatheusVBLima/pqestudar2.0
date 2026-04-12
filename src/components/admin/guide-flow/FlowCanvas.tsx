@@ -25,7 +25,8 @@ import { IntegrityNode } from './flow-nodes/IntegrityNode';
 import { SourcesNode } from './flow-nodes/SourcesNode';
 import { ImageNode } from './flow-nodes/ImageNode';
 import { NodeEditorSheet } from './NodeEditorSheet';
-import type { GeneratedGuideData } from './GuideFlowPreview';
+import { ImagePromptEditor } from './ImagePromptEditor';
+import type { GeneratedGuideData, ImagePrompt } from './GuideFlowPreview';
 import type { GuideFlowInputs } from './GuideFlowForm';
 import type { GuideFlowSources } from '@/hooks/useGuideFlowSources';
 
@@ -76,7 +77,7 @@ function buildInitialEdges(): Edge[] {
   ];
 }
 
-export function buildGeneratedLayout(data: GeneratedGuideData, structureNames: string[], libraryName: string | null, onRegenerateImage?: (prompt: string, position: string) => void): { nodes: Node[]; edges: Edge[] } {
+export function buildGeneratedLayout(data: GeneratedGuideData, structureNames: string[], libraryName: string | null, onRegenerateImage?: (prompt: string, position: string) => void, onEditPrompt?: (position: string) => void): { nodes: Node[]; edges: Edge[] } {
   const nodes: Node[] = [];
   const edges: Edge[] = [];
   let col = 0;
@@ -118,6 +119,7 @@ export function buildGeneratedLayout(data: GeneratedGuideData, structureNames: s
     addNode('img-cover', 'imageNode', {
       ...coverImage,
       onRegenerate: onRegenerateImage,
+      onEditPrompt,
     }, 0, 2);
     edges.push({ id: 'e-seo-imgcover', source: 'seo', target: 'img-cover', style: { stroke: 'hsl(var(--primary) / 0.3)' } });
   }
@@ -162,7 +164,7 @@ export function buildGeneratedLayout(data: GeneratedGuideData, structureNames: s
         id: imgId,
         type: 'imageNode',
         position: { x: imgX, y: imgY },
-        data: { ...imgForSection, onRegenerate: onRegenerateImage },
+        data: { ...imgForSection, onRegenerate: onRegenerateImage, onEditPrompt },
       });
       edges.push({
         id: `e-s${i}-img${i}`,
