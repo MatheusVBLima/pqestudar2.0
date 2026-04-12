@@ -235,6 +235,7 @@ function InternalCodeField({ code }: { code?: string }) {
 }
 
 export function GuideModal({ open, onClose, onSave, guide }: GuideModalProps) {
+  const navigate = useNavigate();
   const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");
   const [slugManual, setSlugManual] = useState(false);
