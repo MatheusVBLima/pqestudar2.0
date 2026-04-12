@@ -396,6 +396,24 @@ export function FlowCanvas({ guideData, isGenerating, onGenerate, onGuideDataCha
           onSave={handleEditorSave}
         />
       )}
+
+      {guideData && imageEditorPosition && (() => {
+        const allImages = [
+          ...(guideData.image_prompts ?? []),
+          ...(guideData.generated_images ?? []),
+        ];
+        const img = allImages.find(i => i.position === imageEditorPosition);
+        if (!img) return null;
+        return (
+          <ImagePromptEditor
+            open={true}
+            onClose={() => setImageEditorPosition(null)}
+            image={img}
+            onRegenerate={onRegenerateImage ?? (() => {})}
+            onUpdatePrompt={onUpdateImagePrompt ?? (() => {})}
+          />
+        );
+      })()}
     </div>
   );
 }
