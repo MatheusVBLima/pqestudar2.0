@@ -14,7 +14,7 @@ const DIMENSION_MAP: Record<string, { label: string; pattern: string }> = {
   imagens:   { label: "Imagens",             pattern: "diretriz editorial de imagens" },
   tipo_guia: { label: "Tipo de Guia",        pattern: "funcao de cada tipo de guia" },
   linguagem: { label: "Linguagem",           pattern: "linguagem padrao" },
-  ritmo:     { label: "Ritmo de Leitura",    pattern: "ritmo de leitura" },
+  ritmo:     { label: "Ritmo de Leitura",     pattern: "ritmo de leitura" },
   links:     { label: "Links Internos",      pattern: "sistema de links internos" },
 };
 
@@ -62,9 +62,11 @@ serve(async (req) => {
     }
 
     // ─── 1. Use pre-built context from the client (Biblioteca entries) ───
-    // structureContext and libraryContext come pre-assembled from the hook
     const hasStructure = !!structureContext?.trim();
     const hasLibrary = !!libraryContext?.trim();
+
+    // Check if image directive is present in structure context
+    const hasImageDirective = hasStructure && normalize(structureContext).includes(normalize("diretriz editorial de imagens"));
 
     // ─── 2. Fetch real data for links/CTAs ───
     const [guidesRes, toolsRes, contestsRes] = await Promise.all([
@@ -109,7 +111,27 @@ ${parts.join("\n\n")}`;
       }
     }
 
-    // ─── 4. Build system prompt ───
+    // ─── 4. Build image prompts instruction ───
+    const imageInstruction = hasImageDirective
+      ? `\n\n## GERAÇÃO DE PROMPTS VISUAIS
+A diretriz editorial de imagens está ativa. Você DEVE gerar prompts visuais para as imagens do guia.
+
+Para cada imagem necessária (conforme a diretriz), inclua no campo "image_prompts" do JSON:
+- "type": "cover" para a imagem de capa, "internal" para imagens internas
+- "position": "cover" para capa, ou "after_section_N" (ex: "after_section_0") para internas
+- "prompt": descrição visual detalhada em inglês para geração por IA (estilo flat illustration, cores vibrantes, sem texto na imagem, fundo limpo)
+- "alt_text": texto alternativo em português para acessibilidade
+
+Regras dos prompts visuais:
+- Estilo consistente: flat illustration, moderno, com cores vibrantes e fundo limpo
+- NÃO incluir texto na imagem — a imagem deve comunicar visualmente o conceito
+- Cada prompt deve ser específico ao conteúdo da seção correspondente
+- A imagem de capa deve representar o tema principal do guia
+- Imagens internas devem complementar visualmente o conteúdo da seção anterior
+- Gere entre 2 e 4 prompts no total (1 capa + 1-3 internas), conforme a extensão e necessidade do guia`
+      : "";
+
+    // ─── 5. Build system prompt ───
     const systemPrompt = `Você é um editor assistente do portal PqEstudar, especializado em criar guias práticos e educativos para concurseiros.
 
 ## HIERARQUIA DE PRIORIDADE DA GERAÇÃO
@@ -134,6 +156,7 @@ ${hasLibrary ? `Os arquivos abaixo contêm a base factual e contextual. O conte�
 
 ${libraryContext}` : `⚠ Nenhuma biblioteca factual selecionada — NÃO afirme fatos sem fonte. Geração será genérica.`}
 ${editorialModulation}
+${imageInstruction}
 
 ## CTAs contextuais
 - CTA superior: mais leve, convite suave (ex: newsletter, kit gratuito)
@@ -156,6 +179,15 @@ ${existingContests || "Nenhum concurso publicado."}
 
 ## Regras de output
 Retorne EXCLUSIVAMENTE um JSON válido (sem markdown code fences) com a estrutura abaixo. Não inclua texto fora do JSON.`;
+
+    const imageSchema = hasImageDirective
+      ? `,
+  "image_prompts": [
+    { "type": "cover", "position": "cover", "prompt": "detailed visual description in English for AI image generation", "alt_text": "texto alternativo em português" },
+    { "type": "internal", "position": "after_section_0", "prompt": "...", "alt_text": "..." }
+  ]`
+      : `,
+  "cover_image_suggestion": "descrição da imagem de capa ideal"`;
 
     const userPrompt = `Gere um guia completo com base nos seguintes inputs:
 
@@ -180,8 +212,7 @@ Retorne um JSON com esta estrutura exata:
   "cta_top": { "label": "texto do botão", "url": "/caminho-interno", "text": "texto descritivo (Markdown)" },
   "cta_middle": { "label": "texto do botão", "url": "/caminho-interno", "text": "texto descritivo (Markdown)" },
   "cta_final": { "label": "texto do botão", "url": "/caminho-interno", "text": "texto descritivo (Markdown)" },
-  "internal_links": [{ "label": "texto do link", "url": "/guias/slug" }],
-  "cover_image_suggestion": "descrição da imagem de capa ideal"
+  "internal_links": [{ "label": "texto do link", "url": "/guias/slug" }]${imageSchema}
 }`;
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
@@ -239,10 +270,110 @@ Retorne um JSON com esta estrutura exata:
       });
     }
 
+    // ─── Generate images if prompts are available ───
+    if (guideData.image_prompts && Array.isArray(guideData.image_prompts) && guideData.image_prompts.length > 0) {
+      console.log(`Generating ${guideData.image_prompts.length} images...`);
+      const generatedImages: any[] = [];
+
+      for (const imgPrompt of guideData.image_prompts) {
+        try {
+          const imgResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${LOVABLE_API_KEY}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              model: "google/gemini-2.5-flash-image",
+              messages: [{ role: "user", content: imgPrompt.prompt }],
+              modalities: ["image", "text"],
+            }),
+          });
+
+          if (!imgResponse.ok) {
+            console.error(`Image generation failed for ${imgPrompt.position}: ${imgResponse.status}`);
+            generatedImages.push({
+              ...imgPrompt,
+              status: "error",
+              error: `HTTP ${imgResponse.status}`,
+            });
+            continue;
+          }
+
+          const imgData = await imgResponse.json();
+          const base64Url = imgData.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+
+          if (!base64Url) {
+            console.error(`No image data returned for ${imgPrompt.position}`);
+            generatedImages.push({
+              ...imgPrompt,
+              status: "error",
+              error: "No image data",
+            });
+            continue;
+          }
+
+          // Upload to Storage
+          const base64Data = base64Url.replace(/^data:image\/\w+;base64,/, "");
+          const imageBytes = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
+          const slug = guideData.slug || "guide";
+          const bucket = imgPrompt.type === "cover" ? "guide-covers" : "guide-covers";
+          const fileName = imgPrompt.type === "cover"
+            ? `${slug}-cover-${Date.now()}.png`
+            : `${slug}-${imgPrompt.position}-${Date.now()}.png`;
+
+          const { data: uploadData, error: uploadErr } = await supabase.storage
+            .from(bucket)
+            .upload(fileName, imageBytes, {
+              contentType: "image/png",
+              upsert: false,
+            });
+
+          if (uploadErr) {
+            console.error(`Upload failed for ${fileName}:`, uploadErr.message);
+            generatedImages.push({
+              ...imgPrompt,
+              status: "uploaded_failed",
+              base64_preview: base64Url.slice(0, 200) + "...",
+            });
+            continue;
+          }
+
+          const { data: publicUrlData } = supabase.storage
+            .from(bucket)
+            .getPublicUrl(fileName);
+
+          generatedImages.push({
+            ...imgPrompt,
+            status: "success",
+            url: publicUrlData.publicUrl,
+            storage_path: fileName,
+          });
+
+          // Auto-set cover_image_url
+          if (imgPrompt.type === "cover" && publicUrlData.publicUrl) {
+            guideData.cover_image_url = publicUrlData.publicUrl;
+          }
+
+          console.log(`Image uploaded: ${fileName}`);
+        } catch (imgErr) {
+          console.error(`Image generation error for ${imgPrompt.position}:`, imgErr);
+          generatedImages.push({
+            ...imgPrompt,
+            status: "error",
+            error: imgErr instanceof Error ? imgErr.message : "Unknown error",
+          });
+        }
+      }
+
+      guideData.generated_images = generatedImages;
+    }
+
     // Attach source metadata
     guideData._sources = {
       has_structure: hasStructure,
       has_library: hasLibrary,
+      has_image_directive: hasImageDirective,
       library_name: selectedLibrary || null,
       editorial_meta: editorialMeta || null,
     };
