@@ -6,31 +6,21 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Sparkles, Loader2, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { TIPOS_GUIA, CATEGORIAS, INTENCOES } from '@/lib/guide-editorial-options';
 import type { GuideFlowInputs } from '../GuideFlowForm';
 
-const CATEGORIAS = [
-  'Planejamento de Estudos', 'Ferramentas e Recursos', 'Estratégias de Prova',
-  'Carreira Pública', 'Saúde e Produtividade', 'Materiais e Cursos',
-  'Legislação e Editais', 'Dicas Gerais',
-];
-
-const TIPOS_GUIA = [
-  'Prático (passo a passo)', 'Lista (top N, comparativo)',
-  'Explicativo (conceito ou processo)', 'Tutorial (como fazer)', 'FAQ (perguntas e respostas)',
-];
-
-const INTENCOES = [
-  'Informar e orientar', 'Comparar opções', 'Ensinar uma habilidade',
-  'Convencer/motivar', 'Resolver um problema específico',
-];
-
 function InputNodeComponent({ data }: { data: any }) {
-  const { onGenerate, isGenerating, hasValidSources, hasLibrary, selectedLibrary, onAutoSuggest } = data;
+  const { onGenerate, isGenerating, hasValidSources, hasLibrary, selectedLibrary, onAutoSuggest, onInputsChange } = data;
   const [inputs, setInputs] = useState<GuideFlowInputs>({
     tema: '', tipo: '', categoria: '', palavraChave: '', intencao: '', contextoAdicional: '',
   });
 
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+
+  // Notify parent of input changes for editorial summary
+  useEffect(() => {
+    onInputsChange?.(inputs);
+  }, [inputs, onInputsChange]);
 
   // Auto-suggest library when tema or palavraChave changes
   useEffect(() => {
@@ -91,14 +81,22 @@ function InputNodeComponent({ data }: { data: any }) {
             <Label className="text-xs">Tipo de guia</Label>
             <Select value={inputs.tipo} onValueChange={(v) => setInputs((p) => ({ ...p, tipo: v }))}>
               <SelectTrigger className="rounded-lg text-xs h-8"><SelectValue placeholder="Selecione..." /></SelectTrigger>
-              <SelectContent>{TIPOS_GUIA.map((t) => <SelectItem key={t} value={t} className="text-xs">{t}</SelectItem>)}</SelectContent>
+              <SelectContent>
+                {TIPOS_GUIA.map((t) => (
+                  <SelectItem key={t.value} value={t.value} className="text-xs">{t.label}</SelectItem>
+                ))}
+              </SelectContent>
             </Select>
           </div>
           <div className="space-y-1">
             <Label className="text-xs">Categoria *</Label>
             <Select value={inputs.categoria} onValueChange={(v) => setInputs((p) => ({ ...p, categoria: v }))}>
               <SelectTrigger className="rounded-lg text-xs h-8"><SelectValue placeholder="Selecione..." /></SelectTrigger>
-              <SelectContent>{CATEGORIAS.map((c) => <SelectItem key={c} value={c} className="text-xs">{c}</SelectItem>)}</SelectContent>
+              <SelectContent>
+                {CATEGORIAS.map((c) => (
+                  <SelectItem key={c.value} value={c.value} className="text-xs">{c.label}</SelectItem>
+                ))}
+              </SelectContent>
             </Select>
           </div>
         </div>
@@ -117,7 +115,11 @@ function InputNodeComponent({ data }: { data: any }) {
             <Label className="text-xs">Intenção</Label>
             <Select value={inputs.intencao} onValueChange={(v) => setInputs((p) => ({ ...p, intencao: v }))}>
               <SelectTrigger className="rounded-lg text-xs h-8"><SelectValue placeholder="Selecione..." /></SelectTrigger>
-              <SelectContent>{INTENCOES.map((i) => <SelectItem key={i} value={i} className="text-xs">{i}</SelectItem>)}</SelectContent>
+              <SelectContent>
+                {INTENCOES.map((i) => (
+                  <SelectItem key={i.value} value={i.value} className="text-xs">{i.label}</SelectItem>
+                ))}
+              </SelectContent>
             </Select>
           </div>
         </div>

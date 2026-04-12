@@ -5,33 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Sparkles, Loader2 } from 'lucide-react';
-
-const CATEGORIAS = [
-  'Planejamento de Estudos',
-  'Ferramentas e Recursos',
-  'Estratégias de Prova',
-  'Carreira Pública',
-  'Saúde e Produtividade',
-  'Materiais e Cursos',
-  'Legislação e Editais',
-  'Dicas Gerais',
-];
-
-const TIPOS_GUIA = [
-  'Prático (passo a passo)',
-  'Lista (top N, comparativo)',
-  'Explicativo (conceito ou processo)',
-  'Tutorial (como fazer)',
-  'FAQ (perguntas e respostas)',
-];
-
-const INTENCOES = [
-  'Informar e orientar',
-  'Comparar opções',
-  'Ensinar uma habilidade',
-  'Convencer/motivar',
-  'Resolver um problema específico',
-];
+import { TIPOS_GUIA, CATEGORIAS, INTENCOES } from '@/lib/guide-editorial-options';
 
 export interface GuideFlowInputs {
   tema: string;
@@ -86,7 +60,7 @@ export function GuideFlowForm({ onGenerate, isGenerating }: Props) {
             </SelectTrigger>
             <SelectContent>
               {TIPOS_GUIA.map((t) => (
-                <SelectItem key={t} value={t}>{t}</SelectItem>
+                <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -100,7 +74,7 @@ export function GuideFlowForm({ onGenerate, isGenerating }: Props) {
             </SelectTrigger>
             <SelectContent>
               {CATEGORIAS.map((c) => (
-                <SelectItem key={c} value={c}>{c}</SelectItem>
+                <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -127,7 +101,7 @@ export function GuideFlowForm({ onGenerate, isGenerating }: Props) {
             </SelectTrigger>
             <SelectContent>
               {INTENCOES.map((i) => (
-                <SelectItem key={i} value={i}>{i}</SelectItem>
+                <SelectItem key={i.value} value={i.value}>{i.label}</SelectItem>
               ))}
             </SelectContent>
           </Select>
