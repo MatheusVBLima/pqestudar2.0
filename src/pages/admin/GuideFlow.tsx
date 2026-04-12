@@ -173,6 +173,69 @@ export default function GuideFlow() {
     }
   }, [guideData]);
 
+  /** Inject internal images into the markdown content at their correct positions */
+  const buildFinalMarkdown = (data: GeneratedGuideData): string => {
+    const internalImages = (data.generated_images ?? data.image_prompts ?? [])
+      .filter(img => img.type === 'internal' && img.status === 'success' && img.url);
+
+    if (internalImages.length === 0) return data.content_markdown;
+
+    // Parse positions like "after_section_1", "after_section_2" etc.
+    const imagesBySection = new Map<number, typeof internalImages>();
+    for (const img of internalImages) {
+      const match = img.position?.match(/after_section_(\d+)/);
+      const sectionIndex = match ? parseInt(match[1], 10) : null;
+      if (sectionIndex !== null) {
+        const list = imagesBySection.get(sectionIndex) || [];
+        list.push(img);
+        imagesBySection.set(sectionIndex, list);
+      }
+    }
+
+    if (imagesBySection.size === 0) {
+      // No positional info — append all at the end
+      const suffix = internalImages
+        .map(img => `\n\n<img src="${img.url}" alt="${img.alt_text || ''}" width="100%" loading="lazy" decoding="async" />\n`)
+        .join('');
+      return data.content_markdown + suffix;
+    }
+
+    // Split markdown by H2 headings to identify sections
+    const lines = data.content_markdown.split('\n');
+    const sections: { startLine: number; endLine: number }[] = [];
+    let currentStart = -1;
+
+    for (let i = 0; i < lines.length; i++) {
+      if (/^##\s/.test(lines[i])) {
+        if (currentStart >= 0) {
+          sections.push({ startLine: currentStart, endLine: i - 1 });
+        }
+        currentStart = i;
+      }
+    }
+    if (currentStart >= 0) {
+      sections.push({ startLine: currentStart, endLine: lines.length - 1 });
+    }
+
+    // Build result by inserting images after the corresponding sections
+    const result = [...lines];
+    // Process in reverse order so line insertions don't shift indices
+    const sortedSections = Array.from(imagesBySection.entries()).sort((a, b) => b[0] - a[0]);
+
+    for (const [sectionIndex, images] of sortedSections) {
+      const section = sections[sectionIndex - 1]; // 1-indexed
+      if (!section) continue;
+
+      const imgTags = images
+        .map(img => `<img src="${img.url}" alt="${img.alt_text || ''}" width="100%" loading="lazy" decoding="async" />`)
+        .join('\n\n');
+
+      result.splice(section.endLine + 1, 0, '', imgTags, '');
+    }
+
+    return result.join('\n');
+  };
+
   const handleSave = async (publish: boolean) => {
     if (!guideData) return;
     if (hasValidationErrors(guideData)) {
@@ -182,6 +245,8 @@ export default function GuideFlow() {
 
     setIsSaving(true);
     try {
+      const finalMarkdown = buildFinalMarkdown(guideData);
+
       await createGuide.mutateAsync({
         title: guideData.title,
         slug: guideData.slug,
@@ -190,7 +255,7 @@ export default function GuideFlow() {
         seo_description: guideData.seo_description,
         category: guideData.category,
         author_name: guideData.author_name,
-        content_markdown: guideData.content_markdown,
+        content_markdown: finalMarkdown,
         cover_image_url: guideData.cover_image_url || null,
         internal_code: `FLOW-${Date.now()}`,
         is_published: publish,
