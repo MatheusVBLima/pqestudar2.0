@@ -18,6 +18,7 @@ const EMPTY_GUIDE: GeneratedGuideData = {
   title: '', slug: '', short_description: '', seo_title: '', seo_description: '',
   category: '', author_name: 'Equipe PqEstudar', content_markdown: '',
   cta_top: null, cta_middle: null, cta_final: null, internal_links: [], cover_image_suggestion: '',
+  image_prompts: [], generated_images: [],
 };
 
 export default function GuideFlow() {
