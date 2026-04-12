@@ -10,6 +10,7 @@ interface ImageNodeData {
   position: string;
   prompt: string;
   alt_text: string;
+  editorial_function?: string;
   status: 'success' | 'error' | 'generating' | 'pending';
   url?: string;
   error?: string;
@@ -78,8 +79,13 @@ export const ImageNode = memo(({ data }: { data: ImageNodeData }) => {
           )}
         </div>
 
-        {/* Prompt */}
+        {/* Prompt & metadata */}
         <div className="px-3 pb-2">
+          {data.editorial_function && (
+            <p className="text-[10px] text-primary/80 font-medium mb-1">
+              📌 {data.editorial_function}
+            </p>
+          )}
           <p className="text-[10px] text-muted-foreground leading-relaxed line-clamp-3 mb-1.5">
             <span className="font-semibold">Prompt:</span> {data.prompt}
           </p>

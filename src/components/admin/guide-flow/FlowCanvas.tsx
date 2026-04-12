@@ -97,8 +97,22 @@ export function buildGeneratedLayout(data: GeneratedGuideData, structureNames: s
     seo_title: data.seo_title, seo_description: data.seo_description,
   }, 0, 1);
 
-  // Cover image node (column 0, row 2)
-  const images = data.generated_images ?? data.image_prompts ?? [];
+  // Cover image node (column 0, row 2) — always show if prompt exists
+  const allImages = data.generated_images ?? data.image_prompts ?? [];
+  // Merge: generated_images override image_prompts by position
+  const imagePrompts = data.image_prompts ?? [];
+  const generatedMap = new Map((data.generated_images ?? []).map(img => [img.position, img]));
+  const images = imagePrompts.map(ip => {
+    const generated = generatedMap.get(ip.position);
+    return generated ? { ...ip, ...generated } : { ...ip, status: ip.status ?? 'pending' as const };
+  });
+  // Add any generated images that weren't in prompts
+  for (const gi of (data.generated_images ?? [])) {
+    if (!imagePrompts.find(ip => ip.position === gi.position)) {
+      images.push(gi);
+    }
+  }
+
   const coverImage = images.find(img => img.type === 'cover');
   if (coverImage) {
     addNode('img-cover', 'imageNode', {
