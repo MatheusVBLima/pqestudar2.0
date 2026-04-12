@@ -1,12 +1,11 @@
-import { useState, memo } from 'react';
+import { useState, useEffect, useRef, memo } from 'react';
 import { Handle, Position } from '@xyflow/react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { Sparkles, Loader2, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { Sparkles, Loader2, CheckCircle2, AlertTriangle } from 'lucide-react';
 import type { GuideFlowInputs } from '../GuideFlowForm';
 
 const CATEGORIAS = [
@@ -26,10 +25,24 @@ const INTENCOES = [
 ];
 
 function InputNodeComponent({ data }: { data: any }) {
-  const { onGenerate, isGenerating, hasValidSources, hasLibrary, selectedLibrary } = data;
+  const { onGenerate, isGenerating, hasValidSources, hasLibrary, selectedLibrary, onAutoSuggest } = data;
   const [inputs, setInputs] = useState<GuideFlowInputs>({
     tema: '', tipo: '', categoria: '', palavraChave: '', intencao: '', contextoAdicional: '',
   });
+
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+
+  // Auto-suggest library when tema or palavraChave changes
+  useEffect(() => {
+    if (!onAutoSuggest) return;
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      if (inputs.tema.trim() || inputs.palavraChave.trim()) {
+        onAutoSuggest(inputs.tema, inputs.palavraChave);
+      }
+    }, 500);
+    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
+  }, [inputs.tema, inputs.palavraChave, onAutoSuggest]);
 
   const canSubmit = inputs.tema.trim() && inputs.categoria && !isGenerating;
 
@@ -59,7 +72,7 @@ function InputNodeComponent({ data }: { data: any }) {
             ) : (
               <AlertTriangle className="h-2.5 w-2.5 text-amber-500" />
             )}
-            <span>{selectedLibrary ? selectedLibrary : 'Biblioteca'}</span>
+            <span className="truncate max-w-[120px]">{selectedLibrary ? selectedLibrary : 'Biblioteca'}</span>
           </div>
         </div>
 
@@ -133,9 +146,9 @@ function InputNodeComponent({ data }: { data: any }) {
           )}
         </Button>
 
-        {!hasLibrary && !isGenerating && (
+        {!hasLibrary && !hasValidSources && !isGenerating && (
           <p className="text-[10px] text-amber-600 text-center">
-            ⚠ Sem biblioteca selecionada — geração será genérica
+            ⚠ Sem fontes da Biblioteca — sincronize o Storage primeiro
           </p>
         )}
       </div>

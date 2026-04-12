@@ -7,7 +7,7 @@ import type { GeneratedGuideData } from '@/components/admin/guide-flow/GuideFlow
 import type { GuideFlowInputs } from '@/components/admin/guide-flow/GuideFlowForm';
 import { hasValidationErrors } from '@/components/admin/guide-flow/GuideFlowValidation';
 import { useGuidesMutations } from '@/hooks/useGuides';
-import { useGuideStorageSources } from '@/hooks/useGuideStorageSources';
+import { useGuideFlowSources } from '@/hooks/useGuideFlowSources';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { Save, Send, RotateCcw } from 'lucide-react';
@@ -21,7 +21,7 @@ const EMPTY_GUIDE: GeneratedGuideData = {
 export default function GuideFlow() {
   const navigate = useNavigate();
   const { createGuide } = useGuidesMutations();
-  const storageSources = useGuideStorageSources();
+  const sources = useGuideFlowSources();
 
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -29,12 +29,29 @@ export default function GuideFlow() {
 
   const handleGenerate = useCallback(async (inputs: GuideFlowInputs) => {
     setIsGenerating(true);
+
+    // Trigger auto-suggestion for library based on inputs
+    sources.autoSuggest(inputs.tema, inputs.palavraChave);
+
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         toast({ title: 'Sessão expirada', description: 'Faça login novamente.', variant: 'destructive' });
         return;
       }
+
+      // Build context from active Biblioteca entries
+      const structureContext = sources.activeStructureEntries
+        .map(e => `[Diretriz: ${e.title}]\n${e.content}`)
+        .join('\n\n---\n\n');
+
+      const libraryContext = sources.activeLibraryEntries
+        .map(e => `[Biblioteca: ${e.title}]\n${e.content}`)
+        .join('\n\n---\n\n');
+
+      const selectedLibraryName = sources.activeLibraryEntries.length > 0
+        ? sources.activeLibraryEntries.map(e => e.title).join(', ')
+        : null;
 
       const resp = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/guide-flow-generate`,
@@ -43,7 +60,9 @@ export default function GuideFlow() {
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
           body: JSON.stringify({
             ...inputs,
-            selectedLibrary: storageSources.selectedLibrary,
+            selectedLibrary: selectedLibraryName,
+            structureContext,
+            libraryContext,
           }),
         }
       );
@@ -72,19 +91,22 @@ export default function GuideFlow() {
         cover_image_suggestion: generated.cover_image_suggestion ?? '',
       });
 
-      const hasLib = !!storageSources.selectedLibrary;
+      const hasLib = sources.activeLibraryEntries.length > 0;
+      const hasStruct = sources.activeStructureEntries.length > 0;
       toast({
         title: 'Guia gerado com sucesso',
-        description: hasLib
-          ? `Gerado com base na biblioteca "${storageSources.selectedLibrary}".`
-          : 'Gerado sem biblioteca factual — revisão manual recomendada.',
+        description: hasLib && hasStruct
+          ? `Gerado com ${sources.activeStructureEntries.length} diretriz(es) e ${sources.activeLibraryEntries.length} biblioteca(s).`
+          : hasStruct
+            ? 'Gerado com diretrizes editoriais — sem biblioteca factual.'
+            : 'Gerado sem fontes da Biblioteca — revisão manual recomendada.',
       });
     } catch (err: any) {
       toast({ title: 'Erro', description: err.message, variant: 'destructive' });
     } finally {
       setIsGenerating(false);
     }
-  }, [storageSources.selectedLibrary]);
+  }, [sources.activeStructureEntries, sources.activeLibraryEntries, sources.autoSuggest]);
 
   const handleSave = async (publish: boolean) => {
     if (!guideData) return;
@@ -140,7 +162,7 @@ export default function GuideFlow() {
       <div className="flex items-center justify-between">
         <PageHeader
           title="Fluxo de Guias"
-          description="Criação assistida com base em diretrizes e bibliotecas do Storage."
+          description="Criação assistida com base na Biblioteca de Conhecimento."
         />
         <div className="flex items-center gap-2">
           {guideData && (
@@ -164,7 +186,7 @@ export default function GuideFlow() {
         isGenerating={isGenerating}
         onGenerate={handleGenerate}
         onGuideDataChange={setGuideData}
-        storageSources={storageSources}
+        sources={sources}
       />
     </div>
   );
