@@ -722,11 +722,29 @@ export function GuideModal({ open, onClose, onSave, guide }: GuideModalProps) {
           </TabsContent>
         </Tabs>
 
-        <div className="flex justify-end gap-3 mt-6">
-          <Button variant="outline" onClick={onClose} disabled={saving}>Cancelar</Button>
-          <Button onClick={handleSave} disabled={saving}>
-            {saving ? "Salvando..." : guide ? "Salvar alterações" : "Criar guia"}
-          </Button>
+        <div className="flex justify-between items-center mt-6">
+          <div>
+            {guide && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-1.5"
+                onClick={() => {
+                  onClose();
+                  navigate(`/admin/fluxo-guias?guide=${guide.id}`);
+                }}
+              >
+                <Workflow className="h-4 w-4" />
+                {(guide as any).flow_data ? 'Abrir no Fluxo' : 'Editar no Fluxo'}
+              </Button>
+            )}
+          </div>
+          <div className="flex gap-3">
+            <Button variant="outline" onClick={onClose} disabled={saving}>Cancelar</Button>
+            <Button onClick={handleSave} disabled={saving}>
+              {saving ? "Salvando..." : guide ? "Salvar alterações" : "Criar guia"}
+            </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
