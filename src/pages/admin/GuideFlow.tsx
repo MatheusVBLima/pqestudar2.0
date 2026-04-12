@@ -119,6 +119,9 @@ export default function GuideFlow() {
         cta_final: generated.cta_final ?? null,
         internal_links: generated.internal_links ?? [],
         cover_image_suggestion: generated.cover_image_suggestion ?? '',
+        cover_image_url: generated.cover_image_url ?? '',
+        image_prompts: generated.image_prompts ?? [],
+        generated_images: generated.generated_images ?? [],
       });
 
       const hasLib = sources.activeLibraryEntries.length > 0;
