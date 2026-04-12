@@ -1154,6 +1154,7 @@ export type Database = {
           cta_top_label: string | null
           cta_top_text: string | null
           cta_top_url: string | null
+          flow_data: Json | null
           id: string
           internal_code: string
           internal_links: Json | null
@@ -1183,6 +1184,7 @@ export type Database = {
           cta_top_label?: string | null
           cta_top_text?: string | null
           cta_top_url?: string | null
+          flow_data?: Json | null
           id?: string
           internal_code: string
           internal_links?: Json | null
@@ -1212,6 +1214,7 @@ export type Database = {
           cta_top_label?: string | null
           cta_top_text?: string | null
           cta_top_url?: string | null
+          flow_data?: Json | null
           id?: string
           internal_code?: string
           internal_links?: Json | null
