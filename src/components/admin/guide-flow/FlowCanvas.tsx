@@ -25,7 +25,7 @@ import { IntegrityNode } from './flow-nodes/IntegrityNode';
 import { SourcesNode } from './flow-nodes/SourcesNode';
 import type { GeneratedGuideData } from './GuideFlowPreview';
 import type { GuideFlowInputs } from './GuideFlowForm';
-import type { StorageSources } from '@/hooks/useGuideStorageSources';
+import type { GuideFlowSources } from '@/hooks/useGuideFlowSources';
 
 const nodeTypes: NodeTypes = {
   inputNode: InputNode,
@@ -73,7 +73,7 @@ function buildInitialEdges(): Edge[] {
   ];
 }
 
-export function buildGeneratedLayout(data: GeneratedGuideData, structureFileNames: string[], libraryName: string | null): { nodes: Node[]; edges: Edge[] } {
+export function buildGeneratedLayout(data: GeneratedGuideData, structureNames: string[], libraryName: string | null): { nodes: Node[]; edges: Edge[] } {
   const nodes: Node[] = [];
   const edges: Edge[] = [];
   let col = 0;
@@ -131,7 +131,7 @@ export function buildGeneratedLayout(data: GeneratedGuideData, structureFileName
   // Column 3: Integrity panel
   addNode('integrity', 'integrityNode', {
     guideData: data,
-    structureFileNames,
+    structureFileNames: structureNames,
     hasLibrary: !!libraryName,
     libraryName,
   }, 3, 0);
@@ -166,17 +166,27 @@ interface FlowCanvasProps {
   isGenerating: boolean;
   onGenerate: (inputs: GuideFlowInputs) => void;
   onGuideDataChange: (data: GeneratedGuideData) => void;
-  storageSources: StorageSources;
+  sources: GuideFlowSources;
 }
 
-export function FlowCanvas({ guideData, isGenerating, onGenerate, onGuideDataChange, storageSources }: FlowCanvasProps) {
-  const structureFileNames = useMemo(() => storageSources.structureFiles.map(f => f.name), [storageSources.structureFiles]);
+export function FlowCanvas({ guideData, isGenerating, onGenerate, onGuideDataChange, sources }: FlowCanvasProps) {
+  const structureNames = useMemo(
+    () => sources.activeStructureEntries.map(e => e.source_path ?? e.title),
+    [sources.activeStructureEntries]
+  );
+
+  const libraryName = useMemo(
+    () => sources.activeLibraryEntries.length > 0
+      ? sources.activeLibraryEntries.map(e => e.title).join(', ')
+      : null,
+    [sources.activeLibraryEntries]
+  );
 
   const initial = useMemo(() => {
     if (!guideData || !guideData.title) {
       return { nodes: buildInitialNodes(), edges: buildInitialEdges() };
     }
-    return buildGeneratedLayout(guideData, structureFileNames, storageSources.selectedLibrary);
+    return buildGeneratedLayout(guideData, structureNames, libraryName);
   }, []);
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initial.nodes);
@@ -184,11 +194,11 @@ export function FlowCanvas({ guideData, isGenerating, onGenerate, onGuideDataCha
 
   useEffect(() => {
     if (guideData && guideData.title) {
-      const layout = buildGeneratedLayout(guideData, structureFileNames, storageSources.selectedLibrary);
+      const layout = buildGeneratedLayout(guideData, structureNames, libraryName);
       setNodes(layout.nodes);
       setEdges(layout.edges);
     }
-  }, [guideData?.title, structureFileNames, storageSources.selectedLibrary]);
+  }, [guideData?.title, structureNames, libraryName]);
 
   const onConnect = useCallback((params: Connection) => {
     setEdges((eds) => addEdge(params, eds));
@@ -204,9 +214,10 @@ export function FlowCanvas({ guideData, isGenerating, onGenerate, onGuideDataCha
             ...node.data,
             onGenerate,
             isGenerating,
-            hasValidSources: storageSources.structureFiles.length > 0,
-            hasLibrary: !!storageSources.selectedLibrary,
-            selectedLibrary: storageSources.selectedLibrary,
+            hasValidSources: sources.activeStructureEntries.length > 0,
+            hasLibrary: sources.activeLibraryEntries.length > 0,
+            selectedLibrary: libraryName,
+            onAutoSuggest: sources.autoSuggest,
           },
         };
       }
@@ -214,24 +225,26 @@ export function FlowCanvas({ guideData, isGenerating, onGenerate, onGuideDataCha
         return {
           ...node,
           data: {
-            structureFiles: storageSources.structureFiles,
-            libraryFiles: storageSources.libraryFiles,
-            selectedLibrary: storageSources.selectedLibrary,
-            libraryFolders: storageSources.libraryFolders,
-            isLoadingStructure: storageSources.isLoadingStructure,
-            isLoadingLibrary: storageSources.isLoadingLibrary,
-            structureError: storageSources.structureError,
-            libraryError: storageSources.libraryError,
-            structureStatus: storageSources.structureStatus,
-            libraryStatus: storageSources.libraryStatus,
-            onSelectLibrary: storageSources.setSelectedLibrary,
-            onRefresh: storageSources.refreshAll,
+            structureEntries: sources.structureEntries,
+            libraryEntries: sources.libraryEntries,
+            selectedStructureIds: sources.selectedStructureIds,
+            selectedLibraryIds: sources.selectedLibraryIds,
+            suggestedLibraryIds: sources.suggestedLibraryIds,
+            selectionMode: sources.selectionMode,
+            isLoading: sources.isLoading,
+            error: sources.error,
+            onToggleStructure: sources.toggleStructure,
+            onSelectAllStructure: sources.selectAllStructure,
+            onDeselectAllStructure: sources.deselectAllStructure,
+            onToggleLibrary: sources.toggleLibrary,
+            onClearManualOverride: sources.clearManualOverride,
+            onRefresh: sources.refresh,
           },
         };
       }
       return node;
     });
-  }, [nodes, onGenerate, isGenerating, storageSources]);
+  }, [nodes, onGenerate, isGenerating, sources, libraryName]);
 
   return (
     <div className="w-full h-[calc(100vh-140px)] rounded-[var(--admin-radius)] overflow-hidden border border-border/50 bg-background/50">
