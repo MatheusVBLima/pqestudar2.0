@@ -1,5 +1,5 @@
-import { useState, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useCallback, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/admin/dashboard/PageHeader';
 import { FlowCanvas } from '@/components/admin/guide-flow/FlowCanvas';
@@ -23,15 +23,85 @@ const EMPTY_GUIDE: GeneratedGuideData = {
 
 export default function GuideFlow() {
   const navigate = useNavigate();
-  const { createGuide } = useGuidesMutations();
+  const [searchParams] = useSearchParams();
+  const { createGuide, updateGuide } = useGuidesMutations();
   const sources = useGuideFlowSources();
 
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [guideData, setGuideData] = useState<GeneratedGuideData | null>(null);
+  const [linkedGuideId, setLinkedGuideId] = useState<string | null>(null);
   const [currentInputs, setCurrentInputs] = useState<GuideFlowInputs>({
     tema: '', tipo: '', categoria: '', palavraChave: '', intencao: '', contextoAdicional: '',
   });
+
+  // Load guide from URL param ?guide=ID
+  useEffect(() => {
+    const guideId = searchParams.get('guide');
+    if (!guideId) return;
+
+    (async () => {
+      const { data, error } = await supabase
+        .from('guides' as any)
+        .select('*')
+        .eq('id', guideId)
+        .single();
+
+      if (error || !data) {
+        toast({ title: 'Guia não encontrado', variant: 'destructive' });
+        return;
+      }
+
+      const guide = data as any;
+      setLinkedGuideId(guide.id);
+
+      if (guide.flow_data) {
+        // Restore full flow state
+        const fd = guide.flow_data;
+        setGuideData({
+          title: fd.title ?? guide.title,
+          slug: fd.slug ?? guide.slug,
+          short_description: fd.short_description ?? guide.short_description,
+          seo_title: fd.seo_title ?? guide.seo_title ?? '',
+          seo_description: fd.seo_description ?? guide.seo_description ?? '',
+          category: fd.category ?? guide.category,
+          author_name: fd.author_name ?? guide.author_name ?? 'Matheus Dias',
+          content_markdown: fd.content_markdown ?? guide.content_markdown ?? '',
+          cta_top: fd.cta_top ?? null,
+          cta_middle: fd.cta_middle ?? null,
+          cta_final: fd.cta_final ?? null,
+          internal_links: fd.internal_links ?? [],
+          cover_image_suggestion: fd.cover_image_suggestion ?? '',
+          cover_image_url: fd.cover_image_url ?? guide.cover_image_url ?? '',
+          image_prompts: fd.image_prompts ?? [],
+          generated_images: fd.generated_images ?? [],
+        });
+        if (fd.inputs) setCurrentInputs(fd.inputs);
+        toast({ title: 'Fluxo restaurado', description: `"${guide.title}" carregado do estado salvo.` });
+      } else {
+        // Build flow state from guide fields (no flow_data persisted)
+        setGuideData({
+          title: guide.title,
+          slug: guide.slug,
+          short_description: guide.short_description,
+          seo_title: guide.seo_title ?? '',
+          seo_description: guide.seo_description ?? '',
+          category: guide.category,
+          author_name: guide.author_name ?? 'Matheus Dias',
+          content_markdown: guide.content_markdown ?? '',
+          cta_top: guide.cta_top_label ? { label: guide.cta_top_label, url: guide.cta_top_url, text: guide.cta_top_text } : null,
+          cta_middle: guide.cta_middle_label ? { label: guide.cta_middle_label, url: guide.cta_middle_url, text: guide.cta_middle_text } : null,
+          cta_final: guide.cta_final_label ? { label: guide.cta_final_label, url: guide.cta_final_url, text: guide.cta_final_text } : null,
+          internal_links: Array.isArray(guide.internal_links) ? guide.internal_links : [],
+          cover_image_suggestion: '',
+          cover_image_url: guide.cover_image_url ?? '',
+          image_prompts: [],
+          generated_images: [],
+        });
+        toast({ title: 'Guia carregado', description: `"${guide.title}" aberto no fluxo (sem estado de fluxo prévio).` });
+      }
+    })();
+  }, [searchParams]);
 
   const handleInputsChange = useCallback((inputs: GuideFlowInputs) => {
     setCurrentInputs(inputs);
@@ -259,7 +329,13 @@ export default function GuideFlow() {
     try {
       const finalMarkdown = buildFinalMarkdown(guideData);
 
-      await createGuide.mutateAsync({
+      // Persist the full flow state for future re-opening
+      const flowDataPayload = {
+        ...guideData,
+        inputs: currentInputs,
+      };
+
+      const guidePayload: any = {
         title: guideData.title,
         slug: guideData.slug,
         short_description: guideData.short_description,
@@ -269,10 +345,7 @@ export default function GuideFlow() {
         author_name: guideData.author_name,
         content_markdown: finalMarkdown,
         cover_image_url: guideData.cover_image_url || null,
-        internal_code: `FLOW-${Date.now()}`,
         is_published: publish,
-        is_featured: false,
-        sort_order: 0,
         internal_links: guideData.internal_links,
         cta_top_label: guideData.cta_top?.label || null,
         cta_top_url: guideData.cta_top?.url || null,
@@ -283,7 +356,20 @@ export default function GuideFlow() {
         cta_final_label: guideData.cta_final?.label || null,
         cta_final_url: guideData.cta_final?.url || null,
         cta_final_text: guideData.cta_final?.text || null,
-      });
+        flow_data: flowDataPayload,
+      };
+
+      if (linkedGuideId) {
+        // Update existing guide
+        await updateGuide.mutateAsync({ id: linkedGuideId, ...guidePayload });
+      } else {
+        // Create new guide
+        guidePayload.internal_code = `FLOW-${Date.now()}`;
+        guidePayload.is_featured = false;
+        guidePayload.sort_order = 0;
+        await createGuide.mutateAsync(guidePayload);
+      }
+
       toast({
         title: publish ? 'Guia publicado!' : 'Rascunho salvo!',
         description: `"${guideData.title}" foi ${publish ? 'publicado' : 'salvo como rascunho'}.`,
