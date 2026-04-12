@@ -7,7 +7,7 @@ function CtaNodeComponent({ data }: { data: any }) {
   const { label, url, text, ctaType } = data;
 
   return (
-    <div className="bg-card border border-orange-500/30 rounded-[1.2rem] shadow-card w-[280px] overflow-hidden">
+    <div className="bg-card border border-orange-500/30 rounded-[1.2rem] shadow-card w-[280px] overflow-hidden cursor-pointer hover:shadow-lg hover:border-orange-500/50 transition-all">
       <Handle type="target" position={Position.Left} className="!bg-orange-500 !w-2.5 !h-2.5 !border-2 !border-card" />
 
       <div className="bg-orange-500/8 px-3 py-2 border-b border-orange-500/15 flex items-center gap-2">

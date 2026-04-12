@@ -21,7 +21,7 @@ function ContentNodeComponent({ data }: { data: any }) {
     .slice(0, 150);
 
   return (
-    <div className={`bg-card border border-${color}-500/30 rounded-[1.2rem] shadow-card w-[320px] overflow-hidden`}>
+    <div className={`bg-card border border-${color}-500/30 rounded-[1.2rem] shadow-card w-[320px] overflow-hidden cursor-pointer hover:shadow-lg hover:border-${color}-500/50 transition-all`}>
       <Handle type="target" position={Position.Top} className={`!bg-${color}-500 !w-2.5 !h-2.5 !border-2 !border-card`} />
       <Handle type="target" position={Position.Left} id="left" className={`!bg-${color}-500 !w-2.5 !h-2.5 !border-2 !border-card`} />
 
