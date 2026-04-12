@@ -433,6 +433,8 @@ export default function GuideFlowKnowledge() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
