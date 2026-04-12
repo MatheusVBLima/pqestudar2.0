@@ -16,7 +16,7 @@ import { Save, Send, RotateCcw } from 'lucide-react';
 
 const EMPTY_GUIDE: GeneratedGuideData = {
   title: '', slug: '', short_description: '', seo_title: '', seo_description: '',
-  category: '', author_name: 'Equipe PqEstudar', content_markdown: '',
+  category: '', author_name: 'Matheus Dias', content_markdown: '',
   cta_top: null, cta_middle: null, cta_final: null, internal_links: [], cover_image_suggestion: '',
   image_prompts: [], generated_images: [],
 };
@@ -112,7 +112,7 @@ export default function GuideFlow() {
         seo_title: generated.seo_title ?? '',
         seo_description: generated.seo_description ?? '',
         category: generated.category ?? (categoriaOption?.label || inputs.categoria),
-        author_name: generated.author_name ?? 'Equipe PqEstudar',
+        author_name: generated.author_name ?? 'Matheus Dias',
         content_markdown: generated.content_markdown ?? '',
         cta_top: generated.cta_top ?? null,
         cta_middle: generated.cta_middle ?? null,
