@@ -253,11 +253,13 @@ interface FlowCanvasProps {
   sources: GuideFlowSources;
   onInputsChange?: (inputs: GuideFlowInputs) => void;
   onRegenerateImage?: (prompt: string, position: string) => void;
+  onUpdateImagePrompt?: (position: string, newPrompt: string) => void;
 }
 
-export function FlowCanvas({ guideData, isGenerating, onGenerate, onGuideDataChange, sources, onInputsChange, onRegenerateImage }: FlowCanvasProps) {
+export function FlowCanvas({ guideData, isGenerating, onGenerate, onGuideDataChange, sources, onInputsChange, onRegenerateImage, onUpdateImagePrompt }: FlowCanvasProps) {
   const [editorOpen, setEditorOpen] = useState(false);
   const [editorData, setEditorData] = useState<any>(null);
+  const [imageEditorPosition, setImageEditorPosition] = useState<string | null>(null);
 
   const structureNames = useMemo(
     () => sources.activeStructureEntries.map(e => e.source_path ?? e.title),
