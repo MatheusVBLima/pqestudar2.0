@@ -22,12 +22,6 @@ function normalize(s: string): string {
   return s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 }
 
-async function downloadTextFile(supabase: any, bucket: string, path: string): Promise<string> {
-  const { data, error } = await supabase.storage.from(bucket).download(path);
-  if (error || !data) return "";
-  return await data.text();
-}
-
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -56,7 +50,10 @@ serve(async (req) => {
     }
 
     const body = await req.json();
-    const { tema, tipo, categoria, palavraChave, intencao, contextoAdicional, selectedLibrary } = body;
+    const {
+      tema, tipo, categoria, palavraChave, intencao, contextoAdicional,
+      selectedLibrary, structureContext, libraryContext, editorialMeta,
+    } = body;
 
     if (!tema || !categoria) {
       return new Response(JSON.stringify({ error: "Tema e categoria são obrigatórios" }), {
@@ -64,50 +61,12 @@ serve(async (req) => {
       });
     }
 
-    // ─── 1. Load guide-structure files and map explicitly ───
-    const { data: structureList } = await supabase.storage.from("guide-structure").list("", { sortBy: { column: "name", order: "asc" } });
-    const structureFiles = (structureList ?? []).filter((f: any) => f.name !== ".emptyFolderPlaceholder");
+    // ─── 1. Use pre-built context from the client (Biblioteca entries) ───
+    // structureContext and libraryContext come pre-assembled from the hook
+    const hasStructure = !!structureContext?.trim();
+    const hasLibrary = !!libraryContext?.trim();
 
-    // Resolve each dimension to its matching file
-    const dimensionResolved: Record<string, { file: string | null; content: string }> = {};
-
-    for (const [key, dim] of Object.entries(DIMENSION_MAP)) {
-      const match = structureFiles.find((f: any) => normalize(f.name).includes(dim.pattern));
-      dimensionResolved[key] = { file: match?.name ?? null, content: "" };
-    }
-
-    // Download matched files
-    for (const [key, info] of Object.entries(dimensionResolved)) {
-      if (info.file) {
-        info.content = (await downloadTextFile(supabase, "guide-structure", info.file)).trim();
-      }
-    }
-
-    // Also download any extra structure files not matched by the mapping
-    const mappedFiles = new Set(Object.values(dimensionResolved).map(d => d.file).filter(Boolean));
-    const extraStructure: { name: string; content: string }[] = [];
-    for (const file of structureFiles) {
-      if (!mappedFiles.has(file.name)) {
-        const content = (await downloadTextFile(supabase, "guide-structure", file.name)).trim();
-        if (content) extraStructure.push({ name: file.name, content });
-      }
-    }
-
-    // ─── 2. Load guide-library files (selected folder) ───
-    const libraryContents: { name: string; content: string }[] = [];
-    let libraryLoaded = false;
-
-    if (selectedLibrary) {
-      const { data: libFiles } = await supabase.storage.from("guide-library").list(selectedLibrary, { sortBy: { column: "name", order: "asc" } });
-      const validFiles = (libFiles ?? []).filter((f: any) => f.name !== ".emptyFolderPlaceholder" && f.id);
-      for (const file of validFiles) {
-        const content = await downloadTextFile(supabase, "guide-library", `${selectedLibrary}/${file.name}`);
-        if (content.trim()) libraryContents.push({ name: file.name, content: content.trim() });
-      }
-      libraryLoaded = libraryContents.length > 0;
-    }
-
-    // ─── 3. Fetch real data for links/CTAs ───
+    // ─── 2. Fetch real data for links/CTAs ───
     const [guidesRes, toolsRes, contestsRes] = await Promise.all([
       supabase.from("guides").select("id, title, slug, category, short_description").eq("is_published", true).limit(30),
       supabase.from("tools").select("id, name, description, url").eq("is_visible", true).limit(30),
@@ -118,50 +77,63 @@ serve(async (req) => {
     const existingTools = (toolsRes.data ?? []).map((t: any) => `- "${t.name}": ${t.description?.slice(0, 80) ?? ""} (${t.url})`).join("\n");
     const existingContests = (contestsRes.data ?? []).map((c: any) => `- "${c.titulo}" (/concursos/${c.slug}) [${c.situacao}]`).join("\n");
 
-    // ─── 4. Build system prompt with explicit dimension mapping ───
-    const dimensionSections = Object.entries(DIMENSION_MAP).map(([key, dim]) => {
-      const info = dimensionResolved[key];
-      if (!info.file || !info.content) {
-        return `### ${dim.label}\n⚠ ARQUIVO NÃO ENCONTRADO — aplique boas práticas genéricas para esta dimensão.`;
+    // ─── 3. Build editorial modulation section ───
+    let editorialModulation = "";
+    if (editorialMeta) {
+      const parts: string[] = [];
+
+      if (editorialMeta.tipo) {
+        parts.push(`### Tipo de Guia: ${editorialMeta.tipo.label}
+${editorialMeta.tipo.meaning || ""}
+**Impacto na geração:** ${editorialMeta.tipo.impact}`);
       }
-      return `### ${dim.label}\n**Arquivo fonte:** ${info.file}\n\n${info.content}`;
-    }).join("\n\n---\n\n");
 
-    let extraSection = "";
-    if (extraStructure.length > 0) {
-      const entries = extraStructure.map(f => `### ${f.name}\n${f.content}`).join("\n\n---\n\n");
-      extraSection = `\n\n## DIRETRIZES ADICIONAIS (sem mapeamento fixo)\n${entries}`;
+      if (editorialMeta.categoria) {
+        parts.push(`### Categoria: ${editorialMeta.categoria.label}
+${editorialMeta.categoria.context || ""}
+${editorialMeta.categoria.impact ? `**Impacto na geração:** ${editorialMeta.categoria.impact}` : ""}`);
+      }
+
+      if (editorialMeta.intencao) {
+        parts.push(`### Intenção: ${editorialMeta.intencao.label}
+**Impacto na geração:** ${editorialMeta.intencao.impact}`);
+      }
+
+      if (parts.length > 0) {
+        editorialModulation = `\n\n## PARÂMETROS EDITORIAIS DE MODULAÇÃO
+Os parâmetros abaixo modulam o tom, a organização e o foco do conteúdo. Eles NÃO substituem as diretrizes editoriais acima — apenas ajustam a geração dentro da estrutura-base definida pelas diretrizes.
+
+REGRA DE CONFLITO: Se houver conflito entre estes parâmetros e as diretrizes editoriais, as DIRETRIZES EDITORIAIS SEMPRE vencem.
+
+${parts.join("\n\n")}`;
+      }
     }
 
-    let librarySection = "";
-    if (libraryContents.length > 0) {
-      const entries = libraryContents.map(f => `### Fonte: ${f.name}\n${f.content}`).join("\n\n---\n\n");
-      librarySection = `\n\n## BASE FACTUAL (guide-library: ${selectedLibrary})\nOs arquivos abaixo contêm a base factual e contextual. O conteúdo gerado DEVE ser fundamentado nessas fontes. Não invente informações que não estejam presentes aqui.\n\n${entries}`;
-    }
-
-    // Build mapping status for the response
-    const mappingStatus: Record<string, { label: string; file: string | null; found: boolean }> = {};
-    for (const [key, dim] of Object.entries(DIMENSION_MAP)) {
-      mappingStatus[key] = { label: dim.label, file: dimensionResolved[key].file, found: !!dimensionResolved[key].file };
-    }
-
-    const allMapped = Object.values(dimensionResolved).every(d => !!d.file);
-    const mappedCount = Object.values(dimensionResolved).filter(d => !!d.file).length;
-    const totalDims = Object.keys(DIMENSION_MAP).length;
-
+    // ─── 4. Build system prompt ───
     const systemPrompt = `Você é um editor assistente do portal PqEstudar, especializado em criar guias práticos e educativos para concurseiros.
 
-## Status do mapeamento editorial
-${mappedCount}/${totalDims} dimensões mapeadas a arquivos reais.
-${!allMapped ? "⚠ Dimensões sem arquivo fonte devem usar boas práticas genéricas — mas o conteúdo NÃO será considerado plenamente validado nessas áreas." : "✅ Todas as dimensões possuem fonte explícita."}
-Biblioteca factual: ${selectedLibrary ?? "nenhuma selecionada"}${!libraryLoaded ? " (⚠ sem base factual — NÃO afirme fatos sem fonte)" : ""}
+## HIERARQUIA DE PRIORIDADE DA GERAÇÃO
+A geração do conteúdo deve seguir esta ordem de prioridade:
+1. Diretrizes editoriais (arquivos de referência ativos) — BASE OBRIGATÓRIA
+2. Tema do guia
+3. Palavra-chave
+4. Tipo de guia
+5. Categoria
+6. Intenção
+7. Contexto adicional
 
-## DIRETRIZES EDITORIAIS POR DIMENSÃO
-Abaixo estão as regras organizadas por função. Para cada dimensão, siga RIGOROSAMENTE o conteúdo do arquivo vinculado.
+As diretrizes editoriais definem o padrão estrutural obrigatório. Os demais campos modulam essa base, mas NUNCA a substituem.
 
-${dimensionSections}
-${extraSection}
-${librarySection}
+## DIRETRIZES EDITORIAIS (BASE OBRIGATÓRIA)
+${hasStructure ? `As diretrizes abaixo são a base estrutural OBRIGATÓRIA. Siga RIGOROSAMENTE cada uma delas.
+
+${structureContext}` : "⚠ NENHUMA DIRETRIZ EDITORIAL FORNECIDA — aplique boas práticas genéricas, mas o conteúdo NÃO será considerado plenamente validado."}
+
+## BASE FACTUAL (BIBLIOTECA)
+${hasLibrary ? `Os arquivos abaixo contêm a base factual e contextual. O conteúdo gerado DEVE ser fundamentado nessas fontes. Não invente informações que não estejam presentes aqui.
+
+${libraryContext}` : `⚠ Nenhuma biblioteca factual selecionada — NÃO afirme fatos sem fonte. Geração será genérica.`}
+${editorialModulation}
 
 ## CTAs contextuais
 - CTA superior: mais leve, convite suave (ex: newsletter, kit gratuito)
@@ -188,10 +160,10 @@ Retorne EXCLUSIVAMENTE um JSON válido (sem markdown code fences) com a estrutur
     const userPrompt = `Gere um guia completo com base nos seguintes inputs:
 
 - **Tema**: ${tema}
-- **Tipo de guia**: ${tipo || "prático"}
-- **Categoria**: ${categoria}
+- **Tipo de guia**: ${editorialMeta?.tipo?.label || tipo || "prático"}
+- **Categoria**: ${editorialMeta?.categoria?.label || categoria}
 - **Palavra-chave principal**: ${palavraChave || tema}
-- **Intenção do conteúdo**: ${intencao || "informar e orientar"}
+- **Intenção do conteúdo**: ${editorialMeta?.intencao?.label || intencao || "informar e orientar"}
 ${contextoAdicional ? `- **Contexto adicional**: ${contextoAdicional}` : ""}
 ${selectedLibrary ? `- **Biblioteca factual**: ${selectedLibrary}` : "- **ATENÇÃO**: Nenhuma biblioteca factual selecionada — geração será genérica"}
 
@@ -202,7 +174,7 @@ Retorne um JSON com esta estrutura exata:
   "short_description": "descrição curta (max 160 chars)",
   "seo_title": "título SEO (max 60 chars)",
   "seo_description": "meta description (max 160 chars)",
-  "category": "${categoria}",
+  "category": "${editorialMeta?.categoria?.label || categoria}",
   "author_name": "Equipe PqEstudar",
   "content_markdown": "conteúdo completo em Markdown com H2 em negrito (## **Título**), H3, listas, FAQ, etc.",
   "cta_top": { "label": "texto do botão", "url": "/caminho-interno", "text": "texto descritivo (Markdown)" },
@@ -267,16 +239,12 @@ Retorne um JSON com esta estrutura exata:
       });
     }
 
-    // Attach explicit mapping metadata
+    // Attach source metadata
     guideData._sources = {
-      mapping: mappingStatus,
-      mapped_count: mappedCount,
-      total_dimensions: totalDims,
-      all_mapped: allMapped,
-      extra_structure_files: extraStructure.map(f => f.name),
+      has_structure: hasStructure,
+      has_library: hasLibrary,
       library_name: selectedLibrary || null,
-      library_files: libraryContents.map(f => f.name),
-      is_factually_grounded: libraryLoaded,
+      editorial_meta: editorialMeta || null,
     };
 
     return new Response(JSON.stringify(guideData), {
