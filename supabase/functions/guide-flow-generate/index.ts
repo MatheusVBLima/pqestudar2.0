@@ -179,6 +179,31 @@ ${existingTools || "Nenhuma ferramenta disponível."}
 ### Concursos ativos:
 ${existingContests || "Nenhum concurso publicado."}
 
+## Formato obrigatório de FAQ
+Se o guia incluir FAQ, siga RIGOROSAMENTE esta estrutura no markdown:
+
+1. Título fixo: \`## **FAQ — Perguntas Frequentes**\`
+2. Linha horizontal \`---\` logo abaixo do título
+3. Cada bloco pergunta+resposta separado do próximo por \`---\`
+4. NÃO inserir \`---\` após o último item
+
+Exemplo:
+\`\`\`
+## **FAQ — Perguntas Frequentes**
+
+---
+
+### Pergunta 1?
+
+Resposta 1.
+
+---
+
+### Pergunta 2?
+
+Resposta 2.
+\`\`\`
+
 ## Regras de output
 Retorne EXCLUSIVAMENTE um JSON válido (sem markdown code fences) com a estrutura abaixo. Não inclua texto fora do JSON.`;
 
