@@ -1,6 +1,6 @@
 import { memo, useState } from 'react';
 import { Handle, Position } from '@xyflow/react';
-import { Image as ImageIcon, RefreshCw, Copy, Check, AlertTriangle, Loader2, Pencil } from 'lucide-react';
+import { Image as ImageIcon, RefreshCw, Copy, Check, AlertTriangle, Loader2, Pencil, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
