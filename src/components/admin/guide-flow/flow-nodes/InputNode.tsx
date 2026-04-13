@@ -5,14 +5,15 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Sparkles, Loader2, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Sparkles, Loader2, CheckCircle2, AlertTriangle, ImageIcon, FileText } from 'lucide-react';
 import { TIPOS_GUIA, CATEGORIAS, INTENCOES } from '@/lib/guide-editorial-options';
 import type { GuideFlowInputs } from '../GuideFlowForm';
 
 function InputNodeComponent({ data }: { data: any }) {
   const { onGenerate, isGenerating, hasValidSources, hasLibrary, selectedLibrary, onAutoSuggest, onInputsChange } = data;
   const [inputs, setInputs] = useState<GuideFlowInputs>({
-    tema: '', tipo: '', categoria: '', palavraChave: '', intencao: '', contextoAdicional: '',
+    tema: '', tipo: '', categoria: '', palavraChave: '', intencao: '', contextoAdicional: '', visualMode: 'generate',
   });
 
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
@@ -133,6 +134,30 @@ function InputNodeComponent({ data }: { data: any }) {
             rows={2}
             className="rounded-lg text-xs resize-none"
           />
+        </div>
+
+        <div className="space-y-1.5">
+          <Label className="text-xs font-medium">Modo visual</Label>
+          <RadioGroup
+            value={inputs.visualMode}
+            onValueChange={(v) => setInputs((p) => ({ ...p, visualMode: v as 'generate' | 'prompt_only' }))}
+            className="flex gap-3"
+          >
+            <div className="flex items-center gap-1.5">
+              <RadioGroupItem value="generate" id="vm-gen" className="h-3 w-3" />
+              <label htmlFor="vm-gen" className="text-[10px] flex items-center gap-1 cursor-pointer">
+                <ImageIcon className="h-2.5 w-2.5 text-primary" />
+                Gerar imagens
+              </label>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <RadioGroupItem value="prompt_only" id="vm-prompt" className="h-3 w-3" />
+              <label htmlFor="vm-prompt" className="text-[10px] flex items-center gap-1 cursor-pointer">
+                <FileText className="h-2.5 w-2.5 text-muted-foreground" />
+                Apenas prompts
+              </label>
+            </div>
+          </RadioGroup>
         </div>
 
         <Button

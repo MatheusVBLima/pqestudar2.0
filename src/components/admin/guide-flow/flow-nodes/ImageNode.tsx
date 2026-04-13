@@ -1,6 +1,6 @@
 import { memo, useState } from 'react';
 import { Handle, Position } from '@xyflow/react';
-import { Image as ImageIcon, RefreshCw, Copy, Check, AlertTriangle, Loader2, Pencil } from 'lucide-react';
+import { Image as ImageIcon, RefreshCw, Copy, Check, AlertTriangle, Loader2, Pencil, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -11,7 +11,7 @@ interface ImageNodeData {
   prompt: string;
   alt_text: string;
   editorial_function?: string;
-  status: 'success' | 'error' | 'generating' | 'pending';
+  status: 'success' | 'error' | 'generating' | 'pending' | 'prompt_only';
   url?: string;
   error?: string;
   onRegenerate?: (prompt: string, position: string) => void;
@@ -42,10 +42,10 @@ export const ImageNode = memo(({ data }: { data: ImageNodeData }) => {
             <span className="text-xs font-semibold text-foreground truncate">{label}</span>
           </div>
           <Badge
-            variant={data.status === 'success' ? 'default' : data.status === 'error' ? 'destructive' : 'secondary'}
+            variant={data.status === 'success' ? 'default' : data.status === 'error' ? 'destructive' : data.status === 'prompt_only' ? 'outline' : 'secondary'}
             className="text-[10px] px-1.5 py-0"
           >
-            {data.status === 'success' ? '✓ Gerada' : data.status === 'error' ? '✗ Erro' : data.status === 'generating' ? 'Gerando...' : 'Pendente'}
+            {data.status === 'success' ? '✓ Gerada' : data.status === 'error' ? '✗ Erro' : data.status === 'generating' ? 'Gerando...' : data.status === 'prompt_only' ? '📝 Prompt' : 'Pendente'}
           </Badge>
         </div>
 
@@ -76,6 +76,14 @@ export const ImageNode = memo(({ data }: { data: ImageNodeData }) => {
           {data.status === 'pending' && (
             <div className="flex items-center justify-center h-32 bg-muted/30 rounded-md">
               <span className="text-xs text-muted-foreground">Aguardando geração</span>
+            </div>
+          )}
+
+          {data.status === 'prompt_only' && (
+            <div className="flex flex-col items-center justify-center h-32 bg-primary/5 rounded-md gap-1.5 border border-dashed border-primary/20">
+              <FileText className="h-5 w-5 text-primary/60" />
+              <span className="text-[10px] text-primary/80 font-medium">Prompt pronto</span>
+              <span className="text-[9px] text-muted-foreground">Sem asset gerado</span>
             </div>
           )}
         </div>

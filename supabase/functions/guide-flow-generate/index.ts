@@ -53,7 +53,11 @@ serve(async (req) => {
     const {
       tema, tipo, categoria, palavraChave, intencao, contextoAdicional,
       selectedLibrary, structureContext, libraryContext, editorialMeta,
+      visualMode,
     } = body;
+
+    // visualMode: "generate" (default) or "prompt_only"
+    const shouldGenerateImages = visualMode !== "prompt_only";
 
     if (!tema || !categoria) {
       return new Response(JSON.stringify({ error: "Tema e categoria são obrigatórios" }), {
@@ -182,14 +186,15 @@ ${existingContests || "Nenhum concurso publicado."}
 ## Formato obrigatório de FAQ
 Se o guia incluir FAQ, siga RIGOROSAMENTE esta estrutura no markdown:
 
-1. Título fixo: \`## **FAQ — Perguntas Frequentes**\`
-2. Linha horizontal \`---\` logo abaixo do título
-3. Cada bloco pergunta+resposta separado do próximo por \`---\`
-4. NÃO inserir \`---\` após o último item
+1. Título fixo e OBRIGATÓRIO: \`## FAQ — Perguntas Frequentes\` (sem negrito, sem asteriscos, nível H2 sempre)
+2. NUNCA use \`### FAQ\` ou \`## **FAQ**\` — o título é SEMPRE \`## FAQ — Perguntas Frequentes\` exatamente assim
+3. Linha horizontal \`---\` logo abaixo do título
+4. Cada bloco pergunta+resposta separado do próximo por \`---\`
+5. NÃO inserir \`---\` após o último item
 
 Exemplo:
 \`\`\`
-## **FAQ — Perguntas Frequentes**
+## FAQ — Perguntas Frequentes
 
 ---
 
@@ -297,9 +302,9 @@ Retorne um JSON com esta estrutura exata:
       });
     }
 
-    // ─── Generate images if prompts are available ───
+    // ─── Generate images if prompts are available AND visual mode allows it ───
     // Ensure all image_prompts always exist as nodes (even on failure)
-    if (guideData.image_prompts && Array.isArray(guideData.image_prompts) && guideData.image_prompts.length > 0) {
+    if (guideData.image_prompts && Array.isArray(guideData.image_prompts) && guideData.image_prompts.length > 0 && shouldGenerateImages) {
       console.log(`Generating ${guideData.image_prompts.length} images...`);
       const generatedImages: any[] = [];
 
@@ -394,6 +399,23 @@ Retorne um JSON com esta estrutura exata:
       }
 
       guideData.generated_images = generatedImages;
+    } else if (guideData.image_prompts && Array.isArray(guideData.image_prompts) && guideData.image_prompts.length > 0 && !shouldGenerateImages) {
+      // Prompt-only mode: create node data with prompt info but no actual images
+      console.log(`Prompt-only mode: ${guideData.image_prompts.length} image nodes created without generation.`);
+      guideData.generated_images = guideData.image_prompts.map((imgPrompt: any) => {
+        let visualPrompt = imgPrompt.prompt || "";
+        if (!visualPrompt.toLowerCase().includes("16:9") && !visualPrompt.toLowerCase().includes("landscape")) {
+          visualPrompt = `Wide 16:9 landscape format. ${visualPrompt}`;
+        }
+        return {
+          type: imgPrompt.type,
+          position: imgPrompt.position,
+          prompt: visualPrompt,
+          alt_text: imgPrompt.alt_text || "",
+          editorial_function: imgPrompt.editorial_function || "",
+          status: "prompt_only",
+        };
+      });
     }
 
     // Attach source metadata

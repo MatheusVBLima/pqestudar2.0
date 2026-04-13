@@ -32,7 +32,7 @@ export default function GuideFlow() {
   const [guideData, setGuideData] = useState<GeneratedGuideData | null>(null);
   const [linkedGuideId, setLinkedGuideId] = useState<string | null>(null);
   const [currentInputs, setCurrentInputs] = useState<GuideFlowInputs>({
-    tema: '', tipo: '', categoria: '', palavraChave: '', intencao: '', contextoAdicional: '',
+    tema: '', tipo: '', categoria: '', palavraChave: '', intencao: '', contextoAdicional: '', visualMode: 'generate',
   });
 
   // Load guide from URL param ?guide=ID
@@ -143,10 +143,10 @@ export default function GuideFlow() {
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
           body: JSON.stringify({
             ...inputs,
+            visualMode: inputs.visualMode || 'generate',
             selectedLibrary: selectedLibraryName,
             structureContext,
             libraryContext,
-            // Send structured editorial metadata
             editorialMeta: {
               tipo: tipoOption ? {
                 label: tipoOption.label,

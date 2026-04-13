@@ -14,6 +14,7 @@ export interface GuideFlowInputs {
   palavraChave: string;
   intencao: string;
   contextoAdicional: string;
+  visualMode: 'generate' | 'prompt_only';
 }
 
 interface Props {
@@ -29,6 +30,7 @@ export function GuideFlowForm({ onGenerate, isGenerating }: Props) {
     palavraChave: '',
     intencao: '',
     contextoAdicional: '',
+    visualMode: 'generate',
   });
 
   const canSubmit = inputs.tema.trim() && inputs.categoria && !isGenerating;
