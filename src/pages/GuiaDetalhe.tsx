@@ -1,8 +1,10 @@
 import { useEffect, useRef } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
+import { motion } from "framer-motion";
 import { GlobalSeo } from "@/components/seo/GlobalSeo";
 import { PageHero } from "@/components/layout/PageHero";
+import { renderHighlightedTitle } from "@/lib/highlight-title";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
