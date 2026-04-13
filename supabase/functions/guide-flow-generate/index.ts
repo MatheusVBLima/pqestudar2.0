@@ -399,6 +399,23 @@ Retorne um JSON com esta estrutura exata:
       }
 
       guideData.generated_images = generatedImages;
+    } else if (guideData.image_prompts && Array.isArray(guideData.image_prompts) && guideData.image_prompts.length > 0 && !shouldGenerateImages) {
+      // Prompt-only mode: create node data with prompt info but no actual images
+      console.log(`Prompt-only mode: ${guideData.image_prompts.length} image nodes created without generation.`);
+      guideData.generated_images = guideData.image_prompts.map((imgPrompt: any) => {
+        let visualPrompt = imgPrompt.prompt || "";
+        if (!visualPrompt.toLowerCase().includes("16:9") && !visualPrompt.toLowerCase().includes("landscape")) {
+          visualPrompt = `Wide 16:9 landscape format. ${visualPrompt}`;
+        }
+        return {
+          type: imgPrompt.type,
+          position: imgPrompt.position,
+          prompt: visualPrompt,
+          alt_text: imgPrompt.alt_text || "",
+          editorial_function: imgPrompt.editorial_function || "",
+          status: "prompt_only",
+        };
+      });
     }
 
     // Attach source metadata
