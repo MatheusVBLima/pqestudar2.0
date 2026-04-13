@@ -143,10 +143,10 @@ export default function GuideFlow() {
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
           body: JSON.stringify({
             ...inputs,
+            visualMode: inputs.visualMode || 'generate',
             selectedLibrary: selectedLibraryName,
             structureContext,
             libraryContext,
-            // Send structured editorial metadata
             editorialMeta: {
               tipo: tipoOption ? {
                 label: tipoOption.label,
