@@ -1,8 +1,10 @@
 import { useEffect, useRef } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
+import { motion } from "framer-motion";
 import { GlobalSeo } from "@/components/seo/GlobalSeo";
 import { PageHero } from "@/components/layout/PageHero";
+import { renderHighlightedTitle } from "@/lib/highlight-title";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -180,32 +182,83 @@ export default function GuiaDetalhe() {
         <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
       </Helmet>
 
-      <PageHero
-        title={guide.title}
-        description={guide.short_description}
-        badge={
-          <div className="flex items-center gap-2 mb-4 flex-wrap">
-            <Badge variant="outline" className="text-sm">
-              {guide.category}
-            </Badge>
-            {guide.is_featured && (
-              <Badge className="bg-amber-500/10 text-amber-600 border-amber-500/20" variant="outline">
-                <Star className="h-3 w-3 mr-1" /> Destaque
-              </Badge>
-            )}
-            {updatedDate && (
-              <span className="text-xs text-muted-foreground">
-                Por {authorName} · Atualizado em {updatedDate}
-              </span>
-            )}
-            {!updatedDate && (
-              <span className="text-xs text-muted-foreground">
-                Por {authorName}
-              </span>
-            )}
+      {guide.cover_image_url ? (
+        <section className="relative overflow-hidden border-b">
+          {/* Cover image background */}
+          <div className="absolute inset-0">
+            <img
+              src={guide.cover_image_url}
+              alt=""
+              className="w-full h-full object-cover"
+              loading="eager"
+              aria-hidden="true"
+            />
+            {/* Dark overlay gradient for text contrast */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/55 to-black/30" />
           </div>
-        }
-      />
+
+          <motion.div
+            className="container mx-auto px-6 py-20 md:py-28 relative z-10"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <div className="flex items-center gap-2 mb-4 flex-wrap">
+              <Badge variant="outline" className="text-sm border-white/30 text-white bg-white/10 backdrop-blur-sm">
+                {guide.category}
+              </Badge>
+              {guide.is_featured && (
+                <Badge className="bg-amber-500/20 text-amber-300 border-amber-400/30 backdrop-blur-sm" variant="outline">
+                  <Star className="h-3 w-3 mr-1" /> Destaque
+                </Badge>
+              )}
+              {updatedDate && (
+                <span className="text-xs text-white/70">
+                  Por {authorName} · Atualizado em {updatedDate}
+                </span>
+              )}
+              {!updatedDate && (
+                <span className="text-xs text-white/70">
+                  Por {authorName}
+                </span>
+              )}
+            </div>
+            <h1 className="max-w-full md:max-w-4xl lg:max-w-[1100px] text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight mb-6 text-white drop-shadow-lg">
+              {renderHighlightedTitle(guide.title)}
+            </h1>
+            <p className="max-w-full md:max-w-3xl lg:max-w-[900px] text-lg md:text-xl text-white/80 leading-relaxed">
+              {guide.short_description}
+            </p>
+          </motion.div>
+        </section>
+      ) : (
+        <PageHero
+          title={guide.title}
+          description={guide.short_description}
+          badge={
+            <div className="flex items-center gap-2 mb-4 flex-wrap">
+              <Badge variant="outline" className="text-sm">
+                {guide.category}
+              </Badge>
+              {guide.is_featured && (
+                <Badge className="bg-amber-500/10 text-amber-600 border-amber-500/20" variant="outline">
+                  <Star className="h-3 w-3 mr-1" /> Destaque
+                </Badge>
+              )}
+              {updatedDate && (
+                <span className="text-xs text-muted-foreground">
+                  Por {authorName} · Atualizado em {updatedDate}
+                </span>
+              )}
+              {!updatedDate && (
+                <span className="text-xs text-muted-foreground">
+                  Por {authorName}
+                </span>
+              )}
+            </div>
+          }
+        />
+      )}
 
       {/* 2-column layout: content + sidebar */}
       <div className="container mx-auto px-6 pt-12 md:pt-16 pb-16">
