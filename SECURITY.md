@@ -118,6 +118,54 @@ Execute periodicamente:
 3. Confirmação de que apenas admins acessam áreas restritas
 4. Auditoria de políticas RLS via Supabase Dashboard
 
+## Rotação da Chave Brevo (BREVO_API_KEY)
+
+A chave da Brevo é usada **exclusivamente** pela Edge Function `subscribe-newsletter-brevo` e fica armazenada como Supabase Secret. Em caso de suspeita de vazamento, siga este procedimento:
+
+### Procedimento de Rotação
+
+1. **Brevo → SMTP & API → API Keys**: revogue (Delete) a chave comprometida.
+2. Gere nova chave com nome rastreável (ex.: `pqestudar-supabase-edge-AAAA-MM`).
+3. Se o plano permitir, restrinja por IP de saída.
+4. Atualize o secret `BREVO_API_KEY` em **Supabase Dashboard → Edge Functions → Secrets**.
+5. Sem necessidade de redeploy — a função lê o secret a cada execução.
+
+### Checklist de Incidente
+
+- [ ] Chave antiga revogada no Brevo
+- [ ] Nova chave gerada com nome identificável
+- [ ] Secret atualizado no Supabase
+- [ ] Auditado: GitHub history, Zapier, Make, Vercel, Railway, scripts locais, Postman
+- [ ] Brevo → Security → Activity revisado por chamadas suspeitas
+- [ ] 2FA confirmado na conta Brevo
+- [ ] Extensões de navegador com permissão `*://*.brevo.com/*` revisadas
+
+### Hardening Implementado na Edge Function
+
+- **CORS allowlist** (apenas pqestudar.com.br + previews Lovable)
+- **Validação server-side de e-mail** (regex + tamanho ≤ 255)
+- **Rate limit reforçado**: 5 tentativas / 15 min + cap diário de 20 por IP
+- **Honeypot** (`website`) descarta bots silenciosamente
+- **Logs sanitizados**: só `status` + `code` da Brevo, nunca o corpo cru
+- **User-Agent identificável** (`pqestudar-edge/1.0`) para rastreabilidade
+- **`verify_jwt = false` explícito** em `config.toml`
+
+### Detecção de Abuso
+
+Consulta SQL para inspecionar picos de erro por IP nas últimas 24h:
+
+```sql
+SELECT ip_hash,
+       COUNT(*) AS errors,
+       MAX(created_at) AS last_error
+FROM public.newsletter_events
+WHERE event_type = 'newsletter_error'
+  AND created_at > now() - interval '24 hours'
+GROUP BY ip_hash
+HAVING COUNT(*) > 10
+ORDER BY errors DESC;
+```
+
 ## Recursos
 
 - [Documentação Supabase RLS](https://supabase.com/docs/guides/auth/row-level-security)
