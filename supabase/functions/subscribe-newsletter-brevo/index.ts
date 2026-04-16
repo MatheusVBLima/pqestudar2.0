@@ -1,10 +1,26 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.4";
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+// CORS allowlist — apenas origens oficiais
+const ALLOWED_ORIGINS = [
+  'https://pqestudar.com.br',
+  'https://www.pqestudar.com.br',
+  'https://pqestudar-prototipo.lovable.app',
+];
+// Padrão de previews Lovable (id-preview--<id>.lovable.app e <id>.lovable.app)
+const LOVABLE_PREVIEW_REGEX = /^https:\/\/([a-z0-9-]+\.)?lovable\.app$/i;
+
+function buildCorsHeaders(origin: string | null): Record<string, string> {
+  const isAllowed = origin && (
+    ALLOWED_ORIGINS.includes(origin) || LOVABLE_PREVIEW_REGEX.test(origin)
+  );
+  return {
+    'Access-Control-Allow-Origin': isAllowed ? origin! : ALLOWED_ORIGINS[0],
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Vary': 'Origin',
+  };
+}
 
 interface SubscribeRequest {
   email: string;
@@ -16,6 +32,18 @@ interface SubscribeRequest {
   utmTerm?: string;
   pageSlug?: string;
   resendWelcome?: boolean;
+  // Honeypot — deve vir vazio. Bots tendem a preencher.
+  website?: string;
+}
+
+// Validação de e-mail server-side
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+const MAX_EMAIL_LEN = 255;
+function isValidEmail(email: unknown): email is string {
+  return typeof email === 'string'
+    && email.length > 0
+    && email.length <= MAX_EMAIL_LEN
+    && EMAIL_REGEX.test(email);
 }
 
 // Hash function for privacy
@@ -28,44 +56,64 @@ async function hashString(str: string): Promise<string> {
 }
 
 // Get client IP hash
-function getIpHash(req: Request): string {
+function getIpHash(req: Request): Promise<string> {
   const forwarded = req.headers.get('x-forwarded-for');
-  const ip = forwarded ? forwarded.split(',')[0] : req.headers.get('x-real-ip') || 'unknown';
+  const ip = forwarded ? forwarded.split(',')[0].trim() : req.headers.get('x-real-ip') || 'unknown';
   return hashString(ip);
 }
 
-// Rate limiting check
-async function checkRateLimit(supabase: any, ipHash: string): Promise<boolean> {
-  // Cleanup old entries first
-  await supabase.rpc('cleanup_newsletter_rate_limit');
-  
-  // Check current attempts
-  const { data: rateData } = await supabase
+// Rate limiting reforçado: 5 tentativas / 15 min + cap diário de 20
+const SHORT_WINDOW_MIN = 15;
+const SHORT_WINDOW_MAX = 5;
+const DAILY_CAP = 20;
+
+async function checkRateLimit(supabase: any, ipHash: string): Promise<{ ok: boolean; reason?: string }> {
+  await supabase.rpc('cleanup_newsletter_rate_limit_30d').catch(() => {
+    // fallback caso a função 30d não exista
+    return supabase.rpc('cleanup_newsletter_rate_limit');
+  });
+
+  const shortWindowStart = new Date(Date.now() - SHORT_WINDOW_MIN * 60 * 1000).toISOString();
+  const dayWindowStart = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+
+  // Janela curta
+  const { data: shortData } = await supabase
     .from('newsletter_rate_limit')
-    .select('*')
+    .select('id, attempts, window_start')
     .eq('ip_hash', ipHash)
-    .gte('window_start', new Date(Date.now() - 5 * 60 * 1000).toISOString())
+    .gte('window_start', shortWindowStart)
     .order('window_start', { ascending: false })
     .limit(1)
-    .single();
+    .maybeSingle();
 
-  if (rateData && rateData.attempts >= 3) {
-    return false; // Rate limit exceeded
+  if (shortData && shortData.attempts >= SHORT_WINDOW_MAX) {
+    return { ok: false, reason: 'short_window' };
   }
 
-  // Update or insert rate limit
-  if (rateData) {
+  // Cap diário (soma de tentativas nas últimas 24h)
+  const { data: dayRows } = await supabase
+    .from('newsletter_rate_limit')
+    .select('attempts')
+    .eq('ip_hash', ipHash)
+    .gte('window_start', dayWindowStart);
+
+  const dailyTotal = (dayRows ?? []).reduce((sum: number, r: any) => sum + (r.attempts || 0), 0);
+  if (dailyTotal >= DAILY_CAP) {
+    return { ok: false, reason: 'daily_cap' };
+  }
+
+  if (shortData) {
     await supabase
       .from('newsletter_rate_limit')
-      .update({ attempts: rateData.attempts + 1 })
-      .eq('id', rateData.id);
+      .update({ attempts: shortData.attempts + 1 })
+      .eq('id', shortData.id);
   } else {
     await supabase
       .from('newsletter_rate_limit')
       .insert({ ip_hash: ipHash, attempts: 1, window_start: new Date().toISOString() });
   }
 
-  return true;
+  return { ok: true };
 }
 
 // Log event
@@ -95,8 +143,18 @@ async function logEvent(
 }
 
 const handler = async (req: Request): Promise<Response> => {
+  const origin = req.headers.get('origin');
+  const corsHeaders = buildCorsHeaders(origin);
+
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
+  }
+
+  if (req.method !== 'POST') {
+    return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+      status: 405,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
   }
 
   try {
@@ -104,6 +162,16 @@ const handler = async (req: Request): Promise<Response> => {
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
+
+    let body: SubscribeRequest;
+    try {
+      body = await req.json();
+    } catch {
+      return new Response(JSON.stringify({ error: 'Invalid JSON' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
     const {
       email,
@@ -115,22 +183,39 @@ const handler = async (req: Request): Promise<Response> => {
       utmTerm,
       pageSlug,
       resendWelcome = false,
-    }: SubscribeRequest = await req.json();
+      website,
+    } = body;
 
-    // Validation
-    if (!email || !consent) {
+    // Honeypot — se preenchido, descartar silenciosamente (200 OK falso)
+    if (website && website.trim().length > 0) {
       return new Response(
-        JSON.stringify({ error: 'Email e consentimento são obrigatórios' }),
+        JSON.stringify({ success: true, message: 'Inscrição recebida.' }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Validação básica
+    if (!consent) {
+      return new Response(
+        JSON.stringify({ error: 'Consentimento é obrigatório' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    const emailHash = await hashString(email);
+    if (!isValidEmail(email)) {
+      return new Response(
+        JSON.stringify({ error: 'E-mail inválido' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+    const emailHash = await hashString(normalizedEmail);
     const ipHash = await getIpHash(req);
 
     // Rate limiting
-    const rateLimitOk = await checkRateLimit(supabase, ipHash);
-    if (!rateLimitOk) {
+    const rl = await checkRateLimit(supabase, ipHash);
+    if (!rl.ok) {
       await logEvent(
         supabase,
         'newsletter_error',
@@ -138,10 +223,10 @@ const handler = async (req: Request): Promise<Response> => {
         ipHash,
         { utmSource, utmMedium, utmCampaign, utmContent, utmTerm },
         pageSlug,
-        'Rate limit exceeded'
+        `Rate limit: ${rl.reason}`
       );
       return new Response(
-        JSON.stringify({ error: 'Muitas tentativas. Tente novamente em alguns minutos.' }),
+        JSON.stringify({ error: 'Muitas tentativas. Tente novamente mais tarde.' }),
         { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -177,28 +262,27 @@ const handler = async (req: Request): Promise<Response> => {
       'accept': 'application/json',
       'content-type': 'application/json',
       'api-key': brevoApiKey,
+      'user-agent': 'pqestudar-edge/1.0 (+https://pqestudar.com.br)',
     };
 
     // Check if contact already exists
-    let contactExists = false;
     let isSubscribed = false;
-    
+
     try {
-      const getContactResponse = await fetch(`${brevoUrl}/${encodeURIComponent(email)}`, {
+      const getContactResponse = await fetch(`${brevoUrl}/${encodeURIComponent(normalizedEmail)}`, {
         method: 'GET',
         headers: brevoHeaders,
       });
 
       if (getContactResponse.ok) {
-        contactExists = true;
         const contactData = await getContactResponse.json();
-        // Check if already subscribed to the list
         if (contactData.listIds && contactData.listIds.includes(parseInt(config.default_list_id))) {
           isSubscribed = true;
         }
       }
-    } catch (error) {
-      console.log('Contact check error (non-critical):', error);
+    } catch {
+      // Não logar resposta crua — apenas marcar como falha não-crítica
+      console.log('Brevo contact check: non-critical error');
     }
 
     // Handle resend welcome email
@@ -212,9 +296,6 @@ const handler = async (req: Request): Promise<Response> => {
         pageSlug
       );
 
-      // TODO: Implement resend welcome email via Brevo transactional email
-      // This would require a transactional template ID in Brevo config
-      
       return new Response(
         JSON.stringify({
           success: true,
@@ -235,7 +316,7 @@ const handler = async (req: Request): Promise<Response> => {
         { utmSource, utmMedium, utmCampaign, utmContent, utmTerm },
         pageSlug
       );
-      
+
       return new Response(
         JSON.stringify({
           success: false,
@@ -260,7 +341,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Create/Update contact in Brevo
     const contactPayload: any = {
-      email,
+      email: normalizedEmail,
       attributes,
       listIds: [parseInt(config.default_list_id)],
       updateEnabled: true,
@@ -272,20 +353,17 @@ const handler = async (req: Request): Promise<Response> => {
       body: JSON.stringify(contactPayload),
     });
 
-    const responseText = await brevoResponse.text();
-    let brevoData = null;
-    
-    try {
-      if (responseText) {
-        brevoData = JSON.parse(responseText);
-      }
-    } catch (e) {
-      console.log('Brevo response was not JSON:', responseText);
-    }
-
     if (!brevoResponse.ok) {
-      console.error('Brevo API error:', responseText);
-      
+      // Sanitizar log: só status + code (sem responseText cru)
+      let brevoCode: string | undefined;
+      try {
+        const errBody = await brevoResponse.json();
+        brevoCode = errBody?.code;
+      } catch {
+        // ignora corpo não-JSON
+      }
+      console.error(`Brevo API error: status=${brevoResponse.status} code=${brevoCode ?? 'unknown'}`);
+
       await logEvent(
         supabase,
         'newsletter_error',
@@ -293,13 +371,13 @@ const handler = async (req: Request): Promise<Response> => {
         ipHash,
         { utmSource, utmMedium, utmCampaign, utmContent, utmTerm },
         pageSlug,
-        `Brevo API error: ${responseText}`
+        `Brevo ${brevoResponse.status} ${brevoCode ?? ''}`.trim()
       );
 
       throw new Error('Erro ao criar contato na Brevo');
     }
 
-    // Log successful listing
+    // Log successful listing — sem armazenar responseText cru
     await logEvent(
       supabase,
       'newsletter_subscribed',
@@ -308,10 +386,9 @@ const handler = async (req: Request): Promise<Response> => {
       { utmSource, utmMedium, utmCampaign, utmContent, utmTerm },
       pageSlug,
       undefined,
-      { brevoResponse: brevoData }
+      { brevoStatus: brevoResponse.status }
     );
 
-    // Determine success message based on opt-in mode
     const successMessage = config.opt_in_mode === 'double_opt_in'
       ? config.success_message_doi
       : config.success_message_single;
@@ -326,12 +403,11 @@ const handler = async (req: Request): Promise<Response> => {
     );
 
   } catch (error: any) {
-    console.error('Error in subscribe-newsletter-brevo:', error);
+    console.error('subscribe-newsletter-brevo error:', error?.message ?? 'unknown');
 
     return new Response(
       JSON.stringify({
         error: 'Erro ao processar inscrição',
-        details: error.message,
       }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );

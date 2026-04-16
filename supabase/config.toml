@@ -47,3 +47,6 @@ verify_jwt = false
 
 [functions.guide-flow-knowledge]
 verify_jwt = false
+
+[functions.subscribe-newsletter-brevo]
+verify_jwt = false
