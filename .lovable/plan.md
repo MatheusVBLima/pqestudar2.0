@@ -1,83 +1,79 @@
 
 
-## Plano: Biblioteca indexada a partir do Supabase Storage
+## Diagnóstico: como sua chave Brevo é usada neste projeto
 
-### Contexto
+### O que encontrei no código
 
-A página **Biblioteca de Conhecimento** (`/admin/biblioteca`) hoje opera apenas com cadastro manual na tabela `guide_flow_knowledge`. Os buckets `guide-structure` e `guide-library` contêm arquivos reais, mas não há conexão entre eles e a Biblioteca. O objetivo é transformar a Biblioteca em uma camada indexada desses arquivos.
+**1. A chave NÃO está exposta no código-fonte**
+- Procurei por `BREVO_API_KEY` e `xkeysib` (prefixo padrão das chaves Brevo) em todo o repositório.
+- A chave aparece **uma única vez**, dentro da Edge Function `subscribe-newsletter-brevo/index.ts`, lida via `Deno.env.get('BREVO_API_KEY')`. Esse é o uso correto — a chave vive como Supabase Secret e nunca chega ao frontend.
+- `.env`, `index.html`, `AdminBrevo.tsx` e qualquer outro arquivo do client **não contêm a chave**. O painel admin nem oferece campo para editar a API key (só lista ID, tags, mensagens).
 
-### Problema adicional conhecido
+**2. Único ponto onde a chave é efetivamente usada**
+- Edge Function `subscribe-newsletter-brevo`, chamada de 4 lugares no site (Home hero, /sobre, /assine, newsletter-form).
+- Faz `GET` e `POST` em `https://api.brevo.com/v3/contacts` com header `api-key`.
 
-A leitura client-side dos buckets está bloqueada por RLS (retorna 0 arquivos). A sincronização precisa ser feita via Edge Function com service role.
+**3. Pontos frágeis identificados nessa Edge Function**
 
----
+| # | Problema | Risco |
+|---|----------|-------|
+| A | `verify_jwt` **não** está declarado em `config.toml` para `subscribe-newsletter-brevo`. Como hoje as funções gerenciadas pela Lovable rodam por padrão sem JWT, ela é **publicamente invocável** por qualquer pessoa com a URL e a `anon key` (que é pública). | Alto: bot pode chamar em loop |
+| B | Rate limit é **3 tentativas / 5 min por IP** — fácil de driblar com proxies rotativos. | Médio |
+| C | `console.error('Brevo API error:', responseText)` loga a resposta crua da Brevo. Em alguns erros 4xx a Brevo devolve o header da request — risco baixo, mas vale auditar. | Baixo |
+| D | Não há validação de formato de e-mail no servidor (só no client). | Baixo |
+| E | CORS aberto (`Access-Control-Allow-Origin: *`). Qualquer origem pode chamar a função. | Médio |
 
-### Fase 1 — Migração: adicionar colunas de origem na tabela
-
-Adicionar colunas à tabela `guide_flow_knowledge` para rastrear origem Storage:
-
-- `source_type` (`text`, default `'manual'`) — valores: `manual`, `storage`
-- `source_bucket` (`text`, nullable) — ex: `guide-structure`, `guide-library`
-- `source_path` (`text`, nullable) — path completo do arquivo no bucket
-- `synced_at` (`timestamptz`, nullable) — data da última sincronização
-- Constraint `UNIQUE(source_bucket, source_path)` para evitar duplicação
-
-### Fase 2 — Edge Function: ação `sync` no `guide-flow-knowledge`
-
-Adicionar ação `sync` à Edge Function existente que:
-
-1. Lista arquivos de `guide-structure` e `guide-library` usando service role
-2. Para cada arquivo encontrado:
-   - Verifica se já existe entrada com mesmo `source_bucket` + `source_path`
-   - Se não existe: cria entrada com `source_type = 'storage'`, título derivado do nome do arquivo, categoria inferida do bucket (`estrutura` para guide-structure, `referencia` para guide-library), conteúdo = texto extraído ou placeholder indicando que é PDF
-   - Se já existe: atualiza `synced_at`
-3. Retorna resumo: total encontrado, novos importados, já existentes, erros
-
-### Fase 3 — UI: botão de sincronização e indicadores de origem
-
-Na página `GuideFlowKnowledge.tsx`:
-
-- Adicionar botão **"Sincronizar Storage"** ao lado de "Nova entrada"
-- Cada card mostra badge de origem: `📦 Storage` ou `✍️ Manual`
-- Entradas de Storage mostram bucket e path de origem
-- Filtro por origem (manual / storage / todos)
-- Badge de status de sincronização no topo
-
-### Fase 4 — Consumo pelo Fluxo de Guias
-
-Atualizar o `guide-flow-generate` para buscar entradas da `guide_flow_knowledge` com `source_type = 'storage'` como fontes primárias, em vez de ler Storage diretamente no client.
+**4. O que isso NÃO explica**
+- O alerta da Brevo cita IP francês (`2a05:d012:fca:9509:60f7:1e86:89f4:8a3a` — AWS Paris) e a conta `mdias.programandoideias@gmail.com`.
+- O Supabase deste projeto roda em região fixa (não Paris/AWS-FR). Logo, a chamada **provavelmente não saiu desta Edge Function**.
+- Cenários mais prováveis (em ordem):
+  1. **Chave usada em outro projeto/serviço seu** (Zapier, Make, Vercel, Railway, n8n, outro Lovable, script local) — esses sim podem rodar em AWS Paris.
+  2. **Vazamento histórico** (commit antigo no GitHub, print, extensão de navegador, log de terceiro).
+  3. **Reuso da mesma chave** em mais de um ambiente.
 
 ---
 
-### Detalhes técnicos
+## Plano de ação
 
-**Migração SQL:**
-```sql
-ALTER TABLE guide_flow_knowledge
-  ADD COLUMN source_type text NOT NULL DEFAULT 'manual',
-  ADD COLUMN source_bucket text,
-  ADD COLUMN source_path text,
-  ADD COLUMN synced_at timestamptz;
+### Passo 1 — Resposta imediata (você faz, fora do Lovable)
+1. **Revogar a chave atual** no painel Brevo → SMTP & API → API Keys → Delete.
+2. **Gerar nova chave** com nome identificável: `pqestudar-supabase-edge-2026-04`.
+3. **Restringir IP da nova chave** no Brevo (se o plano permitir) para os IPs de saída do Supabase Edge Functions.
+4. **Auditar onde a chave antiga existia**: GitHub (search `xkeysib` no seu user/orgs), Zapier, Make, Vercel env, Railway, scripts locais, Postman, .env antigos.
+5. **Atualizar o Supabase Secret `BREVO_API_KEY`** com a nova chave.
 
-ALTER TABLE guide_flow_knowledge
-  ADD CONSTRAINT uq_knowledge_source UNIQUE (source_bucket, source_path);
-```
+### Passo 2 — Hardening da Edge Function (eu faço aqui)
+Mudanças em `supabase/functions/subscribe-newsletter-brevo/index.ts` e `supabase/config.toml`:
 
-**Edge Function `sync` (lógica central):**
-- Usa `supabase.storage.from(bucket).list()` com service role (sem RLS)
-- Para PDFs, armazena referência (não extrai conteúdo inline — o `guide-flow-generate` já faz download server-side)
-- Categoria automática: `guide-structure` → `estrutura`, `guide-library` → `referencia`
-- Título: nome do arquivo sem extensão
+1. **CORS restrito** — trocar `*` por allowlist com domínios oficiais (`pqestudar.com.br`, `pqestudar-prototipo.lovable.app`, preview Lovable).
+2. **Validação server-side de e-mail** com regex + tamanho máximo (255).
+3. **Rate limit reforçado**: 3/5min → 5/15min + cap diário por IP (ex.: 20/dia).
+4. **Honeypot opcional** no payload (campo invisível) para barrar bots simples.
+5. **Sanitizar logs**: parar de logar `responseText` cru da Brevo; logar só `status` + `code`.
+6. **Adicionar header `User-Agent` identificável** nas chamadas à Brevo (`pqestudar-edge/1.0`) para rastreabilidade nos logs deles.
+7. **Garantir `verify_jwt = false`** explicitamente no `config.toml` (status atual implícito; deixar explícito evita surpresa em mudança de default).
 
-**Interface — indicadores visuais:**
-- Badge `📦 guide-structure` ou `📦 guide-library` para entradas importadas
-- Badge `✍️ Manual` para entradas criadas à mão
-- Tooltip com path completo e data de sincronização
-- Novo filtro dropdown: "Todas" / "Storage" / "Manual"
+### Passo 3 — Detecção
+1. Criar consulta SQL utilitária (documentada no SECURITY.md) para inspecionar `newsletter_events` filtrando picos de `newsletter_error` por `ip_hash` — útil para detectar abuso futuro.
+2. Documentar procedimento de rotação da chave em `SECURITY.md`.
 
-**Arquivos a criar/editar:**
-- Migração SQL (nova)
-- `supabase/functions/guide-flow-knowledge/index.ts` (adicionar ação `sync`)
-- `src/hooks/useGuideFlowKnowledge.tsx` (adicionar `syncStorage`, tipar novas colunas)
-- `src/pages/admin/GuideFlowKnowledge.tsx` (botão sync, badges, filtro)
+### Passo 4 — Verificações que você precisa fazer manualmente
+Estas eu **não consigo verificar** daqui:
+- [ ] Histórico do GitHub (incluindo forks e commits revertidos)
+- [ ] Outros projetos/contas que possam ter a mesma chave
+- [ ] Logs de acesso da conta Brevo (Brevo → Security → Activity)
+- [ ] Se o e-mail `mdias.programandoideias@gmail.com` tem 2FA ativo
+- [ ] Extensões de navegador instaladas que tenham permissão `*://*.brevo.com/*`
+
+---
+
+## Arquivos que serão modificados (Passo 2)
+
+| Arquivo | Mudança |
+|---------|---------|
+| `supabase/functions/subscribe-newsletter-brevo/index.ts` | CORS allowlist, validação e-mail, rate limit reforçado, logs sanitizados, User-Agent |
+| `supabase/config.toml` | Declarar `[functions.subscribe-newsletter-brevo] verify_jwt = false` explicitamente |
+| `SECURITY.md` | Adicionar seção "Rotação da chave Brevo" e checklist de incidente |
+
+Nenhuma migração de banco é necessária. A chave em si só é trocada por você no Supabase Secrets (não é arquivo).
 
