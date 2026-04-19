@@ -9,11 +9,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
-import { CATEGORIAS } from '@/lib/guide-editorial-options';
+import { CATEGORIAS, CATEGORIAS_PUBLICAS } from '@/lib/guide-editorial-options';
 import MarkdownEditor from '@/components/admin/MarkdownEditor';
 import {
   Type, Search, FileText, Megaphone, Link2, AlertTriangle,
-  CheckCircle, Loader2, Plus, Trash2, Save,
+  CheckCircle, Loader2, Plus, Trash2, Save, Cog, Eye,
 } from 'lucide-react';
 import type { GeneratedGuideData } from './GuideFlowPreview';
 
@@ -194,10 +194,13 @@ function MetaEditor({ local, update, slugStatus }: {
       </div>
 
       <div className="space-y-1.5">
-        <Label>Categoria</Label>
+        <Label className="flex items-center gap-1.5">
+          <Cog className="h-3.5 w-3.5 text-primary/70" />
+          Categoria Interna
+        </Label>
         <Select value={local.category} onValueChange={(v) => update('category', v)}>
           <SelectTrigger>
-            <SelectValue />
+            <SelectValue placeholder="Editorial..." />
           </SelectTrigger>
           <SelectContent>
             {CATEGORIAS.map(c => (
@@ -205,6 +208,25 @@ function MetaEditor({ local, update, slugStatus }: {
             ))}
           </SelectContent>
         </Select>
+        <p className="text-[10px] text-muted-foreground">Usada para guiar a IA · não exibida ao público.</p>
+      </div>
+
+      <div className="space-y-1.5 rounded-md border border-emerald-500/20 bg-emerald-500/5 p-3">
+        <Label className="flex items-center gap-1.5">
+          <Eye className="h-3.5 w-3.5 text-emerald-600" />
+          Categoria Pública *
+        </Label>
+        <Select value={local.public_category} onValueChange={(v) => update('public_category', v)}>
+          <SelectTrigger className="bg-background">
+            <SelectValue placeholder="Badge no site..." />
+          </SelectTrigger>
+          <SelectContent>
+            {CATEGORIAS_PUBLICAS.map(c => (
+              <SelectItem key={c} value={c}>{c}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <p className="text-[10px] text-muted-foreground">Apenas badge visual · NÃO influencia geração.</p>
       </div>
 
       <div className="space-y-1.5">

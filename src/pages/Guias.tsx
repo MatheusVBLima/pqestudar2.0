@@ -133,9 +133,12 @@ export default function Guias() {
   const publishedCount = useMemo(() => guides?.filter((g) => g.is_published).length ?? 0, [guides]);
   const draftsCount = useMemo(() => guides?.filter((g) => !g.is_published).length ?? 0, [guides]);
 
+  // Filtro público usa apenas Categoria Pública (badge visual). Admin vê apenas as 7 oficiais.
+  const PUBLIC_CATEGORIES = ['Educação', 'Carreira', 'Ferramentas', 'Guias', 'Benefícios', 'Oportunidades', 'Listas'];
   const categories = useMemo(() => {
     if (!guides) return [];
-    return [...new Set(guides.map((g) => g.category))].sort();
+    const present = new Set(guides.map((g) => (g as any).public_category).filter(Boolean));
+    return PUBLIC_CATEGORIES.filter(c => present.has(c));
   }, [guides]);
 
   // Apply status filter (admin tabs), then search + category
@@ -156,7 +159,7 @@ export default function Guias() {
     }
 
     if (categoryFilter !== "all") {
-      list = list.filter((g) => g.category === categoryFilter);
+      list = list.filter((g) => (g as any).public_category === categoryFilter);
     }
 
     return list;

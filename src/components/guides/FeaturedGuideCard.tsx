@@ -73,12 +73,14 @@ export function FeaturedGuideCard({
           {/* Content */}
           <div className="flex-1 p-6 md:p-8 flex flex-col justify-center">
             <div className="flex items-center gap-2 flex-wrap mb-3">
-              <Badge
-                variant="outline"
-                className={CATEGORY_COLORS[guide.category] || ""}
-              >
-                {guide.category}
-              </Badge>
+              {(() => { const cat = (guide as any).public_category || guide.category; return (
+                <Badge
+                  variant="outline"
+                  className={CATEGORY_COLORS[cat] || ""}
+                >
+                  {cat}
+                </Badge>
+              ); })()}
               {showAdmin && !guide.is_published && (
                 <Badge variant="secondary">Rascunho</Badge>
               )}

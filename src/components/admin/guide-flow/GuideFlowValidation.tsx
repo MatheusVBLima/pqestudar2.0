@@ -125,11 +125,21 @@ function getFieldsValidations(data: GeneratedGuideData): ValidationGroup {
     items.push({ label: 'Descrição curta', status: 'ok' });
   }
 
-  // Category
+  // Categoria Interna (editorial)
   if (!data.category.trim()) {
-    items.push({ label: 'Categoria', status: 'error', detail: 'Obrigatória' });
+    items.push({ label: 'Categoria Interna', status: 'error', detail: 'Obrigatória' });
   } else {
-    items.push({ label: 'Categoria', status: 'ok' });
+    items.push({ label: 'Categoria Interna', status: 'ok' });
+  }
+
+  // Categoria Pública (badge visual)
+  const VALID_PUBLIC = ['Educação', 'Carreira', 'Ferramentas', 'Guias', 'Benefícios', 'Oportunidades', 'Listas'];
+  if (!data.public_category?.trim()) {
+    items.push({ label: 'Categoria Pública', status: 'error', detail: 'Obrigatória (badge)' });
+  } else if (!VALID_PUBLIC.includes(data.public_category)) {
+    items.push({ label: 'Categoria Pública', status: 'error', detail: 'Valor inválido' });
+  } else {
+    items.push({ label: 'Categoria Pública', status: 'ok', detail: data.public_category });
   }
 
   return { title: 'Campos obrigatórios', icon: '📋', items };
@@ -449,6 +459,8 @@ export function GuideFlowValidation({ data }: Props) {
 }
 
 export function hasValidationErrors(data: GeneratedGuideData): boolean {
+  const VALID_PUBLIC = ['Educação', 'Carreira', 'Ferramentas', 'Guias', 'Benefícios', 'Oportunidades', 'Listas'];
   return !data.title.trim() || !data.slug.trim() || !data.short_description.trim() || !data.category.trim() ||
+    !data.public_category?.trim() || !VALID_PUBLIC.includes(data.public_category) ||
     data.content_markdown.trim().split(/\s+/).filter(Boolean).length < 50;
 }

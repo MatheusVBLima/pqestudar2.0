@@ -1160,6 +1160,7 @@ export type Database = {
           internal_links: Json | null
           is_featured: boolean
           is_published: boolean
+          public_category: string
           seo_description: string
           seo_title: string
           short_description: string
@@ -1190,6 +1191,7 @@ export type Database = {
           internal_links?: Json | null
           is_featured?: boolean
           is_published?: boolean
+          public_category?: string
           seo_description?: string
           seo_title?: string
           short_description: string
@@ -1220,6 +1222,7 @@ export type Database = {
           internal_links?: Json | null
           is_featured?: boolean
           is_published?: boolean
+          public_category?: string
           seo_description?: string
           seo_title?: string
           short_description?: string

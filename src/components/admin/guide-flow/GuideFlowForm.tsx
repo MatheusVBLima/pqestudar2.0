@@ -4,13 +4,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Sparkles, Loader2 } from 'lucide-react';
-import { TIPOS_GUIA, CATEGORIAS, INTENCOES } from '@/lib/guide-editorial-options';
+import { Sparkles, Loader2, Cog, Eye } from 'lucide-react';
+import { TIPOS_GUIA, CATEGORIAS, INTENCOES, CATEGORIAS_PUBLICAS, mapInternaToPublica } from '@/lib/guide-editorial-options';
 
 export interface GuideFlowInputs {
   tema: string;
   tipo: string;
-  categoria: string;
+  categoria: string;          // Categoria Interna
+  categoriaPublica: string;   // Categoria Pública (badge visual)
   palavraChave: string;
   intencao: string;
   contextoAdicional: string;
@@ -27,13 +28,23 @@ export function GuideFlowForm({ onGenerate, isGenerating }: Props) {
     tema: '',
     tipo: '',
     categoria: '',
+    categoriaPublica: '',
     palavraChave: '',
     intencao: '',
     contextoAdicional: '',
     visualMode: 'generate',
   });
 
-  const canSubmit = inputs.tema.trim() && inputs.categoria && !isGenerating;
+  // Sugere automaticamente a Categoria Pública quando a Interna muda (admin pode trocar)
+  const handleCategoriaInternaChange = (v: string) => {
+    setInputs((p) => ({
+      ...p,
+      categoria: v,
+      categoriaPublica: p.categoriaPublica || mapInternaToPublica(v),
+    }));
+  };
+
+  const canSubmit = inputs.tema.trim() && inputs.categoria && inputs.categoriaPublica && !isGenerating;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,10 +80,13 @@ export function GuideFlowForm({ onGenerate, isGenerating }: Props) {
         </div>
 
         <div className="space-y-1.5">
-          <Label>Categoria *</Label>
-          <Select value={inputs.categoria} onValueChange={(v) => setInputs((p) => ({ ...p, categoria: v }))}>
+          <Label className="flex items-center gap-1.5">
+            <Cog className="h-3.5 w-3.5 text-primary/70" />
+            Categoria Interna *
+          </Label>
+          <Select value={inputs.categoria} onValueChange={handleCategoriaInternaChange}>
             <SelectTrigger className="rounded-[var(--admin-radius)]">
-              <SelectValue placeholder="Selecione..." />
+              <SelectValue placeholder="Editorial..." />
             </SelectTrigger>
             <SelectContent>
               {CATEGORIAS.map((c) => (
@@ -80,7 +94,26 @@ export function GuideFlowForm({ onGenerate, isGenerating }: Props) {
               ))}
             </SelectContent>
           </Select>
+          <p className="text-xs text-muted-foreground">Guia a IA na geração — não exibida ao público.</p>
         </div>
+      </div>
+
+      <div className="space-y-1.5 rounded-[var(--admin-radius)] border border-emerald-500/20 bg-emerald-500/5 p-3">
+        <Label className="flex items-center gap-1.5">
+          <Eye className="h-3.5 w-3.5 text-emerald-600" />
+          Categoria Pública *
+        </Label>
+        <Select value={inputs.categoriaPublica} onValueChange={(v) => setInputs((p) => ({ ...p, categoriaPublica: v }))}>
+          <SelectTrigger className="rounded-[var(--admin-radius)] bg-background">
+            <SelectValue placeholder="Badge no site..." />
+          </SelectTrigger>
+          <SelectContent>
+            {CATEGORIAS_PUBLICAS.map((c) => (
+              <SelectItem key={c} value={c}>{c}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <p className="text-xs text-muted-foreground">Apenas badge visual no site — NÃO influencia a geração.</p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

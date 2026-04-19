@@ -158,11 +158,15 @@ export default function GuiaDetalhe() {
 
   const authorName = (guide as any).author_name || "Equipe PqEstudar";
 
+  // Categoria exibida ao público = public_category (badge visual). Fallback à Interna se ausente.
+  const displayCategory = (guide as any).public_category || guide.category;
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Article",
     "headline": guide.seo_title || guide.title,
     "description": guide.seo_description || guide.short_description,
+    "articleSection": displayCategory,
     "author": { "@type": "Person", "name": authorName },
     "dateModified": guide.updated_at,
     "datePublished": guide.created_at,

@@ -10,8 +10,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import MarkdownEditor, { htmlToMarkdown } from "@/components/admin/MarkdownEditor";
 import { Guide } from "@/hooks/useGuides";
-import { Plus, Trash2, Upload, Link2, X, ImageIcon, Copy, Check, Workflow } from "lucide-react";
+import { Plus, Trash2, Upload, Link2, X, ImageIcon, Copy, Check, Workflow, Cog, Eye } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { CATEGORIAS, CATEGORIAS_PUBLICAS, mapInternaToPublica } from "@/lib/guide-editorial-options";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
@@ -31,7 +33,8 @@ function slugify(text: string): string {
     .replace(/(^-|-$)/g, '');
 }
 
-const CATEGORIES = ["Concursos", "Ferramentas", "Oportunidades", "Produtividade", "Carreira"];
+// Lista legada apenas para fallback de Categoria Interna; o seletor real usa CATEGORIAS (slugs).
+const LEGACY_CATEGORIES = ["Concursos", "Ferramentas", "Oportunidades", "Produtividade", "Carreira"];
 
 interface InternalLink {
   label: string;
@@ -239,7 +242,8 @@ export function GuideModal({ open, onClose, onSave, guide }: GuideModalProps) {
   const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");
   const [slugManual, setSlugManual] = useState(false);
-  const [category, setCategory] = useState(CATEGORIES[0]);
+  const [category, setCategory] = useState(CATEGORIAS[0].label);
+  const [publicCategory, setPublicCategory] = useState<string>("Guias");
   const [shortDescription, setShortDescription] = useState("");
   const [contentMarkdown, setContentMarkdown] = useState("");
   const [seoTitle, setSeoTitle] = useState("");
@@ -272,6 +276,7 @@ export function GuideModal({ open, onClose, onSave, guide }: GuideModalProps) {
       setSlug(guide.slug);
       setSlugManual(true);
       setCategory(guide.category);
+      setPublicCategory((guide as any).public_category || mapInternaToPublica(guide.category));
       setShortDescription(guide.short_description);
       const content = guide.content_markdown || "";
       const hasHtml = /<\s*(?:p|ol|ul|li|h[1-6]|div|br|strong|em)\b[^>]*>/i.test(content);
@@ -305,7 +310,7 @@ export function GuideModal({ open, onClose, onSave, guide }: GuideModalProps) {
       })));
     } else {
       setTitle(""); setSlug(""); setSlugManual(false);
-      setCategory(CATEGORIES[0]); setShortDescription("");
+      setCategory(CATEGORIAS[0].label); setPublicCategory("Guias"); setShortDescription("");
       setContentMarkdown(""); setSeoTitle(""); setSeoDescription("");
       setCtaTopLabel(""); setCtaTopUrl(""); setCtaTopText("");
       setCtaMiddleLabel(""); setCtaMiddleUrl(""); setCtaMiddleText("");
@@ -326,7 +331,9 @@ export function GuideModal({ open, onClose, onSave, guide }: GuideModalProps) {
     const errs: Record<string, string> = {};
     if (!title.trim()) errs.title = "Título obrigatório";
     if (!slug.trim()) errs.slug = "Slug obrigatório";
-    if (!category.trim()) errs.category = "Categoria obrigatória";
+    if (!category.trim()) errs.category = "Categoria Interna obrigatória";
+    const VALID_PUBLIC = ['Educação', 'Carreira', 'Ferramentas', 'Guias', 'Benefícios', 'Oportunidades', 'Listas'];
+    if (!publicCategory || !VALID_PUBLIC.includes(publicCategory)) errs.publicCategory = "Categoria Pública obrigatória";
     if (!shortDescription.trim()) errs.shortDescription = "Descrição curta obrigatória";
     if (!seoTitle.trim()) errs.seoTitle = "SEO Title obrigatório";
     if (!seoDescription.trim()) errs.seoDescription = "SEO Description obrigatória";
@@ -362,6 +369,7 @@ export function GuideModal({ open, onClose, onSave, guide }: GuideModalProps) {
         title: title.trim(),
         slug: slug.trim(),
         category,
+        public_category: publicCategory,
         short_description: shortDescription.trim(),
         content_markdown: contentMarkdown,
         seo_title: seoTitle.trim(),
@@ -545,11 +553,39 @@ export function GuideModal({ open, onClose, onSave, guide }: GuideModalProps) {
               {errors.slug && <p className="text-xs text-destructive mt-1">{errors.slug}</p>}
             </div>
             <div>
-              <Label>Categoria *</Label>
-              <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" value={category} onChange={e => setCategory(e.target.value)}>
-                {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+              <Label className="flex items-center gap-1.5">
+                <Cog className="h-3.5 w-3.5 text-primary/70" />
+                Categoria Interna *
+              </Label>
+              <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" value={category} onChange={e => {
+                const v = e.target.value;
+                setCategory(v);
+                // sugere pública se vazia
+                if (!publicCategory) setPublicCategory(mapInternaToPublica(v));
+              }}>
+                {CATEGORIAS.map(c => <option key={c.value} value={c.label}>{c.label}</option>)}
+                {/* fallback para valores legados que não estão na lista atual */}
+                {!CATEGORIAS.some(c => c.label === category) && category && (
+                  <option value={category}>{category} (legado)</option>
+                )}
               </select>
+              <p className="text-[10px] text-muted-foreground mt-1">Editorial · guia a IA · não exibida ao público.</p>
               {errors.category && <p className="text-xs text-destructive mt-1">{errors.category}</p>}
+            </div>
+            <div className="rounded-md border border-emerald-500/20 bg-emerald-500/5 p-3 space-y-1.5">
+              <Label className="flex items-center gap-1.5">
+                <Eye className="h-3.5 w-3.5 text-emerald-600" />
+                Categoria Pública *
+              </Label>
+              <select
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                value={publicCategory}
+                onChange={e => setPublicCategory(e.target.value)}
+              >
+                {CATEGORIAS_PUBLICAS.map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
+              <p className="text-[10px] text-muted-foreground">Apenas badge no site · NÃO influencia geração.</p>
+              {errors.publicCategory && <p className="text-xs text-destructive mt-1">{errors.publicCategory}</p>}
             </div>
             <div>
               <Label>Descrição curta *</Label>

@@ -54,6 +54,8 @@ serve(async (req) => {
       tema, tipo, categoria, palavraChave, intencao, contextoAdicional,
       selectedLibrary, structureContext, libraryContext, editorialMeta,
       visualMode,
+      // categoriaPublica é recebida mas NÃO usada no prompt — apenas metadado de exibição.
+      // Documentado: a Categoria Pública é badge visual; geração depende só da Interna.
     } = body;
 
     // visualMode: "generate" (default) or "prompt_only"

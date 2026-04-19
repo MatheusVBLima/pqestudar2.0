@@ -6,14 +6,14 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Sparkles, Loader2, CheckCircle2, AlertTriangle, ImageIcon, FileText } from 'lucide-react';
-import { TIPOS_GUIA, CATEGORIAS, INTENCOES } from '@/lib/guide-editorial-options';
+import { Sparkles, Loader2, CheckCircle2, AlertTriangle, ImageIcon, FileText, Cog, Eye } from 'lucide-react';
+import { TIPOS_GUIA, CATEGORIAS, INTENCOES, CATEGORIAS_PUBLICAS, mapInternaToPublica } from '@/lib/guide-editorial-options';
 import type { GuideFlowInputs } from '../GuideFlowForm';
 
 function InputNodeComponent({ data }: { data: any }) {
   const { onGenerate, isGenerating, hasValidSources, hasLibrary, selectedLibrary, onAutoSuggest, onInputsChange } = data;
   const [inputs, setInputs] = useState<GuideFlowInputs>({
-    tema: '', tipo: '', categoria: '', palavraChave: '', intencao: '', contextoAdicional: '', visualMode: 'generate',
+    tema: '', tipo: '', categoria: '', categoriaPublica: '', palavraChave: '', intencao: '', contextoAdicional: '', visualMode: 'generate',
   });
 
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
@@ -35,7 +35,15 @@ function InputNodeComponent({ data }: { data: any }) {
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
   }, [inputs.tema, inputs.palavraChave, onAutoSuggest]);
 
-  const canSubmit = inputs.tema.trim() && inputs.categoria && !isGenerating;
+  const canSubmit = inputs.tema.trim() && inputs.categoria && inputs.categoriaPublica && !isGenerating;
+
+  const handleCategoriaInternaChange = (v: string) => {
+    setInputs((p) => ({
+      ...p,
+      categoria: v,
+      categoriaPublica: p.categoriaPublica || mapInternaToPublica(v),
+    }));
+  };
 
   return (
     <div className="bg-card border-2 border-primary/40 rounded-[1.2rem] shadow-card w-[400px] overflow-hidden">
@@ -90,16 +98,36 @@ function InputNodeComponent({ data }: { data: any }) {
             </Select>
           </div>
           <div className="space-y-1">
-            <Label className="text-xs">Categoria *</Label>
-            <Select value={inputs.categoria} onValueChange={(v) => setInputs((p) => ({ ...p, categoria: v }))}>
-              <SelectTrigger className="rounded-lg text-xs h-8"><SelectValue placeholder="Selecione..." /></SelectTrigger>
+            <Label className="text-xs flex items-center gap-1">
+              <Cog className="h-2.5 w-2.5 text-primary/70" />
+              Categoria Interna *
+            </Label>
+            <Select value={inputs.categoria} onValueChange={handleCategoriaInternaChange}>
+              <SelectTrigger className="rounded-lg text-xs h-8"><SelectValue placeholder="Editorial..." /></SelectTrigger>
               <SelectContent>
                 {CATEGORIAS.map((c) => (
                   <SelectItem key={c.value} value={c.value} className="text-xs">{c.label}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
+            <p className="text-[9px] text-muted-foreground leading-tight">Guia a IA · não exibida ao público</p>
           </div>
+        </div>
+
+        <div className="space-y-1 pt-1 border-t border-border/40">
+          <Label className="text-xs flex items-center gap-1">
+            <Eye className="h-2.5 w-2.5 text-emerald-600" />
+            Categoria Pública *
+          </Label>
+          <Select value={inputs.categoriaPublica} onValueChange={(v) => setInputs((p) => ({ ...p, categoriaPublica: v }))}>
+            <SelectTrigger className="rounded-lg text-xs h-8"><SelectValue placeholder="Badge no site..." /></SelectTrigger>
+            <SelectContent>
+              {CATEGORIAS_PUBLICAS.map((c) => (
+                <SelectItem key={c} value={c} className="text-xs">{c}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <p className="text-[9px] text-muted-foreground leading-tight">Apenas badge visual · não influencia geração</p>
         </div>
 
         <div className="grid grid-cols-2 gap-2">
