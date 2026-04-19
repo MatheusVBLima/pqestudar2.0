@@ -5,12 +5,13 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Sparkles, Loader2 } from 'lucide-react';
-import { TIPOS_GUIA, CATEGORIAS, INTENCOES } from '@/lib/guide-editorial-options';
+import { TIPOS_GUIA, CATEGORIAS, INTENCOES, CATEGORIAS_PUBLICAS, mapInternaToPublica } from '@/lib/guide-editorial-options';
 
 export interface GuideFlowInputs {
   tema: string;
   tipo: string;
-  categoria: string;
+  categoria: string;          // Categoria Interna
+  categoriaPublica: string;   // Categoria Pública (badge visual)
   palavraChave: string;
   intencao: string;
   contextoAdicional: string;

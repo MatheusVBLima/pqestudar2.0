@@ -142,6 +142,54 @@ export const INTENCOES: GuideOption[] = [
   },
 ];
 
+// ─── Categoria Pública ──────────────────────────────────────────
+// Apenas para EXIBIÇÃO no site (badge visual).
+// NÃO influencia geração de conteúdo, prompt da IA ou lógica editorial.
+export const CATEGORIAS_PUBLICAS = [
+  'Educação',
+  'Carreira',
+  'Ferramentas',
+  'Guias',
+  'Benefícios',
+  'Oportunidades',
+  'Listas',
+] as const;
+
+export type CategoriaPublica = typeof CATEGORIAS_PUBLICAS[number];
+
+/**
+ * Mapeia uma Categoria Interna (operacional/editorial) para uma Categoria Pública
+ * (badge visual). Usado como sugestão padrão — admin sempre pode trocar.
+ */
+export function mapInternaToPublica(internaValue: string | undefined | null): CategoriaPublica {
+  if (!internaValue) return 'Guias';
+  const v = internaValue.trim();
+  // Aceita tanto value (slug) quanto label (texto exibido)
+  switch (v) {
+    case 'estudos-planejamento':
+    case 'Estudos e Planejamento':
+    case 'cursos-certificados-formacao':
+    case 'Cursos, Certificados e Formação':
+    case 'produtividade-rotina':
+    case 'Produtividade e Rotina':
+      return 'Educação';
+    case 'carreira-oportunidades':
+    case 'Carreira e Oportunidades':
+      return 'Carreira';
+    case 'ferramentas-tecnologia':
+    case 'Ferramentas e Tecnologia':
+      return 'Ferramentas';
+    case 'provas-editais-regras':
+    case 'Provas, Editais e Regras':
+      return 'Oportunidades';
+    case 'guias-praticos':
+    case 'Guias práticos do dia a dia':
+      return 'Guias';
+    default:
+      return 'Guias';
+  }
+}
+
 // ─── Helpers ────────────────────────────────────────────────────
 export function findOption(list: GuideOption[], value: string): GuideOption | undefined {
   return list.find(o => o.value === value);

@@ -7,7 +7,8 @@ export interface Guide {
   internal_code: string;
   title: string;
   slug: string;
-  category: string;
+  category: string;          // Categoria Interna (editorial/IA)
+  public_category: string;   // Categoria Pública (badge visual)
   short_description: string;
   content_markdown: string;
   seo_title: string;
