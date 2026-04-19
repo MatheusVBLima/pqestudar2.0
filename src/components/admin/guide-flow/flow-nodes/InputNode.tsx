@@ -35,7 +35,15 @@ function InputNodeComponent({ data }: { data: any }) {
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
   }, [inputs.tema, inputs.palavraChave, onAutoSuggest]);
 
-  const canSubmit = inputs.tema.trim() && inputs.categoria && !isGenerating;
+  const canSubmit = inputs.tema.trim() && inputs.categoria && inputs.categoriaPublica && !isGenerating;
+
+  const handleCategoriaInternaChange = (v: string) => {
+    setInputs((p) => ({
+      ...p,
+      categoria: v,
+      categoriaPublica: p.categoriaPublica || mapInternaToPublica(v),
+    }));
+  };
 
   return (
     <div className="bg-card border-2 border-primary/40 rounded-[1.2rem] shadow-card w-[400px] overflow-hidden">
