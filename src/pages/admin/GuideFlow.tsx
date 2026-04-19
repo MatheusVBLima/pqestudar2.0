@@ -7,7 +7,7 @@ import { EditorialSummaryPanel } from '@/components/admin/guide-flow/EditorialSu
 import type { GeneratedGuideData, ImagePrompt } from '@/components/admin/guide-flow/GuideFlowPreview';
 import type { GuideFlowInputs } from '@/components/admin/guide-flow/GuideFlowForm';
 import { hasValidationErrors } from '@/components/admin/guide-flow/GuideFlowValidation';
-import { findOption, TIPOS_GUIA, CATEGORIAS, INTENCOES } from '@/lib/guide-editorial-options';
+import { findOption, TIPOS_GUIA, CATEGORIAS, INTENCOES, mapInternaToPublica } from '@/lib/guide-editorial-options';
 import { useGuidesMutations } from '@/hooks/useGuides';
 import { useGuideFlowSources } from '@/hooks/useGuideFlowSources';
 import { supabase } from '@/integrations/supabase/client';
@@ -16,7 +16,7 @@ import { Save, Send, RotateCcw } from 'lucide-react';
 
 const EMPTY_GUIDE: GeneratedGuideData = {
   title: '', slug: '', short_description: '', seo_title: '', seo_description: '',
-  category: '', author_name: 'Matheus Dias', content_markdown: '',
+  category: '', public_category: 'Guias', author_name: 'Matheus Dias', content_markdown: '',
   cta_top: null, cta_middle: null, cta_final: null, internal_links: [], cover_image_suggestion: '',
   image_prompts: [], generated_images: [],
 };
@@ -65,6 +65,7 @@ export default function GuideFlow() {
           seo_title: fd.seo_title ?? guide.seo_title ?? '',
           seo_description: fd.seo_description ?? guide.seo_description ?? '',
           category: fd.category ?? guide.category,
+          public_category: fd.public_category ?? guide.public_category ?? mapInternaToPublica(guide.category),
           author_name: fd.author_name ?? guide.author_name ?? 'Matheus Dias',
           content_markdown: fd.content_markdown ?? guide.content_markdown ?? '',
           cta_top: fd.cta_top ?? null,
@@ -87,6 +88,7 @@ export default function GuideFlow() {
           seo_title: guide.seo_title ?? '',
           seo_description: guide.seo_description ?? '',
           category: guide.category,
+          public_category: guide.public_category ?? mapInternaToPublica(guide.category),
           author_name: guide.author_name ?? 'Matheus Dias',
           content_markdown: guide.content_markdown ?? '',
           cta_top: guide.cta_top_label ? { label: guide.cta_top_label, url: guide.cta_top_url, text: guide.cta_top_text } : null,
@@ -182,6 +184,7 @@ export default function GuideFlow() {
         seo_title: generated.seo_title ?? '',
         seo_description: generated.seo_description ?? '',
         category: generated.category ?? (categoriaOption?.label || inputs.categoria),
+        public_category: inputs.categoriaPublica || mapInternaToPublica(inputs.categoria),
         author_name: generated.author_name ?? 'Matheus Dias',
         content_markdown: generated.content_markdown ?? '',
         cta_top: generated.cta_top ?? null,
@@ -342,6 +345,7 @@ export default function GuideFlow() {
         seo_title: guideData.seo_title,
         seo_description: guideData.seo_description,
         category: guideData.category,
+        public_category: guideData.public_category,
         author_name: guideData.author_name,
         content_markdown: finalMarkdown,
         cover_image_url: guideData.cover_image_url || null,
