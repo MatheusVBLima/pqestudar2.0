@@ -331,7 +331,9 @@ export function GuideModal({ open, onClose, onSave, guide }: GuideModalProps) {
     const errs: Record<string, string> = {};
     if (!title.trim()) errs.title = "Título obrigatório";
     if (!slug.trim()) errs.slug = "Slug obrigatório";
-    if (!category.trim()) errs.category = "Categoria obrigatória";
+    if (!category.trim()) errs.category = "Categoria Interna obrigatória";
+    const VALID_PUBLIC = ['Educação', 'Carreira', 'Ferramentas', 'Guias', 'Benefícios', 'Oportunidades', 'Listas'];
+    if (!publicCategory || !VALID_PUBLIC.includes(publicCategory)) errs.publicCategory = "Categoria Pública obrigatória";
     if (!shortDescription.trim()) errs.shortDescription = "Descrição curta obrigatória";
     if (!seoTitle.trim()) errs.seoTitle = "SEO Title obrigatório";
     if (!seoDescription.trim()) errs.seoDescription = "SEO Description obrigatória";
