@@ -10,8 +10,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import MarkdownEditor, { htmlToMarkdown } from "@/components/admin/MarkdownEditor";
 import { Guide } from "@/hooks/useGuides";
-import { Plus, Trash2, Upload, Link2, X, ImageIcon, Copy, Check, Workflow } from "lucide-react";
+import { Plus, Trash2, Upload, Link2, X, ImageIcon, Copy, Check, Workflow, Cog, Eye } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { CATEGORIAS, CATEGORIAS_PUBLICAS, mapInternaToPublica } from "@/lib/guide-editorial-options";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
@@ -31,7 +33,8 @@ function slugify(text: string): string {
     .replace(/(^-|-$)/g, '');
 }
 
-const CATEGORIES = ["Concursos", "Ferramentas", "Oportunidades", "Produtividade", "Carreira"];
+// Lista legada apenas para fallback de Categoria Interna; o seletor real usa CATEGORIAS (slugs).
+const LEGACY_CATEGORIES = ["Concursos", "Ferramentas", "Oportunidades", "Produtividade", "Carreira"];
 
 interface InternalLink {
   label: string;
