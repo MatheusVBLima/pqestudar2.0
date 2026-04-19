@@ -28,13 +28,23 @@ export function GuideFlowForm({ onGenerate, isGenerating }: Props) {
     tema: '',
     tipo: '',
     categoria: '',
+    categoriaPublica: '',
     palavraChave: '',
     intencao: '',
     contextoAdicional: '',
     visualMode: 'generate',
   });
 
-  const canSubmit = inputs.tema.trim() && inputs.categoria && !isGenerating;
+  // Sugere automaticamente a Categoria Pública quando a Interna muda (admin pode trocar)
+  const handleCategoriaInternaChange = (v: string) => {
+    setInputs((p) => ({
+      ...p,
+      categoria: v,
+      categoriaPublica: p.categoriaPublica || mapInternaToPublica(v),
+    }));
+  };
+
+  const canSubmit = inputs.tema.trim() && inputs.categoria && inputs.categoriaPublica && !isGenerating;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

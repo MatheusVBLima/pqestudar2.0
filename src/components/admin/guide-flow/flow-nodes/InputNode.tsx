@@ -7,13 +7,13 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Sparkles, Loader2, CheckCircle2, AlertTriangle, ImageIcon, FileText } from 'lucide-react';
-import { TIPOS_GUIA, CATEGORIAS, INTENCOES } from '@/lib/guide-editorial-options';
+import { TIPOS_GUIA, CATEGORIAS, INTENCOES, CATEGORIAS_PUBLICAS, mapInternaToPublica } from '@/lib/guide-editorial-options';
 import type { GuideFlowInputs } from '../GuideFlowForm';
 
 function InputNodeComponent({ data }: { data: any }) {
   const { onGenerate, isGenerating, hasValidSources, hasLibrary, selectedLibrary, onAutoSuggest, onInputsChange } = data;
   const [inputs, setInputs] = useState<GuideFlowInputs>({
-    tema: '', tipo: '', categoria: '', palavraChave: '', intencao: '', contextoAdicional: '', visualMode: 'generate',
+    tema: '', tipo: '', categoria: '', categoriaPublica: '', palavraChave: '', intencao: '', contextoAdicional: '', visualMode: 'generate',
   });
 
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
