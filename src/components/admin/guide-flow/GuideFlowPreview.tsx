@@ -6,8 +6,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Pencil, Eye, Plus, Trash2, GripVertical } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Pencil, Eye, Plus, Trash2, GripVertical, Cog } from 'lucide-react';
 import MarkdownEditor from '@/components/admin/MarkdownEditor';
+import { CATEGORIAS, CATEGORIAS_PUBLICAS } from '@/lib/guide-editorial-options';
 
 export interface ImagePrompt {
   type: 'cover' | 'internal';
@@ -27,7 +29,8 @@ export interface GeneratedGuideData {
   short_description: string;
   seo_title: string;
   seo_description: string;
-  category: string;
+  category: string;          // Categoria Interna (editorial/IA)
+  public_category: string;   // Categoria Pública (badge visual)
   author_name: string;
   content_markdown: string;
   cta_top: { label: string; url: string; text: string } | null;
@@ -140,15 +143,45 @@ export function GuideFlowPreview({ data, onChange }: Props) {
           <Textarea value={data.short_description} onChange={(e) => update('short_description', e.target.value)} rows={2} className="rounded-[var(--admin-radius)]" />
           <p className="text-xs text-muted-foreground">{data.short_description.length}/160</p>
         </div>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
-            <Label>Categoria</Label>
-            <Input value={data.category} onChange={(e) => update('category', e.target.value)} className="rounded-[var(--admin-radius)]" />
+            <Label className="flex items-center gap-1.5">
+              <Cog className="h-3.5 w-3.5 text-primary/70" />
+              Categoria Interna
+            </Label>
+            <Select value={data.category} onValueChange={(v) => update('category', v)}>
+              <SelectTrigger className="rounded-[var(--admin-radius)]">
+                <SelectValue placeholder="Editorial..." />
+              </SelectTrigger>
+              <SelectContent>
+                {CATEGORIAS.map((c) => (
+                  <SelectItem key={c.value} value={c.label}>{c.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-[10px] text-muted-foreground">Guia a IA · não exibida ao público.</p>
           </div>
           <div className="space-y-1.5">
             <Label>Autor</Label>
             <Input value={data.author_name} onChange={(e) => update('author_name', e.target.value)} className="rounded-[var(--admin-radius)]" />
           </div>
+        </div>
+        <div className="space-y-1.5 rounded-[var(--admin-radius)] border border-emerald-500/20 bg-emerald-500/5 p-3">
+          <Label className="flex items-center gap-1.5">
+            <Eye className="h-3.5 w-3.5 text-emerald-600" />
+            Categoria Pública *
+          </Label>
+          <Select value={data.public_category} onValueChange={(v) => update('public_category', v)}>
+            <SelectTrigger className="rounded-[var(--admin-radius)] bg-background">
+              <SelectValue placeholder="Badge no site..." />
+            </SelectTrigger>
+            <SelectContent>
+              {CATEGORIAS_PUBLICAS.map((c) => (
+                <SelectItem key={c} value={c}>{c}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <p className="text-[10px] text-muted-foreground">Apenas badge visual no site · NÃO influencia geração.</p>
         </div>
         {data.cover_image_suggestion && (
           <div className="p-3 bg-muted rounded-[var(--admin-radius)]">

@@ -1,10 +1,10 @@
 import { memo } from 'react';
 import { Handle, Position } from '@xyflow/react';
 import { Badge } from '@/components/ui/badge';
-import { Type, Tag, User, FileText, Pencil } from 'lucide-react';
+import { Type, Tag, User, FileText, Pencil, Eye } from 'lucide-react';
 
 function MetaNodeComponent({ data }: { data: any }) {
-  const { title, slug, category, author_name, short_description } = data;
+  const { title, slug, category, public_category, author_name, short_description } = data;
 
   return (
     <div className="bg-card border border-primary/30 rounded-[1.2rem] shadow-card w-[320px] overflow-hidden cursor-pointer hover:shadow-lg hover:border-primary/50 transition-all group">
@@ -28,11 +28,18 @@ function MetaNodeComponent({ data }: { data: any }) {
           <Tag className="h-3 w-3 shrink-0" />
           <span className="truncate">{slug}</span>
         </div>
-        <div className="flex items-center gap-3">
-          <Badge variant="secondary" className="text-[10px] h-5">{category}</Badge>
-          <span className="flex items-center gap-1 text-muted-foreground">
-            <User className="h-3 w-3" /> {author_name}
-          </span>
+        <div className="flex items-center gap-2 flex-wrap">
+          <Badge variant="secondary" className="text-[10px] h-5" title="Categoria Interna (editorial)">
+            <Tag className="h-2.5 w-2.5 mr-1 opacity-60" />{category || '—'}
+          </Badge>
+          {public_category && (
+            <Badge variant="outline" className="text-[10px] h-5 border-emerald-500/30 text-emerald-700 dark:text-emerald-400" title="Categoria Pública (badge visual)">
+              <Eye className="h-2.5 w-2.5 mr-1" />{public_category}
+            </Badge>
+          )}
+        </div>
+        <div className="flex items-center gap-1 text-muted-foreground">
+          <User className="h-3 w-3" /> <span className="text-[10px]">{author_name}</span>
         </div>
         {short_description && (
           <p className="text-muted-foreground leading-relaxed line-clamp-2">

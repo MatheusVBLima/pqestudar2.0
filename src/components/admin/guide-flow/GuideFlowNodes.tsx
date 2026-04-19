@@ -81,7 +81,7 @@ export function parseMarkdownToNodes(data: GeneratedGuideData): FlowNode[] {
     id: 'meta',
     type: 'meta',
     label: data.title || 'Metadados',
-    content: JSON.stringify({ title: data.title, slug: data.slug, category: data.category, author_name: data.author_name, short_description: data.short_description }),
+    content: JSON.stringify({ title: data.title, slug: data.slug, category: data.category, public_category: data.public_category, author_name: data.author_name, short_description: data.short_description }),
     collapsed: true,
     locked: true,
   });
@@ -214,6 +214,7 @@ export function nodesToGuideData(nodes: FlowNode[], original: GeneratedGuideData
       result.title = m.title ?? result.title;
       result.slug = m.slug ?? result.slug;
       result.category = m.category ?? result.category;
+      result.public_category = m.public_category ?? result.public_category;
       result.author_name = m.author_name ?? result.author_name;
       result.short_description = m.short_description ?? result.short_description;
     } catch {}
