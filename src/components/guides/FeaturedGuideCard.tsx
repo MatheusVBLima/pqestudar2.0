@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -13,6 +13,10 @@ const CATEGORY_COLORS: Record<string, string> = {
   Oportunidades: "bg-green-500/10 text-green-600 border-green-500/20",
   Produtividade: "bg-amber-500/10 text-amber-600 border-amber-500/20",
   Carreira: "bg-rose-500/10 text-rose-600 border-rose-500/20",
+  Educação: "bg-indigo-500/10 text-indigo-600 border-indigo-500/20",
+  Benefícios: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
+  Listas: "bg-cyan-500/10 text-cyan-600 border-cyan-500/20",
+  Guias: "bg-slate-500/10 text-slate-600 border-slate-500/20",
 };
 
 interface FeaturedGuideCardProps {
@@ -32,15 +36,12 @@ export function FeaturedGuideCard({
   onTogglePublished,
   onToggleFeatured,
 }: FeaturedGuideCardProps) {
-  const navigate = useNavigate();
-
-  const handleClick = () => {
-    if (!showAdmin) navigate(`/guias/${guide.slug}`);
-  };
-
   const updatedDate = guide.updated_at
     ? format(new Date(guide.updated_at), "d 'de' MMM, yyyy", { locale: ptBR })
     : null;
+
+  // Usar categoria pública para exibição, fallback para interna
+  const displayCategory = (guide as any).public_category || guide.category;
 
   return (
     <section className="mb-10">
@@ -51,13 +52,13 @@ export function FeaturedGuideCard({
         </span>
       </div>
 
-      <Card
-        className="overflow-hidden cursor-pointer hover:shadow-lg transition-shadow"
-        onClick={handleClick}
-      >
+      <Card className="overflow-hidden hover:shadow-lg transition-shadow">
         <div className="flex flex-col md:flex-row">
-          {/* Thumbnail */}
-          <div className="md:w-2/5 bg-accent flex items-center justify-center min-h-[200px] md:min-h-[260px] overflow-hidden">
+          {/* Thumbnail - Link real */}
+          <Link 
+            to={`/guias/${guide.slug}`}
+            className="md:w-2/5 bg-accent flex items-center justify-center min-h-[200px] md:min-h-[260px] overflow-hidden hover:opacity-90 transition-opacity"
+          >
             {(guide as any).cover_image_url ? (
               <img
                 src={(guide as any).cover_image_url}
@@ -68,26 +69,30 @@ export function FeaturedGuideCard({
             ) : (
               <BookOpen className="h-16 w-16 text-primary/30" />
             )}
-          </div>
+          </Link>
 
           {/* Content */}
           <div className="flex-1 p-6 md:p-8 flex flex-col justify-center">
             <div className="flex items-center gap-2 flex-wrap mb-3">
-              {(() => { const cat = (guide as any).public_category || guide.category; return (
-                <Badge
-                  variant="outline"
-                  className={CATEGORY_COLORS[cat] || ""}
-                >
-                  {cat}
-                </Badge>
-              ); })()}
+              <Badge
+                variant="outline"
+                className={CATEGORY_COLORS[displayCategory] || ""}
+              >
+                {displayCategory}
+              </Badge>
               {showAdmin && !guide.is_published && (
                 <Badge variant="secondary">Rascunho</Badge>
               )}
             </div>
 
+            {/* Título como Link real */}
             <h2 className="text-2xl md:text-3xl font-bold leading-tight mb-2">
-              {guide.title}
+              <Link 
+                to={`/guias/${guide.slug}`}
+                className="hover:text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded"
+              >
+                {guide.title}
+              </Link>
             </h2>
 
             <p className="text-muted-foreground line-clamp-3 mb-4 text-base">
@@ -119,7 +124,8 @@ export function FeaturedGuideCard({
                   {guide.is_published ? "Despublicar" : "Publicar"}
                 </Button>
                 <Button size="sm" variant="outline" onClick={(e) => { e.stopPropagation(); onToggleFeatured(guide); }}>
-                  <StarOff className="h-3.5 w-3.5 mr-1" /> Remover destaque
+                  {guide.is_featured ? <StarOff className="h-3.5 w-3.5 mr-1" /> : <Star className="h-3.5 w-3.5 mr-1" />}
+                  {guide.is_featured ? "Remover destaque" : "Destacar"}
                 </Button>
                 <Button size="sm" variant="destructive" onClick={(e) => { e.stopPropagation(); onDelete(guide); }}>
                   <Trash2 className="h-3.5 w-3.5 mr-1" /> Excluir
@@ -128,9 +134,11 @@ export function FeaturedGuideCard({
             ) : (
               <Button
                 className="w-fit"
-                onClick={(e) => { e.stopPropagation(); navigate(`/guias/${guide.slug}`); }}
+                asChild
               >
-                Ler guia
+                <Link to={`/guias/${guide.slug}`}>
+                  Ler guia
+                </Link>
               </Button>
             )}
           </div>
