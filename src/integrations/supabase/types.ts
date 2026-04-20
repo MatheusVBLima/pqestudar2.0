@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_activity_events: {
+        Row: {
+          action: string
+          admin_email: string | null
+          admin_user_id: string | null
+          area: string
+          created_at: string
+          entity_id: string | null
+          entity_type: string | null
+          id: string
+          meta: Json
+          path: string | null
+        }
+        Insert: {
+          action: string
+          admin_email?: string | null
+          admin_user_id?: string | null
+          area: string
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          meta?: Json
+          path?: string | null
+        }
+        Update: {
+          action?: string
+          admin_email?: string | null
+          admin_user_id?: string | null
+          area?: string
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          meta?: Json
+          path?: string | null
+        }
+        Relationships: []
+      }
       admin_audit: {
         Row: {
           acao: string
@@ -61,6 +100,7 @@ export type Database = {
       }
       analytics_events: {
         Row: {
+          actor_type: string
           created_at: string
           entity_id: string | null
           entity_type: string | null
@@ -72,6 +112,7 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          actor_type?: string
           created_at?: string
           entity_id?: string | null
           entity_type?: string | null
@@ -83,6 +124,7 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          actor_type?: string
           created_at?: string
           entity_id?: string | null
           entity_type?: string | null
@@ -2107,6 +2149,7 @@ export type Database = {
       }
       page_views: {
         Row: {
+          actor_type: string
           created_at: string
           id: string
           meta: Json | null
@@ -2115,6 +2158,7 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          actor_type?: string
           created_at?: string
           id?: string
           meta?: Json | null
@@ -2123,6 +2167,7 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          actor_type?: string
           created_at?: string
           id?: string
           meta?: Json | null
@@ -3352,6 +3397,59 @@ export type Database = {
       }
     }
     Functions: {
+      admin_activity_actions_list: {
+        Args: {
+          end_at: string
+          p_action?: string
+          p_admin_user_id?: string
+          p_area?: string
+          p_limit?: number
+          start_at: string
+        }
+        Returns: {
+          action: string
+          admin_email: string
+          admin_user_id: string
+          area: string
+          created_at: string
+          entity_id: string
+          entity_type: string
+          id: string
+          meta: Json
+          path: string
+        }[]
+      }
+      admin_activity_by_admin: {
+        Args: { end_at: string; start_at: string }
+        Returns: {
+          admin_email: string
+          admin_user_id: string
+          last_activity: string
+          total_actions: number
+          unique_areas: number
+        }[]
+      }
+      admin_activity_by_area: {
+        Args: { end_at: string; start_at: string }
+        Returns: {
+          area: string
+          last_activity: string
+          total_actions: number
+          unique_admins: number
+        }[]
+      }
+      admin_activity_overview: {
+        Args: { end_at: string; start_at: string }
+        Returns: Json
+      }
+      admin_activity_timeline: {
+        Args: { end_at: string; start_at: string }
+        Returns: {
+          day: string
+          total_actions: number
+          total_pageviews: number
+        }[]
+      }
       admin_overview_activity: {
         Args: { p_limit?: number }
         Returns: {
