@@ -4,8 +4,8 @@ import { PageHeader } from '@/components/admin/dashboard/PageHeader';
 import { StatCard } from '@/components/admin/dashboard/StatCard';
 import { ChartCard } from '@/components/admin/dashboard/ChartCard';
 import { DataTable } from '@/components/admin/dashboard/DataTable';
-import { PeriodSelector, type PeriodPreset } from '@/components/admin/dashboard/PeriodSelector';
-import { getPeriodRange } from '@/components/admin/dashboard/periodHelper';
+import { PeriodSelector, type Period } from '@/components/admin/dashboard/PeriodSelector';
+import { periodToRange } from '@/components/admin/dashboard/periodHelper';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
@@ -14,11 +14,17 @@ import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YA
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export default function AdminActivity() {
-  const [period, setPeriod] = useState<PeriodPreset>('30d');
+  const [period, setPeriod] = useState<Period>('month');
   const [areaFilter, setAreaFilter] = useState<string>('all');
   const [adminFilter, setAdminFilter] = useState<string>('all');
 
-  const { startAt, endAt } = useMemo(() => getPeriodRange(period), [period]);
+  const { startAt, endAt } = useMemo(() => {
+    const r = periodToRange(period);
+    return {
+      startAt: r.start_at ?? new Date(2020, 0, 1).toISOString(),
+      endAt: r.end_at ?? new Date().toISOString(),
+    };
+  }, [period]);
 
   const { data: overview } = useQuery({
     queryKey: ['admin-activity-overview', startAt, endAt],
