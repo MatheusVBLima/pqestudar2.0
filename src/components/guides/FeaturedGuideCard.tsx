@@ -133,9 +133,11 @@ export function FeaturedGuideCard({
             ) : (
               <Button
                 className="w-fit"
-                onClick={(e) => { e.stopPropagation(); navigate(`/guias/${guide.slug}`); }}
+                asChild
               >
-                Ler guia
+                <Link to={`/guias/${guide.slug}`}>
+                  Ler guia
+                </Link>
               </Button>
             )}
           </div>
