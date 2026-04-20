@@ -1,6 +1,7 @@
 import { useCallback, useRef, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useUserRoles } from '@/hooks/useUserRoles';
 
 const SESSION_KEY = 'pqestudar_session_id';
 
@@ -23,10 +24,18 @@ interface TrackEventParams {
 
 export function useAnalyticsTracker() {
   const { user } = useAuth();
+  const { isAdmin, loading: rolesLoading } = useUserRoles();
 
   const track = useCallback(
     async (params: TrackEventParams) => {
       try {
+        // Determine actor type based on auth + role
+        const actor_type = rolesLoading
+          ? 'unknown'
+          : isAdmin
+            ? 'admin'
+            : 'public';
+
         await supabase.from('analytics_events').insert({
           event_name: params.event_name,
           entity_type: params.entity_type ?? null,
@@ -35,12 +44,13 @@ export function useAnalyticsTracker() {
           session_id: getSessionId(),
           user_id: user?.id ?? null,
           meta: (params.meta as any) ?? {},
-        });
+          actor_type,
+        } as any);
       } catch {
         // fire-and-forget
       }
     },
-    [user?.id],
+    [user?.id, isAdmin, rolesLoading],
   );
 
   return { track };

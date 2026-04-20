@@ -20,6 +20,7 @@ const insightsItems = [
   { title: 'Concursos — Eventos', href: '/admin/insights/concursos-eventos', icon: MousePointerClick },
   { title: 'SEO Audit', href: '/admin/insights/seo-audit', icon: Search },
   { title: 'Copy Audit', href: '/admin/insights/copy-audit', icon: FileText },
+  { title: 'Atividade Admin', href: '/admin/insights/atividade-admin', icon: Shield },
 ];
 
 const concursosItems = [
