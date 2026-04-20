@@ -70,6 +70,7 @@ const InsightsConcursosLeitura = React.lazy(() => import("./pages/admin/dashboar
 const InsightsConcursosEventos = React.lazy(() => import("./pages/admin/dashboard/InsightsConcursosEventos"));
 const InsightsSeoAudit = React.lazy(() => import("./pages/admin/dashboard/InsightsSeoAudit"));
 const InsightsCopyAudit = React.lazy(() => import("./pages/admin/dashboard/InsightsCopyAudit"));
+const AdminActivity = React.lazy(() => import("./pages/admin/dashboard/AdminActivity"));
 const AdminPages = React.lazy(() => import("./pages/admin/AdminPages"));
 const AdminMenu = React.lazy(() => import("./pages/admin/AdminMenu"));
 const AdminLegal = React.lazy(() => import("./pages/admin/AdminLegal"));
@@ -133,6 +134,7 @@ const AppWithPixel = () => {
           <Route path="insights/concursos-eventos" element={<InsightsConcursosEventos />} />
           <Route path="insights/seo-audit" element={<InsightsSeoAudit />} />
           <Route path="insights/copy-audit" element={<InsightsCopyAudit />} />
+          <Route path="insights/atividade-admin" element={<AdminActivity />} />
           <Route path="curadorias" element={<AdminCuradoriasLista />} />
           <Route path="curadorias/new" element={<AdminCuradoriasForm />} />
           <Route path="curadorias/:id" element={<AdminCuradoriasForm />} />
