@@ -131,6 +131,15 @@ export function FeaturedGuideCard({
                   <Trash2 className="h-3.5 w-3.5 mr-1" /> Excluir
                 </Button>
               </div>
+            ) : (
+              <Button
+                className="w-fit"
+                asChild
+              >
+                <Link to={`/guias/${guide.slug}`}>
+                  Ler guia
+                </Link>
+              </Button>
             )}
           </div>
         </div>
