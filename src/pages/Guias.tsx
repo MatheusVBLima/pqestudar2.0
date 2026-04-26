@@ -120,6 +120,7 @@ export default function Guias() {
   const { isAdmin } = useUserRoles();
   const [isManagementMode, setIsManagementMode] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [searchOpen, setSearchOpen] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [adminTab, setAdminTab] = useState<"published" | "drafts">("published");
   const [modalOpen, setModalOpen] = useState(false);
