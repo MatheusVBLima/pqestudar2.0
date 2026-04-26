@@ -2,7 +2,6 @@ import { useState, useMemo } from "react";
 import { Helmet } from "react-helmet-async";
 import { PageHero } from "@/components/layout/PageHero";
 import { GlobalSeo } from "@/components/seo/GlobalSeo";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
@@ -18,13 +17,15 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Search, Plus, BookOpen, ChevronDown } from "lucide-react";
+import { Search, Plus, BookOpen } from "lucide-react";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { useGuides, Guide, useGuidesMutations } from "@/hooks/useGuides";
 import { usePageSettings } from "@/hooks/usePageSettings";
 import { GuideModal } from "@/components/admin/GuideModal";
 import { FeaturedGuideCard } from "@/components/guides/FeaturedGuideCard";
 import { GuideListItem } from "@/components/guides/GuideListItem";
+import { GuideSearchOverlay } from "@/components/guides/GuideSearchOverlay";
+import { cn } from "@/lib/utils";
 
 const FALLBACK_TITLE = "Guias | PqEstudar";
 const FALLBACK_DESCRIPTION = "Conteúdos práticos e evergreen para estudar com mais clareza e aproveitar oportunidades.";
@@ -119,6 +120,7 @@ export default function Guias() {
   const { isAdmin } = useUserRoles();
   const [isManagementMode, setIsManagementMode] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [searchOpen, setSearchOpen] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [adminTab, setAdminTab] = useState<"published" | "drafts">("published");
   const [modalOpen, setModalOpen] = useState(false);
@@ -133,12 +135,13 @@ export default function Guias() {
   const publishedCount = useMemo(() => guides?.filter((g) => g.is_published).length ?? 0, [guides]);
   const draftsCount = useMemo(() => guides?.filter((g) => !g.is_published).length ?? 0, [guides]);
 
-  // Filtro público usa apenas Categoria Pública (badge visual). Admin vê apenas as 7 oficiais.
+  // Filtro público usa apenas Categoria Pública (badge visual). Sempre mostrar as 7 oficiais.
   const PUBLIC_CATEGORIES = ['Educação', 'Carreira', 'Ferramentas', 'Guias', 'Benefícios', 'Oportunidades', 'Listas'];
-  const categories = useMemo(() => {
-    if (!guides) return [];
-    const present = new Set(guides.map((g) => (g as any).public_category).filter(Boolean));
-    return PUBLIC_CATEGORIES.filter(c => present.has(c));
+
+  // Guides públicos (publicados) — fonte para o overlay de busca/em alta, independente do filtro de categoria
+  const publicGuides = useMemo(() => {
+    if (!guides) return [] as Guide[];
+    return guides.filter((g) => g.is_published);
   }, [guides]);
 
   // Apply status filter (admin tabs), then search + category
@@ -240,39 +243,52 @@ export default function Guias() {
           </div>
         )}
 
-        <div className="mb-8 flex flex-col gap-3 lg:flex-row lg:items-start">
-          <div className="relative min-w-0 flex-1">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder="Buscar guia..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-
-          <div className="relative w-full shrink-0 lg:w-[220px]">
-            <select
+        <div className="mb-8 flex flex-col gap-4">
+          {/* Menu horizontal de categorias públicas + botão de busca */}
+          <div className="flex items-center gap-3">
+            <nav
               aria-label="Filtrar por categoria"
-              value={categoryFilter}
-              onChange={(e) => setCategoryFilter(e.target.value)}
-              className="h-10 w-full appearance-none rounded-md border border-input bg-background px-3 pr-10 text-sm text-foreground ring-offset-background transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+              className="flex-1 min-w-0 -mx-1 overflow-x-auto scrollbar-hide"
             >
-              <option value="all">Todas categorias</option>
-              {categories.map((category) => (
-                <option key={category} value={category}>
-                  {category}
-                </option>
-              ))}
-            </select>
-            <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          </div>
+              <ul className="flex items-center gap-1.5 px-1 whitespace-nowrap">
+                {[{ value: "all", label: "Todas" }, ...PUBLIC_CATEGORIES.map(c => ({ value: c, label: c }))].map((cat) => {
+                  const active = categoryFilter === cat.value;
+                  return (
+                    <li key={cat.value}>
+                      <button
+                        type="button"
+                        onClick={() => setCategoryFilter(cat.value)}
+                        aria-pressed={active}
+                        className={cn(
+                          "inline-flex items-center rounded-full border px-3.5 py-1.5 text-sm font-medium transition-colors",
+                          active
+                            ? "bg-primary text-primary-foreground border-primary"
+                            : "bg-background text-foreground border-border hover:bg-accent hover:text-accent-foreground"
+                        )}
+                      >
+                        {cat.label}
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </nav>
 
-          {showAdmin && (
-            <Button onClick={handleNew} className="w-full lg:w-auto">
-              <Plus className="mr-2 h-4 w-4" /> Novo guia
-            </Button>
-          )}
+            <button
+              type="button"
+              onClick={() => setSearchOpen(true)}
+              aria-label="Abrir busca de guias"
+              className="shrink-0 inline-flex items-center justify-center h-10 w-10 rounded-full border border-border bg-background text-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+            >
+              <Search className="h-4 w-4" />
+            </button>
+
+            {showAdmin && (
+              <Button onClick={handleNew} className="shrink-0">
+                <Plus className="mr-2 h-4 w-4" /> Novo guia
+              </Button>
+            )}
+          </div>
         </div>
 
         {showAdmin ? (
@@ -325,6 +341,17 @@ export default function Guias() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <GuideSearchOverlay
+        open={searchOpen}
+        onOpenChange={(o) => {
+          setSearchOpen(o);
+          if (!o) setSearchTerm("");
+        }}
+        guides={publicGuides}
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+      />
     </>
   );
 }
