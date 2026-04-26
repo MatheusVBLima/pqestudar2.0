@@ -178,7 +178,7 @@ export function GuideSearchOverlay({
           {!hasQuery && (
             <div>
               <div className="flex items-center gap-2 px-2 py-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                <Flame className="h-3.5 w-3.5 text-orange-500" />
+                <Flame className="h-3.5 w-3.5 text-primary" />
                 Em alta
               </div>
               {trending.length === 0 ? (
