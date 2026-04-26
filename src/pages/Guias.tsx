@@ -242,39 +242,52 @@ export default function Guias() {
           </div>
         )}
 
-        <div className="mb-8 flex flex-col gap-3 lg:flex-row lg:items-start">
-          <div className="relative min-w-0 flex-1">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder="Buscar guia..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-
-          <div className="relative w-full shrink-0 lg:w-[220px]">
-            <select
+        <div className="mb-8 flex flex-col gap-4">
+          {/* Menu horizontal de categorias públicas + botão de busca */}
+          <div className="flex items-center gap-3">
+            <nav
               aria-label="Filtrar por categoria"
-              value={categoryFilter}
-              onChange={(e) => setCategoryFilter(e.target.value)}
-              className="h-10 w-full appearance-none rounded-md border border-input bg-background px-3 pr-10 text-sm text-foreground ring-offset-background transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+              className="flex-1 min-w-0 -mx-1 overflow-x-auto scrollbar-hide"
             >
-              <option value="all">Todas categorias</option>
-              {categories.map((category) => (
-                <option key={category} value={category}>
-                  {category}
-                </option>
-              ))}
-            </select>
-            <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          </div>
+              <ul className="flex items-center gap-1.5 px-1 whitespace-nowrap">
+                {[{ value: "all", label: "Todas" }, ...PUBLIC_CATEGORIES.map(c => ({ value: c, label: c }))].map((cat) => {
+                  const active = categoryFilter === cat.value;
+                  return (
+                    <li key={cat.value}>
+                      <button
+                        type="button"
+                        onClick={() => setCategoryFilter(cat.value)}
+                        aria-pressed={active}
+                        className={cn(
+                          "inline-flex items-center rounded-full border px-3.5 py-1.5 text-sm font-medium transition-colors",
+                          active
+                            ? "bg-primary text-primary-foreground border-primary"
+                            : "bg-background text-foreground border-border hover:bg-accent hover:text-accent-foreground"
+                        )}
+                      >
+                        {cat.label}
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </nav>
 
-          {showAdmin && (
-            <Button onClick={handleNew} className="w-full lg:w-auto">
-              <Plus className="mr-2 h-4 w-4" /> Novo guia
-            </Button>
-          )}
+            <button
+              type="button"
+              onClick={() => setSearchOpen(true)}
+              aria-label="Abrir busca de guias"
+              className="shrink-0 inline-flex items-center justify-center h-10 w-10 rounded-full border border-border bg-background text-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+            >
+              <Search className="h-4 w-4" />
+            </button>
+
+            {showAdmin && (
+              <Button onClick={handleNew} className="shrink-0">
+                <Plus className="mr-2 h-4 w-4" /> Novo guia
+              </Button>
+            )}
+          </div>
         </div>
 
         {showAdmin ? (
