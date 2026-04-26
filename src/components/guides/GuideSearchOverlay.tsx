@@ -148,8 +148,7 @@ export function GuideSearchOverlay({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="p-0 gap-0 max-w-2xl top-[10%] translate-y-0 overflow-hidden"
-        hideClose
+        className="p-0 gap-0 max-w-2xl top-[10%] translate-y-0 overflow-hidden [&>button]:hidden"
       >
         <DialogTitle className="sr-only">Buscar guias</DialogTitle>
         <DialogDescription className="sr-only">
