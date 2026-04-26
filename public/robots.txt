@@ -13,4 +13,5 @@ Allow: /
 User-agent: *
 Allow: /
 
+Sitemap: https://omkxiomwzbykmqttfozi.supabase.co/functions/v1/sitemap
 Sitemap: https://pqestudar.com.br/sitemap.xml
