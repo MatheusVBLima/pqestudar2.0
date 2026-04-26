@@ -248,13 +248,13 @@ export default function Guias() {
           <div className="flex items-center gap-3">
             <nav
               aria-label="Filtrar por categoria"
-              className="flex-1 min-w-0 -mx-1 overflow-x-auto scrollbar-hide"
+              className="flex-1 min-w-0 -mx-1 overflow-x-auto scrollbar-none overscroll-x-contain"
             >
               <ul className="flex items-center gap-1.5 px-1 whitespace-nowrap">
                 {[{ value: "all", label: "Todas" }, ...PUBLIC_CATEGORIES.map(c => ({ value: c, label: c }))].map((cat) => {
                   const active = categoryFilter === cat.value;
                   return (
-                    <li key={cat.value}>
+                    <li key={cat.value} className="shrink-0">
                       <button
                         type="button"
                         onClick={() => setCategoryFilter(cat.value)}
