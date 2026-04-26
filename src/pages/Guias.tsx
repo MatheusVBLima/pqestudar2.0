@@ -2,7 +2,6 @@ import { useState, useMemo } from "react";
 import { Helmet } from "react-helmet-async";
 import { PageHero } from "@/components/layout/PageHero";
 import { GlobalSeo } from "@/components/seo/GlobalSeo";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
@@ -18,13 +17,15 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Search, Plus, BookOpen, ChevronDown } from "lucide-react";
+import { Search, Plus, BookOpen } from "lucide-react";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { useGuides, Guide, useGuidesMutations } from "@/hooks/useGuides";
 import { usePageSettings } from "@/hooks/usePageSettings";
 import { GuideModal } from "@/components/admin/GuideModal";
 import { FeaturedGuideCard } from "@/components/guides/FeaturedGuideCard";
 import { GuideListItem } from "@/components/guides/GuideListItem";
+import { GuideSearchOverlay } from "@/components/guides/GuideSearchOverlay";
+import { cn } from "@/lib/utils";
 
 const FALLBACK_TITLE = "Guias | PqEstudar";
 const FALLBACK_DESCRIPTION = "Conteúdos práticos e evergreen para estudar com mais clareza e aproveitar oportunidades.";
