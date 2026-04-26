@@ -135,12 +135,13 @@ export default function Guias() {
   const publishedCount = useMemo(() => guides?.filter((g) => g.is_published).length ?? 0, [guides]);
   const draftsCount = useMemo(() => guides?.filter((g) => !g.is_published).length ?? 0, [guides]);
 
-  // Filtro público usa apenas Categoria Pública (badge visual). Admin vê apenas as 7 oficiais.
+  // Filtro público usa apenas Categoria Pública (badge visual). Sempre mostrar as 7 oficiais.
   const PUBLIC_CATEGORIES = ['Educação', 'Carreira', 'Ferramentas', 'Guias', 'Benefícios', 'Oportunidades', 'Listas'];
-  const categories = useMemo(() => {
-    if (!guides) return [];
-    const present = new Set(guides.map((g) => (g as any).public_category).filter(Boolean));
-    return PUBLIC_CATEGORIES.filter(c => present.has(c));
+
+  // Guides públicos (publicados) — fonte para o overlay de busca/em alta, independente do filtro de categoria
+  const publicGuides = useMemo(() => {
+    if (!guides) return [] as Guide[];
+    return guides.filter((g) => g.is_published);
   }, [guides]);
 
   // Apply status filter (admin tabs), then search + category
