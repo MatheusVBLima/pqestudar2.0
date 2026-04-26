@@ -341,6 +341,17 @@ export default function Guias() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <GuideSearchOverlay
+        open={searchOpen}
+        onOpenChange={(o) => {
+          setSearchOpen(o);
+          if (!o) setSearchTerm("");
+        }}
+        guides={publicGuides}
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+      />
     </>
   );
 }
