@@ -21,16 +21,17 @@ import { ptBR } from "date-fns/locale";
 function CtaBlock({ label, url, text }: { label?: string | null; url?: string | null; text?: string | null }) {
   if (!label || !url) return null;
   return (
-    <div className="my-10 p-6 rounded-[1.2rem] bg-primary/5 border text-center space-y-3">
+    <div className="my-10 p-4 sm:p-6 rounded-[1.2rem] bg-primary/5 border text-center space-y-3 max-w-full overflow-hidden">
       {text && (
         <div
           className="text-sm text-muted-foreground leading-relaxed prose prose-sm dark:prose-invert max-w-none [&>ul]:list-disc [&>ul]:pl-5 [&>ol]:list-decimal [&>ol]:pl-5 [&>p]:mb-2"
           dangerouslySetInnerHTML={{ __html: renderMarkdownContent(text) }}
         />
       )}
-      <Button asChild size="lg">
-        <a href={url} target="_blank" rel="noopener noreferrer">
-          {label} <ExternalLink className="h-4 w-4 ml-2" />
+      <Button asChild size="lg" className="w-full sm:w-auto max-w-full px-4 sm:px-8 h-auto min-h-11 py-3 whitespace-normal break-words leading-tight text-sm sm:text-base">
+        <a href={url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2">
+          <span className="break-words">{label}</span>
+          <ExternalLink className="h-4 w-4 shrink-0" />
         </a>
       </Button>
     </div>
