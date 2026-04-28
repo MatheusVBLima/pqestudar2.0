@@ -98,6 +98,45 @@ export type Database = {
           },
         ]
       }
+      affiliate_pages: {
+        Row: {
+          affiliate_name: string
+          basic_url: string
+          created_at: string
+          created_by: string | null
+          id: string
+          is_active: boolean
+          notes: string | null
+          premium_url: string
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          affiliate_name: string
+          basic_url: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          notes?: string | null
+          premium_url: string
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          affiliate_name?: string
+          basic_url?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          notes?: string | null
+          premium_url?: string
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       analytics_events: {
         Row: {
           actor_type: string
