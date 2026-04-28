@@ -72,10 +72,22 @@ const BRAND_TOKENS = {
 
 type EasingTuple = [number, number, number, number];
 const ease: EasingTuple = [0.16, 1, 0.3, 1];
+
+// Default checkout links (template base — usados quando nenhum afiliado está configurado)
+export const DEFAULT_CHECKOUT_BASICO = "https://pay.cakto.com.br/pme7qh6_673774";
+export const DEFAULT_CHECKOUT_PREMIUM = "https://pay.cakto.com.br/acmn9pr_678659";
+
+// Context para sobrescrever os links por afiliado mantendo o template intacto
+const CheckoutLinksContext = React.createContext<{ basico: string; premium: string }>({
+  basico: DEFAULT_CHECKOUT_BASICO,
+  premium: DEFAULT_CHECKOUT_PREMIUM,
+});
+const useCheckoutLinks = () => React.useContext(CheckoutLinksContext);
+
 const CONFIG = {
   urgencyDate: "30/11/2025",
-  checkoutBasico: "https://pay.cakto.com.br/pme7qh6_673774",
-  checkoutPremium: "https://pay.cakto.com.br/acmn9pr_678659",
+  get checkoutBasico() { return DEFAULT_CHECKOUT_BASICO; },
+  get checkoutPremium() { return DEFAULT_CHECKOUT_PREMIUM; },
   videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
   videoPoster: "/placeholder.svg",
   timerEndDate: new Date(new Date().setHours(23, 59, 59, 999)),
@@ -1007,7 +1019,7 @@ const PricingSection = () => {
                     </li>)}
                 </ul>
 
-                <CTAButton href={CONFIG.checkoutBasico} section="pricing" plan="basico">
+                <CTAButton href={useCheckoutLinks().basico} section="pricing" plan="basico">
                   QUERO O BÁSICO
                 </CTAButton>
               </CardContent>
@@ -1068,7 +1080,7 @@ const PricingSection = () => {
                     </li>)}
                 </ul>
 
-                <CTAButton href={CONFIG.checkoutPremium} section="pricing" plan="premium">
+                <CTAButton href={useCheckoutLinks().premium} section="pricing" plan="premium">
                   QUERO O PREMIUM!
                 </CTAButton>
               </CardContent>
@@ -1411,7 +1423,7 @@ const GuaranteeFinalSection = () => <section className="py-12 md:py-20 px-4 sm:p
             </ul>
 
             <div className="flex justify-center">
-              <CTAButton href={CONFIG.checkoutPremium} section="final-cta" plan="premium" aria-label="Garantir minha oferta agora com acesso imediato">
+              <CTAButton href={useCheckoutLinks().premium} section="final-cta" plan="premium" aria-label="Garantir minha oferta agora com acesso imediato">
                 QUERO GARANTIR MINHA OFERTA AGORA!
               </CTAButton>
             </div>
@@ -1436,7 +1448,7 @@ const StickyCTA = () => <div className="fixed bottom-0 left-0 right-0 p-3 backdr
   paddingLeft: 'max(12px, env(safe-area-inset-left))',
   paddingRight: 'max(12px, env(safe-area-inset-right))'
 }}>
-    <CTAButton href={CONFIG.checkoutPremium} section="sticky" plan="premium" size="default">
+    <CTAButton href={useCheckoutLinks().premium} section="sticky" plan="premium" size="default">
       QUERO AGORA!
     </CTAButton>
   </div>;
@@ -1445,12 +1457,30 @@ const StickyCTA = () => <div className="fixed bottom-0 left-0 right-0 p-3 backdr
 // MAIN PAGE COMPONENT
 // ============================================
 
-const MapaDosBeneficios = () => {
-  return <BrandThemeWrapper>
+interface MapaDosBeneficiosProps {
+  /** Sobrescreve o link do plano básico (ex.: páginas de afiliado). */
+  checkoutBasico?: string;
+  /** Sobrescreve o link do plano premium (ex.: páginas de afiliado). */
+  checkoutPremium?: string;
+  /** Slug do afiliado, se houver — usado para canonical/SEO opcional. */
+  affiliateSlug?: string;
+}
+
+const MapaDosBeneficios = ({ checkoutBasico, checkoutPremium, affiliateSlug }: MapaDosBeneficiosProps = {}) => {
+  const links = React.useMemo(
+    () => ({
+      basico: checkoutBasico || DEFAULT_CHECKOUT_BASICO,
+      premium: checkoutPremium || DEFAULT_CHECKOUT_PREMIUM,
+    }),
+    [checkoutBasico, checkoutPremium]
+  );
+
+  return <CheckoutLinksContext.Provider value={links}>
+    <BrandThemeWrapper>
       <Helmet>
         <title>Oferta Especial: O Mapa dos Benefícios Ocultos</title>
         <meta name="description" content="Descubra mais de 50 benefícios, auxílios e direitos que você pode ter acesso agora. Guia completo com passo a passo para cada programa do governo." />
-        <meta name="robots" content="index, follow" />
+        <meta name="robots" content={affiliateSlug ? "noindex, follow" : "index, follow"} />
         <script
           src="https://cdn.utmify.com.br/scripts/utms/latest.js"
           data-utmify-prevent-xcod-sck
@@ -1471,6 +1501,7 @@ const MapaDosBeneficios = () => {
       <FAQSection />
       <GuaranteeFinalSection />
       {CONFIG.showStickyCta && <StickyCTA />}
-    </BrandThemeWrapper>;
+    </BrandThemeWrapper>
+  </CheckoutLinksContext.Provider>;
 };
 export default MapaDosBeneficios;

@@ -40,6 +40,7 @@ const Assine = React.lazy(() => import("./pages/Assine"));
 const Ferramentas = React.lazy(() => import("./pages/Ferramentas"));
 const FerramentasSalvos = React.lazy(() => import("./pages/FerramentasSalvos"));
 const MapaDosBeneficios = React.lazy(() => import("./pages/MapaDosBeneficios"));
+const MapaDosBeneficiosAfiliado = React.lazy(() => import("./pages/MapaDosBeneficiosAfiliado"));
 const Concursos = React.lazy(() => import("./pages/Concursos"));
 const ConcursoDetalhe = React.lazy(() => import("./pages/ConcursoDetalhe"));
 const Votacoes = React.lazy(() => import("./pages/Votacoes"));
@@ -74,6 +75,7 @@ const AdminActivity = React.lazy(() => import("./pages/admin/dashboard/AdminActi
 const AdminPages = React.lazy(() => import("./pages/admin/AdminPages"));
 const AdminMenu = React.lazy(() => import("./pages/admin/AdminMenu"));
 const AdminLegal = React.lazy(() => import("./pages/admin/AdminLegal"));
+const AdminAffiliates = React.lazy(() => import("./pages/admin/AdminAffiliates"));
 
 // Admin Concursos imports
 const AdminConcursosIndex = React.lazy(() => import("./pages/admin/concursos/index"));
@@ -125,6 +127,7 @@ const AppWithPixel = () => {
         <Route path="/login" element={<><GlobalSeo /><Login /></>} />
         <Route path="/assine" element={<><GlobalSeo /><Assine /></>} />
         <Route path="/mapa-dos-beneficios" element={<><GlobalSeo /><MapaDosBeneficios /></>} />
+        <Route path="/mapa-dos-beneficios/:slug" element={<><GlobalSeo /><MapaDosBeneficiosAfiliado /></>} />
 
         {/* Admin Dashboard (standalone layout with sidebar) */}
         <Route path="/admin" element={<AdminLayout />}>
@@ -156,6 +159,7 @@ const AppWithPixel = () => {
           <Route path="pages" element={<AdminPages />} />
           <Route path="menu" element={<AdminMenu />} />
           <Route path="legal" element={<AdminLegal />} />
+          <Route path="afiliados" element={<AdminAffiliates />} />
           <Route path="fluxo-guias" element={<AdminGuideFlow />} />
           <Route path="fluxo-guias/biblioteca" element={<AdminGuideFlowKnowledge />} />
         </Route>

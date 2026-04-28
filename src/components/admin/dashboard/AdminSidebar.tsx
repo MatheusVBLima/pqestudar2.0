@@ -2,7 +2,7 @@ import { useLocation, Link } from 'react-router-dom';
 import {
   LayoutDashboard, BarChart3, Wrench, BookOpen, MousePointerClick, Search, FileText,
   Crown, Package, CalendarDays, Users, Ticket, ChevronDown, Settings2,
-  Database, ClipboardCheck, Shield, Bot, History, Menu as MenuIcon, Moon, Sun, Sparkles,
+  Database, ClipboardCheck, Shield, Bot, History, Menu as MenuIcon, Moon, Sun, Sparkles, Share2,
 } from 'lucide-react';
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent,
@@ -310,6 +310,30 @@ export function AdminSidebar() {
                   <Link to="/admin/legal">
                     <FileText className="h-4 w-4" />
                     <span>Páginas Legais</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Afiliados */}
+        <SidebarGroup>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  isActive={pathname.startsWith('/admin/afiliados')}
+                  tooltip="Afiliados"
+                  className={cn(
+                    'rounded-[var(--admin-radius)] font-medium',
+                    pathname.startsWith('/admin/afiliados') && 'bg-primary/10 text-primary font-semibold border border-primary/20'
+                  )}
+                >
+                  <Link to="/admin/afiliados">
+                    <Share2 className="h-4 w-4" />
+                    <span>Afiliados</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
