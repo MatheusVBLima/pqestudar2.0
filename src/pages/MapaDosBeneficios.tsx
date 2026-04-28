@@ -1019,7 +1019,7 @@ const PricingSection = () => {
                     </li>)}
                 </ul>
 
-                <CTAButton href={CONFIG.checkoutBasico} section="pricing" plan="basico">
+                <CTAButton href={useCheckoutLinks().basico} section="pricing" plan="basico">
                   QUERO O BÁSICO
                 </CTAButton>
               </CardContent>
@@ -1080,7 +1080,7 @@ const PricingSection = () => {
                     </li>)}
                 </ul>
 
-                <CTAButton href={CONFIG.checkoutPremium} section="pricing" plan="premium">
+                <CTAButton href={useCheckoutLinks().premium} section="pricing" plan="premium">
                   QUERO O PREMIUM!
                 </CTAButton>
               </CardContent>
@@ -1423,7 +1423,7 @@ const GuaranteeFinalSection = () => <section className="py-12 md:py-20 px-4 sm:p
             </ul>
 
             <div className="flex justify-center">
-              <CTAButton href={CONFIG.checkoutPremium} section="final-cta" plan="premium" aria-label="Garantir minha oferta agora com acesso imediato">
+              <CTAButton href={useCheckoutLinks().premium} section="final-cta" plan="premium" aria-label="Garantir minha oferta agora com acesso imediato">
                 QUERO GARANTIR MINHA OFERTA AGORA!
               </CTAButton>
             </div>
@@ -1448,7 +1448,7 @@ const StickyCTA = () => <div className="fixed bottom-0 left-0 right-0 p-3 backdr
   paddingLeft: 'max(12px, env(safe-area-inset-left))',
   paddingRight: 'max(12px, env(safe-area-inset-right))'
 }}>
-    <CTAButton href={CONFIG.checkoutPremium} section="sticky" plan="premium" size="default">
+    <CTAButton href={useCheckoutLinks().premium} section="sticky" plan="premium" size="default">
       QUERO AGORA!
     </CTAButton>
   </div>;
