@@ -1,0 +1,1 @@
+UPDATE public.page_settings SET header_title = 'Guias Práticos e **Tutoriais**' WHERE route = '/guias';
