@@ -72,10 +72,22 @@ const BRAND_TOKENS = {
 
 type EasingTuple = [number, number, number, number];
 const ease: EasingTuple = [0.16, 1, 0.3, 1];
+
+// Default checkout links (template base — usados quando nenhum afiliado está configurado)
+export const DEFAULT_CHECKOUT_BASICO = "https://pay.cakto.com.br/pme7qh6_673774";
+export const DEFAULT_CHECKOUT_PREMIUM = "https://pay.cakto.com.br/acmn9pr_678659";
+
+// Context para sobrescrever os links por afiliado mantendo o template intacto
+const CheckoutLinksContext = React.createContext<{ basico: string; premium: string }>({
+  basico: DEFAULT_CHECKOUT_BASICO,
+  premium: DEFAULT_CHECKOUT_PREMIUM,
+});
+const useCheckoutLinks = () => React.useContext(CheckoutLinksContext);
+
 const CONFIG = {
   urgencyDate: "30/11/2025",
-  checkoutBasico: "https://pay.cakto.com.br/pme7qh6_673774",
-  checkoutPremium: "https://pay.cakto.com.br/acmn9pr_678659",
+  get checkoutBasico() { return DEFAULT_CHECKOUT_BASICO; },
+  get checkoutPremium() { return DEFAULT_CHECKOUT_PREMIUM; },
   videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
   videoPoster: "/placeholder.svg",
   timerEndDate: new Date(new Date().setHours(23, 59, 59, 999)),
