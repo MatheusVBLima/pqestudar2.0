@@ -1457,12 +1457,30 @@ const StickyCTA = () => <div className="fixed bottom-0 left-0 right-0 p-3 backdr
 // MAIN PAGE COMPONENT
 // ============================================
 
-const MapaDosBeneficios = () => {
-  return <BrandThemeWrapper>
+interface MapaDosBeneficiosProps {
+  /** Sobrescreve o link do plano básico (ex.: páginas de afiliado). */
+  checkoutBasico?: string;
+  /** Sobrescreve o link do plano premium (ex.: páginas de afiliado). */
+  checkoutPremium?: string;
+  /** Slug do afiliado, se houver — usado para canonical/SEO opcional. */
+  affiliateSlug?: string;
+}
+
+const MapaDosBeneficios = ({ checkoutBasico, checkoutPremium, affiliateSlug }: MapaDosBeneficiosProps = {}) => {
+  const links = React.useMemo(
+    () => ({
+      basico: checkoutBasico || DEFAULT_CHECKOUT_BASICO,
+      premium: checkoutPremium || DEFAULT_CHECKOUT_PREMIUM,
+    }),
+    [checkoutBasico, checkoutPremium]
+  );
+
+  return <CheckoutLinksContext.Provider value={links}>
+    <BrandThemeWrapper>
       <Helmet>
         <title>Oferta Especial: O Mapa dos Benefícios Ocultos</title>
         <meta name="description" content="Descubra mais de 50 benefícios, auxílios e direitos que você pode ter acesso agora. Guia completo com passo a passo para cada programa do governo." />
-        <meta name="robots" content="index, follow" />
+        <meta name="robots" content={affiliateSlug ? "noindex, follow" : "index, follow"} />
         <script
           src="https://cdn.utmify.com.br/scripts/utms/latest.js"
           data-utmify-prevent-xcod-sck
@@ -1483,6 +1501,7 @@ const MapaDosBeneficios = () => {
       <FAQSection />
       <GuaranteeFinalSection />
       {CONFIG.showStickyCta && <StickyCTA />}
-    </BrandThemeWrapper>;
+    </BrandThemeWrapper>
+  </CheckoutLinksContext.Provider>;
 };
 export default MapaDosBeneficios;
