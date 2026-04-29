@@ -6,6 +6,7 @@ import { toast } from '@/hooks/use-toast';
 export interface Tool {
   id: string;
   name: string;
+  slug?: string | null;
   description: string;
   url?: string;
   attachment_url?: string;
@@ -14,7 +15,7 @@ export interface Tool {
   is_visible: boolean;
   sort_order: number;
   created_at: string;
-  updated_at: string;
+  updated_at?: string;
   created_by?: string;
   updated_by?: string;
   // Featured fields
@@ -22,6 +23,15 @@ export interface Tool {
   featured_indefinite: boolean;
   featured_start?: string | null;
   featured_end?: string | null;
+  // Editorial fields (individual tool page)
+  what_is?: string | null;
+  who_for?: string | null;
+  how_helps?: string | null;
+  pros?: string | null;
+  cons?: string | null;
+  extra_markdown?: string | null;
+  seo_title?: string | null;
+  seo_description?: string | null;
 }
 
 export interface UseToolsOptions {
