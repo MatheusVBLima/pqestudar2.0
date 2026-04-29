@@ -827,6 +827,107 @@ export function ToolModal({ open, onClose, onSave, tool, availableTags }: ToolMo
               </div>
             )}
           </div>
+
+          {/* ── Bloco Página Editorial (/ferramentas/[slug]) ── */}
+          <Separator />
+          <div className="space-y-4">
+            <div>
+              <p className="text-sm font-semibold">Página da ferramenta</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Conteúdo editorial mostrado na página individual <code>/ferramentas/[slug]</code>. Todos os campos são opcionais — se em branco, a página renderiza apenas hero + descrição + CTA.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="what_is">O que é</Label>
+              <Textarea
+                id="what_is"
+                value={whatIs}
+                onChange={(e) => setWhatIs(e.target.value)}
+                placeholder="Explicação clara do que é a ferramenta..."
+                rows={3}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="who_for">Para quem serve</Label>
+              <Textarea
+                id="who_for"
+                value={whoFor}
+                onChange={(e) => setWhoFor(e.target.value)}
+                placeholder="Perfis de uso (ex.: estudantes, profissionais...)"
+                rows={3}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="how_helps">Como pode ajudar</Label>
+              <Textarea
+                id="how_helps"
+                value={howHelps}
+                onChange={(e) => setHowHelps(e.target.value)}
+                placeholder="Casos de uso e aplicações práticas..."
+                rows={3}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="pros">Vantagens</Label>
+              <Textarea
+                id="pros"
+                value={pros}
+                onChange={(e) => setPros(e.target.value)}
+                placeholder="Pontos fortes (uma linha por item, ou markdown)..."
+                rows={3}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="cons">Limitações</Label>
+              <Textarea
+                id="cons"
+                value={cons}
+                onChange={(e) => setCons(e.target.value)}
+                placeholder="Restrições, cuidados ou contexto de uso..."
+                rows={3}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="extra_markdown">Conteúdo extra (markdown)</Label>
+              <Textarea
+                id="extra_markdown"
+                value={extraMarkdown}
+                onChange={(e) => setExtraMarkdown(e.target.value)}
+                placeholder="Conteúdo adicional em markdown (opcional)..."
+                rows={4}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 gap-3">
+              <div className="space-y-2">
+                <Label htmlFor="seo_title">SEO Title</Label>
+                <Input
+                  id="seo_title"
+                  value={seoTitle}
+                  onChange={(e) => setSeoTitle(e.target.value)}
+                  placeholder="Título usado em buscadores (até 60 caracteres)"
+                  maxLength={70}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="seo_description">SEO Description</Label>
+                <Textarea
+                  id="seo_description"
+                  value={seoDescription}
+                  onChange={(e) => setSeoDescription(e.target.value)}
+                  placeholder="Resumo usado em buscadores (até 160 caracteres)"
+                  rows={2}
+                  maxLength={180}
+                />
+              </div>
+            </div>
+          </div>
         </div>
 
         <div className="flex justify-end gap-2">
