@@ -153,6 +153,7 @@ export const CATEGORIAS_PUBLICAS = [
   'Benefícios',
   'Oportunidades',
   'Listas',
+  'Segurança Digital',
 ] as const;
 
 export type CategoriaPublica = typeof CATEGORIAS_PUBLICAS[number];
