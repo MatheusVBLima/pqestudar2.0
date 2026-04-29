@@ -239,6 +239,8 @@ function InternalCodeField({ code }: { code?: string }) {
 
 export function GuideModal({ open, onClose, onSave, guide }: GuideModalProps) {
   const navigate = useNavigate();
+  const { data: publicCategoriesRows } = useGuidePublicCategories();
+  const publicCategoryNames = (publicCategoriesRows ?? []).map((c) => c.name);
   const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");
   const [slugManual, setSlugManual] = useState(false);
@@ -332,7 +334,9 @@ export function GuideModal({ open, onClose, onSave, guide }: GuideModalProps) {
     if (!title.trim()) errs.title = "Título obrigatório";
     if (!slug.trim()) errs.slug = "Slug obrigatório";
     if (!category.trim()) errs.category = "Categoria Interna obrigatória";
-    if (!isCategoriaPublica(publicCategory)) errs.publicCategory = "Categoria Pública obrigatória";
+    if (!publicCategory || (publicCategoryNames.length > 0 && !publicCategoryNames.includes(publicCategory))) {
+      errs.publicCategory = "Categoria Pública obrigatória";
+    }
     if (!shortDescription.trim()) errs.shortDescription = "Descrição curta obrigatória";
     if (!seoTitle.trim()) errs.seoTitle = "SEO Title obrigatório";
     if (!seoDescription.trim()) errs.seoDescription = "SEO Description obrigatória";
