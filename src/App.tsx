@@ -189,6 +189,7 @@ const AppWithPixel = () => {
           
           <Route path="/ferramentas" element={<Ferramentas />} />
           <Route path="/ferramentas/salvos" element={<FerramentasSalvos />} />
+          <Route path="/ferramentas/:slug" element={<ToolDetalhe />} />
           <Route path="/concursos" element={<Concursos />} />
           <Route path="/concursos/:slug" element={<ConcursoDetalhe />} />
           <Route path="/votacoes" element={<Votacoes />} />
