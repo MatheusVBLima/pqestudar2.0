@@ -13,7 +13,7 @@ import { Guide } from "@/hooks/useGuides";
 import { Plus, Trash2, Upload, Link2, X, ImageIcon, Copy, Check, Workflow, Cog, Eye } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { CATEGORIAS, CATEGORIAS_PUBLICAS, mapInternaToPublica } from "@/lib/guide-editorial-options";
+import { CATEGORIAS, CATEGORIAS_PUBLICAS, isCategoriaPublica, mapInternaToPublica } from "@/lib/guide-editorial-options";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
@@ -332,8 +332,7 @@ export function GuideModal({ open, onClose, onSave, guide }: GuideModalProps) {
     if (!title.trim()) errs.title = "Título obrigatório";
     if (!slug.trim()) errs.slug = "Slug obrigatório";
     if (!category.trim()) errs.category = "Categoria Interna obrigatória";
-    const VALID_PUBLIC = ['Educação', 'Carreira', 'Ferramentas', 'Guias', 'Benefícios', 'Oportunidades', 'Listas'];
-    if (!publicCategory || !VALID_PUBLIC.includes(publicCategory)) errs.publicCategory = "Categoria Pública obrigatória";
+    if (!isCategoriaPublica(publicCategory)) errs.publicCategory = "Categoria Pública obrigatória";
     if (!shortDescription.trim()) errs.shortDescription = "Descrição curta obrigatória";
     if (!seoTitle.trim()) errs.seoTitle = "SEO Title obrigatório";
     if (!seoDescription.trim()) errs.seoDescription = "SEO Description obrigatória";
