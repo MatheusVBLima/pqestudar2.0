@@ -30,7 +30,7 @@ export function useGuidePublicCategories() {
         console.warn('[useGuidePublicCategories] fallback:', error.message);
         return FALLBACK;
       }
-      const rows = (data ?? []) as GuidePublicCategory[];
+      const rows = ((data ?? []) as unknown) as GuidePublicCategory[];
       return rows.length > 0 ? rows : FALLBACK;
     },
     staleTime: 5 * 60 * 1000,
