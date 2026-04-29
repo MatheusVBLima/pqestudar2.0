@@ -134,7 +134,7 @@ function getFieldsValidations(data: GeneratedGuideData): ValidationGroup {
   }
 
   // Categoria Pública (badge visual)
-  const VALID_PUBLIC = ['Educação', 'Carreira', 'Ferramentas', 'Guias', 'Benefícios', 'Oportunidades', 'Listas'];
+  const VALID_PUBLIC = CATEGORIAS_PUBLICAS as readonly string[];
   if (!data.public_category?.trim()) {
     items.push({ label: 'Categoria Pública', status: 'error', detail: 'Obrigatória (badge)' });
   } else if (!VALID_PUBLIC.includes(data.public_category)) {
