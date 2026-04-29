@@ -357,42 +357,45 @@ function SortableToolCard({
                 </Badge>
               )}
             </div>
-            <div className="flex gap-2">
-              {(() => {
-                const attachmentUrl = (tool as any).attachment_url;
-                const hasAttachment = attachmentUrl && attachmentUrl.trim();
-                const linkUrl = hasAttachment ? attachmentUrl : tool.url;
-                const buttonText = hasAttachment ? "Fazer download" : "Acessar";
-                const ariaLabel = hasAttachment ?
-                `Fazer download de ${tool.name}` :
-                `Acessar ${tool.name}`;
-
-                return linkUrl ?
+            <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
+              {detailHref && !isManagementMode && (
+                <Button
+                  asChild
+                  variant="default"
+                  size="sm"
+                  className="flex-1 rounded-[1.2rem]"
+                  data-evt="view_tool_detail"
+                >
+                  <Link
+                    to={detailHref}
+                    onClick={() => {
+                      track({
+                        event_name: 'tool_card_click',
+                        entity_type: 'tool',
+                        entity_id: tool.id,
+                        path: '/ferramentas',
+                        meta: { tool_slug: tool.slug, tool_name: tool.name, tool_tags: tool.tags, source: 'cta_button' }
+                      });
+                    }}
+                    aria-label={`Ver detalhes de ${tool.name}`}
+                  >
+                    Ver ferramenta
+                  </Link>
+                </Button>
+              )}
+              {isManagementMode && tool.url && (
                 <Button
                   variant="outline"
                   size="sm"
                   className="flex-1 rounded-[1.2rem]"
-                  onClick={() => {
-                    const evtName = hasAttachment ? 'tool_card_click' : 'tool_outbound_click';
-                    track({
-                      event_name: evtName,
-                      entity_type: 'tool',
-                      entity_id: tool.id,
-                      path: '/ferramentas',
-                      meta: { tool_slug: tool.name, tool_tags: tool.tags }
-                    });
-                    window.open(linkUrl, '_blank', 'noopener,noreferrer');
-                  }}
-                  aria-label={ariaLabel}
-                  title={ariaLabel}
-                  data-evt={hasAttachment ? "download_tool" : "access_tool"}>
-
-                    {buttonText}
-                  </Button> :
-                null;
-              })()}
+                  onClick={() => window.open(tool.url, '_blank', 'noopener,noreferrer')}
+                  aria-label={`Abrir link externo de ${tool.name}`}
+                >
+                  Link externo
+                </Button>
+              )}
               {!isManagementMode &&
-              <SaveToolButton toolId={tool.id} toolName={tool.name} />
+                <SaveToolButton toolId={tool.id} toolName={tool.name} />
               }
             </div>
           </div>
