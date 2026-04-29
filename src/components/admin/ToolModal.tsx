@@ -357,6 +357,14 @@ export function ToolModal({ open, onClose, onSave, tool, availableTags }: ToolMo
         featured_indefinite: isFeatured ? featuredIndefinite : false,
         featured_start: isFeatured && !featuredIndefinite && featuredStart ? new Date(featuredStart).toISOString() : null,
         featured_end: isFeatured && !featuredIndefinite && featuredEnd ? new Date(featuredEnd).toISOString() : null,
+        what_is: whatIs.trim() || null,
+        who_for: whoFor.trim() || null,
+        how_helps: howHelps.trim() || null,
+        pros: pros.trim() || null,
+        cons: cons.trim() || null,
+        extra_markdown: extraMarkdown.trim() || null,
+        seo_title: seoTitle.trim() || null,
+        seo_description: seoDescription.trim() || null,
       } as any);
       onClose();
     } finally {
