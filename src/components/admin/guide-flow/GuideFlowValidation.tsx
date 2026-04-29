@@ -460,7 +460,7 @@ export function GuideFlowValidation({ data }: Props) {
 }
 
 export function hasValidationErrors(data: GeneratedGuideData): boolean {
-  const VALID_PUBLIC = ['Educação', 'Carreira', 'Ferramentas', 'Guias', 'Benefícios', 'Oportunidades', 'Listas'];
+  const VALID_PUBLIC = CATEGORIAS_PUBLICAS as readonly string[];
   return !data.title.trim() || !data.slug.trim() || !data.short_description.trim() || !data.category.trim() ||
     !data.public_category?.trim() || !VALID_PUBLIC.includes(data.public_category) ||
     data.content_markdown.trim().split(/\s+/).filter(Boolean).length < 50;
