@@ -13,7 +13,8 @@ import { Guide } from "@/hooks/useGuides";
 import { Plus, Trash2, Upload, Link2, X, ImageIcon, Copy, Check, Workflow, Cog, Eye } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { CATEGORIAS, CATEGORIAS_PUBLICAS, isCategoriaPublica, mapInternaToPublica } from "@/lib/guide-editorial-options";
+import { CATEGORIAS, mapInternaToPublica } from "@/lib/guide-editorial-options";
+import { useGuidePublicCategories } from "@/hooks/useGuidePublicCategories";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
