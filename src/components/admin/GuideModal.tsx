@@ -586,7 +586,11 @@ export function GuideModal({ open, onClose, onSave, guide }: GuideModalProps) {
                 value={publicCategory}
                 onChange={e => setPublicCategory(e.target.value)}
               >
-                {CATEGORIAS_PUBLICAS.map(c => <option key={c} value={c}>{c}</option>)}
+                {publicCategoryNames.map(c => <option key={c} value={c}>{c}</option>)}
+                {/* fallback se a categoria atual não estiver mais ativa */}
+                {publicCategory && publicCategoryNames.length > 0 && !publicCategoryNames.includes(publicCategory) && (
+                  <option value={publicCategory}>{publicCategory} (legado)</option>
+                )}
               </select>
               <p className="text-[10px] text-muted-foreground">Apenas badge no site · NÃO influencia geração.</p>
               {errors.publicCategory && <p className="text-xs text-destructive mt-1">{errors.publicCategory}</p>}
