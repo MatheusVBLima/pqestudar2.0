@@ -50,6 +50,16 @@ export function ToolModal({ open, onClose, onSave, tool, availableTags }: ToolMo
   const [featuredStart, setFeaturedStart] = useState("");
   const [featuredEnd, setFeaturedEnd] = useState("");
 
+  // Editorial fields (individual tool page /ferramentas/[slug])
+  const [whatIs, setWhatIs] = useState("");
+  const [whoFor, setWhoFor] = useState("");
+  const [howHelps, setHowHelps] = useState("");
+  const [pros, setPros] = useState("");
+  const [cons, setCons] = useState("");
+  const [extraMarkdown, setExtraMarkdown] = useState("");
+  const [seoTitle, setSeoTitle] = useState("");
+  const [seoDescription, setSeoDescription] = useState("");
+
 
   useEffect(() => {
     if (tool) {
