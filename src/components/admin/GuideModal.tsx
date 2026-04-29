@@ -13,7 +13,8 @@ import { Guide } from "@/hooks/useGuides";
 import { Plus, Trash2, Upload, Link2, X, ImageIcon, Copy, Check, Workflow, Cog, Eye } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { CATEGORIAS, CATEGORIAS_PUBLICAS, isCategoriaPublica, mapInternaToPublica } from "@/lib/guide-editorial-options";
+import { CATEGORIAS, mapInternaToPublica } from "@/lib/guide-editorial-options";
+import { useGuidePublicCategories } from "@/hooks/useGuidePublicCategories";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
@@ -239,6 +240,8 @@ function InternalCodeField({ code }: { code?: string }) {
 
 export function GuideModal({ open, onClose, onSave, guide }: GuideModalProps) {
   const navigate = useNavigate();
+  const { data: publicCategoriesRows } = useGuidePublicCategories();
+  const publicCategoryNames = (publicCategoriesRows ?? []).map((c) => c.name);
   const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");
   const [slugManual, setSlugManual] = useState(false);
@@ -332,7 +335,9 @@ export function GuideModal({ open, onClose, onSave, guide }: GuideModalProps) {
     if (!title.trim()) errs.title = "Título obrigatório";
     if (!slug.trim()) errs.slug = "Slug obrigatório";
     if (!category.trim()) errs.category = "Categoria Interna obrigatória";
-    if (!isCategoriaPublica(publicCategory)) errs.publicCategory = "Categoria Pública obrigatória";
+    if (!publicCategory || (publicCategoryNames.length > 0 && !publicCategoryNames.includes(publicCategory))) {
+      errs.publicCategory = "Categoria Pública obrigatória";
+    }
     if (!shortDescription.trim()) errs.shortDescription = "Descrição curta obrigatória";
     if (!seoTitle.trim()) errs.seoTitle = "SEO Title obrigatório";
     if (!seoDescription.trim()) errs.seoDescription = "SEO Description obrigatória";
@@ -581,7 +586,11 @@ export function GuideModal({ open, onClose, onSave, guide }: GuideModalProps) {
                 value={publicCategory}
                 onChange={e => setPublicCategory(e.target.value)}
               >
-                {CATEGORIAS_PUBLICAS.map(c => <option key={c} value={c}>{c}</option>)}
+                {publicCategoryNames.map(c => <option key={c} value={c}>{c}</option>)}
+                {/* fallback se a categoria atual não estiver mais ativa */}
+                {publicCategory && publicCategoryNames.length > 0 && !publicCategoryNames.includes(publicCategory) && (
+                  <option value={publicCategory}>{publicCategory} (legado)</option>
+                )}
               </select>
               <p className="text-[10px] text-muted-foreground">Apenas badge no site · NÃO influencia geração.</p>
               {errors.publicCategory && <p className="text-xs text-destructive mt-1">{errors.publicCategory}</p>}

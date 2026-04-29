@@ -1097,6 +1097,24 @@ export type Database = {
         }
         Relationships: []
       }
+      guide_public_categories: {
+        Row: {
+          is_active: boolean
+          name: string
+          sort_order: number
+        }
+        Insert: {
+          is_active?: boolean
+          name: string
+          sort_order: number
+        }
+        Update: {
+          is_active?: boolean
+          name?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
       guide_related_contests: {
         Row: {
           contest_id: string

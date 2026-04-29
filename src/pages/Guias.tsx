@@ -20,6 +20,7 @@ import {
 import { Search, Plus, BookOpen } from "lucide-react";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { useGuides, Guide, useGuidesMutations } from "@/hooks/useGuides";
+import { useGuidePublicCategories } from "@/hooks/useGuidePublicCategories";
 import { usePageSettings } from "@/hooks/usePageSettings";
 import { GuideModal } from "@/components/admin/GuideModal";
 import { FeaturedGuideCard } from "@/components/guides/FeaturedGuideCard";
@@ -135,8 +136,9 @@ export default function Guias() {
   const publishedCount = useMemo(() => guides?.filter((g) => g.is_published).length ?? 0, [guides]);
   const draftsCount = useMemo(() => guides?.filter((g) => !g.is_published).length ?? 0, [guides]);
 
-  // Filtro público usa apenas Categoria Pública (badge visual). Sempre mostrar as 7 oficiais.
-  const PUBLIC_CATEGORIES = ['Educação', 'Carreira', 'Ferramentas', 'Guias', 'Benefícios', 'Oportunidades', 'Listas'];
+  // Filtro público usa apenas Categoria Pública (badge visual). Fonte: banco (guide_public_categories).
+  const { data: publicCategoriesRows } = useGuidePublicCategories();
+  const PUBLIC_CATEGORIES = (publicCategoriesRows ?? []).map((c) => c.name);
 
   // Guides públicos (publicados) — fonte para o overlay de busca/em alta, independente do filtro de categoria
   const publicGuides = useMemo(() => {
