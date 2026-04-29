@@ -74,6 +74,14 @@ export function ToolModal({ open, onClose, onSave, tool, availableTags }: ToolMo
       setFeaturedIndefinite(tool.featured_indefinite ?? false);
       setFeaturedStart(tool.featured_start ? tool.featured_start.slice(0, 16) : "");
       setFeaturedEnd(tool.featured_end ? tool.featured_end.slice(0, 16) : "");
+      setWhatIs((tool as any).what_is || "");
+      setWhoFor((tool as any).who_for || "");
+      setHowHelps((tool as any).how_helps || "");
+      setPros((tool as any).pros || "");
+      setCons((tool as any).cons || "");
+      setExtraMarkdown((tool as any).extra_markdown || "");
+      setSeoTitle((tool as any).seo_title || "");
+      setSeoDescription((tool as any).seo_description || "");
     } else {
       setName("");
       setDescription("");
@@ -86,6 +94,14 @@ export function ToolModal({ open, onClose, onSave, tool, availableTags }: ToolMo
       setFeaturedIndefinite(false);
       setFeaturedStart("");
       setFeaturedEnd("");
+      setWhatIs("");
+      setWhoFor("");
+      setHowHelps("");
+      setPros("");
+      setCons("");
+      setExtraMarkdown("");
+      setSeoTitle("");
+      setSeoDescription("");
     }
     setErrors({});
     setUploadedFile(null);
