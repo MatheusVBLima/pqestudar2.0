@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { PageHero } from "@/components/layout/PageHero";
 import { Helmet } from "react-helmet-async";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate, Link } from "react-router-dom";
 import { GlobalSeo } from "@/components/seo/GlobalSeo";
 import { X, Sparkles, Brain, Shield, GraduationCap, Wrench, Zap, Plus, Edit, Eye, EyeOff, Trash2, GripVertical, ChevronLeft, ChevronRight, Star } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
