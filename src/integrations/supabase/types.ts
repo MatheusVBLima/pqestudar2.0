@@ -2743,60 +2743,87 @@ export type Database = {
       tools: {
         Row: {
           attachment_url: string | null
+          cons: string | null
           created_at: string
           created_by: string | null
           description: string
+          extra_markdown: string | null
           featured_end: string | null
           featured_indefinite: boolean
           featured_start: string | null
+          how_helps: string | null
           icon_url: string | null
           id: string
           is_featured: boolean
           is_visible: boolean
           name: string
+          pros: string | null
+          seo_description: string | null
+          seo_title: string | null
+          slug: string | null
           sort_order: number
           tags: string[]
           updated_at: string
           updated_by: string | null
           url: string | null
+          what_is: string | null
+          who_for: string | null
         }
         Insert: {
           attachment_url?: string | null
+          cons?: string | null
           created_at?: string
           created_by?: string | null
           description: string
+          extra_markdown?: string | null
           featured_end?: string | null
           featured_indefinite?: boolean
           featured_start?: string | null
+          how_helps?: string | null
           icon_url?: string | null
           id?: string
           is_featured?: boolean
           is_visible?: boolean
           name: string
+          pros?: string | null
+          seo_description?: string | null
+          seo_title?: string | null
+          slug?: string | null
           sort_order?: number
           tags?: string[]
           updated_at?: string
           updated_by?: string | null
           url?: string | null
+          what_is?: string | null
+          who_for?: string | null
         }
         Update: {
           attachment_url?: string | null
+          cons?: string | null
           created_at?: string
           created_by?: string | null
           description?: string
+          extra_markdown?: string | null
           featured_end?: string | null
           featured_indefinite?: boolean
           featured_start?: string | null
+          how_helps?: string | null
           icon_url?: string | null
           id?: string
           is_featured?: boolean
           is_visible?: boolean
           name?: string
+          pros?: string | null
+          seo_description?: string | null
+          seo_title?: string | null
+          slug?: string | null
           sort_order?: number
           tags?: string[]
           updated_at?: string
           updated_by?: string | null
           url?: string | null
+          what_is?: string | null
+          who_for?: string | null
         }
         Relationships: []
       }
@@ -3404,51 +3431,78 @@ export type Database = {
       tools_public: {
         Row: {
           attachment_url: string | null
+          cons: string | null
           created_at: string | null
           description: string | null
+          extra_markdown: string | null
           featured_end: string | null
           featured_indefinite: boolean | null
           featured_start: string | null
+          how_helps: string | null
           icon_url: string | null
           id: string | null
           is_featured: boolean | null
           is_visible: boolean | null
           name: string | null
+          pros: string | null
+          seo_description: string | null
+          seo_title: string | null
+          slug: string | null
           sort_order: number | null
           tags: string[] | null
           url: string | null
+          what_is: string | null
+          who_for: string | null
         }
         Insert: {
           attachment_url?: string | null
+          cons?: string | null
           created_at?: string | null
           description?: string | null
+          extra_markdown?: string | null
           featured_end?: string | null
           featured_indefinite?: boolean | null
           featured_start?: string | null
+          how_helps?: string | null
           icon_url?: string | null
           id?: string | null
           is_featured?: boolean | null
           is_visible?: boolean | null
           name?: string | null
+          pros?: string | null
+          seo_description?: string | null
+          seo_title?: string | null
+          slug?: string | null
           sort_order?: number | null
           tags?: string[] | null
           url?: string | null
+          what_is?: string | null
+          who_for?: string | null
         }
         Update: {
           attachment_url?: string | null
+          cons?: string | null
           created_at?: string | null
           description?: string | null
+          extra_markdown?: string | null
           featured_end?: string | null
           featured_indefinite?: boolean | null
           featured_start?: string | null
+          how_helps?: string | null
           icon_url?: string | null
           id?: string | null
           is_featured?: boolean | null
           is_visible?: boolean | null
           name?: string | null
+          pros?: string | null
+          seo_description?: string | null
+          seo_title?: string | null
+          slug?: string | null
           sort_order?: number | null
           tags?: string[] | null
           url?: string | null
+          what_is?: string | null
+          who_for?: string | null
         }
         Relationships: []
       }
@@ -3653,6 +3707,8 @@ export type Database = {
         }[]
       }
       public_users_count: { Args: never; Returns: number }
+      slugify_tool_name: { Args: { input_text: string }; Returns: string }
+      unaccent_safe: { Args: { input_text: string }; Returns: string }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
