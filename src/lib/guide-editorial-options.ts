@@ -158,6 +158,10 @@ export const CATEGORIAS_PUBLICAS = [
 
 export type CategoriaPublica = typeof CATEGORIAS_PUBLICAS[number];
 
+export function isCategoriaPublica(value: string | undefined | null): value is CategoriaPublica {
+  return typeof value === 'string' && (CATEGORIAS_PUBLICAS as readonly string[]).includes(value);
+}
+
 /**
  * Mapeia uma Categoria Interna (operacional/editorial) para uma Categoria Pública
  * (badge visual). Usado como sugestão padrão — admin sempre pode trocar.
