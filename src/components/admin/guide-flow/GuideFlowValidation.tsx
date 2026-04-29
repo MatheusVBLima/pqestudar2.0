@@ -2,6 +2,7 @@ import { CheckCircle2, AlertTriangle, XCircle, Info, ChevronDown, ChevronRight }
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import type { GeneratedGuideData } from './GuideFlowPreview';
+import { CATEGORIAS_PUBLICAS } from '@/lib/guide-editorial-options';
 
 type Status = 'ok' | 'warn' | 'error';
 
@@ -133,7 +134,7 @@ function getFieldsValidations(data: GeneratedGuideData): ValidationGroup {
   }
 
   // Categoria Pública (badge visual)
-  const VALID_PUBLIC = ['Educação', 'Carreira', 'Ferramentas', 'Guias', 'Benefícios', 'Oportunidades', 'Listas'];
+  const VALID_PUBLIC = CATEGORIAS_PUBLICAS as readonly string[];
   if (!data.public_category?.trim()) {
     items.push({ label: 'Categoria Pública', status: 'error', detail: 'Obrigatória (badge)' });
   } else if (!VALID_PUBLIC.includes(data.public_category)) {
@@ -459,7 +460,7 @@ export function GuideFlowValidation({ data }: Props) {
 }
 
 export function hasValidationErrors(data: GeneratedGuideData): boolean {
-  const VALID_PUBLIC = ['Educação', 'Carreira', 'Ferramentas', 'Guias', 'Benefícios', 'Oportunidades', 'Listas'];
+  const VALID_PUBLIC = CATEGORIAS_PUBLICAS as readonly string[];
   return !data.title.trim() || !data.slug.trim() || !data.short_description.trim() || !data.category.trim() ||
     !data.public_category?.trim() || !VALID_PUBLIC.includes(data.public_category) ||
     data.content_markdown.trim().split(/\s+/).filter(Boolean).length < 50;
