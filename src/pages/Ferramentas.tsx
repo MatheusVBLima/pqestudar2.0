@@ -205,6 +205,7 @@ function SortableToolCard({
 
 }: {tool: Tool;isManagementMode: boolean;handleEdit: (t: Tool) => void;toggleVisible: (id: string, state: boolean) => void;setDeleteTool: (t: Tool) => void;}) {
   const { track } = useAnalyticsTracker();
+  const navigate = useNavigate();
   const {
     attributes,
     listeners,
@@ -222,6 +223,19 @@ function SortableToolCard({
 
   const Icon = tool.tags[0] ? CATEGORY_ICONS[tool.tags[0]] || Sparkles : Sparkles;
   const featured = isFeaturedActive(tool);
+  const detailHref = tool.slug ? `/ferramentas/${tool.slug}` : null;
+
+  const handleCardClick = () => {
+    if (isManagementMode || !detailHref) return;
+    track({
+      event_name: 'tool_card_click',
+      entity_type: 'tool',
+      entity_id: tool.id,
+      path: '/ferramentas',
+      meta: { tool_slug: tool.slug, tool_name: tool.name, tool_tags: tool.tags }
+    });
+    navigate(detailHref);
+  };
 
   return (
     <div
@@ -229,7 +243,11 @@ function SortableToolCard({
       style={style}
       className="relative group h-full">
 
-      <Card className={`h-full transition-all duration-300 flex flex-col ${featured ? 'ring-2 ring-violet-500/60 shadow-md' : 'transition-shadow hover:shadow-lg'}`}>
+      <Card
+        onClick={handleCardClick}
+        className={`h-full transition-all duration-300 flex flex-col ${
+          !isManagementMode && detailHref ? 'cursor-pointer' : ''
+        } ${featured ? 'ring-2 ring-violet-500/60 shadow-md' : 'transition-shadow hover:shadow-lg'}`}>
         <CardHeader>
           {isManagementMode &&
           <div
