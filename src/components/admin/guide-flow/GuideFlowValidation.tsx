@@ -2,6 +2,7 @@ import { CheckCircle2, AlertTriangle, XCircle, Info, ChevronDown, ChevronRight }
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import type { GeneratedGuideData } from './GuideFlowPreview';
+import { CATEGORIAS_PUBLICAS } from '@/lib/guide-editorial-options';
 
 type Status = 'ok' | 'warn' | 'error';
 
