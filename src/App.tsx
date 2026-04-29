@@ -39,6 +39,7 @@ const KitAceleracao = React.lazy(() => import("./pages/KitAceleracao"));
 const Assine = React.lazy(() => import("./pages/Assine"));
 const Ferramentas = React.lazy(() => import("./pages/Ferramentas"));
 const FerramentasSalvos = React.lazy(() => import("./pages/FerramentasSalvos"));
+const ToolDetalhe = React.lazy(() => import("./pages/ToolDetalhe"));
 const MapaDosBeneficios = React.lazy(() => import("./pages/MapaDosBeneficios"));
 const MapaDosBeneficiosAfiliado = React.lazy(() => import("./pages/MapaDosBeneficiosAfiliado"));
 const Concursos = React.lazy(() => import("./pages/Concursos"));
@@ -188,6 +189,7 @@ const AppWithPixel = () => {
           
           <Route path="/ferramentas" element={<Ferramentas />} />
           <Route path="/ferramentas/salvos" element={<FerramentasSalvos />} />
+          <Route path="/ferramentas/:slug" element={<ToolDetalhe />} />
           <Route path="/concursos" element={<Concursos />} />
           <Route path="/concursos/:slug" element={<ConcursoDetalhe />} />
           <Route path="/votacoes" element={<Votacoes />} />

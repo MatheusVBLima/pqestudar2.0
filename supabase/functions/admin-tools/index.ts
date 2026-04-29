@@ -100,18 +100,39 @@ Deno.serve(async (req) => {
       }
 
       case 'create': {
-        const { name, description, url, icon_url, tags, is_visible } = data;
+        const {
+          name,
+          description,
+          url,
+          icon_url,
+          attachment_url,
+          tags,
+          is_visible,
+          is_featured,
+          featured_indefinite,
+          featured_start,
+          featured_end,
+          slug,
+          what_is,
+          who_for,
+          how_helps,
+          pros,
+          cons,
+          extra_markdown,
+          seo_title,
+          seo_description,
+        } = data;
 
         // Validar campos obrigatórios
         if (!name || !description) {
           return new Response(
-            JSON.stringify({ 
+            JSON.stringify({
               error: 'validation',
               message: 'Nome e descrição são obrigatórios',
               details: {
                 name: !name ? 'Nome é obrigatório' : undefined,
-                description: !description ? 'Descrição é obrigatória' : undefined
-              }
+                description: !description ? 'Descrição é obrigatória' : undefined,
+              },
             }),
             {
               headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -137,11 +158,25 @@ Deno.serve(async (req) => {
             description,
             url,
             icon_url,
+            attachment_url,
             tags: tags || [],
             is_visible: is_visible ?? true,
+            is_featured: is_featured ?? false,
+            featured_indefinite: featured_indefinite ?? false,
+            featured_start: featured_start ?? null,
+            featured_end: featured_end ?? null,
+            slug: slug || null,
+            what_is: what_is ?? null,
+            who_for: who_for ?? null,
+            how_helps: how_helps ?? null,
+            pros: pros ?? null,
+            cons: cons ?? null,
+            extra_markdown: extra_markdown ?? null,
+            seo_title: seo_title ?? null,
+            seo_description: seo_description ?? null,
             sort_order: nextOrder,
             created_by: user.id,
-            updated_by: user.id
+            updated_by: user.id,
           }])
           .select()
           .single();

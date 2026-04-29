@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { PageHero } from "@/components/layout/PageHero";
 import { Helmet } from "react-helmet-async";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate, Link } from "react-router-dom";
 import { GlobalSeo } from "@/components/seo/GlobalSeo";
 import { X, Sparkles, Brain, Shield, GraduationCap, Wrench, Zap, Plus, Edit, Eye, EyeOff, Trash2, GripVertical, ChevronLeft, ChevronRight, Star } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -205,6 +205,7 @@ function SortableToolCard({
 
 }: {tool: Tool;isManagementMode: boolean;handleEdit: (t: Tool) => void;toggleVisible: (id: string, state: boolean) => void;setDeleteTool: (t: Tool) => void;}) {
   const { track } = useAnalyticsTracker();
+  const navigate = useNavigate();
   const {
     attributes,
     listeners,
@@ -222,6 +223,19 @@ function SortableToolCard({
 
   const Icon = tool.tags[0] ? CATEGORY_ICONS[tool.tags[0]] || Sparkles : Sparkles;
   const featured = isFeaturedActive(tool);
+  const detailHref = tool.slug ? `/ferramentas/${tool.slug}` : null;
+
+  const handleCardClick = () => {
+    if (isManagementMode || !detailHref) return;
+    track({
+      event_name: 'tool_card_click',
+      entity_type: 'tool',
+      entity_id: tool.id,
+      path: '/ferramentas',
+      meta: { tool_slug: tool.slug, tool_name: tool.name, tool_tags: tool.tags }
+    });
+    navigate(detailHref);
+  };
 
   return (
     <div
@@ -229,7 +243,11 @@ function SortableToolCard({
       style={style}
       className="relative group h-full">
 
-      <Card className={`h-full transition-all duration-300 flex flex-col ${featured ? 'ring-2 ring-violet-500/60 shadow-md' : 'transition-shadow hover:shadow-lg'}`}>
+      <Card
+        onClick={handleCardClick}
+        className={`h-full transition-all duration-300 flex flex-col ${
+          !isManagementMode && detailHref ? 'cursor-pointer' : ''
+        } ${featured ? 'ring-2 ring-violet-500/60 shadow-md' : 'transition-shadow hover:shadow-lg'}`}>
         <CardHeader>
           {isManagementMode &&
           <div
@@ -339,42 +357,45 @@ function SortableToolCard({
                 </Badge>
               )}
             </div>
-            <div className="flex gap-2">
-              {(() => {
-                const attachmentUrl = (tool as any).attachment_url;
-                const hasAttachment = attachmentUrl && attachmentUrl.trim();
-                const linkUrl = hasAttachment ? attachmentUrl : tool.url;
-                const buttonText = hasAttachment ? "Fazer download" : "Acessar";
-                const ariaLabel = hasAttachment ?
-                `Fazer download de ${tool.name}` :
-                `Acessar ${tool.name}`;
-
-                return linkUrl ?
+            <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
+              {detailHref && !isManagementMode && (
+                <Button
+                  asChild
+                  variant="default"
+                  size="sm"
+                  className="flex-1 rounded-[1.2rem]"
+                  data-evt="view_tool_detail"
+                >
+                  <Link
+                    to={detailHref}
+                    onClick={() => {
+                      track({
+                        event_name: 'tool_card_click',
+                        entity_type: 'tool',
+                        entity_id: tool.id,
+                        path: '/ferramentas',
+                        meta: { tool_slug: tool.slug, tool_name: tool.name, tool_tags: tool.tags, source: 'cta_button' }
+                      });
+                    }}
+                    aria-label={`Ver detalhes de ${tool.name}`}
+                  >
+                    Ver ferramenta
+                  </Link>
+                </Button>
+              )}
+              {isManagementMode && tool.url && (
                 <Button
                   variant="outline"
                   size="sm"
                   className="flex-1 rounded-[1.2rem]"
-                  onClick={() => {
-                    const evtName = hasAttachment ? 'tool_card_click' : 'tool_outbound_click';
-                    track({
-                      event_name: evtName,
-                      entity_type: 'tool',
-                      entity_id: tool.id,
-                      path: '/ferramentas',
-                      meta: { tool_slug: tool.name, tool_tags: tool.tags }
-                    });
-                    window.open(linkUrl, '_blank', 'noopener,noreferrer');
-                  }}
-                  aria-label={ariaLabel}
-                  title={ariaLabel}
-                  data-evt={hasAttachment ? "download_tool" : "access_tool"}>
-
-                    {buttonText}
-                  </Button> :
-                null;
-              })()}
+                  onClick={() => window.open(tool.url, '_blank', 'noopener,noreferrer')}
+                  aria-label={`Abrir link externo de ${tool.name}`}
+                >
+                  Link externo
+                </Button>
+              )}
               {!isManagementMode &&
-              <SaveToolButton toolId={tool.id} toolName={tool.name} />
+                <SaveToolButton toolId={tool.id} toolName={tool.name} />
               }
             </div>
           </div>
