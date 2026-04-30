@@ -349,6 +349,34 @@ All colors MUST be HSL.
   line-height: 1.7;
 }
 
+/* Editorial inline links */
+.guide-content a,
+.guide-content-primary a {
+  color: hsl(var(--primary));
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  text-decoration-color: hsl(var(--primary) / 0.45);
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.15s ease, text-decoration-color 0.15s ease, background-color 0.15s ease;
+  border-radius: 2px;
+}
+
+.guide-content a:hover,
+.guide-content-primary a:hover {
+  color: hsl(var(--primary));
+  text-decoration-color: hsl(var(--primary));
+  text-decoration-thickness: 2px;
+  background-color: hsl(var(--primary) / 0.08);
+}
+
+.guide-content a:focus-visible,
+.guide-content-primary a:focus-visible {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: 2px;
+}
+
 .guide-content img,
 .guide-content-primary img {
   margin-top: 2rem; /* 32px */
