@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Eye, Edit3, Heading2, Heading3, Minus, ImageIcon, Info } from "lucide-react";
+import { Eye, Edit3, Heading2, Heading3, Minus, ImageIcon, Info, Link2 } from "lucide-react";
 import { marked, Renderer, Tokens } from "marked";
 import TurndownService from "turndown";
 import DOMPurify from "dompurify";
@@ -308,6 +308,25 @@ export default function MarkdownEditor({
     }, 0);
   }, [value, onChange]);
 
+  const insertInternalLink = useCallback(() => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selected = value.substring(start, end);
+    const anchor = selected.trim().length > 0 ? selected : "texto";
+    const before = `[${anchor}](/`;
+    const after = `)`;
+    const insertion = before + after;
+    const newValue = value.substring(0, start) + insertion + value.substring(end);
+    onChange(newValue);
+    const cursorPos = start + before.length;
+    setTimeout(() => {
+      textarea.selectionStart = textarea.selectionEnd = cursorPos;
+      textarea.focus();
+    }, 0);
+  }, [value, onChange]);
+
   const insertImage = useCallback(() => {
     const textarea = textareaRef.current;
     if (!textarea) return;
@@ -377,6 +396,16 @@ export default function MarkdownEditor({
               >
                 <ImageIcon className="h-4 w-4" />
                 <span className="sr-only">Imagem</span>
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={insertInternalLink}
+                title="Inserir link interno (selecione um texto antes)"
+              >
+                <Link2 className="h-4 w-4" />
+                <span className="sr-only">Link interno</span>
               </Button>
             </>
           )}
