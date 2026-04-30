@@ -397,6 +397,16 @@ export default function MarkdownEditor({
                 <ImageIcon className="h-4 w-4" />
                 <span className="sr-only">Imagem</span>
               </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={insertInternalLink}
+                title="Inserir link interno (selecione um texto antes)"
+              >
+                <Link2 className="h-4 w-4" />
+                <span className="sr-only">Link interno</span>
+              </Button>
             </>
           )}
         </div>
