@@ -398,11 +398,21 @@ export default function MarkdownEditor({
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={() => insertHeading(3)}
+                onClick={insertHeading(3) as any && (() => insertHeading(3))}
                 title="Inserir subtítulo H3 em negrito"
               >
                 <Heading3 className="h-4 w-4" />
                 <span className="sr-only">H3</span>
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={insertBold}
+                title="Negrito (selecione um texto ou clique para inserir)"
+              >
+                <Bold className="h-4 w-4" />
+                <span className="sr-only">Negrito</span>
               </Button>
               <Button
                 type="button"
