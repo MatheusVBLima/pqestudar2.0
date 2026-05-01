@@ -5,13 +5,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Tool } from "@/hooks/useTools";
-import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { X, Sparkles, Upload, Link as LinkIcon, Star } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import MarkdownEditor from "@/components/admin/MarkdownEditor";
+import { Tool } from "@/hooks/useTools";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Separator } from "@/components/ui/separator";
+import { X, Upload, Link as LinkIcon, Star, Sparkles, ImageIcon, Plus, Trash2 } from "lucide-react";
 
 interface ToolModalProps {
   open: boolean;
@@ -21,87 +22,149 @@ interface ToolModalProps {
   availableTags: string[];
 }
 
+interface InternalLink {
+  label: string;
+  url: string;
+  imageUrl?: string | null;
+  imageSource?: string | null;
+  imagePath?: string | null;
+}
+
+function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+}
+
 export function ToolModal({ open, onClose, onSave, tool, availableTags }: ToolModalProps) {
+  // ----- Básico -----
   const [name, setName] = useState("");
+  const [slug, setSlug] = useState("");
+  const [slugManual, setSlugManual] = useState(false);
   const [description, setDescription] = useState("");
   const [url, setUrl] = useState("");
-  const [attachmentUrl, setAttachmentUrl] = useState("");
   const [iconUrl, setIconUrl] = useState("");
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [isVisible, setIsVisible] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [errors, setErrors] = useState<Record<string, string>>({});
   const [imageError, setImageError] = useState(false);
   const [logoSource, setLogoSource] = useState<"upload" | "url">("url");
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
-  const [uploadPreview, setUploadPreview] = useState<string>("");
+  const [uploadPreview, setUploadPreview] = useState("");
   const [uploading, setUploading] = useState(false);
-  const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [attachmentUrl, setAttachmentUrl] = useState("");
   const [attachmentSource, setAttachmentSource] = useState<"upload" | "url">("url");
   const [uploadedAttachment, setUploadedAttachment] = useState<File | null>(null);
   const [attachmentUploading, setAttachmentUploading] = useState(false);
-  const [isDraggingAttachment, setIsDraggingAttachment] = useState(false);
   const attachmentInputRef = useRef<HTMLInputElement>(null);
 
-  // Featured fields
+  // Cover (hero estilo guia)
+  const [coverImageUrl, setCoverImageUrl] = useState<string | null>(null);
+  const [coverMode, setCoverMode] = useState<"upload" | "url">("upload");
+  const [coverUrlInput, setCoverUrlInput] = useState("");
+  const [coverUploading, setCoverUploading] = useState(false);
+  const coverFileRef = useRef<HTMLInputElement>(null);
+
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [isVisible, setIsVisible] = useState(true);
+
+  // Featured
   const [isFeatured, setIsFeatured] = useState(false);
   const [featuredIndefinite, setFeaturedIndefinite] = useState(false);
   const [featuredStart, setFeaturedStart] = useState("");
   const [featuredEnd, setFeaturedEnd] = useState("");
 
-  // Editorial fields (individual tool page /ferramentas/[slug])
-  const [whatIs, setWhatIs] = useState("");
-  const [whoFor, setWhoFor] = useState("");
-  const [howHelps, setHowHelps] = useState("");
-  const [pros, setPros] = useState("");
-  const [cons, setCons] = useState("");
-  const [extraMarkdown, setExtraMarkdown] = useState("");
+  // ----- SEO -----
   const [seoTitle, setSeoTitle] = useState("");
   const [seoDescription, setSeoDescription] = useState("");
 
+  // ----- Conteúdo -----
+  const [contentMarkdown, setContentMarkdown] = useState("");
 
+  // ----- CTAs -----
+  const [ctaTopLabel, setCtaTopLabel] = useState("");
+  const [ctaTopUrl, setCtaTopUrl] = useState("");
+  const [ctaTopText, setCtaTopText] = useState("");
+  const [ctaMiddleLabel, setCtaMiddleLabel] = useState("");
+  const [ctaMiddleUrl, setCtaMiddleUrl] = useState("");
+  const [ctaMiddleText, setCtaMiddleText] = useState("");
+  const [ctaFinalLabel, setCtaFinalLabel] = useState("");
+  const [ctaFinalUrl, setCtaFinalUrl] = useState("");
+  const [ctaFinalText, setCtaFinalText] = useState("");
+
+  // ----- Links Internos -----
+  const [internalLinks, setInternalLinks] = useState<InternalLink[]>([]);
+
+  const [saving, setSaving] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Reset on open/tool change
   useEffect(() => {
     if (tool) {
       setName(tool.name);
+      setSlug(tool.slug || "");
+      setSlugManual(true);
       setDescription(tool.description);
       setUrl(tool.url || "");
-      setAttachmentUrl((tool as any).attachment_url || "");
       setIconUrl(tool.icon_url || "");
+      setAttachmentUrl(tool.attachment_url || "");
+      setCoverImageUrl(tool.cover_image_url || null);
+      setCoverUrlInput(tool.cover_image_url || "");
+      setCoverMode("upload");
       setSelectedTags(tool.tags || []);
       setIsVisible(tool.is_visible);
       setIsFeatured(tool.is_featured ?? false);
       setFeaturedIndefinite(tool.featured_indefinite ?? false);
       setFeaturedStart(tool.featured_start ? tool.featured_start.slice(0, 16) : "");
       setFeaturedEnd(tool.featured_end ? tool.featured_end.slice(0, 16) : "");
-      setWhatIs((tool as any).what_is || "");
-      setWhoFor((tool as any).who_for || "");
-      setHowHelps((tool as any).how_helps || "");
-      setPros((tool as any).pros || "");
-      setCons((tool as any).cons || "");
-      setExtraMarkdown((tool as any).extra_markdown || "");
-      setSeoTitle((tool as any).seo_title || "");
-      setSeoDescription((tool as any).seo_description || "");
+      setSeoTitle(tool.seo_title || "");
+      setSeoDescription(tool.seo_description || "");
+      setContentMarkdown(tool.content_markdown || "");
+      setCtaTopLabel(tool.cta_top_label || "");
+      setCtaTopUrl(tool.cta_top_url || "");
+      setCtaTopText(tool.cta_top_text || "");
+      setCtaMiddleLabel(tool.cta_middle_label || "");
+      setCtaMiddleUrl(tool.cta_middle_url || "");
+      setCtaMiddleText(tool.cta_middle_text || "");
+      setCtaFinalLabel(tool.cta_final_label || "");
+      setCtaFinalUrl(tool.cta_final_url || "");
+      setCtaFinalText(tool.cta_final_text || "");
+      const raw = Array.isArray(tool.internal_links) ? tool.internal_links : [];
+      setInternalLinks(
+        raw.map((l: any) => ({
+          label: l.label || "",
+          url: l.url || "",
+          imageUrl: l.imageUrl || null,
+          imageSource: l.imageSource || null,
+          imagePath: l.imagePath || null,
+        }))
+      );
     } else {
       setName("");
+      setSlug("");
+      setSlugManual(false);
       setDescription("");
       setUrl("");
-      setAttachmentUrl("");
       setIconUrl("");
+      setAttachmentUrl("");
+      setCoverImageUrl(null);
+      setCoverUrlInput("");
+      setCoverMode("upload");
       setSelectedTags([]);
       setIsVisible(true);
       setIsFeatured(false);
       setFeaturedIndefinite(false);
       setFeaturedStart("");
       setFeaturedEnd("");
-      setWhatIs("");
-      setWhoFor("");
-      setHowHelps("");
-      setPros("");
-      setCons("");
-      setExtraMarkdown("");
       setSeoTitle("");
       setSeoDescription("");
+      setContentMarkdown("");
+      setCtaTopLabel(""); setCtaTopUrl(""); setCtaTopText("");
+      setCtaMiddleLabel(""); setCtaMiddleUrl(""); setCtaMiddleText("");
+      setCtaFinalLabel(""); setCtaFinalUrl(""); setCtaFinalText("");
+      setInternalLinks([]);
     }
     setErrors({});
     setUploadedFile(null);
@@ -112,213 +175,181 @@ export function ToolModal({ open, onClose, onSave, tool, availableTags }: ToolMo
     setAttachmentSource("url");
   }, [tool, open]);
 
+  // Auto-slug
+  useEffect(() => {
+    if (!slugManual && name) setSlug(slugify(name));
+  }, [name, slugManual]);
+
+  // ---- Logo upload helpers ----
+  const handleFileSelect = (file: File) => {
+    const maxSize = 1.5 * 1024 * 1024;
+    const allowed = ["image/png", "image/jpeg", "image/jpg", "image/webp", "image/svg+xml"];
+    if (!allowed.includes(file.type)) {
+      toast.error("Use PNG, JPG, WEBP ou SVG");
+      return;
+    }
+    if (file.size > maxSize) {
+      toast.error("Imagem muito grande. Máx 1.5MB");
+      return;
+    }
+    setUploadedFile(file);
+    const reader = new FileReader();
+    reader.onloadend = () => setUploadPreview(reader.result as string);
+    reader.readAsDataURL(file);
+  };
+
+  const uploadLogoToStorage = async (file: File, toolId: string): Promise<string> => {
+    const ext = file.name.split(".").pop();
+    const filePath = `${toolId}-${Date.now()}.${ext}`;
+    const { error: uploadError } = await supabase.storage
+      .from("tools-icons")
+      .upload(filePath, file, { cacheControl: "3600", upsert: false });
+    if (uploadError) throw uploadError;
+    const { data } = supabase.storage.from("tools-icons").getPublicUrl(filePath);
+    return data.publicUrl;
+  };
+
+  // ---- Attachment upload helpers ----
+  const handleAttachmentFileSelect = (file: File) => {
+    const maxSize = 10 * 1024 * 1024;
+    const allowed = [
+      "application/pdf",
+      "application/zip",
+      "application/x-zip-compressed",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "application/vnd.ms-excel",
+      "text/plain",
+      "application/epub+zip",
+    ];
+    if (!allowed.includes(file.type)) {
+      toast.error("Formato não suportado para anexo");
+      return;
+    }
+    if (file.size > maxSize) {
+      toast.error("Arquivo muito grande. Máx 10MB");
+      return;
+    }
+    setUploadedAttachment(file);
+  };
+
+  const uploadAttachmentToStorage = async (file: File, toolId: string): Promise<string> => {
+    const ext = file.name.split(".").pop();
+    const filePath = `${toolId}-${Date.now()}.${ext}`;
+    const { error: uploadError } = await supabase.storage
+      .from("tools-attachments")
+      .upload(filePath, file, { cacheControl: "3600", upsert: false });
+    if (uploadError) throw uploadError;
+    const { data } = supabase.storage.from("tools-attachments").getPublicUrl(filePath);
+    return data.publicUrl;
+  };
+
+  // ---- Cover upload ----
+  const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("Capa muito grande. Máx 2MB");
+      return;
+    }
+    const allowed = ["image/png", "image/jpeg", "image/webp", "image/svg+xml"];
+    if (!allowed.includes(file.type)) {
+      toast.error("Use PNG, JPG, WEBP ou SVG");
+      return;
+    }
+    setCoverUploading(true);
+    try {
+      const ext = file.name.split(".").pop() || "png";
+      const id = tool?.id || "new";
+      // Reusing guide-covers bucket since it's already public + open to image uploads
+      const path = `tools/${id}/${Date.now()}.${ext}`;
+      const { error: uploadError } = await supabase.storage
+        .from("guide-covers")
+        .upload(path, file, { upsert: false });
+      if (uploadError) throw uploadError;
+      const { data: publicData } = supabase.storage.from("guide-covers").getPublicUrl(path);
+      setCoverImageUrl(publicData.publicUrl);
+    } catch (err: any) {
+      toast.error(err.message || "Erro no upload da capa");
+    } finally {
+      setCoverUploading(false);
+      if (coverFileRef.current) coverFileRef.current.value = "";
+    }
+  };
+
+  // ---- Internal links ----
+  const addLink = () =>
+    setInternalLinks([...internalLinks, { label: "", url: "", imageUrl: null, imageSource: null, imagePath: null }]);
+  const removeLink = (i: number) => setInternalLinks(internalLinks.filter((_, idx) => idx !== i));
+  const updateLink = (i: number, field: keyof InternalLink, value: string | null) => {
+    const next = [...internalLinks];
+    (next[i] as any)[field] = value;
+    setInternalLinks(next);
+  };
+
+  const toggleTag = (tag: string) => {
+    setSelectedTags((prev) =>
+      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
+    );
+    setErrors((p) => ({ ...p, tags: "" }));
+  };
+
+  // ---- Validation ----
   const validate = () => {
     const newErrors: Record<string, string> = {};
+    if (!name.trim()) newErrors.name = "Nome é obrigatório";
+    else if (name.length > 100) newErrors.name = "Máx 100 caracteres";
 
-    if (!name.trim()) {
-      newErrors.name = "Nome é obrigatório";
-    } else if (name.length > 100) {
-      newErrors.name = "Nome deve ter no máximo 100 caracteres";
-    }
+    if (!description.trim()) newErrors.description = "Descrição é obrigatória";
+    else if (description.length > 500) newErrors.description = "Máx 500 caracteres";
 
-    if (!description.trim()) {
-      newErrors.description = "Descrição é obrigatória";
-    } else if (description.length > 500) {
-      newErrors.description = "Descrição deve ter no máximo 500 caracteres";
-    }
+    if (url && !url.match(/^https?:\/\/.+/)) newErrors.url = "URL deve começar com http(s)://";
+    if (attachmentUrl && !attachmentUrl.match(/^https?:\/\/.+/))
+      newErrors.attachmentUrl = "URL deve começar com http(s)://";
+    if (iconUrl && !iconUrl.match(/^https?:\/\/.+/))
+      newErrors.iconUrl = "URL deve começar com http(s)://";
 
-    if (url && !url.match(/^https?:\/\/.+/)) {
-      newErrors.url = "URL deve começar com http:// ou https://";
-    }
+    if (selectedTags.length === 0) newErrors.tags = "Selecione ao menos uma categoria";
 
-    if (attachmentUrl && !attachmentUrl.match(/^https?:\/\/.+/)) {
-      newErrors.attachmentUrl = "URL do anexo deve começar com http:// ou https://";
-    }
-
-    if (iconUrl && !iconUrl.match(/^https?:\/\/.+/)) {
-      newErrors.iconUrl = "URL do ícone deve começar com http:// ou https://";
-    }
-
-    if (selectedTags.length === 0) {
-      newErrors.tags = "Selecione pelo menos uma categoria";
-    }
-
-    // Featured validations
     if (isFeatured && !featuredIndefinite) {
-      if (!featuredStart) {
-        newErrors.featuredStart = "Informe o início do destaque";
-      }
-      if (!featuredEnd) {
-        newErrors.featuredEnd = "Informe o fim do destaque";
-      }
-      if (featuredStart && featuredEnd && featuredEnd < featuredStart) {
-        newErrors.featuredEnd = "Fim do destaque deve ser após o início";
-      }
+      if (!featuredStart) newErrors.featuredStart = "Informe início";
+      if (!featuredEnd) newErrors.featuredEnd = "Informe fim";
+      if (featuredStart && featuredEnd && featuredEnd < featuredStart)
+        newErrors.featuredEnd = "Fim deve ser após o início";
     }
+
+    // CTAs (label e URL juntos)
+    if (ctaTopLabel && !ctaTopUrl) newErrors.ctaTopUrl = "URL obrigatória";
+    if (!ctaTopLabel && ctaTopUrl) newErrors.ctaTopLabel = "Label obrigatório";
+    if (ctaMiddleLabel && !ctaMiddleUrl) newErrors.ctaMiddleUrl = "URL obrigatória";
+    if (!ctaMiddleLabel && ctaMiddleUrl) newErrors.ctaMiddleLabel = "Label obrigatório";
+    if (ctaFinalLabel && !ctaFinalUrl) newErrors.ctaFinalUrl = "URL obrigatória";
+    if (!ctaFinalLabel && ctaFinalUrl) newErrors.ctaFinalLabel = "Label obrigatório";
+
+    // Links internos
+    internalLinks.forEach((link, i) => {
+      if (link.label && !link.url) newErrors[`link_${i}_url`] = "URL obrigatória";
+      if (!link.label && link.url) newErrors[`link_${i}_label`] = "Texto obrigatório";
+    });
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleFileSelect = (file: File) => {
-    console.log("[Ferramentas] Upload LOGO -> bucket: tools-icons, file:", file?.name);
-    const maxSize = 1.5 * 1024 * 1024; // 1.5MB
-    const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp', 'image/svg+xml'];
-
-    if (!allowedTypes.includes(file.type)) {
-      setErrors(prev => ({ ...prev, logoUpload: "Formato não suportado para logo. Use PNG, JPG, WEBP ou SVG." }));
-      toast.error("Por favor, selecione uma imagem para o logo");
-      return;
-    }
-
-    if (file.size > maxSize) {
-      setErrors(prev => ({ ...prev, logoUpload: "Arquivo muito grande. Máximo 1.5MB." }));
-      toast.error("Imagem muito grande. Máximo 1.5MB");
-      return;
-    }
-
-    setUploadedFile(file);
-    setErrors(prev => ({ ...prev, logoUpload: "" }));
-    
-    // Create preview
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setUploadPreview(reader.result as string);
-    };
-    reader.readAsDataURL(file);
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-    const file = e.dataTransfer.files[0];
-    if (file) handleFileSelect(file);
-  };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(true);
-  };
-
-  const handleDragLeave = () => {
-    setIsDragging(false);
-  };
-
-  const uploadToStorage = async (file: File, toolId: string): Promise<string> => {
-    const timestamp = new Date().toISOString().replace(/[-:]/g, '').split('.')[0];
-    const ext = file.name.split('.').pop();
-    const fileName = `${toolId}-${timestamp}.${ext}`;
-    const filePath = `${fileName}`;
-
-    const { error: uploadError } = await supabase.storage
-      .from('tools-icons')
-      .upload(filePath, file, {
-        cacheControl: '3600',
-        upsert: false
-      });
-
-    if (uploadError) throw uploadError;
-
-    const { data: { publicUrl } } = supabase.storage
-      .from('tools-icons')
-      .getPublicUrl(filePath);
-
-    return publicUrl;
-  };
-
-  const uploadAttachmentToStorage = async (file: File, toolId: string): Promise<string> => {
-    const timestamp = new Date().toISOString().replace(/[-:]/g, '').split('.')[0];
-    const ext = file.name.split('.').pop();
-    const fileName = `${toolId}-${timestamp}.${ext}`;
-    const filePath = `${fileName}`;
-
-    const { error: uploadError } = await supabase.storage
-      .from('tools-attachments')
-      .upload(filePath, file, {
-        cacheControl: '3600',
-        upsert: false
-      });
-
-    if (uploadError) throw uploadError;
-
-    const { data: { publicUrl } } = supabase.storage
-      .from('tools-attachments')
-      .getPublicUrl(filePath);
-
-    return publicUrl;
-  };
-
-  const handleAttachmentFileSelect = (file: File) => {
-    console.log("[Ferramentas] Upload ANEXO -> bucket: tools-attachments, file:", file?.name);
-    const maxSize = 10 * 1024 * 1024; // 10MB
-    const allowedTypes = [
-      'application/pdf',
-      'application/zip',
-      'application/x-zip-compressed',
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      'application/vnd.ms-excel',
-      'text/plain',
-      'application/epub+zip'
-    ];
-
-    // Bloquear imagens explicitamente no campo de anexo
-    const imageTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp', 'image/svg+xml', 'image/gif'];
-    if (imageTypes.includes(file.type)) {
-      setErrors(prev => ({ ...prev, attachmentUpload: "Imagens não são permitidas aqui. Use o campo 'Logo/Ícone' para imagens." }));
-      toast.error("Use o campo Logo/Ícone para fazer upload de imagens");
-      return;
-    }
-
-    if (!allowedTypes.includes(file.type)) {
-      setErrors(prev => ({ ...prev, attachmentUpload: "Formato não suportado. Use PDF, ZIP, DOCX, XLSX, TXT ou EPUB." }));
-      toast.error("Formato de arquivo não suportado para anexo");
-      return;
-    }
-
-    if (file.size > maxSize) {
-      setErrors(prev => ({ ...prev, attachmentUpload: "Arquivo muito grande. Máximo 10MB." }));
-      toast.error("Arquivo muito grande. Máximo 10MB");
-      return;
-    }
-
-    setUploadedAttachment(file);
-    setErrors(prev => ({ ...prev, attachmentUpload: "" }));
-  };
-
-  const handleAttachmentDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDraggingAttachment(false);
-    const file = e.dataTransfer.files[0];
-    if (file) handleAttachmentFileSelect(file);
-  };
-
-  const handleAttachmentDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDraggingAttachment(true);
-  };
-
-  const handleAttachmentDragLeave = () => {
-    setIsDraggingAttachment(false);
-  };
-
   const handleSave = async () => {
     if (!validate()) return;
-
     setSaving(true);
     try {
       let finalIconUrl = iconUrl.trim() || undefined;
       let finalAttachmentUrl = attachmentUrl.trim() || undefined;
 
-      // If uploading a logo file, upload to storage first
       if (logoSource === "upload" && uploadedFile) {
         setUploading(true);
         try {
-          const toolId = tool?.id || crypto.randomUUID();
-          finalIconUrl = await uploadToStorage(uploadedFile, toolId);
-        } catch (error) {
-          toast.error("Erro ao fazer upload da imagem");
-          console.error("Upload error:", error);
+          const id = tool?.id || crypto.randomUUID();
+          finalIconUrl = await uploadLogoToStorage(uploadedFile, id);
+        } catch (err) {
+          toast.error("Erro ao fazer upload da logo");
           setSaving(false);
           setUploading(false);
           return;
@@ -327,15 +358,13 @@ export function ToolModal({ open, onClose, onSave, tool, availableTags }: ToolMo
         }
       }
 
-      // If uploading an attachment file, upload to storage
       if (attachmentSource === "upload" && uploadedAttachment) {
         setAttachmentUploading(true);
         try {
-          const toolId = tool?.id || crypto.randomUUID();
-          finalAttachmentUrl = await uploadAttachmentToStorage(uploadedAttachment, toolId);
-        } catch (error) {
+          const id = tool?.id || crypto.randomUUID();
+          finalAttachmentUrl = await uploadAttachmentToStorage(uploadedAttachment, id);
+        } catch (err) {
           toast.error("Erro ao fazer upload do anexo");
-          console.error("Attachment upload error:", error);
           setSaving(false);
           setAttachmentUploading(false);
           return;
@@ -343,28 +372,51 @@ export function ToolModal({ open, onClose, onSave, tool, availableTags }: ToolMo
           setAttachmentUploading(false);
         }
       }
+
+      const validLinks = internalLinks
+        .filter((l) => l.label.trim() && l.url.trim())
+        .map((l) => ({
+          label: l.label.trim(),
+          url: l.url.trim(),
+          imageUrl: l.imageUrl || null,
+          imageSource: l.imageSource || null,
+          imagePath: l.imagePath || null,
+        }));
 
       await onSave({
         ...(tool?.id && { id: tool.id }),
         name: name.trim(),
+        slug: slug.trim() || undefined,
         description: description.trim(),
         url: url.trim() || undefined,
         attachment_url: finalAttachmentUrl,
         icon_url: finalIconUrl,
+        cover_image_url: coverImageUrl,
         tags: selectedTags,
         is_visible: isVisible,
         is_featured: isFeatured,
         featured_indefinite: isFeatured ? featuredIndefinite : false,
-        featured_start: isFeatured && !featuredIndefinite && featuredStart ? new Date(featuredStart).toISOString() : null,
-        featured_end: isFeatured && !featuredIndefinite && featuredEnd ? new Date(featuredEnd).toISOString() : null,
-        what_is: whatIs.trim() || null,
-        who_for: whoFor.trim() || null,
-        how_helps: howHelps.trim() || null,
-        pros: pros.trim() || null,
-        cons: cons.trim() || null,
-        extra_markdown: extraMarkdown.trim() || null,
+        featured_start:
+          isFeatured && !featuredIndefinite && featuredStart
+            ? new Date(featuredStart).toISOString()
+            : null,
+        featured_end:
+          isFeatured && !featuredIndefinite && featuredEnd
+            ? new Date(featuredEnd).toISOString()
+            : null,
         seo_title: seoTitle.trim() || null,
         seo_description: seoDescription.trim() || null,
+        content_markdown: contentMarkdown,
+        cta_top_label: ctaTopLabel.trim() || null,
+        cta_top_url: ctaTopUrl.trim() || null,
+        cta_top_text: ctaTopText.trim() || null,
+        cta_middle_label: ctaMiddleLabel.trim() || null,
+        cta_middle_url: ctaMiddleUrl.trim() || null,
+        cta_middle_text: ctaMiddleText.trim() || null,
+        cta_final_label: ctaFinalLabel.trim() || null,
+        cta_final_url: ctaFinalUrl.trim() || null,
+        cta_final_text: ctaFinalText.trim() || null,
+        internal_links: validLinks as any,
       } as any);
       onClose();
     } finally {
@@ -372,570 +424,669 @@ export function ToolModal({ open, onClose, onSave, tool, availableTags }: ToolMo
     }
   };
 
-  const toggleTag = (tag: string) => {
-    setSelectedTags((prev) =>
-      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
-    );
-    setErrors((prev) => ({ ...prev, tags: "" }));
-  };
-
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[680px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>
-            {tool ? "Editar Ferramenta" : "Adicionar Ferramenta"}
-          </DialogTitle>
+          <DialogTitle>{tool ? "Editar Ferramenta" : "Adicionar Ferramenta"}</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
-          <div className="space-y-2">
-            <Label htmlFor="name">
-              Nome <span className="text-destructive">*</span>
-            </Label>
-            <Input
-              id="name"
-              value={name}
-              onChange={(e) => {
-                setName(e.target.value);
-                setErrors((prev) => ({ ...prev, name: "" }));
-              }}
-              placeholder="Ex: ChatGPT Plus"
-              aria-invalid={!!errors.name}
-              aria-describedby={errors.name ? "name-error" : undefined}
-            />
-            {errors.name && (
-              <p id="name-error" className="text-sm text-destructive">
-                {errors.name}
-              </p>
-            )}
-          </div>
+        <Tabs defaultValue="basic" className="w-full">
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="basic">Básico</TabsTrigger>
+            <TabsTrigger value="seo">SEO</TabsTrigger>
+            <TabsTrigger value="content">Conteúdo</TabsTrigger>
+            <TabsTrigger value="ctas">CTAs</TabsTrigger>
+            <TabsTrigger value="links">Links</TabsTrigger>
+          </TabsList>
 
-          <div className="space-y-2">
-            <Label htmlFor="description">
-              Descrição <span className="text-destructive">*</span>
-            </Label>
-            <Textarea
-              id="description"
-              value={description}
-              onChange={(e) => {
-                setDescription(e.target.value);
-                setErrors((prev) => ({ ...prev, description: "" }));
-              }}
-              placeholder="Breve descrição da ferramenta..."
-              rows={3}
-              aria-invalid={!!errors.description}
-              aria-describedby={errors.description ? "description-error" : undefined}
-            />
-            {errors.description && (
-              <p id="description-error" className="text-sm text-destructive">
-                {errors.description}
-              </p>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="url">URL</Label>
-            <Input
-              id="url"
-              type="url"
-              value={url}
-              onChange={(e) => {
-                setUrl(e.target.value);
-                setErrors((prev) => ({ ...prev, url: "" }));
-              }}
-              placeholder="https://exemplo.com"
-              aria-invalid={!!errors.url}
-              aria-describedby={errors.url ? "url-error" : undefined}
-            />
-            {errors.url && (
-              <p id="url-error" className="text-sm text-destructive">
-                {errors.url}
-              </p>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label>Anexo (URL para Download)</Label>
-            <Tabs value={attachmentSource} onValueChange={(v) => setAttachmentSource(v as "upload" | "url")}>
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="upload">
-                  <Upload className="w-4 h-4 mr-2" />
-                  Upload
-                </TabsTrigger>
-                <TabsTrigger value="url">
-                  <LinkIcon className="w-4 h-4 mr-2" />
-                  URL
-                </TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="upload" className="space-y-3">
-                <div
-                  onDrop={handleAttachmentDrop}
-                  onDragOver={handleAttachmentDragOver}
-                  onDragLeave={handleAttachmentDragLeave}
-                  className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
-                    isDraggingAttachment ? 'border-primary bg-primary/5' : 'border-muted-foreground/25'
-                  }`}
-                >
-                  {uploadedAttachment ? (
-                    <div className="space-y-3">
-                      <div className="w-16 h-16 mx-auto rounded-lg bg-muted flex items-center justify-center">
-                        <Upload className="w-8 h-8 text-muted-foreground" />
-                      </div>
-                      <p className="text-sm font-medium">{uploadedAttachment.name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {(uploadedAttachment.size / 1024 / 1024).toFixed(2)} MB
-                      </p>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setUploadedAttachment(null)}
-                      >
-                        <X className="w-3 h-3 mr-1" />
-                        Remover
-                      </Button>
+          {/* ============= BÁSICO ============= */}
+          <TabsContent value="basic" className="space-y-4 mt-4">
+            {/* Cover Image (hero estilo guia) */}
+            <div>
+              <Label className="flex items-center gap-1.5 mb-2">
+                <ImageIcon className="h-4 w-4" /> Imagem de capa (opcional)
+              </Label>
+              {coverImageUrl ? (
+                <div className="space-y-2">
+                  <div className="relative w-full aspect-video rounded-lg overflow-hidden border border-border bg-accent">
+                    <img
+                      src={coverImageUrl}
+                      alt="Capa da ferramenta"
+                      className="w-full h-full object-cover"
+                      referrerPolicy="no-referrer"
+                    />
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="text-destructive"
+                    onClick={() => {
+                      setCoverImageUrl(null);
+                      setCoverUrlInput("");
+                    }}
+                  >
+                    <X className="h-3.5 w-3.5 mr-1" /> Remover capa
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <div className="flex gap-1">
+                    <Button
+                      variant={coverMode === "upload" ? "default" : "outline"}
+                      size="sm"
+                      type="button"
+                      className="h-8 text-xs"
+                      onClick={() => setCoverMode("upload")}
+                    >
+                      <Upload className="h-3.5 w-3.5 mr-1" /> Upload
+                    </Button>
+                    <Button
+                      variant={coverMode === "url" ? "default" : "outline"}
+                      size="sm"
+                      type="button"
+                      className="h-8 text-xs"
+                      onClick={() => setCoverMode("url")}
+                    >
+                      <LinkIcon className="h-3.5 w-3.5 mr-1" /> URL
+                    </Button>
+                  </div>
+                  {coverMode === "upload" ? (
+                    <div>
+                      <input
+                        ref={coverFileRef}
+                        type="file"
+                        accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                        className="text-sm file:mr-2 file:py-1.5 file:px-4 file:rounded-md file:border-0 file:text-sm file:bg-primary/10 file:text-primary hover:file:bg-primary/20"
+                        onChange={handleCoverUpload}
+                        disabled={coverUploading}
+                      />
+                      {coverUploading && <p className="text-xs text-muted-foreground mt-1">Enviando...</p>}
                     </div>
                   ) : (
-                    <>
-                      <Upload className="w-12 h-12 mx-auto mb-3 text-muted-foreground" />
-                      <p className="text-sm mb-2">Arraste um arquivo ou</p>
+                    <div className="flex gap-2">
+                      <Input
+                        value={coverUrlInput}
+                        onChange={(e) => setCoverUrlInput(e.target.value)}
+                        placeholder="https://..."
+                        className="h-9"
+                      />
                       <Button
-                        type="button"
-                        variant="outline"
                         size="sm"
-                        onClick={() => attachmentInputRef.current?.click()}
-                      >
-                        Selecionar arquivo
-                      </Button>
-                       <input
-                         ref={attachmentInputRef}
-                         type="file"
-                         name="attachment-upload"
-                         id="attachment-upload-input"
-                         accept=".pdf,.zip,.docx,.xlsx,.xls,.txt,.epub"
-                         className="hidden"
-                         onChange={(e) => {
-                           const file = e.target.files?.[0];
-                           if (file) handleAttachmentFileSelect(file);
-                         }}
-                       />
-                      <p className="text-xs text-muted-foreground mt-2">
-                        PDF, ZIP, DOCX, XLSX, TXT ou EPUB • Máx 10MB
-                      </p>
-                    </>
-                  )}
-                </div>
-                {errors.attachmentUpload && (
-                  <p className="text-sm text-destructive">{errors.attachmentUpload}</p>
-                )}
-              </TabsContent>
-
-              <TabsContent value="url" className="space-y-3">
-                <Input
-                  id="attachmentUrl"
-                  type="url"
-                  value={attachmentUrl}
-                  onChange={(e) => {
-                    setAttachmentUrl(e.target.value);
-                    setErrors((prev) => ({ ...prev, attachmentUrl: "" }));
-                  }}
-                  placeholder="https://exemplo.com/arquivo.pdf"
-                  aria-invalid={!!errors.attachmentUrl}
-                  aria-describedby={errors.attachmentUrl ? "attachmentUrl-error attachmentUrl-help" : "attachmentUrl-help"}
-                />
-                <p id="attachmentUrl-help" className="text-xs text-muted-foreground">
-                  Opcional. Link direto para um arquivo (PDF, e-book, etc.)
-                </p>
-                {errors.attachmentUrl && (
-                  <p id="attachmentUrl-error" className="text-sm text-destructive">
-                    {errors.attachmentUrl}
-                  </p>
-                )}
-              </TabsContent>
-            </Tabs>
-          </div>
-
-          <div className="space-y-2">
-            <Label>Logo/Ícone</Label>
-            <Tabs value={logoSource} onValueChange={(v) => setLogoSource(v as "upload" | "url")}>
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="upload">
-                  <Upload className="w-4 h-4 mr-2" />
-                  Upload
-                </TabsTrigger>
-                <TabsTrigger value="url">
-                  <LinkIcon className="w-4 h-4 mr-2" />
-                  URL
-                </TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="upload" className="space-y-3">
-                <div
-                  onDrop={handleDrop}
-                  onDragOver={handleDragOver}
-                  onDragLeave={handleDragLeave}
-                  className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
-                    isDragging ? 'border-primary bg-primary/5' : 'border-muted-foreground/25'
-                  }`}
-                >
-                  {uploadPreview ? (
-                    <div className="space-y-3">
-                      <div className="w-24 h-24 mx-auto rounded-full bg-muted flex items-center justify-center overflow-hidden border shadow-sm">
-                        <img
-                          src={uploadPreview}
-                          alt="Preview"
-                          className="w-full h-full object-contain"
-                        />
-                      </div>
-                      <p className="text-sm text-muted-foreground">{uploadedFile?.name}</p>
-                      <Button
+                        className="h-9"
                         type="button"
-                        variant="ghost"
-                        size="sm"
                         onClick={() => {
-                          setUploadedFile(null);
-                          setUploadPreview("");
+                          if (coverUrlInput.trim()) setCoverImageUrl(coverUrlInput.trim());
                         }}
+                        disabled={!coverUrlInput.trim()}
                       >
-                        <X className="w-3 h-3 mr-1" />
-                        Remover
+                        OK
                       </Button>
                     </div>
-                  ) : (
-                    <>
-                      <Sparkles className="w-12 h-12 mx-auto mb-3 text-muted-foreground" />
-                      <p className="text-sm mb-2">Arraste uma imagem ou</p>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => fileInputRef.current?.click()}
-                      >
-                        Selecionar arquivo
-                      </Button>
-                       <input
-                         ref={fileInputRef}
-                         type="file"
-                         name="logo-upload"
-                         id="logo-upload-input"
-                         accept="image/png,image/jpeg,image/jpg,image/webp,image/svg+xml"
-                         className="hidden"
-                         onChange={(e) => {
-                           const file = e.target.files?.[0];
-                           if (file) handleFileSelect(file);
-                         }}
-                       />
-                      <p className="text-xs text-muted-foreground mt-2">
-                        PNG, JPG, WEBP ou SVG • Máx 1.5MB
-                      </p>
-                    </>
                   )}
                 </div>
-                {errors.logoUpload && (
-                  <p className="text-sm text-destructive">{errors.logoUpload}</p>
-                )}
-              </TabsContent>
+              )}
+            </div>
 
-              <TabsContent value="url" className="space-y-3">
-                <div className="flex gap-3">
-                  <div className="flex-1">
+            <Separator />
+
+            <div className="space-y-2">
+              <Label>
+                Nome <span className="text-destructive">*</span>
+              </Label>
+              <Input
+                value={name}
+                onChange={(e) => {
+                  setName(e.target.value);
+                  setErrors((p) => ({ ...p, name: "" }));
+                }}
+                placeholder="Ex: ChatGPT Plus"
+              />
+              {errors.name && <p className="text-sm text-destructive">{errors.name}</p>}
+            </div>
+
+            <div className="space-y-2">
+              <Label>Slug</Label>
+              <Input
+                value={slug}
+                onChange={(e) => {
+                  setSlug(e.target.value);
+                  setSlugManual(true);
+                }}
+                placeholder="slug-da-ferramenta"
+              />
+              <p className="text-xs text-muted-foreground">Auto-gerado a partir do nome se vazio.</p>
+            </div>
+
+            <div className="space-y-2">
+              <Label>
+                Descrição curta <span className="text-destructive">*</span>
+              </Label>
+              <Textarea
+                value={description}
+                onChange={(e) => {
+                  setDescription(e.target.value);
+                  setErrors((p) => ({ ...p, description: "" }));
+                }}
+                placeholder="Resumo que aparece no card e no hero da página"
+                rows={3}
+              />
+              {errors.description && <p className="text-sm text-destructive">{errors.description}</p>}
+            </div>
+
+            <div className="space-y-2">
+              <Label>Link externo da ferramenta</Label>
+              <Input
+                type="url"
+                value={url}
+                onChange={(e) => {
+                  setUrl(e.target.value);
+                  setErrors((p) => ({ ...p, url: "" }));
+                }}
+                placeholder="https://exemplo.com"
+              />
+              {errors.url && <p className="text-sm text-destructive">{errors.url}</p>}
+            </div>
+
+            {/* Logo */}
+            <div className="space-y-2">
+              <Label>Logo / Ícone</Label>
+              <Tabs value={logoSource} onValueChange={(v) => setLogoSource(v as any)}>
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="upload">
+                    <Upload className="w-4 h-4 mr-2" /> Upload
+                  </TabsTrigger>
+                  <TabsTrigger value="url">
+                    <LinkIcon className="w-4 h-4 mr-2" /> URL
+                  </TabsTrigger>
+                </TabsList>
+                <TabsContent value="upload" className="space-y-2">
+                  <div className="border-2 border-dashed rounded-lg p-4 text-center border-muted-foreground/25">
+                    {uploadPreview ? (
+                      <div className="space-y-2">
+                        <div className="w-20 h-20 mx-auto rounded-full bg-muted flex items-center justify-center overflow-hidden border">
+                          <img src={uploadPreview} alt="Preview" className="w-full h-full object-contain" />
+                        </div>
+                        <p className="text-xs text-muted-foreground">{uploadedFile?.name}</p>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setUploadedFile(null);
+                            setUploadPreview("");
+                          }}
+                        >
+                          <X className="w-3 h-3 mr-1" /> Remover
+                        </Button>
+                      </div>
+                    ) : (
+                      <>
+                        <Sparkles className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => fileInputRef.current?.click()}
+                        >
+                          Selecionar imagem
+                        </Button>
+                        <input
+                          ref={fileInputRef}
+                          type="file"
+                          accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                          className="hidden"
+                          onChange={(e) => {
+                            const f = e.target.files?.[0];
+                            if (f) handleFileSelect(f);
+                          }}
+                        />
+                        <p className="text-xs text-muted-foreground mt-2">
+                          PNG, JPG, WEBP ou SVG • Máx 1.5MB
+                        </p>
+                      </>
+                    )}
+                  </div>
+                </TabsContent>
+                <TabsContent value="url" className="space-y-2">
+                  <div className="flex gap-3">
                     <Input
-                      id="iconUrl"
                       type="url"
                       value={iconUrl}
                       onChange={(e) => {
                         setIconUrl(e.target.value);
                         setImageError(false);
-                        setErrors((prev) => ({ ...prev, iconUrl: "" }));
+                        setErrors((p) => ({ ...p, iconUrl: "" }));
                       }}
                       placeholder="https://exemplo.com/logo.png"
-                      aria-invalid={!!errors.iconUrl}
-                      aria-describedby={errors.iconUrl ? "iconUrl-error" : undefined}
                     />
-                    {errors.iconUrl && (
-                      <p id="iconUrl-error" className="text-sm text-destructive mt-1">
-                        {errors.iconUrl}
-                      </p>
-                    )}
+                    <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center overflow-hidden border shrink-0">
+                      {iconUrl && !imageError ? (
+                        <img
+                          src={iconUrl}
+                          alt="Preview"
+                          className="w-full h-full object-contain"
+                          referrerPolicy="no-referrer"
+                          onError={() => setImageError(true)}
+                        />
+                      ) : (
+                        <Sparkles className="w-5 h-5 text-muted-foreground" />
+                      )}
+                    </div>
                   </div>
-                  <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center overflow-hidden border shadow-sm">
-                    {iconUrl && !imageError ? (
-                      <img
-                        src={iconUrl}
-                        alt="Preview do logo"
-                        className="w-full h-full object-contain"
-                        referrerPolicy="no-referrer"
-                        onError={() => setImageError(true)}
-                      />
-                    ) : (
-                      <Sparkles className="w-6 h-6 text-muted-foreground" aria-hidden="true" />
-                    )}
-                  </div>
-                </div>
-                {iconUrl && (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="text-muted-foreground"
-                    onClick={() => {
-                      setIconUrl("");
-                      setImageError(false);
-                    }}
-                  >
-                    <X className="w-3 h-3 mr-1" />
-                    Remover URL
-                  </Button>
-                )}
-              </TabsContent>
-            </Tabs>
-          </div>
+                  {errors.iconUrl && <p className="text-sm text-destructive">{errors.iconUrl}</p>}
+                </TabsContent>
+              </Tabs>
+            </div>
 
-          <div className="space-y-2">
-            <Label>
-              Categorias <span className="text-destructive">*</span>
-            </Label>
-            <div className="flex flex-wrap gap-2">
-              {availableTags.map((tag) => (
-                <Badge
-                  key={tag}
-                  variant={selectedTags.includes(tag) ? "default" : "outline"}
-                  className="cursor-pointer px-3 py-2 text-sm hover:opacity-80"
-                  onClick={() => toggleTag(tag)}
-                  role="checkbox"
-                  aria-checked={selectedTags.includes(tag)}
-                  tabIndex={0}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
-                      toggleTag(tag);
+            {/* Anexo */}
+            <div className="space-y-2">
+              <Label>Anexo (download opcional)</Label>
+              <Tabs value={attachmentSource} onValueChange={(v) => setAttachmentSource(v as any)}>
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="upload">
+                    <Upload className="w-4 h-4 mr-2" /> Upload
+                  </TabsTrigger>
+                  <TabsTrigger value="url">
+                    <LinkIcon className="w-4 h-4 mr-2" /> URL
+                  </TabsTrigger>
+                </TabsList>
+                <TabsContent value="upload" className="space-y-2">
+                  <div className="border-2 border-dashed rounded-lg p-4 text-center border-muted-foreground/25">
+                    {uploadedAttachment ? (
+                      <div className="space-y-2">
+                        <p className="text-sm font-medium">{uploadedAttachment.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {(uploadedAttachment.size / 1024 / 1024).toFixed(2)} MB
+                        </p>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setUploadedAttachment(null)}
+                        >
+                          <X className="w-3 h-3 mr-1" /> Remover
+                        </Button>
+                      </div>
+                    ) : (
+                      <>
+                        <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => attachmentInputRef.current?.click()}
+                        >
+                          Selecionar arquivo
+                        </Button>
+                        <input
+                          ref={attachmentInputRef}
+                          type="file"
+                          accept=".pdf,.zip,.docx,.xlsx,.xls,.txt,.epub"
+                          className="hidden"
+                          onChange={(e) => {
+                            const f = e.target.files?.[0];
+                            if (f) handleAttachmentFileSelect(f);
+                          }}
+                        />
+                        <p className="text-xs text-muted-foreground mt-2">
+                          PDF, ZIP, DOCX, XLSX, TXT ou EPUB • Máx 10MB
+                        </p>
+                      </>
+                    )}
+                  </div>
+                </TabsContent>
+                <TabsContent value="url" className="space-y-2">
+                  <Input
+                    type="url"
+                    value={attachmentUrl}
+                    onChange={(e) => {
+                      setAttachmentUrl(e.target.value);
+                      setErrors((p) => ({ ...p, attachmentUrl: "" }));
+                    }}
+                    placeholder="https://exemplo.com/arquivo.pdf"
+                  />
+                  {errors.attachmentUrl && (
+                    <p className="text-sm text-destructive">{errors.attachmentUrl}</p>
+                  )}
+                </TabsContent>
+              </Tabs>
+            </div>
+
+            {/* Categorias */}
+            <div className="space-y-2">
+              <Label>
+                Categorias <span className="text-destructive">*</span>
+              </Label>
+              <div className="flex flex-wrap gap-2">
+                {availableTags.map((tag) => (
+                  <Badge
+                    key={tag}
+                    variant={selectedTags.includes(tag) ? "default" : "outline"}
+                    className="cursor-pointer px-3 py-2 text-sm"
+                    onClick={() => toggleTag(tag)}
+                  >
+                    {tag}
+                    {selectedTags.includes(tag) && <X className="w-3 h-3 ml-1" />}
+                  </Badge>
+                ))}
+              </div>
+              {errors.tags && <p className="text-sm text-destructive">{errors.tags}</p>}
+            </div>
+
+            {/* Visível */}
+            <div className="flex items-center space-x-2">
+              <Switch checked={isVisible} onCheckedChange={setIsVisible} />
+              <Label className="cursor-pointer">Visível para o público</Label>
+            </div>
+
+            {/* Destaque */}
+            <Separator />
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <Star className="w-4 h-4 text-amber-500" />
+                <span className="text-sm font-semibold">Destaque</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Switch
+                  checked={isFeatured}
+                  onCheckedChange={(v) => {
+                    setIsFeatured(v);
+                    if (!v) {
+                      setFeaturedIndefinite(false);
+                      setFeaturedStart("");
+                      setFeaturedEnd("");
                     }
                   }}
-                >
-                  {tag}
-                  {selectedTags.includes(tag) && (
-                    <X className="w-3 h-3 ml-1" aria-hidden="true" />
+                />
+                <Label className="cursor-pointer">Ferramenta em destaque</Label>
+              </div>
+              {isFeatured && (
+                <div className="space-y-3 pl-2 border-l-2 border-amber-400/40">
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      checked={featuredIndefinite}
+                      onCheckedChange={(v) => {
+                        setFeaturedIndefinite(v);
+                        if (v) {
+                          setFeaturedStart("");
+                          setFeaturedEnd("");
+                        }
+                      }}
+                    />
+                    <Label className="cursor-pointer text-sm">Sem prazo</Label>
+                  </div>
+                  {!featuredIndefinite && (
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <Label className="text-xs">Início</Label>
+                        <Input
+                          type="datetime-local"
+                          value={featuredStart}
+                          onChange={(e) => setFeaturedStart(e.target.value)}
+                        />
+                        {errors.featuredStart && (
+                          <p className="text-xs text-destructive">{errors.featuredStart}</p>
+                        )}
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs">Fim</Label>
+                        <Input
+                          type="datetime-local"
+                          value={featuredEnd}
+                          onChange={(e) => setFeaturedEnd(e.target.value)}
+                        />
+                        {errors.featuredEnd && (
+                          <p className="text-xs text-destructive">{errors.featuredEnd}</p>
+                        )}
+                      </div>
+                    </div>
                   )}
-                </Badge>
-              ))}
-            </div>
-            {errors.tags && (
-              <p className="text-sm text-destructive">{errors.tags}</p>
-            )}
-          </div>
-
-          <div className="flex items-center space-x-2">
-            <Switch
-              id="visible"
-              checked={isVisible}
-              onCheckedChange={setIsVisible}
-            />
-            <Label htmlFor="visible" className="cursor-pointer">
-              Visível para o público
-            </Label>
-          </div>
-
-          {/* ── Bloco Destaque ── */}
-          <Separator />
-          <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <Star className="w-4 h-4 text-amber-500" aria-hidden="true" />
-              <span className="text-sm font-semibold">Destaque</span>
-            </div>
-
-            <div className="flex items-center space-x-2">
-              <Switch
-                id="is_featured"
-                checked={isFeatured}
-                onCheckedChange={(v) => {
-                  setIsFeatured(v);
-                  if (!v) {
-                    setFeaturedIndefinite(false);
-                    setFeaturedStart("");
-                    setFeaturedEnd("");
-                    setErrors((prev) => ({ ...prev, featuredStart: "", featuredEnd: "" }));
-                  }
-                }}
-              />
-              <Label htmlFor="is_featured" className="cursor-pointer">
-                Ferramenta em destaque
-              </Label>
-            </div>
-
-            {isFeatured && (
-              <div className="space-y-3 pl-2 border-l-2 border-amber-400/40">
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    id="featured_indefinite"
-                    checked={featuredIndefinite}
-                    onCheckedChange={(v) => {
-                      setFeaturedIndefinite(v);
-                      if (v) {
-                        setFeaturedStart("");
-                        setFeaturedEnd("");
-                        setErrors((prev) => ({ ...prev, featuredStart: "", featuredEnd: "" }));
-                      }
-                    }}
-                  />
-                  <Label htmlFor="featured_indefinite" className="cursor-pointer text-sm">
-                    Destaque indeterminado (sem prazo)
-                  </Label>
                 </div>
+              )}
+            </div>
+          </TabsContent>
 
-                {!featuredIndefinite && (
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1">
-                      <Label htmlFor="featured_start" className="text-xs text-muted-foreground">
-                        Início do destaque
-                      </Label>
+          {/* ============= SEO ============= */}
+          <TabsContent value="seo" className="space-y-4 mt-4">
+            <div>
+              <Label>SEO Title</Label>
+              <Input
+                value={seoTitle}
+                onChange={(e) => setSeoTitle(e.target.value)}
+                placeholder="Título para mecanismos de busca"
+              />
+              <p className="text-xs text-muted-foreground mt-1">{seoTitle.length}/60 caracteres</p>
+            </div>
+            <div>
+              <Label>SEO Description</Label>
+              <Textarea
+                value={seoDescription}
+                onChange={(e) => setSeoDescription(e.target.value)}
+                placeholder="Descrição para mecanismos de busca"
+                rows={3}
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                {seoDescription.length}/160 caracteres
+              </p>
+            </div>
+          </TabsContent>
+
+          {/* ============= CONTEÚDO ============= */}
+          <TabsContent value="content" className="space-y-4 mt-4">
+            <div>
+              <Label>Conteúdo (Markdown)</Label>
+              <p className="text-xs text-muted-foreground mb-2">
+                Texto editorial completo da página da ferramenta. Use H2/H3, listas, links internos,
+                imagens etc.
+              </p>
+              <MarkdownEditor
+                value={contentMarkdown}
+                onChange={setContentMarkdown}
+                placeholder="## O que é&#10;&#10;Descrição da ferramenta...&#10;&#10;## Para quem serve&#10;&#10;..."
+                rows={16}
+              />
+            </div>
+          </TabsContent>
+
+          {/* ============= CTAs ============= */}
+          <TabsContent value="ctas" className="space-y-4 mt-4">
+            <p className="text-sm text-muted-foreground">
+              CTAs são opcionais. Se preencher o label, a URL é obrigatória (e vice-versa). O texto
+              aparece acima do botão.
+            </p>
+
+            {/* Top */}
+            <div className="space-y-3">
+              <p className="text-sm font-medium">CTA Superior</p>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label>Label</Label>
+                  <Input
+                    value={ctaTopLabel}
+                    onChange={(e) => setCtaTopLabel(e.target.value)}
+                    placeholder="Ex: Acessar agora"
+                  />
+                  {errors.ctaTopLabel && (
+                    <p className="text-xs text-destructive mt-1">{errors.ctaTopLabel}</p>
+                  )}
+                </div>
+                <div>
+                  <Label>URL</Label>
+                  <Input
+                    value={ctaTopUrl}
+                    onChange={(e) => setCtaTopUrl(e.target.value)}
+                    placeholder="https://..."
+                  />
+                  {errors.ctaTopUrl && (
+                    <p className="text-xs text-destructive mt-1">{errors.ctaTopUrl}</p>
+                  )}
+                </div>
+              </div>
+              <div>
+                <Label>Texto/descrição (opcional)</Label>
+                <MarkdownEditor
+                  value={ctaTopText}
+                  onChange={setCtaTopText}
+                  placeholder="Frase exibida acima do botão..."
+                  rows={4}
+                  compact
+                  showHeadings={false}
+                />
+              </div>
+            </div>
+
+            <Separator />
+
+            {/* Middle */}
+            <div className="space-y-3">
+              <p className="text-sm font-medium">CTA Intermediário</p>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label>Label</Label>
+                  <Input
+                    value={ctaMiddleLabel}
+                    onChange={(e) => setCtaMiddleLabel(e.target.value)}
+                    placeholder="Ex: Testar agora"
+                  />
+                  {errors.ctaMiddleLabel && (
+                    <p className="text-xs text-destructive mt-1">{errors.ctaMiddleLabel}</p>
+                  )}
+                </div>
+                <div>
+                  <Label>URL</Label>
+                  <Input
+                    value={ctaMiddleUrl}
+                    onChange={(e) => setCtaMiddleUrl(e.target.value)}
+                    placeholder="https://..."
+                  />
+                  {errors.ctaMiddleUrl && (
+                    <p className="text-xs text-destructive mt-1">{errors.ctaMiddleUrl}</p>
+                  )}
+                </div>
+              </div>
+              <div>
+                <Label>Texto/descrição (opcional)</Label>
+                <MarkdownEditor
+                  value={ctaMiddleText}
+                  onChange={setCtaMiddleText}
+                  placeholder="Frase exibida acima do botão..."
+                  rows={4}
+                  compact
+                  showHeadings={false}
+                />
+              </div>
+            </div>
+
+            <Separator />
+
+            {/* Final */}
+            <div className="space-y-3">
+              <p className="text-sm font-medium">CTA Final</p>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label>Label</Label>
+                  <Input
+                    value={ctaFinalLabel}
+                    onChange={(e) => setCtaFinalLabel(e.target.value)}
+                    placeholder="Ex: Começar agora"
+                  />
+                  {errors.ctaFinalLabel && (
+                    <p className="text-xs text-destructive mt-1">{errors.ctaFinalLabel}</p>
+                  )}
+                </div>
+                <div>
+                  <Label>URL</Label>
+                  <Input
+                    value={ctaFinalUrl}
+                    onChange={(e) => setCtaFinalUrl(e.target.value)}
+                    placeholder="https://..."
+                  />
+                  {errors.ctaFinalUrl && (
+                    <p className="text-xs text-destructive mt-1">{errors.ctaFinalUrl}</p>
+                  )}
+                </div>
+              </div>
+              <div>
+                <Label>Texto/descrição (opcional)</Label>
+                <MarkdownEditor
+                  value={ctaFinalText}
+                  onChange={setCtaFinalText}
+                  placeholder="Frase exibida acima do botão..."
+                  rows={4}
+                  compact
+                  showHeadings={false}
+                />
+              </div>
+            </div>
+          </TabsContent>
+
+          {/* ============= LINKS ============= */}
+          <TabsContent value="links" className="space-y-4 mt-4">
+            <p className="text-sm text-muted-foreground">
+              Links úteis exibidos ao final da página da ferramenta. Aceita URLs internas (que
+              começam com "/") ou externas.
+            </p>
+
+            {internalLinks.map((link, i) => (
+              <div key={i} className="border border-border rounded-lg p-3 space-y-2">
+                <div className="flex items-start gap-2">
+                  <div className="flex-1 grid grid-cols-2 gap-2">
+                    <div>
                       <Input
-                        id="featured_start"
-                        type="datetime-local"
-                        value={featuredStart}
-                        onChange={(e) => {
-                          setFeaturedStart(e.target.value);
-                          setErrors((prev) => ({ ...prev, featuredStart: "" }));
-                        }}
-                        aria-invalid={!!errors.featuredStart}
+                        value={link.label}
+                        onChange={(e) => updateLink(i, "label", e.target.value)}
+                        placeholder="Texto do link"
                       />
-                      {errors.featuredStart && (
-                        <p className="text-xs text-destructive">{errors.featuredStart}</p>
+                      {errors[`link_${i}_label`] && (
+                        <p className="text-xs text-destructive mt-1">
+                          {errors[`link_${i}_label`]}
+                        </p>
                       )}
                     </div>
-                    <div className="space-y-1">
-                      <Label htmlFor="featured_end" className="text-xs text-muted-foreground">
-                        Fim do destaque
-                      </Label>
+                    <div>
                       <Input
-                        id="featured_end"
-                        type="datetime-local"
-                        value={featuredEnd}
-                        onChange={(e) => {
-                          setFeaturedEnd(e.target.value);
-                          setErrors((prev) => ({ ...prev, featuredEnd: "" }));
-                        }}
-                        aria-invalid={!!errors.featuredEnd}
+                        value={link.url}
+                        onChange={(e) => updateLink(i, "url", e.target.value)}
+                        placeholder="/guias/... ou https://..."
                       />
-                      {errors.featuredEnd && (
-                        <p className="text-xs text-destructive">{errors.featuredEnd}</p>
+                      {errors[`link_${i}_url`] && (
+                        <p className="text-xs text-destructive mt-1">{errors[`link_${i}_url`]}</p>
                       )}
                     </div>
                   </div>
-                )}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="mt-0.5 text-destructive"
+                    onClick={() => removeLink(i)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
-            )}
-          </div>
+            ))}
 
-          {/* ── Bloco Página Editorial (/ferramentas/[slug]) ── */}
-          <Separator />
-          <div className="space-y-4">
-            <div>
-              <p className="text-sm font-semibold">Página da ferramenta</p>
-              <p className="text-xs text-muted-foreground mt-1">
-                Conteúdo editorial mostrado na página individual <code>/ferramentas/[slug]</code>. Todos os campos são opcionais — se em branco, a página renderiza apenas hero + descrição + CTA.
-              </p>
-            </div>
+            <Button variant="outline" size="sm" onClick={addLink}>
+              <Plus className="h-4 w-4 mr-1" /> Adicionar link
+            </Button>
+          </TabsContent>
+        </Tabs>
 
-            <div className="space-y-2">
-              <Label htmlFor="what_is">O que é</Label>
-              <Textarea
-                id="what_is"
-                value={whatIs}
-                onChange={(e) => setWhatIs(e.target.value)}
-                placeholder="Explicação clara do que é a ferramenta..."
-                rows={3}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="who_for">Para quem serve</Label>
-              <Textarea
-                id="who_for"
-                value={whoFor}
-                onChange={(e) => setWhoFor(e.target.value)}
-                placeholder="Perfis de uso (ex.: estudantes, profissionais...)"
-                rows={3}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="how_helps">Como pode ajudar</Label>
-              <Textarea
-                id="how_helps"
-                value={howHelps}
-                onChange={(e) => setHowHelps(e.target.value)}
-                placeholder="Casos de uso e aplicações práticas..."
-                rows={3}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="pros">Vantagens</Label>
-              <Textarea
-                id="pros"
-                value={pros}
-                onChange={(e) => setPros(e.target.value)}
-                placeholder="Pontos fortes (uma linha por item, ou markdown)..."
-                rows={3}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="cons">Limitações</Label>
-              <Textarea
-                id="cons"
-                value={cons}
-                onChange={(e) => setCons(e.target.value)}
-                placeholder="Restrições, cuidados ou contexto de uso..."
-                rows={3}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="extra_markdown">Conteúdo extra (markdown)</Label>
-              <Textarea
-                id="extra_markdown"
-                value={extraMarkdown}
-                onChange={(e) => setExtraMarkdown(e.target.value)}
-                placeholder="Conteúdo adicional em markdown (opcional)..."
-                rows={4}
-              />
-            </div>
-
-            <div className="grid grid-cols-1 gap-3">
-              <div className="space-y-2">
-                <Label htmlFor="seo_title">SEO Title</Label>
-                <Input
-                  id="seo_title"
-                  value={seoTitle}
-                  onChange={(e) => setSeoTitle(e.target.value)}
-                  placeholder="Título usado em buscadores (até 60 caracteres)"
-                  maxLength={70}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="seo_description">SEO Description</Label>
-                <Textarea
-                  id="seo_description"
-                  value={seoDescription}
-                  onChange={(e) => setSeoDescription(e.target.value)}
-                  placeholder="Resumo usado em buscadores (até 160 caracteres)"
-                  rows={2}
-                  maxLength={180}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex justify-end gap-2">
-          <Button variant="outline" onClick={onClose} disabled={saving || uploading || attachmentUploading}>
+        <div className="flex justify-end gap-3 mt-6">
+          <Button variant="outline" onClick={onClose} disabled={saving}>
             Cancelar
           </Button>
-          <Button onClick={handleSave} disabled={saving || uploading || attachmentUploading}>
-            {uploading || attachmentUploading ? "Enviando..." : saving ? "Salvando..." : "Salvar"}
+          <Button
+            onClick={handleSave}
+            disabled={saving || uploading || attachmentUploading || coverUploading}
+          >
+            {saving
+              ? "Salvando..."
+              : tool
+              ? "Salvar alterações"
+              : "Criar ferramenta"}
           </Button>
         </div>
       </DialogContent>

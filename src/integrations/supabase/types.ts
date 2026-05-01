@@ -2740,12 +2740,65 @@ export type Database = {
         }
         Relationships: []
       }
+      tool_related_guides: {
+        Row: {
+          created_at: string
+          guide_id: string
+          id: string
+          tool_id: string
+        }
+        Insert: {
+          created_at?: string
+          guide_id: string
+          id?: string
+          tool_id: string
+        }
+        Update: {
+          created_at?: string
+          guide_id?: string
+          id?: string
+          tool_id?: string
+        }
+        Relationships: []
+      }
+      tool_related_tools: {
+        Row: {
+          created_at: string
+          id: string
+          related_tool_id: string
+          tool_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          related_tool_id: string
+          tool_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          related_tool_id?: string
+          tool_id?: string
+        }
+        Relationships: []
+      }
       tools: {
         Row: {
           attachment_url: string | null
           cons: string | null
+          content_markdown: string
+          cover_image_url: string | null
           created_at: string
           created_by: string | null
+          cta_final_label: string | null
+          cta_final_text: string | null
+          cta_final_url: string | null
+          cta_middle_label: string | null
+          cta_middle_text: string | null
+          cta_middle_url: string | null
+          cta_top_label: string | null
+          cta_top_text: string | null
+          cta_top_url: string | null
           description: string
           extra_markdown: string | null
           featured_end: string | null
@@ -2754,6 +2807,7 @@ export type Database = {
           how_helps: string | null
           icon_url: string | null
           id: string
+          internal_links: Json
           is_featured: boolean
           is_visible: boolean
           name: string
@@ -2772,8 +2826,19 @@ export type Database = {
         Insert: {
           attachment_url?: string | null
           cons?: string | null
+          content_markdown?: string
+          cover_image_url?: string | null
           created_at?: string
           created_by?: string | null
+          cta_final_label?: string | null
+          cta_final_text?: string | null
+          cta_final_url?: string | null
+          cta_middle_label?: string | null
+          cta_middle_text?: string | null
+          cta_middle_url?: string | null
+          cta_top_label?: string | null
+          cta_top_text?: string | null
+          cta_top_url?: string | null
           description: string
           extra_markdown?: string | null
           featured_end?: string | null
@@ -2782,6 +2847,7 @@ export type Database = {
           how_helps?: string | null
           icon_url?: string | null
           id?: string
+          internal_links?: Json
           is_featured?: boolean
           is_visible?: boolean
           name: string
@@ -2800,8 +2866,19 @@ export type Database = {
         Update: {
           attachment_url?: string | null
           cons?: string | null
+          content_markdown?: string
+          cover_image_url?: string | null
           created_at?: string
           created_by?: string | null
+          cta_final_label?: string | null
+          cta_final_text?: string | null
+          cta_final_url?: string | null
+          cta_middle_label?: string | null
+          cta_middle_text?: string | null
+          cta_middle_url?: string | null
+          cta_top_label?: string | null
+          cta_top_text?: string | null
+          cta_top_url?: string | null
           description?: string
           extra_markdown?: string | null
           featured_end?: string | null
@@ -2810,6 +2887,7 @@ export type Database = {
           how_helps?: string | null
           icon_url?: string | null
           id?: string
+          internal_links?: Json
           is_featured?: boolean
           is_visible?: boolean
           name?: string
@@ -3432,7 +3510,18 @@ export type Database = {
         Row: {
           attachment_url: string | null
           cons: string | null
+          content_markdown: string | null
+          cover_image_url: string | null
           created_at: string | null
+          cta_final_label: string | null
+          cta_final_text: string | null
+          cta_final_url: string | null
+          cta_middle_label: string | null
+          cta_middle_text: string | null
+          cta_middle_url: string | null
+          cta_top_label: string | null
+          cta_top_text: string | null
+          cta_top_url: string | null
           description: string | null
           extra_markdown: string | null
           featured_end: string | null
@@ -3441,6 +3530,7 @@ export type Database = {
           how_helps: string | null
           icon_url: string | null
           id: string | null
+          internal_links: Json | null
           is_featured: boolean | null
           is_visible: boolean | null
           name: string | null
@@ -3450,6 +3540,7 @@ export type Database = {
           slug: string | null
           sort_order: number | null
           tags: string[] | null
+          updated_at: string | null
           url: string | null
           what_is: string | null
           who_for: string | null
@@ -3457,7 +3548,18 @@ export type Database = {
         Insert: {
           attachment_url?: string | null
           cons?: string | null
+          content_markdown?: string | null
+          cover_image_url?: string | null
           created_at?: string | null
+          cta_final_label?: string | null
+          cta_final_text?: string | null
+          cta_final_url?: string | null
+          cta_middle_label?: string | null
+          cta_middle_text?: string | null
+          cta_middle_url?: string | null
+          cta_top_label?: string | null
+          cta_top_text?: string | null
+          cta_top_url?: string | null
           description?: string | null
           extra_markdown?: string | null
           featured_end?: string | null
@@ -3466,6 +3568,7 @@ export type Database = {
           how_helps?: string | null
           icon_url?: string | null
           id?: string | null
+          internal_links?: Json | null
           is_featured?: boolean | null
           is_visible?: boolean | null
           name?: string | null
@@ -3475,6 +3578,7 @@ export type Database = {
           slug?: string | null
           sort_order?: number | null
           tags?: string[] | null
+          updated_at?: string | null
           url?: string | null
           what_is?: string | null
           who_for?: string | null
@@ -3482,7 +3586,18 @@ export type Database = {
         Update: {
           attachment_url?: string | null
           cons?: string | null
+          content_markdown?: string | null
+          cover_image_url?: string | null
           created_at?: string | null
+          cta_final_label?: string | null
+          cta_final_text?: string | null
+          cta_final_url?: string | null
+          cta_middle_label?: string | null
+          cta_middle_text?: string | null
+          cta_middle_url?: string | null
+          cta_top_label?: string | null
+          cta_top_text?: string | null
+          cta_top_url?: string | null
           description?: string | null
           extra_markdown?: string | null
           featured_end?: string | null
@@ -3491,6 +3606,7 @@ export type Database = {
           how_helps?: string | null
           icon_url?: string | null
           id?: string | null
+          internal_links?: Json | null
           is_featured?: boolean | null
           is_visible?: boolean | null
           name?: string | null
@@ -3500,6 +3616,7 @@ export type Database = {
           slug?: string | null
           sort_order?: number | null
           tags?: string[] | null
+          updated_at?: string | null
           url?: string | null
           what_is?: string | null
           who_for?: string | null

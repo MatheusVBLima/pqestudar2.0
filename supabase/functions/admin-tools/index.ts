@@ -113,14 +113,23 @@ Deno.serve(async (req) => {
           featured_start,
           featured_end,
           slug,
+          // legacy editorial (kept for compat)
           what_is,
           who_for,
           how_helps,
           pros,
           cons,
           extra_markdown,
+          // seo
           seo_title,
           seo_description,
+          // new editorial (guide-style)
+          content_markdown,
+          cover_image_url,
+          cta_top_label, cta_top_url, cta_top_text,
+          cta_middle_label, cta_middle_url, cta_middle_text,
+          cta_final_label, cta_final_url, cta_final_text,
+          internal_links,
         } = data;
 
         // Validar campos obrigatórios
@@ -166,14 +175,29 @@ Deno.serve(async (req) => {
             featured_start: featured_start ?? null,
             featured_end: featured_end ?? null,
             slug: slug || null,
+            // legacy editorial (kept for compat)
             what_is: what_is ?? null,
             who_for: who_for ?? null,
             how_helps: how_helps ?? null,
             pros: pros ?? null,
             cons: cons ?? null,
             extra_markdown: extra_markdown ?? null,
+            // seo
             seo_title: seo_title ?? null,
             seo_description: seo_description ?? null,
+            // new editorial (guide-style)
+            content_markdown: content_markdown ?? '',
+            cover_image_url: cover_image_url ?? null,
+            cta_top_label: cta_top_label ?? null,
+            cta_top_url: cta_top_url ?? null,
+            cta_top_text: cta_top_text ?? null,
+            cta_middle_label: cta_middle_label ?? null,
+            cta_middle_url: cta_middle_url ?? null,
+            cta_middle_text: cta_middle_text ?? null,
+            cta_final_label: cta_final_label ?? null,
+            cta_final_url: cta_final_url ?? null,
+            cta_final_text: cta_final_text ?? null,
+            internal_links: internal_links ?? [],
             sort_order: nextOrder,
             created_by: user.id,
             updated_by: user.id,
