@@ -113,14 +113,23 @@ Deno.serve(async (req) => {
           featured_start,
           featured_end,
           slug,
+          // legacy editorial (kept for compat)
           what_is,
           who_for,
           how_helps,
           pros,
           cons,
           extra_markdown,
+          // seo
           seo_title,
           seo_description,
+          // new editorial (guide-style)
+          content_markdown,
+          cover_image_url,
+          cta_top_label, cta_top_url, cta_top_text,
+          cta_middle_label, cta_middle_url, cta_middle_text,
+          cta_final_label, cta_final_url, cta_final_text,
+          internal_links,
         } = data;
 
         // Validar campos obrigatórios
