@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Eye, Edit3, Heading2, Heading3, Minus, ImageIcon, Info, Link2 } from "lucide-react";
+import { Eye, Edit3, Heading2, Heading3, Minus, ImageIcon, Info, Link2, Bold } from "lucide-react";
 import { marked, Renderer, Tokens } from "marked";
 import TurndownService from "turndown";
 import DOMPurify from "dompurify";
