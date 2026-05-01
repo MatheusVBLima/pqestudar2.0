@@ -23,15 +23,29 @@ export interface Tool {
   featured_indefinite: boolean;
   featured_start?: string | null;
   featured_end?: string | null;
-  // Editorial fields (individual tool page)
+  // Editorial fields (legacy — kept for backwards compatibility, hidden in UI)
   what_is?: string | null;
   who_for?: string | null;
   how_helps?: string | null;
   pros?: string | null;
   cons?: string | null;
   extra_markdown?: string | null;
+  // SEO
   seo_title?: string | null;
   seo_description?: string | null;
+  // New editorial fields (guide-style)
+  content_markdown?: string | null;
+  cover_image_url?: string | null;
+  cta_top_label?: string | null;
+  cta_top_url?: string | null;
+  cta_top_text?: string | null;
+  cta_middle_label?: string | null;
+  cta_middle_url?: string | null;
+  cta_middle_text?: string | null;
+  cta_final_label?: string | null;
+  cta_final_url?: string | null;
+  cta_final_text?: string | null;
+  internal_links?: Array<{ label: string; url: string; imageUrl?: string | null; imageSource?: string | null; imagePath?: string | null }>;
 }
 
 export interface UseToolsOptions {
