@@ -290,6 +290,33 @@ export default function MarkdownEditor({
     }, 0);
   }, [value, onChange]);
 
+  const insertBold = useCallback(() => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selected = value.substring(start, end);
+    if (selected.length > 0) {
+      const insertion = `**${selected}**`;
+      const newValue = value.substring(0, start) + insertion + value.substring(end);
+      onChange(newValue);
+      setTimeout(() => {
+        textarea.selectionStart = start;
+        textarea.selectionEnd = start + insertion.length;
+        textarea.focus();
+      }, 0);
+    } else {
+      const insertion = `****`;
+      const newValue = value.substring(0, start) + insertion + value.substring(end);
+      onChange(newValue);
+      const cursorPos = start + 2;
+      setTimeout(() => {
+        textarea.selectionStart = textarea.selectionEnd = cursorPos;
+        textarea.focus();
+      }, 0);
+    }
+  }, [value, onChange]);
+
   const insertHr = useCallback(() => {
     const textarea = textareaRef.current;
     if (!textarea) return;
