@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Eye, Edit3, Heading2, Heading3, Minus, ImageIcon, Info, Link2 } from "lucide-react";
+import { Eye, Edit3, Heading2, Heading3, Minus, ImageIcon, Info, Link2, Bold } from "lucide-react";
 import { marked, Renderer, Tokens } from "marked";
 import TurndownService from "turndown";
 import DOMPurify from "dompurify";
@@ -290,6 +290,33 @@ export default function MarkdownEditor({
     }, 0);
   }, [value, onChange]);
 
+  const insertBold = useCallback(() => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selected = value.substring(start, end);
+    if (selected.length > 0) {
+      const insertion = `**${selected}**`;
+      const newValue = value.substring(0, start) + insertion + value.substring(end);
+      onChange(newValue);
+      setTimeout(() => {
+        textarea.selectionStart = start;
+        textarea.selectionEnd = start + insertion.length;
+        textarea.focus();
+      }, 0);
+    } else {
+      const insertion = `****`;
+      const newValue = value.substring(0, start) + insertion + value.substring(end);
+      onChange(newValue);
+      const cursorPos = start + 2;
+      setTimeout(() => {
+        textarea.selectionStart = textarea.selectionEnd = cursorPos;
+        textarea.focus();
+      }, 0);
+    }
+  }, [value, onChange]);
+
   const insertHr = useCallback(() => {
     const textarea = textareaRef.current;
     if (!textarea) return;
@@ -376,6 +403,16 @@ export default function MarkdownEditor({
               >
                 <Heading3 className="h-4 w-4" />
                 <span className="sr-only">H3</span>
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={insertBold}
+                title="Negrito (selecione um texto ou clique para inserir)"
+              >
+                <Bold className="h-4 w-4" />
+                <span className="sr-only">Negrito</span>
               </Button>
               <Button
                 type="button"
