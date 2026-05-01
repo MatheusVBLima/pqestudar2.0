@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { motion } from "framer-motion";
@@ -9,58 +9,109 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, ExternalLink, Wrench, Sparkles, CheckCircle2, AlertTriangle, Users, Lightbulb } from "lucide-react";
+import {
+  ArrowLeft,
+  ExternalLink,
+  Wrench,
+  Star,
+  BookOpen,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { renderMarkdownContent } from "@/lib/concursos-content-renderer";
 import { SaveToolButton } from "@/components/ui/save-tool-button";
 import { useAnalyticsTracker } from "@/hooks/useAnalyticsTracker";
 import { Tool } from "@/hooks/useTools";
 
-// ---------- Helpers ----------
-
-/** Render a textual block as markdown (fallback to whitespace-pre-line if simple). */
-function ProseBlock({ html }: { html: string }) {
+// ---------- CTA Block (mesmo padrão dos guias) ----------
+function CtaBlock({
+  label,
+  url,
+  text,
+}: {
+  label?: string | null;
+  url?: string | null;
+  text?: string | null;
+}) {
+  if (!label || !url) return null;
+  const isExternal = /^https?:\/\//.test(url);
   return (
-    <div
-      className="guide-content text-foreground/80 leading-relaxed"
-      dangerouslySetInnerHTML={{ __html: html }}
-    />
+    <div className="my-10 p-4 sm:p-6 rounded-[1.2rem] bg-primary/5 border text-center space-y-3 max-w-full overflow-hidden">
+      {text && (
+        <div
+          className="text-sm text-muted-foreground leading-relaxed prose prose-sm dark:prose-invert max-w-none [&>ul]:list-disc [&>ul]:pl-5 [&>ol]:list-decimal [&>ol]:pl-5 [&>p]:mb-2"
+          dangerouslySetInnerHTML={{ __html: renderMarkdownContent(text) }}
+        />
+      )}
+      <Button
+        asChild
+        size="lg"
+        className="w-full sm:w-auto max-w-full px-4 sm:px-8 h-auto min-h-11 py-3 whitespace-normal break-words leading-tight text-sm sm:text-base"
+      >
+        {isExternal ? (
+          <a
+            href={url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center gap-2"
+          >
+            <span className="break-words">{label}</span>
+            <ExternalLink className="h-4 w-4 shrink-0" />
+          </a>
+        ) : (
+          <Link to={url} className="inline-flex items-center justify-center gap-2">
+            <span className="break-words">{label}</span>
+          </Link>
+        )}
+      </Button>
+    </div>
   );
 }
 
-interface SectionProps {
-  icon: React.ComponentType<{ className?: string }>;
-  title: string;
-  content: string | null | undefined;
-  variant?: "default" | "pros" | "cons";
+// ---------- Split content para inserir CTA do meio (igual aos guias) ----------
+function splitContentForMiddleCta(html: string): [string, string] {
+  const blockPattern = /(<\/(?:p|ul|ol|h[1-6]|blockquote|hr|table|div)>)/gi;
+  const parts: { end: number }[] = [];
+  let match: RegExpExecArray | null;
+  while ((match = blockPattern.exec(html)) !== null) {
+    parts.push({ end: match.index + match[0].length });
+  }
+  if (parts.length < 2) return [html, ""];
+
+  const plainText = html.replace(/<[^>]+>/g, " ");
+  const totalWords = plainText.trim().split(/\s+/).length;
+
+  if (totalWords < 120) {
+    const splitIdx = Math.min(1, parts.length - 1);
+    return [html.slice(0, parts[splitIdx].end), html.slice(parts[splitIdx].end)];
+  }
+
+  const midWordIndex = Math.floor(totalWords / 2);
+  let wordCount = 0;
+  let charPos = 0;
+  const textForCounting = html.replace(/<[^>]+>/g, (tag) => " ".repeat(tag.length));
+  const wordRegex = /\S+/g;
+  let wm: RegExpExecArray | null;
+  while ((wm = wordRegex.exec(textForCounting)) !== null) {
+    wordCount++;
+    if (wordCount >= midWordIndex) {
+      charPos = wm.index;
+      break;
+    }
+  }
+  let bestSplit = parts[Math.floor(parts.length / 2)].end;
+  for (const p of parts) {
+    if (p.end >= charPos) {
+      bestSplit = p.end;
+      break;
+    }
+  }
+  return [html.slice(0, bestSplit), html.slice(bestSplit)];
 }
 
-function Section({ icon: Icon, title, content, variant = "default" }: SectionProps) {
-  if (!content || !content.trim()) return null;
-  const html = renderMarkdownContent(content);
-
-  const accent =
-    variant === "pros"
-      ? "text-emerald-500"
-      : variant === "cons"
-      ? "text-amber-500"
-      : "text-primary";
-
-  return (
-    <section className="mb-10">
-      <h2 className="text-xl md:text-2xl font-bold mb-4 flex items-center gap-2">
-        <Icon className={`h-5 w-5 ${accent}`} />
-        {title}
-      </h2>
-      <ProseBlock html={html} />
-    </section>
-  );
-}
-
+// ---------- Hero CTA (botão principal para abrir ferramenta) ----------
 function ToolHeroCta({ tool }: { tool: Tool }) {
   const { track } = useAnalyticsTracker();
   if (!tool.url) return null;
-
   const onClick = () => {
     track({
       event_name: "tool_outbound_click",
@@ -70,7 +121,6 @@ function ToolHeroCta({ tool }: { tool: Tool }) {
       meta: { tool_slug: tool.slug, tool_name: tool.name, source: "detail_page" },
     });
   };
-
   return (
     <Button asChild size="lg" className="rounded-[1.2rem]" data-evt="access_tool">
       <a
@@ -89,7 +139,6 @@ function ToolHeroCta({ tool }: { tool: Tool }) {
 }
 
 // ---------- Page ----------
-
 export default function ToolDetalhe() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
@@ -97,8 +146,12 @@ export default function ToolDetalhe() {
   const [related, setRelated] = useState<Tool[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const fetchedSlug = useRef<string | null>(null);
 
   useEffect(() => {
+    if (!slug) return;
+    if (fetchedSlug.current === slug) return;
+    fetchedSlug.current = slug;
     let cancelled = false;
     async function load() {
       setLoading(true);
@@ -120,7 +173,7 @@ export default function ToolDetalhe() {
 
       setTool(data as Tool);
 
-      // Related: tools sharing at least one tag
+      // Related tools: shared tags
       if (Array.isArray((data as any).tags) && (data as any).tags.length > 0) {
         const { data: rel } = await supabase
           .from("tools_public")
@@ -136,7 +189,7 @@ export default function ToolDetalhe() {
 
       setLoading(false);
     }
-    if (slug) load();
+    load();
     return () => {
       cancelled = true;
     };
@@ -174,8 +227,19 @@ export default function ToolDetalhe() {
   const seoTitle = tool.seo_title || `${tool.name} — Ferramenta | PqEstudar`;
   const seoDescription = tool.seo_description || tool.description;
 
-  const hasEditorialContent =
-    !!(tool.what_is || tool.who_for || tool.how_helps || tool.pros || tool.cons || tool.extra_markdown);
+  const hasMiddleCta = !!(tool.cta_middle_label && tool.cta_middle_url);
+  const fullHtml = renderMarkdownContent(tool.content_markdown || "");
+  let contentFirstHalf = fullHtml;
+  let contentSecondHalf = "";
+  if (hasMiddleCta) {
+    [contentFirstHalf, contentSecondHalf] = splitContentForMiddleCta(fullHtml);
+  }
+
+  const hasContent = !!(tool.content_markdown && tool.content_markdown.trim());
+
+  // Split internal links between internal (/...) and external
+  const allLinks = Array.isArray(tool.internal_links) ? tool.internal_links : [];
+  const usefulLinks = allLinks.filter((l: any) => l?.label && l?.url);
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -183,9 +247,37 @@ export default function ToolDetalhe() {
     name: tool.name,
     description: seoDescription,
     applicationCategory: tool.tags?.[0] || "WebApplication",
-    image: tool.icon_url || undefined,
+    image: tool.icon_url || tool.cover_image_url || undefined,
     url: tool.url || undefined,
   };
+
+  const heroBadge = (
+    <div className="flex items-center gap-2 mb-4 flex-wrap">
+      {tool.icon_url && (
+        <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center overflow-hidden border shadow-sm shrink-0 mr-2">
+          <img
+            src={tool.icon_url}
+            alt={`Logo de ${tool.name}`}
+            className="w-full h-full object-contain"
+            referrerPolicy="no-referrer"
+          />
+        </div>
+      )}
+      {(tool.tags || []).map((tag) => (
+        <Badge key={tag} variant="outline" className="text-sm">
+          {tag}
+        </Badge>
+      ))}
+      {tool.is_featured && (
+        <Badge
+          className="bg-amber-500/10 text-amber-600 border-amber-500/20"
+          variant="outline"
+        >
+          <Star className="h-3 w-3 mr-1" /> Destaque
+        </Badge>
+      )}
+    </div>
+  );
 
   return (
     <>
@@ -196,60 +288,124 @@ export default function ToolDetalhe() {
         <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
       </Helmet>
 
-      <PageHero
-        title={tool.name}
-        description={tool.description}
-        badge={
-          <div className="flex items-center gap-2 mb-4 flex-wrap">
-            {tool.icon_url && (
-              <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center overflow-hidden border shadow-sm shrink-0 mr-2">
-                <img
-                  src={tool.icon_url}
-                  alt={`Logo de ${tool.name}`}
-                  className="w-full h-full object-contain"
-                  referrerPolicy="no-referrer"
-                />
-              </div>
-            )}
-            {(tool.tags || []).map((tag) => (
-              <Badge key={tag} variant="outline" className="text-sm">
-                {tag}
-              </Badge>
-            ))}
+      {/* Hero — mesmo padrão visual dos guias */}
+      {tool.cover_image_url ? (
+        <section className="relative overflow-hidden border-b">
+          <div className="absolute inset-0">
+            <img
+              src={tool.cover_image_url}
+              alt=""
+              className="w-full h-full object-cover"
+              loading="eager"
+              aria-hidden="true"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/55 to-black/30" />
           </div>
-        }
-      >
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.1 }}
-          className="mt-8 flex flex-wrap items-center gap-3"
-        >
-          <ToolHeroCta tool={tool} />
-          <SaveToolButton toolId={tool.id} toolName={tool.name} />
-          <Button asChild variant="ghost" size="lg" className="rounded-[1.2rem]">
-            <Link to="/ferramentas" aria-label="Voltar ao catálogo">
-              <ArrowLeft className="h-4 w-4 mr-2" /> Catálogo
-            </Link>
-          </Button>
-        </motion.div>
-      </PageHero>
+          <motion.div
+            className="container mx-auto px-6 py-20 md:py-28 relative z-10"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <div className="flex items-center gap-2 mb-4 flex-wrap">
+              {tool.icon_url && (
+                <div className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center overflow-hidden border border-white/20 shrink-0 mr-2">
+                  <img
+                    src={tool.icon_url}
+                    alt={`Logo de ${tool.name}`}
+                    className="w-full h-full object-contain"
+                    referrerPolicy="no-referrer"
+                  />
+                </div>
+              )}
+              {(tool.tags || []).map((tag) => (
+                <Badge
+                  key={tag}
+                  variant="outline"
+                  className="text-sm border-white/30 text-white bg-white/10 backdrop-blur-sm"
+                >
+                  {tag}
+                </Badge>
+              ))}
+              {tool.is_featured && (
+                <Badge
+                  className="bg-amber-500/20 text-amber-300 border-amber-400/30 backdrop-blur-sm"
+                  variant="outline"
+                >
+                  <Star className="h-3 w-3 mr-1" /> Destaque
+                </Badge>
+              )}
+            </div>
+            <h1 className="max-w-full md:max-w-4xl lg:max-w-[1100px] text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight mb-6 text-white drop-shadow-lg">
+              {renderHighlightedTitle(tool.name)}
+            </h1>
+            <p className="max-w-full md:max-w-3xl lg:max-w-[900px] text-lg md:text-xl text-white/80 leading-relaxed">
+              {tool.description}
+            </p>
+            <div className="mt-8 flex flex-wrap items-center gap-3">
+              <ToolHeroCta tool={tool} />
+              <SaveToolButton toolId={tool.id} toolName={tool.name} />
+              <Button
+                asChild
+                variant="ghost"
+                size="lg"
+                className="rounded-[1.2rem] text-white hover:bg-white/10"
+              >
+                <Link to="/ferramentas" aria-label="Voltar ao catálogo">
+                  <ArrowLeft className="h-4 w-4 mr-2" /> Catálogo
+                </Link>
+              </Button>
+            </div>
+          </motion.div>
+        </section>
+      ) : (
+        <PageHero title={tool.name} description={tool.description} badge={heroBadge}>
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.1 }}
+            className="mt-8 flex flex-wrap items-center gap-3"
+          >
+            <ToolHeroCta tool={tool} />
+            <SaveToolButton toolId={tool.id} toolName={tool.name} />
+            <Button asChild variant="ghost" size="lg" className="rounded-[1.2rem]">
+              <Link to="/ferramentas" aria-label="Voltar ao catálogo">
+                <ArrowLeft className="h-4 w-4 mr-2" /> Catálogo
+              </Link>
+            </Button>
+          </motion.div>
+        </PageHero>
+      )}
 
-      {/* Body */}
+      {/* Body — mesmo layout dos guias */}
       <div className="container mx-auto px-6 pt-12 md:pt-16 pb-16">
         <div className="flex flex-col lg:flex-row gap-10 lg:gap-12">
           <article className="flex-1 min-w-0 max-w-3xl">
-            {hasEditorialContent ? (
+            {/* CTA Top */}
+            <CtaBlock
+              label={tool.cta_top_label}
+              url={tool.cta_top_url}
+              text={tool.cta_top_text}
+            />
+
+            {hasContent ? (
               <>
-                <Section icon={Sparkles} title="O que é" content={tool.what_is} />
-                <Section icon={Users} title="Para quem serve" content={tool.who_for} />
-                <Section icon={Lightbulb} title="Como pode ajudar" content={tool.how_helps} />
-                <Section icon={CheckCircle2} title="Vantagens" content={tool.pros} variant="pros" />
-                <Section icon={AlertTriangle} title="Limitações" content={tool.cons} variant="cons" />
-                {tool.extra_markdown && (
-                  <section className="mb-10">
-                    <ProseBlock html={renderMarkdownContent(tool.extra_markdown)} />
-                  </section>
+                <div
+                  className="guide-content guide-content-primary text-foreground/80 leading-relaxed"
+                  dangerouslySetInnerHTML={{ __html: contentFirstHalf }}
+                />
+                {hasMiddleCta && (
+                  <CtaBlock
+                    label={tool.cta_middle_label}
+                    url={tool.cta_middle_url}
+                    text={tool.cta_middle_text}
+                  />
+                )}
+                {contentSecondHalf && (
+                  <div
+                    className="guide-content text-foreground/80 leading-relaxed"
+                    dangerouslySetInnerHTML={{ __html: contentSecondHalf }}
+                  />
                 )}
               </>
             ) : (
@@ -259,8 +415,15 @@ export default function ToolDetalhe() {
               </p>
             )}
 
-            {/* Final CTA */}
-            {tool.url && (
+            {/* CTA Final */}
+            <CtaBlock
+              label={tool.cta_final_label}
+              url={tool.cta_final_url}
+              text={tool.cta_final_text}
+            />
+
+            {/* Default closing CTA only when there's a tool URL and no custom final CTA */}
+            {tool.url && !tool.cta_final_label && (
               <div className="my-10 p-6 rounded-[1.2rem] bg-primary/5 border text-center space-y-4">
                 <h2 className="text-xl md:text-2xl font-bold">
                   Pronto para experimentar {tool.name}?
@@ -298,7 +461,10 @@ export default function ToolDetalhe() {
                                 referrerPolicy="no-referrer"
                               />
                             ) : (
-                              <Wrench className="w-5 h-5 text-primary" aria-hidden="true" />
+                              <Wrench
+                                className="w-5 h-5 text-primary"
+                                aria-hidden="true"
+                              />
                             )}
                           </div>
                           <div className="flex-1 min-w-0">
@@ -313,6 +479,58 @@ export default function ToolDetalhe() {
                       </Card>
                     </Link>
                   ))}
+                </div>
+              </section>
+            )}
+
+            {/* Internal/external useful links */}
+            {usefulLinks.length > 0 && (
+              <section className="mt-10 pt-6 border-t border-border">
+                <p className="text-sm font-bold uppercase tracking-wide text-primary mb-5">
+                  Links úteis
+                </p>
+                <div className="space-y-5">
+                  {usefulLinks.map((link: any, i: number) => {
+                    const isExternal = /^https?:\/\//.test(link.url);
+                    const Wrapper: any = isExternal ? "a" : Link;
+                    const wrapperProps = isExternal
+                      ? {
+                          href: link.url,
+                          target: "_blank",
+                          rel: "noopener noreferrer",
+                        }
+                      : { to: link.url };
+                    return (
+                      <Wrapper
+                        key={i}
+                        {...wrapperProps}
+                        className="flex items-start gap-4 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded-md"
+                        aria-label={`Link útil: ${link.label}`}
+                      >
+                        <div className="w-20 h-16 sm:w-28 sm:h-20 shrink-0 rounded-md overflow-hidden flex items-center justify-center bg-primary/10">
+                          {link.imageUrl ? (
+                            <img
+                              src={link.imageUrl}
+                              alt={link.label}
+                              className="w-full h-full object-cover"
+                              referrerPolicy="no-referrer"
+                              loading="lazy"
+                            />
+                          ) : (
+                            <BookOpen className="h-6 w-6 text-primary/60" />
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0 pt-0.5">
+                          <span className="text-[11px] font-bold uppercase tracking-wider text-primary">
+                            {isExternal ? "Link externo" : "Link interno"}
+                          </span>
+                          <h3 className="text-base font-semibold leading-snug mt-0.5 group-hover:text-primary transition-colors line-clamp-2">
+                            {link.label}
+                          </h3>
+                        </div>
+                      </Wrapper>
+                    );
+                  })}
                 </div>
               </section>
             )}
