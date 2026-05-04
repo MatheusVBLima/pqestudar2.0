@@ -17,7 +17,7 @@ export function MostReadGuides({ excludeSlug }: { excludeSlug?: string }) {
     queryKey: ["guides", "most-read", excludeSlug],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("guides" as any)
+        .from("guides")
         .select("id, title, slug, category, views_count")
         .eq("is_published", true)
         .neq("slug", excludeSlug ?? "")

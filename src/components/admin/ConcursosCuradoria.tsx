@@ -41,9 +41,10 @@ import {
   FileText,
 } from "lucide-react";
 import { usePendingItems, PendingItem } from "@/hooks/useConcursosAdmin";
-import { useOportunidadesAdmin } from "@/hooks/useOportunidades";
+import { useOportunidadesAdmin, type OportunidadeInput } from "@/hooks/useOportunidades";
 import { toast } from "sonner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { getErrorMessage } from "@/lib/error-message";
 
 const STATUS_COLORS: Record<string, string> = {
   pending: "bg-amber-500/10 text-amber-600 border-amber-500/20",
@@ -58,6 +59,22 @@ const STATUS_LABELS: Record<string, string> = {
   rejected: "Rejeitado",
   archived: "Arquivado",
 };
+
+type OportunidadeCategoria = OportunidadeInput["categoria"];
+type OportunidadeTipo = OportunidadeInput["tipo"];
+type OportunidadeEscolaridade = OportunidadeInput["escolaridade"];
+type OportunidadeAbrangencia = OportunidadeInput["abrangencia"];
+type OportunidadeSituacao = OportunidadeInput["situacao"];
+
+const CATEGORIAS: OportunidadeCategoria[] = ["Concurso", "PolÃ­ticas PÃºblicas", "EducaÃ§Ã£o"];
+const TIPOS: OportunidadeTipo[] = ["Concurso", "Programa educacional", "Processo seletivo", "Processo Seletivo Simplificado"];
+const ESCOLARIDADES: OportunidadeEscolaridade[] = ["Fundamental", "MÃ©dio", "Superior"];
+const ABRANGENCIAS: OportunidadeAbrangencia[] = ["Nacional", "Estadual", "Municipal"];
+const SITUACOES: OportunidadeSituacao[] = ["Previsto", "Edital publicado", "Aberto", "Encerrado"];
+
+function pickAllowed<T extends string>(value: string | null | undefined, allowed: readonly T[], fallback: T): T {
+  return value && allowed.includes(value as T) ? (value as T) : fallback;
+}
 
 export default function ConcursosCuradoria() {
   const [statusFilter, setStatusFilter] = useState<string>("pending");
@@ -99,14 +116,15 @@ export default function ConcursosCuradoria() {
         .replace(/\s+/g, "-")
         .slice(0, 100);
 
-      await createOportunidade({
+      const oportunidade: OportunidadeInput = {
         titulo: item.titulo_sugerido,
         slug: `${slug}-${Date.now().toString(36)}`,
-        categoria: (item.categoria_detectada as any) || "Concurso",
-        tipo: (item.tipo_detectado as any) || "Concurso",
-        escolaridade: (item.escolaridade_detectada as any) || "Médio",
-        abrangencia: (item.abrangencia_detectada as any) || "Nacional",
-        situacao: (item.situacao_detectada as any) || "Previsto",
+        categoria: pickAllowed(item.categoria_detectada, CATEGORIAS, "Concurso"),
+        tipo: pickAllowed(item.tipo_detectado, TIPOS, "Concurso"),
+        escolaridade: pickAllowed(item.escolaridade_detectada, ESCOLARIDADES, "Médio"),
+        abrangencia: pickAllowed(item.abrangencia_detectada, ABRANGENCIAS, "Nacional"),
+        situacao: pickAllowed(item.situacao_detectada, SITUACOES, "Previsto"),
+        data_publicacao: new Date().toISOString(),
         orgao: item.orgao_detectado || undefined,
         banca: item.banca_detectada || undefined,
         resumo_editorial: item.resumo_editorial || undefined,
@@ -119,12 +137,14 @@ export default function ConcursosCuradoria() {
             source_tipo: "oficial", // Default, admin should verify
           },
         ],
-      } as any);
+      };
+
+      await createOportunidade(oportunidade);
 
       await updateStatus({ id: item.id, status: "approved" });
       toast.success("Item aprovado e oportunidade criada (não publicada - adicione fonte oficial)");
-    } catch (e: any) {
-      toast.error(e.message || "Erro ao criar oportunidade");
+    } catch (e: unknown) {
+      toast.error(getErrorMessage(e, "Erro ao criar oportunidade"));
     }
   };
 
@@ -163,8 +183,8 @@ export default function ConcursosCuradoria() {
       setAddDialogOpen(false);
       setNewItemUrl("");
       setNewItemTitle("");
-    } catch (e: any) {
-      toast.error(e.message || "Erro ao adicionar item");
+    } catch (e: unknown) {
+      toast.error(getErrorMessage(e, "Erro ao adicionar item"));
     }
   };
 

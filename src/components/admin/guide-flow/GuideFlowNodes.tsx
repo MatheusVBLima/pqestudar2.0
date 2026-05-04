@@ -217,7 +217,9 @@ export function nodesToGuideData(nodes: FlowNode[], original: GeneratedGuideData
       result.public_category = m.public_category ?? result.public_category;
       result.author_name = m.author_name ?? result.author_name;
       result.short_description = m.short_description ?? result.short_description;
-    } catch {}
+    } catch {
+      // Keep original metadata when node content is not valid JSON.
+    }
   }
 
   // SEO
@@ -227,7 +229,9 @@ export function nodesToGuideData(nodes: FlowNode[], original: GeneratedGuideData
       const s = JSON.parse(seoNode.content);
       result.seo_title = s.seo_title ?? result.seo_title;
       result.seo_description = s.seo_description ?? result.seo_description;
-    } catch {}
+    } catch {
+      // Keep original SEO data when node content is not valid JSON.
+    }
   }
 
   // Content - rebuild markdown from ordered content nodes
@@ -240,7 +244,9 @@ export function nodesToGuideData(nodes: FlowNode[], original: GeneratedGuideData
   for (const ctaType of ['cta_top', 'cta_middle', 'cta_final'] as const) {
     const ctaNode = nodes.find(n => n.type === ctaType);
     if (ctaNode) {
-      try { result[ctaType] = JSON.parse(ctaNode.content); } catch {}
+      try { result[ctaType] = JSON.parse(ctaNode.content); } catch {
+        // Ignore malformed CTA JSON and keep existing data.
+      }
     } else {
       result[ctaType] = null;
     }
@@ -249,7 +255,9 @@ export function nodesToGuideData(nodes: FlowNode[], original: GeneratedGuideData
   // Links
   const linksNode = nodes.find(n => n.type === 'links');
   if (linksNode) {
-    try { result.internal_links = JSON.parse(linksNode.content); } catch {}
+    try { result.internal_links = JSON.parse(linksNode.content); } catch {
+      // Ignore malformed links JSON and keep existing data.
+    }
   }
 
   return result;
@@ -318,8 +326,8 @@ function SortableNode({ node, onToggle, onUpdate }: {
     }
     if (node.type === 'links') {
       try {
-        const links = JSON.parse(node.content);
-        return links.map((l: any) => l.label).join(' · ');
+        const links = JSON.parse(node.content) as { label: string }[];
+        return links.map((l) => l.label).join(' · ');
       } catch { return node.content.slice(0, 100); }
     }
     // Content nodes: show first ~120 chars

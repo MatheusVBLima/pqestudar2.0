@@ -8,7 +8,7 @@ import { Search, Filter, BookOpen, Clock, Users, Star, TrendingUp, Eye, MoreHori
 import { Card } from "@/components/ui/card";
 
 import { CourseCard } from "@/components/ui/course-card";
-import { useCourses } from "@/hooks/useCourses";
+import { useCourses, type Course, type CreateCourseData } from "@/hooks/useCourses";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { NewsletterForm } from "@/components/ui/newsletter-form";
@@ -59,7 +59,7 @@ export default function ExploreCourses() {
   const [showNewsletterModal, setShowNewsletterModal] = useState(false);
   const [managementMode, setManagementMode] = useState(false);
   const [showCourseForm, setShowCourseForm] = useState(false);
-  const [editingCourse, setEditingCourse] = useState<any>(null);
+  const [editingCourse, setEditingCourse] = useState<Course | null>(null);
 
   // Calcular contagens reais de cursos por categoria
   const getCategoryCounts = () => {
@@ -131,7 +131,7 @@ export default function ExploreCourses() {
     }));
   };
 
-  const handleCreateCourse = async (courseData: any) => {
+  const handleCreateCourse = async (courseData: CreateCourseData) => {
     const result = await createCourse(courseData);
     
     if (result.error) {
@@ -150,7 +150,8 @@ export default function ExploreCourses() {
     }
   };
 
-  const handleUpdateCourse = async (courseData: any) => {
+  const handleUpdateCourse = async (courseData: CreateCourseData) => {
+    if (!editingCourse) return;
     const result = await updateCourse({ ...courseData, id: editingCourse.id });
     
     if (result.error) {

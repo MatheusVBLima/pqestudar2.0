@@ -81,7 +81,7 @@ function useTopConcursos() {
       if (error) throw error;
       return ((data || []) as unknown as ConcursoPreview[]).map((d) => ({
         ...d,
-        views_total: (d as any).views_total ?? 0,
+        views_total: d.views_total ?? 0,
       }));
     },
     staleTime: 5 * 60 * 1000,

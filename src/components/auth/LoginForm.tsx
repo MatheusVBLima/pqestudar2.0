@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useAuth } from '@/hooks/useAuth'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
+import { getErrorMessage } from '@/lib/error-message'
 
 interface LoginFormProps {
   onSwitchToSignUp: () => void
@@ -118,9 +119,9 @@ export function LoginForm({ onSwitchToSignUp }: LoginFormProps) {
       }
 
       toast.success('E-mail enviado. Verifique sua caixa de entrada e spam.')
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('[Auth] Resend confirmation error', error)
-      toast.error('Erro ao reenviar. Tente novamente.')
+      toast.error(getErrorMessage(error, 'Erro ao reenviar. Tente novamente.'))
     } finally {
       setResendLoading(false)
     }

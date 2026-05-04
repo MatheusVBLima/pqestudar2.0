@@ -1,10 +1,9 @@
-import { useState } from 'react';
+import { Suspense, lazy, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PageHero } from '@/components/layout/PageHero';
 import {
-  ThumbsUp, Plus, Edit, Eye, EyeOff, Trash2, GripVertical,
-  CheckCircle, History, Sparkles,
+  ThumbsUp, Plus, CheckCircle, History, Sparkles,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle } from '@/components/ui/card';
@@ -26,95 +25,39 @@ import { useAuth } from '@/hooks/useAuth';
 import { useFeatureRequests, FeatureRequest } from '@/hooks/useFeatureRequests';
 import { toast } from '@/hooks/use-toast';
 import { usePageSettings } from '@/hooks/usePageSettings';
-import {
-  DndContext, closestCenter, KeyboardSensor, PointerSensor,
-  useSensor, useSensors, DragEndEvent,
-} from '@dnd-kit/core';
-import {
-  arrayMove, SortableContext, sortableKeyboardCoordinates,
-  verticalListSortingStrategy, useSortable,
-} from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
+import { getErrorMessage } from '@/lib/error-message';
+
+const VotacoesManagementGrid = lazy(() => import('@/pages/votacoes/VotacoesManagementGrid'));
 
 const UI_RADIUS = 'rounded-[1.2rem]';
 
-/* ─── Vitrine Card ─── */
-function SortableFeatureCard({
-  feature, rank, isAdmin, isManagement, onVote, onUnvote, onEdit, onToggle, onDelete, onComplete,
+function PublicFeatureCard({
+  feature,
+  rank,
+  onVote,
+  onUnvote,
 }: {
   feature: FeatureRequest;
   rank: number;
-  isAdmin: boolean;
-  isManagement: boolean;
   onVote: (id: string) => void;
   onUnvote: (id: string) => void;
-  onEdit: (f: FeatureRequest) => void;
-  onToggle: (f: FeatureRequest) => void;
-  onDelete: (f: FeatureRequest) => void;
-  onComplete: (f: FeatureRequest) => void;
 }) {
   const { user } = useAuth();
 
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
-    id: feature.id,
-    disabled: !isManagement,
-  });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
-  };
-
   return (
-    <div ref={setNodeRef} style={style} className="relative group h-full">
+    <div className="relative group h-full">
       <div className={`border border-border bg-card flex flex-col h-full overflow-hidden transition-all duration-300 shadow-card hover:-translate-y-1 ${UI_RADIUS}`}>
         <div className="flex flex-col flex-1 p-4 gap-3">
-
-          {/* Top row: rank + votos (mesmo nível) + admin controls */}
           <div className="flex items-center justify-between gap-2">
-            {/* Esquerda: rank */}
             <span className={`inline-flex items-center justify-center border border-border bg-muted text-foreground text-xs font-bold px-2.5 py-1 ${UI_RADIUS}`}>
               #{rank}
             </span>
-
-            {/* Direita: votos + admin controls */}
-            <div className="flex items-center gap-1.5">
-              <span className="inline-flex items-center gap-1 text-muted-foreground text-xs font-semibold">
-                <ThumbsUp className="h-3.5 w-3.5" />
-                {feature.votes_count}
-              </span>
-
-              {isManagement && !feature.is_visible && (
-                <Badge variant="secondary" className="text-xs">Oculta</Badge>
-              )}
-              {isManagement && (
-                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <div
-                    {...attributes}
-                    {...listeners}
-                    className={`cursor-grab active:cursor-grabbing p-1.5 hover:bg-accent ${UI_RADIUS}`}
-                  >
-                    <GripVertical className="w-3.5 h-3.5 text-muted-foreground" />
-                  </div>
-                  <Button variant="ghost" size="sm" className={`h-7 w-7 p-0 hover:bg-accent ${UI_RADIUS}`} onClick={() => onEdit(feature)}>
-                    <Edit className="w-3.5 h-3.5" />
-                  </Button>
-                  <Button variant="ghost" size="sm" className={`h-7 w-7 p-0 hover:bg-accent ${UI_RADIUS}`} onClick={() => onToggle(feature)}>
-                    {feature.is_visible ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-                  </Button>
-                  <Button variant="ghost" size="sm" className={`h-7 w-7 p-0 hover:bg-accent ${UI_RADIUS}`} onClick={() => onComplete(feature)}>
-                    <CheckCircle className="w-3.5 h-3.5 text-primary" />
-                  </Button>
-                  <Button variant="ghost" size="sm" className={`h-7 w-7 p-0 hover:bg-accent text-destructive hover:text-destructive ${UI_RADIUS}`} onClick={() => onDelete(feature)}>
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </Button>
-                </div>
-              )}
-            </div>
+            <span className="inline-flex items-center gap-1 text-muted-foreground text-xs font-semibold">
+              <ThumbsUp className="h-3.5 w-3.5" />
+              {feature.votes_count}
+            </span>
           </div>
 
-          {/* Content */}
           <div className="flex-1">
             <h3 className="font-semibold text-sm leading-snug line-clamp-2 text-foreground mb-1.5">
               {feature.title}
@@ -126,7 +69,6 @@ function SortableFeatureCard({
             )}
           </div>
 
-          {/* Footer: CTA sozinho */}
           <div className="mt-auto">
             {user ? (
               <Button
@@ -182,21 +124,6 @@ export default function Votacoes() {
     .sort((a, b) => b.votes_count - a.votes_count || new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
   const completedFeatures = features.filter(f => f.status === 'completed');
 
-  const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
-  );
-
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-    if (!over || active.id === over.id) return;
-    const oldIndex = openFeatures.findIndex(f => f.id === active.id);
-    const newIndex = openFeatures.findIndex(f => f.id === over.id);
-    const reordered = arrayMove(openFeatures, oldIndex, newIndex);
-    const updates = reordered.map((f, i) => ({ id: f.id, sort_order: i }));
-    reorder(updates);
-  };
-
   const openModal = (feature?: FeatureRequest) => {
     if (feature) {
       setEditing(feature);
@@ -221,8 +148,8 @@ export default function Votacoes() {
         create(payload);
       }
       setModalOpen(false);
-    } catch (err: any) {
-      toast({ title: 'Erro ao salvar', description: err.message, variant: 'destructive' });
+    } catch (err: unknown) {
+      toast({ title: 'Erro ao salvar', description: getErrorMessage(err), variant: 'destructive' });
     } finally {
       setIsSaving(false);
     }
@@ -281,38 +208,49 @@ export default function Votacoes() {
             <Sparkles className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
             <p className="text-muted-foreground">Nenhum lançamento em votação no momento.</p>
           </div>
-        ) : (
-          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-            <SortableContext items={openFeatures.map(f => f.id)} strategy={verticalListSortingStrategy}>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 items-stretch">
-                <AnimatePresence mode="popLayout">
-                  {openFeatures.map((feature, index) => (
-                    <motion.div
-                      key={feature.id}
-                      layout
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, scale: 0.95 }}
-                      className="h-full"
-                    >
-                      <SortableFeatureCard
-                        feature={feature}
-                        rank={index + 1}
-                        isAdmin={effectiveAdmin}
-                        isManagement={isManagement}
-                        onVote={vote}
-                        onUnvote={unvote}
-                        onEdit={openModal}
-                        onToggle={f => toggleVisible({ id: f.id, is_visible: f.is_visible })}
-                        onDelete={setDeleteTarget}
-                        onComplete={setCompleteTarget}
-                      />
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
+        ) : isManagement ? (
+          <Suspense
+            fallback={
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+                {[1, 2, 3, 4].map((key) => (
+                  <Skeleton key={key} className={`h-40 ${UI_RADIUS}`} />
+                ))}
               </div>
-            </SortableContext>
-          </DndContext>
+            }
+          >
+            <VotacoesManagementGrid
+              features={openFeatures}
+              onReorder={reorder}
+              onVote={vote}
+              onUnvote={unvote}
+              onEdit={openModal}
+              onToggle={(feature) => toggleVisible({ id: feature.id, is_visible: feature.is_visible })}
+              onDelete={setDeleteTarget}
+              onComplete={setCompleteTarget}
+            />
+          </Suspense>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 items-stretch">
+            <AnimatePresence mode="popLayout">
+              {openFeatures.map((feature, index) => (
+                <motion.div
+                  key={feature.id}
+                  layout
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  className="h-full"
+                >
+                  <PublicFeatureCard
+                    feature={feature}
+                    rank={index + 1}
+                    onVote={vote}
+                    onUnvote={unvote}
+                  />
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </div>
         )}
 
         {/* History (admin only) */}
@@ -419,3 +357,4 @@ export default function Votacoes() {
     </>
   );
 }
+

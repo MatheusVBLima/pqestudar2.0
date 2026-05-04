@@ -101,6 +101,29 @@ function extractTopic(title: string, summary: string): string {
   return normalizeTitle(title).split(' ').slice(0, 3).join(' ');
 }
 
+interface ExecutionDetail {
+  title?: string;
+  source?: string;
+  status: string;
+  reason: string;
+  date_detected?: string | null;
+  similar_to?: string;
+  topic?: string;
+  similar_topic?: string;
+  category?: string;
+  similarity?: string;
+}
+
+interface NewsCandidate {
+  title: string;
+  summary: string;
+  source: string;
+  source_url: string;
+  published_at: string;
+  image_url?: string | null;
+  author?: string | null;
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -156,7 +179,7 @@ serve(async (req) => {
       discarded_duplicate_semantic: 0,
       discarded_duplicate_topic: 0,
       published_count: 0,
-      execution_details: [] as any[]
+      execution_details: [] as ExecutionDetail[]
     };
 
     // Buscar últimas 5 notícias para verificação de diversidade de tema
@@ -166,7 +189,7 @@ serve(async (req) => {
       .order('published_at', { ascending: false })
       .limit(5);
 
-    const publishedNews: any[] = [];
+    const publishedNews: NewsCandidate[] = [];
     const categories = ['ENEM', 'Concursos', 'SISU', 'ProUni', 'FIES', 'Vestibular', 'Educação Geral'];
     let currentCategoryIndex = 0;
 
@@ -242,7 +265,7 @@ serve(async (req) => {
         continue;
       }
 
-      const candidate = JSON.parse(toolCall.function.arguments);
+      const candidate = JSON.parse(toolCall.function.arguments) as NewsCandidate;
       
       // Validação 1: Data obrigatória e válida
       if (!candidate.published_at) {

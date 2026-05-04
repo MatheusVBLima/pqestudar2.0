@@ -31,11 +31,17 @@ function readCache<T>(key: string): T | null {
   try {
     const raw = localStorage.getItem(key);
     return raw ? JSON.parse(raw) : null;
-  } catch { return null; }
+  } catch {
+    return null;
+  }
 }
 
 function writeCache<T>(key: string, data: T) {
-  try { localStorage.setItem(key, JSON.stringify(data)); } catch {}
+  try {
+    localStorage.setItem(key, JSON.stringify(data));
+  } catch {
+    // Cache writes are optional; ignore storage quota/private mode failures.
+  }
 }
 
 const FALLBACK_SETTINGS: NavSettings = {
@@ -52,7 +58,7 @@ export function useNavConfig() {
     queryKey: ["nav-items-public"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("nav_items_public" as any)
+        .from("nav_items_public")
         .select("*")
         .order("order_index", { ascending: true });
       if (error) throw error;
@@ -65,7 +71,7 @@ export function useNavConfig() {
     queryKey: ["nav-settings-public"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("nav_settings_public" as any)
+        .from("nav_settings_public")
         .select("*")
         .limit(1)
         .maybeSingle();

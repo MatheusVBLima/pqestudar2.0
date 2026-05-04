@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import type { TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/admin/dashboard/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -29,6 +30,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { cn } from "@/lib/utils";
+import { getErrorMessage } from "@/lib/error-message";
 
 interface NavItem {
   id: string;
@@ -49,6 +51,11 @@ interface NavSettings {
   logo_light_url: string;
   logo_dark_url: string;
 }
+
+type NavSettingsInsert = TablesInsert<"nav_settings">;
+type NavSettingsUpdate = TablesUpdate<"nav_settings">;
+type NavItemUpdate = TablesUpdate<"nav_items">;
+type NavItemInsert = TablesInsert<"nav_items">;
 
 // ─── Sortable Row ───
 function SortableNavItem({
@@ -163,10 +170,12 @@ export default function AdminMenu() {
   const saveLogo = useMutation({
     mutationFn: async () => {
       if (!settingsQuery.data) {
-        const { error } = await supabase.from("nav_settings").insert({ logo_light_url: logoLight, logo_dark_url: logoDark } as any);
+        const payload: NavSettingsInsert = { logo_light_url: logoLight, logo_dark_url: logoDark };
+        const { error } = await supabase.from("nav_settings").insert(payload);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from("nav_settings").update({ logo_light_url: logoLight, logo_dark_url: logoDark } as any).eq("id", settingsQuery.data.id);
+        const payload: NavSettingsUpdate = { logo_light_url: logoLight, logo_dark_url: logoDark };
+        const { error } = await supabase.from("nav_settings").update(payload).eq("id", settingsQuery.data.id);
         if (error) throw error;
       }
     },
@@ -175,7 +184,7 @@ export default function AdminMenu() {
       qc.invalidateQueries({ queryKey: ["admin-nav-settings"] });
       qc.invalidateQueries({ queryKey: ["nav-settings-public"] });
     },
-    onError: (e: any) => toast.error(e.message ?? "Erro ao salvar logos"),
+    onError: (e: unknown) => toast.error(getErrorMessage(e, "Erro ao salvar logos")),
   });
 
   // ── Items state ──
@@ -196,7 +205,7 @@ export default function AdminMenu() {
       setItems(reordered);
       // Batch update order
       const updates = reordered.map((it) =>
-        supabase.from("nav_items").update({ order_index: it.order_index } as any).eq("id", it.id)
+        supabase.from("nav_items").update({ order_index: it.order_index } satisfies NavItemUpdate).eq("id", it.id)
       );
       const results = await Promise.all(updates);
       const failed = results.find((r) => r.error);
@@ -215,7 +224,8 @@ export default function AdminMenu() {
     async (item: NavItem) => {
       const newActive = !item.is_active;
       setItems((prev) => prev.map((i) => (i.id === item.id ? { ...i, is_active: newActive } : i)));
-      const { error } = await supabase.from("nav_items").update({ is_active: newActive } as any).eq("id", item.id);
+      const payload: NavItemUpdate = { is_active: newActive };
+      const { error } = await supabase.from("nav_items").update(payload).eq("id", item.id);
       if (error) toast.error("Erro ao alternar item");
       else {
         qc.invalidateQueries({ queryKey: ["admin-nav-items"] });
@@ -230,7 +240,8 @@ export default function AdminMenu() {
     async (item: NavItem, field: 'show_icon_desktop' | 'show_icon_tablet' | 'show_icon_mobile') => {
       const newValue = !item[field];
       setItems((prev) => prev.map((i) => (i.id === item.id ? { ...i, [field]: newValue } : i)));
-      const { error } = await supabase.from("nav_items").update({ [field]: newValue } as any).eq("id", item.id);
+      const payload: NavItemUpdate = { [field]: newValue };
+      const { error } = await supabase.from("nav_items").update(payload).eq("id", item.id);
       if (error) toast.error("Erro ao alterar visibilidade do ícone");
       else {
         qc.invalidateQueries({ queryKey: ["admin-nav-items"] });
@@ -266,20 +277,22 @@ export default function AdminMenu() {
     mutationFn: async () => {
       if (!formLabel.trim() || !formHref.trim()) throw new Error("Label e href são obrigatórios");
       if (editItem) {
-        const { error } = await supabase.from("nav_items").update({
+        const payload: NavItemUpdate = {
           label: formLabel.trim(),
           href: formHref.trim(),
           icon: formIcon.trim() || null,
-        } as any).eq("id", editItem.id);
+        };
+        const { error } = await supabase.from("nav_items").update(payload).eq("id", editItem.id);
         if (error) throw error;
       } else {
         const maxOrder = items.length > 0 ? Math.max(...items.map((i) => i.order_index)) + 1 : 0;
-        const { error } = await supabase.from("nav_items").insert({
+        const payload: NavItemInsert = {
           label: formLabel.trim(),
           href: formHref.trim(),
           icon: formIcon.trim() || null,
           order_index: maxOrder,
-        } as any);
+        };
+        const { error } = await supabase.from("nav_items").insert(payload);
         if (error) throw error;
       }
     },
@@ -289,7 +302,7 @@ export default function AdminMenu() {
       qc.invalidateQueries({ queryKey: ["admin-nav-items"] });
       qc.invalidateQueries({ queryKey: ["nav-items-public"] });
     },
-    onError: (e: any) => toast.error(e.message ?? "Erro ao salvar"),
+    onError: (e: unknown) => toast.error(getErrorMessage(e, "Erro ao salvar")),
   });
 
   // ── Delete ──
@@ -305,7 +318,7 @@ export default function AdminMenu() {
       qc.invalidateQueries({ queryKey: ["admin-nav-items"] });
       qc.invalidateQueries({ queryKey: ["nav-items-public"] });
     },
-    onError: (e: any) => toast.error(e.message ?? "Erro ao excluir"),
+    onError: (e: unknown) => toast.error(getErrorMessage(e, "Erro ao excluir")),
   });
 
   const loading = settingsQuery.isLoading || itemsQuery.isLoading;

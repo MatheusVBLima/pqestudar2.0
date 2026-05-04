@@ -35,6 +35,11 @@ import { SaveContestButton } from "@/components/ui/save-contest-button";
 import { toast } from "sonner";
 import { usePageSettings } from "@/hooks/usePageSettings";
 
+type OportunidadeWithViews = Oportunidade & {
+  escolaridades?: Oportunidade["escolaridades"];
+  views_total?: number | null;
+};
+
 const SITUACAO_OPTIONS = ["Previsto", "Edital publicado", "Aberto", "Encerrado"];
 const TIPO_OPTIONS = ["Concurso", "Programa educacional", "Processo seletivo", "Processo Seletivo Simplificado"];
 const ESCOLARIDADE_OPTIONS = ["Fundamental", "Médio", "Superior"];
@@ -103,8 +108,9 @@ export default function Concursos() {
     if (filters.escolaridade?.length) {
       // Multi-select intersection: item has ANY of the selected escolaridades
       filtered = filtered.filter(o => {
-        const itemEscolaridades = (o as any).escolaridades?.length 
-          ? (o as any).escolaridades 
+        const item = o as OportunidadeWithViews;
+        const itemEscolaridades = item.escolaridades?.length
+          ? item.escolaridades
           : [o.escolaridade];
         return filters.escolaridade!.some(e => itemEscolaridades.includes(e));
       });
@@ -599,7 +605,7 @@ function OportunidadeCard({
           
           <div className="flex items-center gap-1 text-xs text-muted-foreground">
             <Eye className="h-3 w-3" />
-            {((item as any).views_total ?? item.visualizacoes).toLocaleString("pt-BR")}
+            {((item as OportunidadeWithViews).views_total ?? item.visualizacoes).toLocaleString("pt-BR")}
           </div>
         </div>
         

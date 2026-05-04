@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Helmet } from "react-helmet-async";
 import { Plus, Pencil, Trash2, ExternalLink, Copy } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -76,7 +76,7 @@ export default function AdminAffiliates() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [slugTouched, setSlugTouched] = useState(false);
 
-  const load = async () => {
+  const load = useCallback(async () => {
     setLoading(true);
     const { data, error } = await supabase
       .from("affiliate_pages")
@@ -88,11 +88,11 @@ export default function AdminAffiliates() {
       setItems((data || []) as AffiliatePage[]);
     }
     setLoading(false);
-  };
+  }, [toast]);
 
   useEffect(() => {
     load();
-  }, []);
+  }, [load]);
 
   const openNew = () => {
     setForm({ ...emptyForm });

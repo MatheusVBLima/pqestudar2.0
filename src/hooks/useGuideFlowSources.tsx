@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { getErrorMessage } from '@/lib/error-message';
 import type { KnowledgeEntry } from './useGuideFlowKnowledge';
 
 // ── Persistence keys ────────────────────────────────────────────
@@ -106,9 +107,10 @@ export function useGuideFlowSources(): GuideFlowSources {
       if (!resp.ok) throw new Error('Erro ao carregar Biblioteca de Conhecimento');
       const data: KnowledgeEntry[] = await resp.json();
       setEntries(data);
-    } catch (err: any) {
-      setError(err.message);
-      toast({ title: 'Erro', description: err.message, variant: 'destructive' });
+    } catch (err: unknown) {
+      const message = getErrorMessage(err);
+      setError(message);
+      toast({ title: 'Erro', description: message, variant: 'destructive' });
     } finally {
       setIsLoading(false);
     }

@@ -111,7 +111,7 @@ export const useSubscription = () => {
       }
 
       return { success: false, message: response.data?.error || 'Erro desconhecido ao resgatar token.' };
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Unexpected error redeeming token:', err);
       return { success: false, message: 'Erro inesperado. Tente novamente.' };
     }

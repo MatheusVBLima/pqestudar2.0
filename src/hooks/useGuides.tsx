@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import type { Json, Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
 import { toast } from '@/hooks/use-toast';
 
 export interface Guide {
@@ -28,10 +29,22 @@ export interface Guide {
   sort_order: number;
   author_name: string;
   cover_image_url: string | null;
-  flow_data: Record<string, any> | null;
+  flow_data: Json | null;
   created_at: string;
   updated_at: string;
 }
+
+export type RelatedTool = Pick<Tables<'tools_public'>, 'id' | 'name' | 'description' | 'url' | 'icon_url'>;
+export type RelatedContest = Pick<Tables<'oportunidades_public'>, 'id' | 'titulo' | 'slug' | 'situacao' | 'tipo'>;
+export type RelatedGuide = Pick<Tables<'guides'>, 'id' | 'title' | 'slug' | 'short_description' | 'category'>;
+
+type GuideToolRelation = Pick<Tables<'guide_related_tools'>, 'tool_id'>;
+type GuideContestRelation = Pick<Tables<'guide_related_contests'>, 'contest_id'>;
+type GuideGuideRelation = Pick<Tables<'guide_related_guides'>, 'related_guide_id'>;
+type GuidePreview = Pick<Tables<'guides'>, 'slug' | 'cover_image_url' | 'category' | 'title'>;
+
+const getErrorMessage = (error: unknown) =>
+  error instanceof Error ? error.message : 'Erro inesperado';
 
 const GUIDES_KEY = ['guides'];
 
@@ -40,7 +53,7 @@ export function useGuides(includeUnpublished = false) {
     queryKey: [...GUIDES_KEY, includeUnpublished ? 'all' : 'published'],
     queryFn: async () => {
       let query = supabase
-        .from('guides' as any)
+        .from('guides')
         .select('*')
         .order('sort_order', { ascending: true });
 
@@ -63,7 +76,7 @@ export function useGuideBySlug(slug: string | undefined) {
     queryFn: async () => {
       if (!slug) return null;
       const { data, error } = await supabase
-        .from('guides' as any)
+        .from('guides')
         .select('*')
         .eq('slug', slug)
         .maybeSingle();
@@ -81,19 +94,19 @@ export function useGuideRelatedTools(guideId: string | undefined) {
     queryFn: async () => {
       if (!guideId) return [];
       const { data, error } = await supabase
-        .from('guide_related_tools' as any)
+        .from('guide_related_tools')
         .select('tool_id')
         .eq('guide_id', guideId);
       if (error) throw error;
       if (!data || data.length === 0) return [];
       
-      const toolIds = (data as any[]).map((r: any) => r.tool_id);
+      const toolIds = (data as GuideToolRelation[]).map((r) => r.tool_id);
       const { data: tools, error: toolsError } = await supabase
-        .from('tools_public' as any)
+        .from('tools_public')
         .select('id, name, description, url, icon_url')
         .in('id', toolIds);
       if (toolsError) throw toolsError;
-      return (tools ?? []) as any[];
+      return (tools ?? []) as RelatedTool[];
     },
     enabled: !!guideId,
   });
@@ -105,19 +118,19 @@ export function useGuideRelatedContests(guideId: string | undefined) {
     queryFn: async () => {
       if (!guideId) return [];
       const { data, error } = await supabase
-        .from('guide_related_contests' as any)
+        .from('guide_related_contests')
         .select('contest_id')
         .eq('guide_id', guideId);
       if (error) throw error;
       if (!data || data.length === 0) return [];
       
-      const ids = (data as any[]).map((r: any) => r.contest_id);
+      const ids = (data as GuideContestRelation[]).map((r) => r.contest_id);
       const { data: contests, error: cErr } = await supabase
-        .from('oportunidades_public' as any)
+        .from('oportunidades_public')
         .select('id, titulo, slug, situacao, tipo')
         .in('id', ids);
       if (cErr) throw cErr;
-      return (contests ?? []) as any[];
+      return (contests ?? []) as RelatedContest[];
     },
     enabled: !!guideId,
   });
@@ -129,20 +142,20 @@ export function useGuideRelatedGuides(guideId: string | undefined) {
     queryFn: async () => {
       if (!guideId) return [];
       const { data, error } = await supabase
-        .from('guide_related_guides' as any)
+        .from('guide_related_guides')
         .select('related_guide_id')
         .eq('guide_id', guideId);
       if (error) throw error;
       if (!data || data.length === 0) return [];
       
-      const ids = (data as any[]).map((r: any) => r.related_guide_id);
+      const ids = (data as GuideGuideRelation[]).map((r) => r.related_guide_id);
       const { data: guides, error: gErr } = await supabase
-        .from('guides' as any)
+        .from('guides')
         .select('id, title, slug, short_description, category')
         .in('id', ids)
         .eq('is_published', true);
       if (gErr) throw gErr;
-      return (guides ?? []) as any[];
+      return (guides ?? []) as RelatedGuide[];
     },
     enabled: !!guideId,
   });
@@ -164,13 +177,13 @@ export function useGuideLinkPreviews(
     queryFn: async () => {
       if (uniqueSlugs.length === 0) return {} as Record<string, { cover_image_url: string | null; category: string; title: string }>;
       const { data, error } = await supabase
-        .from('guides' as any)
+        .from('guides')
         .select('slug, cover_image_url, category, title')
         .in('slug', uniqueSlugs)
         .eq('is_published', true);
       if (error) throw error;
       const map: Record<string, { cover_image_url: string | null; category: string; title: string }> = {};
-      for (const g of (data ?? []) as any[]) {
+      for (const g of (data ?? []) as GuidePreview[]) {
         map[g.slug] = { cover_image_url: g.cover_image_url, category: g.category, title: g.title };
       }
       return map;
@@ -203,10 +216,10 @@ export function useGuidesMutations() {
   };
 
   const createGuide = useMutation({
-    mutationFn: async (guide: Partial<Guide>) => {
+    mutationFn: async (guide: TablesInsert<'guides'>) => {
       const { data, error } = await supabase
-        .from('guides' as any)
-        .insert(guide as any)
+        .from('guides')
+        .insert(guide)
         .select()
         .single();
       if (error) throw error;
@@ -216,16 +229,16 @@ export function useGuidesMutations() {
       invalidate();
       toast({ title: 'Guia criado com sucesso' });
     },
-    onError: (err: any) => {
-      toast({ title: 'Erro ao criar guia', description: err.message, variant: 'destructive' });
+    onError: (err: unknown) => {
+      toast({ title: 'Erro ao criar guia', description: getErrorMessage(err), variant: 'destructive' });
     },
   });
 
   const updateGuide = useMutation({
-    mutationFn: async ({ id, ...updates }: Partial<Guide> & { id: string }) => {
+    mutationFn: async ({ id, ...updates }: TablesUpdate<'guides'> & { id: string }) => {
       const { error } = await supabase
-        .from('guides' as any)
-        .update(updates as any)
+        .from('guides')
+        .update(updates)
         .eq('id', id);
       if (error) throw error;
     },
@@ -233,15 +246,15 @@ export function useGuidesMutations() {
       invalidate();
       toast({ title: 'Guia atualizado' });
     },
-    onError: (err: any) => {
-      toast({ title: 'Erro ao atualizar guia', description: err.message, variant: 'destructive' });
+    onError: (err: unknown) => {
+      toast({ title: 'Erro ao atualizar guia', description: getErrorMessage(err), variant: 'destructive' });
     },
   });
 
   const deleteGuide = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
-        .from('guides' as any)
+        .from('guides')
         .delete()
         .eq('id', id);
       if (error) throw error;
@@ -250,16 +263,16 @@ export function useGuidesMutations() {
       invalidate();
       toast({ title: 'Guia excluído' });
     },
-    onError: (err: any) => {
-      toast({ title: 'Erro ao excluir guia', description: err.message, variant: 'destructive' });
+    onError: (err: unknown) => {
+      toast({ title: 'Erro ao excluir guia', description: getErrorMessage(err), variant: 'destructive' });
     },
   });
 
   const togglePublished = useMutation({
     mutationFn: async ({ id, is_published }: { id: string; is_published: boolean }) => {
       const { error } = await supabase
-        .from('guides' as any)
-        .update({ is_published } as any)
+        .from('guides')
+        .update({ is_published })
         .eq('id', id);
       if (error) throw error;
     },
@@ -272,8 +285,8 @@ export function useGuidesMutations() {
   const toggleFeatured = useMutation({
     mutationFn: async ({ id, is_featured }: { id: string; is_featured: boolean }) => {
       const { error } = await supabase
-        .from('guides' as any)
-        .update({ is_featured } as any)
+        .from('guides')
+        .update({ is_featured })
         .eq('id', id);
       if (error) throw error;
     },

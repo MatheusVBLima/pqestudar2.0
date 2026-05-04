@@ -13,6 +13,7 @@ import { Tool } from "@/hooks/useTools";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { X, Upload, Link as LinkIcon, Star, Sparkles, ImageIcon, Plus, Trash2 } from "lucide-react";
+import { getErrorMessage } from "@/lib/error-message";
 
 interface ToolModalProps {
   open: boolean;
@@ -28,6 +29,22 @@ interface InternalLink {
   imageUrl?: string | null;
   imageSource?: string | null;
   imagePath?: string | null;
+}
+
+type AssetSource = "upload" | "url";
+
+function normalizeInternalLink(link: Partial<InternalLink>): InternalLink {
+  return {
+    label: link.label || "",
+    url: link.url || "",
+    imageUrl: link.imageUrl || null,
+    imageSource: link.imageSource || null,
+    imagePath: link.imagePath || null,
+  };
+}
+
+function isAssetSource(value: string): value is AssetSource {
+  return value === "upload" || value === "url";
 }
 
 function slugify(text: string): string {
@@ -48,14 +65,14 @@ export function ToolModal({ open, onClose, onSave, tool, availableTags }: ToolMo
   const [url, setUrl] = useState("");
   const [iconUrl, setIconUrl] = useState("");
   const [imageError, setImageError] = useState(false);
-  const [logoSource, setLogoSource] = useState<"upload" | "url">("url");
+  const [logoSource, setLogoSource] = useState<AssetSource>("url");
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [uploadPreview, setUploadPreview] = useState("");
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [attachmentUrl, setAttachmentUrl] = useState("");
-  const [attachmentSource, setAttachmentSource] = useState<"upload" | "url">("url");
+  const [attachmentSource, setAttachmentSource] = useState<AssetSource>("url");
   const [uploadedAttachment, setUploadedAttachment] = useState<File | null>(null);
   const [attachmentUploading, setAttachmentUploading] = useState(false);
   const attachmentInputRef = useRef<HTMLInputElement>(null);
@@ -133,13 +150,7 @@ export function ToolModal({ open, onClose, onSave, tool, availableTags }: ToolMo
       setCtaFinalText(tool.cta_final_text || "");
       const raw = Array.isArray(tool.internal_links) ? tool.internal_links : [];
       setInternalLinks(
-        raw.map((l: any) => ({
-          label: l.label || "",
-          url: l.url || "",
-          imageUrl: l.imageUrl || null,
-          imageSource: l.imageSource || null,
-          imagePath: l.imagePath || null,
-        }))
+        raw.map(normalizeInternalLink)
       );
     } else {
       setName("");
@@ -269,8 +280,8 @@ export function ToolModal({ open, onClose, onSave, tool, availableTags }: ToolMo
       if (uploadError) throw uploadError;
       const { data: publicData } = supabase.storage.from("guide-covers").getPublicUrl(path);
       setCoverImageUrl(publicData.publicUrl);
-    } catch (err: any) {
-      toast.error(err.message || "Erro no upload da capa");
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err, "Erro no upload da capa"));
     } finally {
       setCoverUploading(false);
       if (coverFileRef.current) coverFileRef.current.value = "";
@@ -282,8 +293,9 @@ export function ToolModal({ open, onClose, onSave, tool, availableTags }: ToolMo
     setInternalLinks([...internalLinks, { label: "", url: "", imageUrl: null, imageSource: null, imagePath: null }]);
   const removeLink = (i: number) => setInternalLinks(internalLinks.filter((_, idx) => idx !== i));
   const updateLink = (i: number, field: keyof InternalLink, value: string | null) => {
-    const next = [...internalLinks];
-    (next[i] as any)[field] = value;
+    const next = internalLinks.map((link, idx) =>
+      idx === i ? { ...link, [field]: value } : link
+    );
     setInternalLinks(next);
   };
 
@@ -416,8 +428,8 @@ export function ToolModal({ open, onClose, onSave, tool, availableTags }: ToolMo
         cta_final_label: ctaFinalLabel.trim() || null,
         cta_final_url: ctaFinalUrl.trim() || null,
         cta_final_text: ctaFinalText.trim() || null,
-        internal_links: validLinks as any,
-      } as any);
+        internal_links: validLinks,
+      });
       onClose();
     } finally {
       setSaving(false);
@@ -592,7 +604,7 @@ export function ToolModal({ open, onClose, onSave, tool, availableTags }: ToolMo
             {/* Logo */}
             <div className="space-y-2">
               <Label>Logo / Ícone</Label>
-              <Tabs value={logoSource} onValueChange={(v) => setLogoSource(v as any)}>
+              <Tabs value={logoSource} onValueChange={(v) => isAssetSource(v) && setLogoSource(v)}>
                 <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="upload">
                     <Upload className="w-4 h-4 mr-2" /> Upload
@@ -683,7 +695,7 @@ export function ToolModal({ open, onClose, onSave, tool, availableTags }: ToolMo
             {/* Anexo */}
             <div className="space-y-2">
               <Label>Anexo (download opcional)</Label>
-              <Tabs value={attachmentSource} onValueChange={(v) => setAttachmentSource(v as any)}>
+              <Tabs value={attachmentSource} onValueChange={(v) => isAssetSource(v) && setAttachmentSource(v)}>
                 <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="upload">
                     <Upload className="w-4 h-4 mr-2" /> Upload

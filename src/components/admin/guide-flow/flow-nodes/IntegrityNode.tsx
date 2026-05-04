@@ -193,13 +193,15 @@ const statusConfig: Record<ComplianceStatus, { icon: typeof CheckCircle2; color:
   sem_fonte: { icon: XCircle, color: 'text-red-400', label: 'Sem fonte' },
 };
 
-function IntegrityNodeComponent({ data }: { data: any }) {
-  const { guideData, structureFileNames, hasLibrary, libraryName } = data as {
-    guideData: GeneratedGuideData;
-    structureFileNames: string[];
-    hasLibrary: boolean;
-    libraryName: string | null;
-  };
+interface IntegrityNodeData {
+  guideData: GeneratedGuideData;
+  structureFileNames: string[];
+  hasLibrary: boolean;
+  libraryName: string | null;
+}
+
+function IntegrityNodeComponent({ data }: { data: IntegrityNodeData }) {
+  const { guideData, structureFileNames, hasLibrary, libraryName } = data;
 
   const checks = useMemo(() => evaluateDirectives(guideData, structureFileNames), [guideData, structureFileNames]);
 

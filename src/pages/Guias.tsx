@@ -164,7 +164,7 @@ export default function Guias() {
     }
 
     if (categoryFilter !== "all") {
-      list = list.filter((g) => (g as any).public_category === categoryFilter);
+      list = list.filter((g) => g.public_category === categoryFilter);
     }
 
     return list;

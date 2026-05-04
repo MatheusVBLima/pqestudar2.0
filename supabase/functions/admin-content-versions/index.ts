@@ -25,6 +25,29 @@ interface Resolved {
   profileKey: string;
 }
 
+type SupabaseAdminClient = ReturnType<typeof createClient>;
+type FieldRecord = Record<string, string | number | null | undefined>;
+
+interface SaveBody {
+  path?: string;
+  entity_type?: string;
+  entity_id?: string;
+  profile_key?: string;
+  field_data?: Record<string, string>;
+  source?: string;
+  audit_score_before?: number | null;
+  db_id?: string;
+}
+
+interface RollbackBody {
+  version_id?: string;
+  path?: string;
+}
+
+function getErrorMessage(error: unknown, fallback = 'Internal error') {
+  return error instanceof Error ? error.message : fallback;
+}
+
 function resolveUrl(path: string): Resolved | null {
   const clean = path.split('?')[0].replace(/\/$/, '') || '/';
   if (PAGE_SETTINGS_ROUTES.includes(clean)) {
@@ -139,14 +162,14 @@ Deno.serve(async (req) => {
     }
 
     return json({ error: 'Method not allowed' }, 405);
-  } catch (err) {
+  } catch (err: unknown) {
     console.error('admin-content-versions error:', err);
-    return json({ error: err.message || 'Internal error' }, 500);
+    return json({ error: getErrorMessage(err) }, 500);
   }
 });
 
 // ─── Load fields from source table ───
-async function loadFields(admin: any, resolved: Resolved): Promise<Record<string, any> | null> {
+async function loadFields(admin: SupabaseAdminClient, resolved: Resolved): Promise<FieldRecord | null> {
   const keys = FIELD_KEYS[resolved.entityType];
   if (!keys) return null;
 
@@ -157,7 +180,7 @@ async function loadFields(admin: any, resolved: Resolved): Promise<Record<string
       .eq('route', resolved.entityId)
       .maybeSingle();
     if (error || !data) return null;
-    const result: Record<string, any> = { _updated_at: data.updated_at };
+    const result: FieldRecord = { _updated_at: data.updated_at };
     for (const k of keys) result[k] = data[k] ?? '';
     return result;
   }
@@ -169,7 +192,7 @@ async function loadFields(admin: any, resolved: Resolved): Promise<Record<string
       .eq('slug', resolved.entityId)
       .maybeSingle();
     if (error || !data) return null;
-    const result: Record<string, any> = { _updated_at: data.updated_at, _db_id: data.id };
+    const result: FieldRecord = { _updated_at: data.updated_at, _db_id: data.id };
     for (const k of keys) result[k] = data[k] ?? '';
     return result;
   }
@@ -178,11 +201,11 @@ async function loadFields(admin: any, resolved: Resolved): Promise<Record<string
 }
 
 // ─── Write fields to source table ───
-async function writeFields(admin: any, resolved: Resolved, fieldData: Record<string, string>, dbId?: string): Promise<void> {
+async function writeFields(admin: SupabaseAdminClient, resolved: Resolved, fieldData: Record<string, string>, dbId?: string): Promise<void> {
   const keys = FIELD_KEYS[resolved.entityType];
   if (!keys) throw new Error('Unknown entity type');
 
-  const updatePayload: Record<string, any> = {};
+  const updatePayload: Record<string, string> = {};
   for (const k of keys) {
     if (k in fieldData) updatePayload[k] = fieldData[k];
   }
@@ -207,7 +230,7 @@ async function writeFields(admin: any, resolved: Resolved, fieldData: Record<str
 }
 
 // ─── Handle save ───
-async function handleSave(admin: any, body: any, userId?: string) {
+async function handleSave(admin: SupabaseAdminClient, body: SaveBody, userId?: string) {
   const { path, entity_type, entity_id, profile_key, field_data, source, audit_score_before, db_id } = body;
   if (!path || !entity_type || !entity_id || !profile_key || !field_data) {
     return json({ error: 'Missing required fields' }, 400);
@@ -257,7 +280,7 @@ async function handleSave(admin: any, body: any, userId?: string) {
 }
 
 // ─── Handle rollback ───
-async function handleRollback(admin: any, body: any, userId?: string) {
+async function handleRollback(admin: SupabaseAdminClient, body: RollbackBody, userId?: string) {
   const { version_id, path } = body;
   if (!version_id || !path) return json({ error: 'Missing version_id or path' }, 400);
 

@@ -5,6 +5,7 @@ import { BonusPage as BonusPageType } from "@/hooks/useBonusPages";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { Helmet } from "react-helmet-async";
 import { BonusToolCard } from "@/components/ui/bonus-tool-card";
+import { RouteFallbackPublic } from "@/components/layout/route-fallbacks";
 const BonusPage = () => {
   const {
     slug: paramSlug
@@ -50,9 +51,7 @@ const BonusPage = () => {
     fetchPage();
   }, [paramSlug, location.pathname, isAdmin]);
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center">
-        <div className="text-muted-foreground">Carregando...</div>
-      </div>;
+    return <RouteFallbackPublic />;
   }
   if (notFound || !page) {
     return <Navigate to="/404" replace />;

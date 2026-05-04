@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Home } from "lucide-react";
 import { Helmet } from "react-helmet-async";
@@ -180,6 +180,9 @@ function CharactersAnimation() {
   }, []);
 
   useEffect(() => {
+    const charactersEl = charactersRef.current;
+    if (!charactersEl) return;
+
     // Define stick figures with their properties
     const stickFigures: StickFigure[] = [
       {
@@ -220,9 +223,7 @@ function CharactersAnimation() {
     ];
 
     // Clear existing content
-    if (charactersRef.current) {
-      charactersRef.current.innerHTML = '';
-    }
+    charactersEl.innerHTML = '';
 
     // Create and animate each stick figure
     stickFigures.forEach((figure, index) => {
@@ -245,7 +246,7 @@ function CharactersAnimation() {
       if (figure.transform) stick.style.transform = figure.transform;
 
       // Append to the container
-      charactersRef.current?.appendChild(stick);
+      charactersEl.appendChild(stick);
 
       // Skip all animations if user prefers reduced motion
       if (prefersReducedMotion) return;
@@ -273,9 +274,7 @@ function CharactersAnimation() {
 
     // Cleanup function
     return () => {
-      if (charactersRef.current) {
-        charactersRef.current.innerHTML = '';
-      }
+      charactersEl.innerHTML = '';
     };
   }, [prefersReducedMotion]);
 
@@ -337,7 +336,7 @@ function CircleAnimation() {
   }, []);
 
   // Initialize circles array
-  const initArr = () => {
+  const initArr = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     
@@ -356,10 +355,10 @@ function CircleAnimation() {
       
       circulosRef.current.push({ x: randomX, y: randomY, size });
     }
-  };
+  }, []);
 
   // Drawing function with binary mask composition
-  const draw = () => {
+  const draw = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     
@@ -449,7 +448,7 @@ function CircleAnimation() {
     }
     
     requestIdRef.current = requestAnimationFrame(draw);
-  };
+  }, [prefersReducedMotion]);
 
   // Initialize canvas and start animation
   useEffect(() => {
@@ -500,7 +499,7 @@ function CircleAnimation() {
         cancelAnimationFrame(requestIdRef.current);
       }
     };
-  }, [prefersReducedMotion]);
+  }, [draw, initArr]);
 
   return (
     <canvas 

@@ -2,7 +2,7 @@ import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useSubscription } from '@/hooks/useSubscription';
 import { useUserRoles } from '@/hooks/useUserRoles';
-import { Skeleton } from '@/components/ui/skeleton';
+import { RouteFallbackPremium } from '@/components/layout/route-fallbacks';
 
 interface RequireActiveSubscriptionProps {
   children: React.ReactNode;
@@ -16,15 +16,7 @@ export function RequireActiveSubscription({ children }: RequireActiveSubscriptio
 
   // Show skeleton while loading
   if (authLoading || subLoading || rolesLoading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="w-full max-w-md space-y-4 p-8">
-          <Skeleton className="h-8 w-3/4 mx-auto" />
-          <Skeleton className="h-4 w-1/2 mx-auto" />
-          <Skeleton className="h-32 w-full" />
-        </div>
-      </div>
-    );
+    return <RouteFallbackPremium />;
   }
 
   // Not logged in -> redirect to login with return URL

@@ -38,6 +38,10 @@ export interface Oportunidade {
   deleted_by?: string | null;
 }
 
+type OportunidadeRow = Oportunidade & {
+  escolaridades?: Oportunidade["escolaridades"];
+};
+
 export interface OportunidadeFilters {
   situacao?: string[];
   tipo?: string[];
@@ -71,11 +75,11 @@ export function useOportunidades(filters?: OportunidadeFilters) {
 
       if (error) throw error;
 
-      let result = ((data || []) as unknown as Oportunidade[]).map(o => ({
+      let result = ((data || []) as unknown as OportunidadeRow[]).map(o => ({
         ...o,
         // Normalize: ensure escolaridades array exists (backward compat)
-        escolaridades: (o as any).escolaridades?.length 
-          ? (o as any).escolaridades 
+        escolaridades: o.escolaridades?.length
+          ? o.escolaridades
           : (o.escolaridade ? [o.escolaridade] : ["Médio"]),
       }));
 
@@ -116,10 +120,10 @@ export function useOportunidades(filters?: OportunidadeFilters) {
     const { data: fontes } = await supabase
       .from("fontes_oportunidade")
       .select("*")
-      .eq("oportunidade_id", (oportunidade as any).id);
+      .eq("oportunidade_id", oportunidade.id);
 
     return {
-      ...(oportunidade as any),
+      ...oportunidade,
       fontes_oportunidade: (fontes || []) as unknown as FonteOportunidade[],
     } as Oportunidade;
   }, []);

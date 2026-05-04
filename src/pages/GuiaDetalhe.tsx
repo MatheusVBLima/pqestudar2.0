@@ -92,8 +92,8 @@ export default function GuiaDetalhe() {
   const { data: relatedContests } = useGuideRelatedContests(guide?.id);
   const { data: relatedGuides } = useGuideRelatedGuides(guide?.id);
 
-  const rawInternalLinks: Array<{ label: string; url: string; imageUrl?: string | null }> = Array.isArray((guide as any)?.internal_links)
-    ? ((guide as any).internal_links as any[]).filter((l: any) => l.label && l.url)
+  const rawInternalLinks: Array<{ label: string; url: string; imageUrl?: string | null }> = Array.isArray(guide?.internal_links)
+    ? guide.internal_links.filter((l) => l.label && l.url)
     : [];
   const resolvedLinks = useGuideLinkPreviews(rawInternalLinks);
 
@@ -157,10 +157,10 @@ export default function GuiaDetalhe() {
     [contentFirstHalf, contentSecondHalf] = splitContentForMiddleCta(fullHtml);
   }
 
-  const authorName = (guide as any).author_name || "Equipe PqEstudar";
+  const authorName = guide.author_name || "Equipe PqEstudar";
 
   // Categoria exibida ao público = public_category (badge visual). Fallback à Interna se ausente.
-  const displayCategory = (guide as any).public_category || guide.category;
+  const displayCategory = guide.public_category || guide.category;
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -299,7 +299,7 @@ export default function GuiaDetalhe() {
                       <Wrench className="h-5 w-5" /> Ferramentas relacionadas
                     </h2>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {relatedTools.map((tool: any) => (
+                      {relatedTools.map((tool) => (
                         <Card key={tool.id} className="flex flex-col">
                           <CardHeader className="pb-2">
                             <CardTitle className="text-base">{tool.name}</CardTitle>
@@ -324,7 +324,7 @@ export default function GuiaDetalhe() {
                       <FileText className="h-5 w-5" /> Concursos relacionados
                     </h2>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {relatedContests.map((contest: any) => (
+                      {relatedContests.map((contest) => (
                         <Card key={contest.id}>
                           <CardHeader className="pb-2">
                             <CardTitle className="text-base">
@@ -349,7 +349,7 @@ export default function GuiaDetalhe() {
                   <section>
                     <p className="text-sm font-bold uppercase tracking-wide text-primary mb-5">Veja também</p>
                     <div className="space-y-5">
-                      {relatedGuides.map((g: any) => (
+                      {relatedGuides.map((g) => (
                         <Link
                           key={g.id}
                           to={`/guias/${g.slug}`}

@@ -35,6 +35,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Eye, Plus, Pencil, Trash2, EyeOff, Upload, Link, X } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { supabase as sbClient } from "@/integrations/supabase/client";
+import { getErrorMessage } from "@/lib/error-message";
 
 interface Product {
   id: string;
@@ -461,8 +462,8 @@ export default function Produtos() {
             setModalOpen(false);
             setEditingProduct(null);
           },
-          onError: (err: any) => {
-            toast({ title: "Erro ao atualizar produto", description: err.message, variant: "destructive" });
+          onError: (err: unknown) => {
+            toast({ title: "Erro ao atualizar produto", description: getErrorMessage(err), variant: "destructive" });
           },
         }
       );
@@ -474,8 +475,8 @@ export default function Produtos() {
             toast({ title: "Produto criado com sucesso." });
             setModalOpen(false);
           },
-          onError: (err: any) => {
-            toast({ title: "Erro ao criar produto", description: err.message, variant: "destructive" });
+          onError: (err: unknown) => {
+            toast({ title: "Erro ao criar produto", description: getErrorMessage(err), variant: "destructive" });
           },
         }
       );
@@ -491,8 +492,8 @@ export default function Produtos() {
           toast({ title: "Produto excluído." });
           setDeleteTarget(null);
         },
-        onError: (err: any) => {
-          toast({ title: "Erro ao excluir", description: err.message, variant: "destructive" });
+        onError: (err: unknown) => {
+          toast({ title: "Erro ao excluir", description: getErrorMessage(err), variant: "destructive" });
         },
       }
     );
@@ -505,8 +506,8 @@ export default function Produtos() {
         onSuccess: () => {
           toast({ title: product.is_active ? "Produto ocultado." : "Produto reativado." });
         },
-        onError: (err: any) => {
-          toast({ title: "Erro ao alternar visibilidade", description: err.message, variant: "destructive" });
+        onError: (err: unknown) => {
+          toast({ title: "Erro ao alternar visibilidade", description: getErrorMessage(err), variant: "destructive" });
         },
       }
     );

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import type { TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
 import { toast } from "sonner";
 
 // Types
@@ -244,7 +245,7 @@ export function usePendingItems(statusFilter?: string) {
     }) => {
       const { data: session } = await supabase.auth.getSession();
       
-      const updateData: any = {
+      const updateData: TablesUpdate<"concursos_pending_items"> = {
         status,
         curated_by: session?.session?.user?.id,
         curated_at: new Date().toISOString(),
@@ -296,9 +297,10 @@ export function usePendingItems(statusFilter?: string) {
 
   const addItem = useMutation({
     mutationFn: async (item: Partial<PendingItem>) => {
+      const payload = item as TablesInsert<"concursos_pending_items">;
       const { error } = await supabase
         .from("concursos_pending_items")
-        .insert([item as any]);
+        .insert([payload]);
 
       if (error) throw error;
     },

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { Badge, type BadgeProps } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/integrations/supabase/client';
@@ -139,7 +139,7 @@ const AdminPremiumTokens = () => {
     }
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: string): BadgeProps['variant'] => {
     switch (status) {
       case 'new': return 'default';
       case 'used': return 'secondary';
@@ -264,7 +264,7 @@ const AdminPremiumTokens = () => {
                     </div>
                   </div>
 
-                  <Badge variant={getStatusColor(token.status) as any}>
+                  <Badge variant={getStatusColor(token.status)}>
                     {getStatusLabel(token.status)}
                   </Badge>
 

@@ -51,7 +51,7 @@ export const BonusManagement = () => {
     setModalOpen(true);
   };
 
-  const handleSave = async (data: any) => {
+  const handleSave = async (data: Omit<BonusPage, 'id' | 'created_at' | 'updated_at'>) => {
     if (selectedPage) {
       await updatePage(selectedPage.id, data);
     } else {
@@ -116,7 +116,7 @@ export const BonusManagement = () => {
             <Label htmlFor="management-mode">Modo de Gerenciamento</Label>
           </div>
 
-          <Select value={filterStatus} onValueChange={(value: any) => setFilterStatus(value)}>
+          <Select value={filterStatus} onValueChange={(value) => setFilterStatus(value as typeof filterStatus)}>
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Filtrar por status" />
             </SelectTrigger>

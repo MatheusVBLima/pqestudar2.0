@@ -44,6 +44,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+type PartnerFormData = Omit<Partner, "id" | "created_at" | "updated_at" | "created_by" | "updated_by">;
+type PartnerStatusFilter = "all" | "active" | "inactive";
+
 // Componente de card sortable
 function SortablePartnerCard({ 
   partner, 
@@ -159,7 +162,7 @@ function SortablePartnerCard({
 export function PartnersSection() {
   const { isAdmin, loading: loadingRoles } = useUserRoles();
   const [managementMode, setManagementMode] = useState(false);
-  const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'inactive'>('all');
+  const [filterStatus, setFilterStatus] = useState<PartnerStatusFilter>('all');
   const [modalOpen, setModalOpen] = useState(false);
   const [editingPartner, setEditingPartner] = useState<Partner | null>(null);
   const [deletePartner, setDeletePartner] = useState<Partner | null>(null);
@@ -194,7 +197,7 @@ export function PartnersSection() {
     return true;
   });
 
-  const handleSave = async (data: any) => {
+  const handleSave = async (data: PartnerFormData) => {
     if (editingPartner) {
       await updatePartner(editingPartner.id, data);
     } else {
@@ -304,7 +307,7 @@ export function PartnersSection() {
                   Adicionar Parceiro
                 </Button>
 
-                <Select value={filterStatus} onValueChange={(v: any) => setFilterStatus(v)}>
+                <Select value={filterStatus} onValueChange={(v) => setFilterStatus(v as PartnerStatusFilter)}>
                   <SelectTrigger className="w-[180px] min-h-[44px]">
                     <SelectValue placeholder="Filtrar status" />
                   </SelectTrigger>

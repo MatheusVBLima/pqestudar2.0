@@ -21,7 +21,7 @@ export function useGuidePublicCategories() {
     queryKey: ['guide_public_categories'],
     queryFn: async (): Promise<GuidePublicCategory[]> => {
       const { data, error } = await supabase
-        .from('guide_public_categories' as any)
+        .from('guide_public_categories')
         .select('name, sort_order')
         .eq('is_active', true)
         .order('sort_order', { ascending: true });

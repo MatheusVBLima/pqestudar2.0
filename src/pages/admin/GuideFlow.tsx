@@ -11,8 +11,10 @@ import { findOption, TIPOS_GUIA, CATEGORIAS, INTENCOES, mapInternaToPublica } fr
 import { useGuidesMutations } from '@/hooks/useGuides';
 import { useGuideFlowSources } from '@/hooks/useGuideFlowSources';
 import { supabase } from '@/integrations/supabase/client';
+import type { Json, Tables, TablesInsert } from '@/integrations/supabase/types';
 import { toast } from '@/hooks/use-toast';
 import { Save, Send, RotateCcw } from 'lucide-react';
+import { getErrorMessage } from '@/lib/error-message';
 
 const EMPTY_GUIDE: GeneratedGuideData = {
   title: '', slug: '', short_description: '', seo_title: '', seo_description: '',
@@ -20,6 +22,9 @@ const EMPTY_GUIDE: GeneratedGuideData = {
   cta_top: null, cta_middle: null, cta_final: null, internal_links: [], cover_image_suggestion: '',
   image_prompts: [], generated_images: [],
 };
+
+type GuideFlowStoredData = Partial<GeneratedGuideData> & { inputs?: GuideFlowInputs };
+type GuideRow = Tables<'guides'> & { flow_data?: GuideFlowStoredData | null };
 
 export default function GuideFlow() {
   const navigate = useNavigate();
@@ -42,7 +47,7 @@ export default function GuideFlow() {
 
     (async () => {
       const { data, error } = await supabase
-        .from('guides' as any)
+        .from('guides')
         .select('*')
         .eq('id', guideId)
         .single();
@@ -52,7 +57,7 @@ export default function GuideFlow() {
         return;
       }
 
-      const guide = data as any;
+      const guide = data as unknown as GuideRow;
       setLinkedGuideId(guide.id);
 
       if (guide.flow_data) {
@@ -207,12 +212,12 @@ export default function GuideFlow() {
             ? 'Gerado com diretrizes editoriais — sem biblioteca factual.'
             : 'Gerado sem fontes da Biblioteca — revisão manual recomendada.',
       });
-    } catch (err: any) {
-      toast({ title: 'Erro', description: err.message, variant: 'destructive' });
+    } catch (err: unknown) {
+      toast({ title: 'Erro', description: getErrorMessage(err), variant: 'destructive' });
     } finally {
       setIsGenerating(false);
     }
-  }, [sources.activeStructureEntries, sources.activeLibraryEntries, sources.autoSuggest]);
+  }, [sources]);
 
   const handleRegenerateImage = useCallback(async (prompt: string, position: string) => {
     if (!guideData) return;
@@ -241,8 +246,8 @@ export default function GuideFlow() {
       // The edge function handles image generation internally during guide generation
       // For regeneration, we update the prompt and re-trigger
       toast({ title: 'Use o prompt copiado', description: 'Cole o prompt em uma ferramenta de geração de imagem e atualize manualmente.', });
-    } catch (err: any) {
-      toast({ title: 'Erro', description: err.message, variant: 'destructive' });
+    } catch (err: unknown) {
+      toast({ title: 'Erro', description: getErrorMessage(err), variant: 'destructive' });
     }
   }, [guideData]);
 
@@ -338,7 +343,7 @@ export default function GuideFlow() {
         inputs: currentInputs,
       };
 
-      const guidePayload: any = {
+      const guidePayload: TablesInsert<'guides'> = {
         title: guideData.title,
         slug: guideData.slug,
         short_description: guideData.short_description,
@@ -350,7 +355,7 @@ export default function GuideFlow() {
         content_markdown: finalMarkdown,
         cover_image_url: guideData.cover_image_url || null,
         is_published: publish,
-        internal_links: guideData.internal_links,
+        internal_links: guideData.internal_links as unknown as Json,
         cta_top_label: guideData.cta_top?.label || null,
         cta_top_url: guideData.cta_top?.url || null,
         cta_top_text: guideData.cta_top?.text || null,
@@ -360,7 +365,7 @@ export default function GuideFlow() {
         cta_final_label: guideData.cta_final?.label || null,
         cta_final_url: guideData.cta_final?.url || null,
         cta_final_text: guideData.cta_final?.text || null,
-        flow_data: flowDataPayload,
+        flow_data: flowDataPayload as unknown as Json,
       };
 
       if (linkedGuideId) {
@@ -379,8 +384,8 @@ export default function GuideFlow() {
         description: `"${guideData.title}" foi ${publish ? 'publicado' : 'salvo como rascunho'}.`,
       });
       navigate('/guias');
-    } catch (err: any) {
-      toast({ title: 'Erro ao salvar', description: err.message, variant: 'destructive' });
+    } catch (err: unknown) {
+      toast({ title: 'Erro ao salvar', description: getErrorMessage(err), variant: 'destructive' });
     } finally {
       setIsSaving(false);
     }

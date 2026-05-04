@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { toast } from '@/hooks/use-toast';
+import { getErrorMessage } from '@/lib/error-message';
 
 export interface Partner {
   id: string;
@@ -16,12 +17,16 @@ export interface Partner {
   updated_by?: string;
 }
 
+interface AdminPartnerRow extends Partner {
+  display_order?: number;
+}
+
 export const usePartners = (includeInactive = false) => {
   const { user } = useAuth();
   const [partners, setPartners] = useState<Partner[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchPartners = async () => {
+  const fetchPartners = useCallback(async () => {
     try {
       setLoading(true);
       
@@ -39,7 +44,7 @@ export const usePartners = (includeInactive = false) => {
         if (error) throw error;
         
         // Mapear campos da resposta para o formato esperado
-        const mappedData = (data as any[])?.map((p: any) => ({
+        const mappedData = ((data ?? []) as AdminPartnerRow[]).map((p) => ({
           id: p.id,
           title: p.title,
           logo_url: p.logo_url,
@@ -76,7 +81,7 @@ export const usePartners = (includeInactive = false) => {
           updated_by: undefined
         })));
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Log apenas em dev; evitar toast vermelho global na produção
       if (process.env.NODE_ENV === 'development') {
         console.error('Erro ao buscar parceiros:', error);
@@ -93,7 +98,7 @@ export const usePartners = (includeInactive = false) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [includeInactive]);
 
   const addPartner = async (partner: Omit<Partner, 'id' | 'created_at' | 'updated_at' | 'created_by' | 'updated_by'>) => {
     try {
@@ -116,13 +121,14 @@ export const usePartners = (includeInactive = false) => {
       });
       
       return { data, error: null };
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const message = getErrorMessage(err, "Não foi possível adicionar o parceiro.");
       toast({
         title: "Erro",
-        description: err.message || "Não foi possível adicionar o parceiro.",
+        description: message,
         variant: "destructive"
       });
-      return { data: null, error: err.message };
+      return { data: null, error: message };
     }
   };
 
@@ -147,13 +153,14 @@ export const usePartners = (includeInactive = false) => {
       });
       
       return { data, error: null };
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const message = getErrorMessage(err, "Não foi possível atualizar o parceiro.");
       toast({
         title: "Erro",
-        description: err.message || "Não foi possível atualizar o parceiro.",
+        description: message,
         variant: "destructive"
       });
-      return { data: null, error: err.message };
+      return { data: null, error: message };
     }
   };
 
@@ -178,13 +185,14 @@ export const usePartners = (includeInactive = false) => {
       });
       
       return { error: null };
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const message = getErrorMessage(err, "Não foi possível remover o parceiro.");
       toast({
         title: "Erro",
-        description: err.message || "Não foi possível remover o parceiro.",
+        description: message,
         variant: "destructive"
       });
-      return { error: err.message };
+      return { error: message };
     }
   };
 
@@ -228,9 +236,10 @@ export const usePartners = (includeInactive = false) => {
       });
 
       return { error: null };
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const message = getErrorMessage(err, "Não foi possível salvar a nova ordem.");
       console.error('[Partners Reorder] Error', { 
-        error: err.message, 
+        error: message,
         duration: `${Date.now() - startTime}ms` 
       });
 
@@ -243,13 +252,13 @@ export const usePartners = (includeInactive = false) => {
         variant: "destructive"
       });
 
-      return { error: err.message };
+      return { error: message };
     }
   };
 
   useEffect(() => {
     fetchPartners();
-  }, [includeInactive]);
+  }, [fetchPartners]);
 
   return {
     partners,

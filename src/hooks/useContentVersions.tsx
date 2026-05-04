@@ -16,6 +16,13 @@ interface LoadResult {
   error?: string;
 }
 
+interface MutationResult {
+  error?: string;
+  success?: boolean;
+  version_id?: string;
+  summary?: string;
+}
+
 export interface ContentVersion {
   id: string;
   url: string;
@@ -125,7 +132,7 @@ export function useSaveVersion() {
       });
 
       if (resp.error) throw new Error(resp.error.message || 'Erro ao salvar versão');
-      const data = resp.data as any;
+      const data = resp.data as MutationResult | null;
       if (data?.error) throw new Error(data.error);
       return data;
     },
@@ -157,7 +164,7 @@ export function useRollbackVersion() {
       });
 
       if (resp.error) throw new Error(resp.error.message || 'Erro ao reverter versão');
-      const data = resp.data as any;
+      const data = resp.data as MutationResult | null;
       if (data?.error) throw new Error(data.error);
       return data;
     },

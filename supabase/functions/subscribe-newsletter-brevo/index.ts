@@ -36,6 +36,34 @@ interface SubscribeRequest {
   website?: string;
 }
 
+type SupabaseClient = ReturnType<typeof createClient>;
+
+interface NewsletterUtms {
+  utmSource?: string;
+  utmMedium?: string;
+  utmCampaign?: string;
+  utmContent?: string;
+  utmTerm?: string;
+}
+
+interface RateLimitRow {
+  id: string;
+  attempts: number;
+  window_start?: string;
+}
+
+interface BrevoContact {
+  listIds?: number[];
+}
+
+interface BrevoErrorBody {
+  code?: string;
+}
+
+function getErrorMessage(error: unknown, fallback = 'unknown') {
+  return error instanceof Error ? error.message : fallback;
+}
+
 // Validação de e-mail server-side
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const MAX_EMAIL_LEN = 255;
@@ -67,7 +95,7 @@ const SHORT_WINDOW_MIN = 15;
 const SHORT_WINDOW_MAX = 5;
 const DAILY_CAP = 20;
 
-async function checkRateLimit(supabase: any, ipHash: string): Promise<{ ok: boolean; reason?: string }> {
+async function checkRateLimit(supabase: SupabaseClient, ipHash: string): Promise<{ ok: boolean; reason?: string }> {
   await supabase.rpc('cleanup_newsletter_rate_limit_30d').catch(() => {
     // fallback caso a função 30d não exista
     return supabase.rpc('cleanup_newsletter_rate_limit');
@@ -97,7 +125,7 @@ async function checkRateLimit(supabase: any, ipHash: string): Promise<{ ok: bool
     .eq('ip_hash', ipHash)
     .gte('window_start', dayWindowStart);
 
-  const dailyTotal = (dayRows ?? []).reduce((sum: number, r: any) => sum + (r.attempts || 0), 0);
+  const dailyTotal = ((dayRows ?? []) as RateLimitRow[]).reduce((sum, r) => sum + (r.attempts || 0), 0);
   if (dailyTotal >= DAILY_CAP) {
     return { ok: false, reason: 'daily_cap' };
   }
@@ -118,14 +146,14 @@ async function checkRateLimit(supabase: any, ipHash: string): Promise<{ ok: bool
 
 // Log event
 async function logEvent(
-  supabase: any,
+  supabase: SupabaseClient,
   eventType: string,
   emailHash: string,
   ipHash: string,
-  utms: any,
+  utms: NewsletterUtms,
   pageSlug?: string,
   errorMessage?: string,
-  metadata?: any
+  metadata?: Record<string, unknown>
 ) {
   await supabase.from('newsletter_events').insert({
     event_type: eventType,
@@ -275,7 +303,7 @@ const handler = async (req: Request): Promise<Response> => {
       });
 
       if (getContactResponse.ok) {
-        const contactData = await getContactResponse.json();
+        const contactData = await getContactResponse.json() as BrevoContact;
         if (contactData.listIds && contactData.listIds.includes(parseInt(config.default_list_id))) {
           isSubscribed = true;
         }
@@ -328,7 +356,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     // Prepare contact attributes
-    const attributes: any = {
+    const attributes: Record<string, string> = {
       SOURCE: 'site',
       PAGE_SLUG: pageSlug || 'homepage',
     };
@@ -340,7 +368,7 @@ const handler = async (req: Request): Promise<Response> => {
     if (utmTerm) attributes.UTM_TERM = utmTerm;
 
     // Create/Update contact in Brevo
-    const contactPayload: any = {
+    const contactPayload = {
       email: normalizedEmail,
       attributes,
       listIds: [parseInt(config.default_list_id)],
@@ -357,7 +385,7 @@ const handler = async (req: Request): Promise<Response> => {
       // Sanitizar log: só status + code (sem responseText cru)
       let brevoCode: string | undefined;
       try {
-        const errBody = await brevoResponse.json();
+        const errBody = await brevoResponse.json() as BrevoErrorBody;
         brevoCode = errBody?.code;
       } catch {
         // ignora corpo não-JSON
@@ -402,8 +430,8 @@ const handler = async (req: Request): Promise<Response> => {
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
-  } catch (error: any) {
-    console.error('subscribe-newsletter-brevo error:', error?.message ?? 'unknown');
+  } catch (error: unknown) {
+    console.error('subscribe-newsletter-brevo error:', getErrorMessage(error));
 
     return new Response(
       JSON.stringify({

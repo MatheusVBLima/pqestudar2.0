@@ -19,6 +19,7 @@ interface CopyIssue {
   category: string;
   evidence: string;
   fix: string;
+  applicability?: 'auto' | 'manual' | 'na';
 }
 
 interface RequestBody {
@@ -126,15 +127,15 @@ serve(async (req) => {
     // Build issues context — send ALL issues (auto + manual) as context
     let issuesContext = '';
     if (issues && issues.length > 0) {
-      const autoIssues = issues.filter((i: any) => i.applicability === 'auto' || !i.applicability);
-      const manualIssues = issues.filter((i: any) => i.applicability === 'manual' || i.applicability === 'na');
+      const autoIssues = issues.filter((i) => i.applicability === 'auto' || !i.applicability);
+      const manualIssues = issues.filter((i) => i.applicability === 'manual' || i.applicability === 'na');
       
       issuesContext = '\n\nProblemas identificados na auditoria:';
       if (autoIssues.length > 0) {
-        issuesContext += `\n\nCorrigíveis via campos editáveis:\n${autoIssues.map((i: any) => `- ${i.category}: ${i.issue} — ${i.fix}`).join('\n')}`;
+        issuesContext += `\n\nCorrigíveis via campos editáveis:\n${autoIssues.map((i) => `- ${i.category}: ${i.issue} — ${i.fix}`).join('\n')}`;
       }
       if (manualIssues.length > 0) {
-        issuesContext += `\n\nEstruturais (não editáveis diretamente, mas use como contexto para melhorar os campos disponíveis):\n${manualIssues.map((i: any) => `- ${i.category}: ${i.issue} — ${i.fix}`).join('\n')}`;
+        issuesContext += `\n\nEstruturais (não editáveis diretamente, mas use como contexto para melhorar os campos disponíveis):\n${manualIssues.map((i) => `- ${i.category}: ${i.issue} — ${i.fix}`).join('\n')}`;
       }
     }
 

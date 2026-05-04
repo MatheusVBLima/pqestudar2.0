@@ -48,9 +48,10 @@ import {
   AlertTriangle,
   Lock
 } from "lucide-react";
-import { useOportunidadesAdmin, Oportunidade, FonteOportunidade } from "@/hooks/useOportunidades";
+import { useOportunidadesAdmin, Oportunidade, FonteOportunidade, type OportunidadeInput } from "@/hooks/useOportunidades";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import MarkdownEditor, { countMarkdownWords, markdownToHtml } from "./MarkdownEditor";
+import { getErrorMessage } from "@/lib/error-message";
 
 // Stopwords to remove from slug
 const STOPWORDS = ["de", "da", "do", "das", "dos", "para", "e", "a", "o", "em", "um", "uma", "com", "por", "ao", "aos", "no", "na", "nos", "nas"];
@@ -175,6 +176,30 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>;
 
+interface AtualizacaoOportunidade {
+  data_atualizacao?: string;
+  texto?: string;
+}
+
+type OportunidadeFormItem = Oportunidade & {
+  escolaridades?: FormData["escolaridades"];
+  conteudo_markdown?: string | null;
+  conteudo_principal?: string | null;
+  meta_title?: string | null;
+  meta_description?: string | null;
+  atualizacoes_oportunidade?: AtualizacaoOportunidade[];
+};
+
+type OportunidadePayload = OportunidadeInput & {
+  escolaridades: FormData["escolaridades"];
+  conteudo_markdown?: string;
+  conteudo_html?: string;
+  conteudo_principal?: string;
+  meta_title?: string;
+  meta_description?: string;
+  atualizacoes: { data_atualizacao: string; texto: string }[];
+};
+
 interface OportunidadeModalProps {
   open: boolean;
   onClose: () => void;
@@ -269,7 +294,7 @@ export default function OportunidadeModal({
   useEffect(() => {
     if (editingItem) {
       // Normalize escolaridades: use new array if present, else convert legacy field
-      const itemWithExt = editingItem as any;
+      const itemWithExt = editingItem as OportunidadeFormItem;
       const escolaridadesValue: ("Fundamental" | "Médio" | "Superior")[] = 
         itemWithExt.escolaridades?.length 
           ? itemWithExt.escolaridades 
@@ -302,7 +327,7 @@ export default function OportunidadeModal({
           source_tipo: f.source_tipo,
           source_date: f.source_date?.split("T")[0] || "",
         })) || [],
-        atualizacoes: itemWithExt.atualizacoes_oportunidade?.map((a: any) => ({
+        atualizacoes: itemWithExt.atualizacoes_oportunidade?.map((a) => ({
           data_atualizacao: a.data_atualizacao?.split("T")[0] || "",
           texto: a.texto || "",
         })) || [],
@@ -388,7 +413,7 @@ export default function OportunidadeModal({
       // Generate HTML from markdown
       const conteudoHtml = data.conteudo_markdown ? markdownToHtml(data.conteudo_markdown) : undefined;
 
-      const payload = {
+      const payload: OportunidadePayload = {
         titulo: data.titulo,
         slug: data.slug,
         categoria: data.categoria,
@@ -422,14 +447,14 @@ export default function OportunidadeModal({
       };
 
       if (editingItem) {
-        await updateOportunidade(payload as any);
+        await updateOportunidade(payload);
       } else {
-        await createOportunidade(payload as any);
+        await createOportunidade(payload);
       }
       
       onSuccess();
-    } catch (e: any) {
-      setError(e.message || "Erro ao salvar oportunidade");
+    } catch (e: unknown) {
+      setError(getErrorMessage(e, "Erro ao salvar oportunidade"));
     }
   };
 

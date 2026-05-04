@@ -46,6 +46,9 @@ export interface UpdateCourseData extends CreateCourseData {
   is_active?: boolean;
 }
 
+const getErrorMessage = (error: unknown) =>
+  error instanceof Error ? error.message : 'Erro inesperado';
+
 export const useCourses = () => {
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
@@ -62,8 +65,8 @@ export const useCourses = () => {
 
       if (error) throw error;
       setCourses(data as Course[] || []);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -97,8 +100,8 @@ export const useCourses = () => {
       // Refetch to get updated data from public view
       await fetchCourses();
       return { data, error: null };
-    } catch (err: any) {
-      return { data: null, error: err.message };
+    } catch (err: unknown) {
+      return { data: null, error: getErrorMessage(err) };
     }
   };
 
@@ -120,8 +123,8 @@ export const useCourses = () => {
       // Refetch to get updated data from public view
       await fetchCourses();
       return { data, error: null };
-    } catch (err: any) {
-      return { data: null, error: err.message };
+    } catch (err: unknown) {
+      return { data: null, error: getErrorMessage(err) };
     }
   };
 
@@ -142,8 +145,8 @@ export const useCourses = () => {
       // Refetch to get updated data from public view
       await fetchCourses();
       return { error: null };
-    } catch (err: any) {
-      return { error: err.message };
+    } catch (err: unknown) {
+      return { error: getErrorMessage(err) };
     }
   };
 
@@ -164,8 +167,8 @@ export const useCourses = () => {
       // Refetch to get updated data from public view
       await fetchCourses();
       return { error: null };
-    } catch (err: any) {
-      return { error: err.message };
+    } catch (err: unknown) {
+      return { error: getErrorMessage(err) };
     }
   };
 

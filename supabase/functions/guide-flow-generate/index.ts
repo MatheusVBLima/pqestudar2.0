@@ -22,6 +22,52 @@ function normalize(s: string): string {
   return s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 }
 
+interface ExistingGuideRow {
+  title: string;
+  slug: string;
+  category: string;
+}
+
+interface ExistingToolRow {
+  name: string;
+  description: string | null;
+  url: string | null;
+}
+
+interface ExistingContestRow {
+  titulo: string;
+  slug: string;
+  situacao: string;
+}
+
+interface ImagePromptData {
+  type: "cover" | "internal" | string;
+  position: string;
+  prompt?: string;
+  alt_text?: string;
+  editorial_function?: string;
+  status?: string;
+}
+
+interface GeneratedImageData extends ImagePromptData {
+  prompt: string;
+  alt_text: string;
+  editorial_function: string;
+  status: "success" | "error" | "prompt_only";
+  url?: string;
+  storage_path?: string;
+  error?: string;
+}
+
+interface GeneratedGuidePayload {
+  slug?: string;
+  cover_image_url?: string;
+  image_prompts?: ImagePromptData[];
+  generated_images?: GeneratedImageData[];
+  _sources?: Record<string, unknown>;
+  [key: string]: unknown;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -81,9 +127,9 @@ serve(async (req) => {
       supabase.from("oportunidades").select("id, titulo, slug, situacao, tipo").eq("publicado", true).limit(20),
     ]);
 
-    const existingGuides = (guidesRes.data ?? []).map((g: any) => `- "${g.title}" (/guias/${g.slug}) [${g.category}]`).join("\n");
-    const existingTools = (toolsRes.data ?? []).map((t: any) => `- "${t.name}": ${t.description?.slice(0, 80) ?? ""} (${t.url})`).join("\n");
-    const existingContests = (contestsRes.data ?? []).map((c: any) => `- "${c.titulo}" (/concursos/${c.slug}) [${c.situacao}]`).join("\n");
+    const existingGuides = ((guidesRes.data ?? []) as ExistingGuideRow[]).map((g) => `- "${g.title}" (/guias/${g.slug}) [${g.category}]`).join("\n");
+    const existingTools = ((toolsRes.data ?? []) as ExistingToolRow[]).map((t) => `- "${t.name}": ${t.description?.slice(0, 80) ?? ""} (${t.url})`).join("\n");
+    const existingContests = ((contestsRes.data ?? []) as ExistingContestRow[]).map((c) => `- "${c.titulo}" (/concursos/${c.slug}) [${c.situacao}]`).join("\n");
 
     // ─── 3. Build editorial modulation section ───
     let editorialModulation = "";
@@ -293,10 +339,10 @@ Retorne um JSON com esta estrutura exata:
     const aiData = await aiResponse.json();
     const rawContent = aiData.choices?.[0]?.message?.content ?? "";
 
-    let guideData;
+    let guideData: GeneratedGuidePayload;
     try {
       const cleaned = rawContent.replace(/^```json\s*\n?/i, "").replace(/\n?```\s*$/i, "").trim();
-      guideData = JSON.parse(cleaned);
+      guideData = JSON.parse(cleaned) as GeneratedGuidePayload;
     } catch {
       console.error("Failed to parse AI response:", rawContent.slice(0, 500));
       return new Response(JSON.stringify({ error: "Erro ao processar resposta da IA. Tente novamente.", raw: rawContent.slice(0, 1000) }), {
@@ -308,7 +354,7 @@ Retorne um JSON com esta estrutura exata:
     // Ensure all image_prompts always exist as nodes (even on failure)
     if (guideData.image_prompts && Array.isArray(guideData.image_prompts) && guideData.image_prompts.length > 0 && shouldGenerateImages) {
       console.log(`Generating ${guideData.image_prompts.length} images...`);
-      const generatedImages: any[] = [];
+      const generatedImages: GeneratedImageData[] = [];
 
       for (const imgPrompt of guideData.image_prompts) {
         // Ensure prompt enforces 16:9 landscape
@@ -404,7 +450,7 @@ Retorne um JSON com esta estrutura exata:
     } else if (guideData.image_prompts && Array.isArray(guideData.image_prompts) && guideData.image_prompts.length > 0 && !shouldGenerateImages) {
       // Prompt-only mode: create node data with prompt info but no actual images
       console.log(`Prompt-only mode: ${guideData.image_prompts.length} image nodes created without generation.`);
-      guideData.generated_images = guideData.image_prompts.map((imgPrompt: any) => {
+      guideData.generated_images = guideData.image_prompts.map((imgPrompt) => {
         let visualPrompt = imgPrompt.prompt || "";
         if (!visualPrompt.toLowerCase().includes("16:9") && !visualPrompt.toLowerCase().includes("landscape")) {
           visualPrompt = `Wide 16:9 landscape format. ${visualPrompt}`;

@@ -102,7 +102,7 @@ Deno.serve(async (req) => {
         const { id, ...updates } = data
         
         // Normalize updates
-        const normalizedUpdates: any = { updated_by: user.id }
+        const normalizedUpdates: Record<string, unknown> = { updated_by: user.id }
         
         if (updates.title !== undefined) normalizedUpdates.title = updates.title?.trim()
         if (updates.description !== undefined) normalizedUpdates.description = updates.description?.trim()

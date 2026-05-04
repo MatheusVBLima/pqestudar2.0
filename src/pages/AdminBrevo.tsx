@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { Navigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
@@ -41,14 +41,7 @@ const AdminBrevo = () => {
   const [config, setConfig] = useState<BrevoConfig | null>(null);
   const [stats, setStats] = useState<NewsletterStats | null>(null);
 
-  useEffect(() => {
-    if (isAdmin) {
-      loadConfig();
-      loadStats();
-    }
-  }, [isAdmin]);
-
-  const loadConfig = async () => {
+  const loadConfig = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('brevo_config')
@@ -67,9 +60,9 @@ const AdminBrevo = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast]);
 
-  const loadStats = async () => {
+  const loadStats = useCallback(async () => {
     try {
       const now = new Date();
       const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -141,7 +134,14 @@ const AdminBrevo = () => {
     } catch (error) {
       console.error('Error loading stats:', error);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (isAdmin) {
+      loadConfig();
+      loadStats();
+    }
+  }, [isAdmin, loadConfig, loadStats]);
 
   const saveConfig = async () => {
     if (!config) return;

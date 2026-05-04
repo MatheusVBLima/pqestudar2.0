@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -38,13 +38,9 @@ const PremiumCurationPage = () => {
   const [loading, setLoading] = useState(true);
   const { isSaved, toggleSave, isToggling } = usePremiumSavedItems();
 
-  useEffect(() => {
-    if (slug) {
-      fetchPage();
-    }
-  }, [slug]);
+  const fetchPage = useCallback(async () => {
+    if (!slug) return;
 
-  const fetchPage = async () => {
     try {
       // Fetch the page
       const { data: pageData, error: pageError } = await supabase
@@ -79,13 +75,17 @@ const PremiumCurationPage = () => {
         .order('sort_order', { ascending: true });
 
       if (itemsError) throw itemsError;
-      setItems((itemsData as any) || []);
+      setItems((itemsData || []) as PageItem[]);
     } catch (err) {
       console.error('Error fetching page:', err);
     } finally {
       setLoading(false);
     }
-  };
+  }, [slug]);
+
+  useEffect(() => {
+    fetchPage();
+  }, [fetchPage]);
 
   if (loading) {
     return (

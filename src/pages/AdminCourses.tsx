@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { CourseManagement } from '@/components/admin/CourseManagement';
 import { useUserRoles } from '@/hooks/useUserRoles';
 import { useAuth } from '@/hooks/useAuth';
-import { AlertCircle } from 'lucide-react';
+import { RouteFallbackAdmin } from '@/components/layout/route-fallbacks';
 
 export default function AdminCourses() {
   const navigate = useNavigate();
@@ -27,15 +27,7 @@ export default function AdminCourses() {
 
   // Show loading state while checking auth/admin - no flickering
   if (authLoading || rolesLoading) {
-    return (
-      <div className="min-h-screen bg-background">
-        <div className="container mx-auto px-4 py-8">
-          <div className="flex items-center justify-center min-h-[400px]">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-          </div>
-        </div>
-      </div>
-    );
+    return <RouteFallbackAdmin />;
   }
 
   // Only render admin content after confirming admin status - no flickering

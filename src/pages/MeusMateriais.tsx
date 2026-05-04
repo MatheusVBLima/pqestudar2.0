@@ -6,6 +6,30 @@ import { Badge } from "@/components/ui/badge";
 import { Download, FileText, Users, Trophy, Star, Clock, Target } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 
+type RequisitoMaterial =
+  | { tipo: "aproveitamento"; valor_necessario: number; descricao_curta: string }
+  | { tipo: "ranking"; valor_necessario: number; descricao_curta: string }
+  | {
+      tipo: "multiplo";
+      requisitos_necessarios: { tipo: "pontos" | "cursos_react"; valor: number }[];
+      descricao_curta: string;
+    }
+  | { tipo: "premium_ou_pontos"; valor_necessario: number; descricao_curta: string };
+
+interface MaterialComunidade {
+  id: number;
+  titulo: string;
+  autor: string;
+  tipo: string;
+  rating: number;
+  downloads: number;
+  pontos: number;
+  como_conseguir: string;
+  descricao: string;
+  dificuldade: string;
+  requisitos: RequisitoMaterial;
+}
+
 const MeusMateriais = () => {
   // Estado simulado do progresso do usuário
   const [progressoUsuario] = useState({
@@ -46,7 +70,7 @@ const MeusMateriais = () => {
     }
   ];
 
-  const materiaisComunidade = [
+  const materiaisComunidade: MaterialComunidade[] = [
     {
       id: 1,
       titulo: "Guia Completo de TypeScript",
@@ -120,7 +144,7 @@ const MeusMateriais = () => {
     }
   ];
 
-  const calcularProgresso = (material: any) => {
+  const calcularProgresso = (material: MaterialComunidade) => {
     const { requisitos } = material;
     
     switch (requisitos.tipo) {
@@ -131,8 +155,8 @@ const MeusMateriais = () => {
         return progressoUsuario.posicaoRankingLayout <= requisitos.valor_necessario ? 100 : 
                Math.max(0, 100 - ((progressoUsuario.posicaoRankingLayout - requisitos.valor_necessario) * 10));
       
-      case "multiplo":
-        const progressos = requisitos.requisitos_necessarios.map((req: any) => {
+      case "multiplo": {
+        const progressos = requisitos.requisitos_necessarios.map((req) => {
           if (req.tipo === "pontos") {
             return Math.min((progressoUsuario.pontos / req.valor) * 100, 100);
           } else if (req.tipo === "cursos_react") {
@@ -141,6 +165,7 @@ const MeusMateriais = () => {
           return 0;
         });
         return Math.min(...progressos);
+      }
       
       case "premium_ou_pontos":
         if (progressoUsuario.membroPremium) return 100;
@@ -151,7 +176,7 @@ const MeusMateriais = () => {
     }
   };
 
-  const getProgressoTexto = (material: any) => {
+  const getProgressoTexto = (material: MaterialComunidade) => {
     const { requisitos } = material;
     const progresso = calcularProgresso(material);
     

@@ -1,16 +1,20 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
 import { User, Session } from '@supabase/supabase-js'
 import { supabase } from '@/integrations/supabase/client'
+import { getErrorMessage } from '@/lib/error-message'
+
+type AuthActionError = { message: string; isExistingUser?: boolean } | null
+type AuthActionResult = Promise<{ error: AuthActionError }>
 
 interface AuthContextType {
   user: User | null
   session: Session | null
   loading: boolean
-  signIn: (email: string, password: string) => Promise<{ error: any }>
-  signUp: (email: string, password: string) => Promise<{ error: any }>
-  signInWithGoogle: () => Promise<{ error: any }>
+  signIn: (email: string, password: string) => AuthActionResult
+  signUp: (email: string, password: string) => AuthActionResult
+  signInWithGoogle: () => AuthActionResult
   signOut: () => Promise<void>
-  resetPassword: (email: string) => Promise<{ error: any }>
+  resetPassword: (email: string) => AuthActionResult
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -40,7 +44,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe()
   }, [])
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = async (email: string, password: string): AuthActionResult => {
     console.info('[Auth] Login start', { email })
     
     const { error } = await supabase.auth.signInWithPassword({
@@ -57,7 +61,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { error }
   }
 
-  const signUp = async (email: string, password: string) => {
+  const signUp = async (email: string, password: string): AuthActionResult => {
     console.info('[Auth] Signup start', { email })
     
     const redirectUrl = `${window.location.origin}/login`
@@ -95,7 +99,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { error }
   }
 
-  const signInWithGoogle = async () => {
+  const signInWithGoogle = async (): AuthActionResult => {
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
@@ -108,13 +112,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       })
       return { error }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro no Google Auth:', error)
-      return { error }
+      return { error: { message: getErrorMessage(error) } }
     }
   }
 
-  const resetPassword = async (email: string) => {
+  const resetPassword = async (email: string): AuthActionResult => {
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/reset-password`,
@@ -125,8 +129,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       return { error: null };
-    } catch (error: any) {
-      return { error: { message: error.message } };
+    } catch (error: unknown) {
+      return { error: { message: getErrorMessage(error) } };
     }
   };
 

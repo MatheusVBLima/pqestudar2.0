@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, Navigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import MapaDosBeneficios from "./MapaDosBeneficios";
+import { RouteFallbackPublic } from "@/components/layout/route-fallbacks";
 
 interface AffiliatePage {
   affiliate_name: string;
@@ -40,11 +41,7 @@ const MapaDosBeneficiosAfiliado = () => {
   }, [slug]);
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
+    return <RouteFallbackPublic />;
   }
 
   // Slug inválido ou afiliado inativo → redireciona para landing principal

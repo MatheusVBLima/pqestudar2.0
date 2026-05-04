@@ -6,8 +6,8 @@ const GA_MEASUREMENT_ID = 'G-2N5LG0E1Q5';
 // Extend window object to include gtag
 declare global {
   interface Window {
-    dataLayer: any[];
-    gtag: (...args: any[]) => void;
+    dataLayer: unknown[];
+    gtag: (...args: unknown[]) => void;
   }
 }
 
@@ -23,7 +23,7 @@ export const useGoogleAnalytics = () => {
     // Initialize dataLayer
     window.dataLayer = window.dataLayer || [];
     
-    function gtag(...args: any[]) {
+    function gtag(...args: unknown[]) {
       window.dataLayer.push(args);
     }
     window.gtag = gtag;
@@ -109,7 +109,7 @@ export const useGoogleAnalytics = () => {
 
   return {
     // Expose gtag for custom events if needed
-    trackEvent: (eventName: string, eventParams?: Record<string, any>) => {
+    trackEvent: (eventName: string, eventParams?: Record<string, unknown>) => {
       if (window.gtag && consentData.preferences.analytics) {
         window.gtag('event', eventName, eventParams);
         console.log('[GA] Event tracked:', eventName, eventParams);

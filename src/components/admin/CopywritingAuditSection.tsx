@@ -113,7 +113,7 @@ export default function CopywritingAuditSection() {
     ...INSIGHTS_CACHE,
   });
 
-  const runs = runsQuery.data || [];
+  const runs = useMemo(() => runsQuery.data ?? [], [runsQuery.data]);
   const latestRun = runs[0] || null;
   const activeRunId = selectedRunId || latestRun?.id || null;
 

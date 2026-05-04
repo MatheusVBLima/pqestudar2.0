@@ -10,7 +10,17 @@ import { Sparkles, Loader2, CheckCircle2, AlertTriangle, ImageIcon, FileText, Co
 import { TIPOS_GUIA, CATEGORIAS, INTENCOES, CATEGORIAS_PUBLICAS, mapInternaToPublica } from '@/lib/guide-editorial-options';
 import type { GuideFlowInputs } from '../GuideFlowForm';
 
-function InputNodeComponent({ data }: { data: any }) {
+interface InputNodeData {
+  onGenerate?: (inputs: GuideFlowInputs) => void;
+  isGenerating?: boolean;
+  hasValidSources?: boolean;
+  hasLibrary?: boolean;
+  selectedLibrary?: string | null;
+  onAutoSuggest?: (tema: string, palavraChave: string) => void;
+  onInputsChange?: (inputs: GuideFlowInputs) => void;
+}
+
+function InputNodeComponent({ data }: { data: InputNodeData }) {
   const { onGenerate, isGenerating, hasValidSources, hasLibrary, selectedLibrary, onAutoSuggest, onInputsChange } = data;
   const [inputs, setInputs] = useState<GuideFlowInputs>({
     tema: '', tipo: '', categoria: '', categoriaPublica: '', palavraChave: '', intencao: '', contextoAdicional: '', visualMode: 'generate',
@@ -189,7 +199,7 @@ function InputNodeComponent({ data }: { data: any }) {
         </div>
 
         <Button
-          onClick={() => canSubmit && onGenerate(inputs)}
+          onClick={() => canSubmit && onGenerate?.(inputs)}
           disabled={!canSubmit}
           className="w-full rounded-lg gap-2 h-9 text-xs"
           size="sm"

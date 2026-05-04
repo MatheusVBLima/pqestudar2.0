@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { getErrorMessage } from '@/lib/error-message';
 
 export type ExtractionStatus = 'pending' | 'success' | 'partial' | 'no_text' | 'error' | 'not_applicable';
 
@@ -54,8 +55,8 @@ export function useGuideFlowKnowledge() {
       if (!resp.ok) throw new Error('Erro ao carregar biblioteca');
       const data = await resp.json();
       setEntries(data);
-    } catch (err: any) {
-      toast({ title: 'Erro', description: err.message, variant: 'destructive' });
+    } catch (err: unknown) {
+      toast({ title: 'Erro', description: getErrorMessage(err), variant: 'destructive' });
     } finally {
       setIsLoading(false);
     }
@@ -125,8 +126,8 @@ export function useGuideFlowKnowledge() {
       const result: SyncResult = await resp.json();
       await fetchEntries();
       return result;
-    } catch (err: any) {
-      toast({ title: 'Erro na sincronização', description: err.message, variant: 'destructive' });
+    } catch (err: unknown) {
+      toast({ title: 'Erro na sincronização', description: getErrorMessage(err), variant: 'destructive' });
       return null;
     } finally {
       setIsSyncing(false);

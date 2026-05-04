@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
 import { Save, AlertTriangle } from "lucide-react";
+import { getErrorMessage } from "@/lib/error-message";
 
 export default function AdminPages() {
   const { allSettings, isLoading, updateSettings, isUpdating } = useAllPageSettings();
@@ -56,8 +57,8 @@ export default function AdminPages() {
         header_description: headerDescription.trim(),
       });
       toast({ title: "Salvo com sucesso", description: `Configurações de ${selectedRoute} atualizadas.` });
-    } catch (err: any) {
-      toast({ title: "Erro ao salvar", description: err?.message || "Tente novamente.", variant: "destructive" });
+    } catch (err: unknown) {
+      toast({ title: "Erro ao salvar", description: getErrorMessage(err, "Tente novamente."), variant: "destructive" });
     }
   };
 

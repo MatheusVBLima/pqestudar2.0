@@ -1,17 +1,14 @@
 import { BonusManagement } from "@/components/admin/BonusManagement";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { Navigate } from "react-router-dom";
+import { RouteFallbackAdmin } from "@/components/layout/route-fallbacks";
 
 const AdminBonusPages = () => {
   const { isAdmin, loading } = useUserRoles();
 
   // Show loading state while checking admin - no flickering
   if (loading) {
-    return (
-      <div className="flex-1 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-      </div>
-    );
+    return <RouteFallbackAdmin />;
   }
 
   // Redirect if not admin

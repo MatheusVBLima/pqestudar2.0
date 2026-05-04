@@ -9,8 +9,10 @@ export interface Notification {
   timestamp: Date;
   read: boolean;
   actionType?: 'account_deletion' | 'course_completion' | 'system_update' | 'general';
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
+
+type StoredNotification = Omit<Notification, 'timestamp'> & { timestamp: string };
 
 const NOTIFICATIONS_KEY = 'app_notifications';
 const MAX_NOTIFICATIONS = 50;
@@ -24,7 +26,7 @@ export const useNotifications = () => {
     const stored = localStorage.getItem(NOTIFICATIONS_KEY);
     if (stored) {
       try {
-        const parsed: Notification[] = JSON.parse(stored).map((n: any) => ({
+        const parsed: Notification[] = (JSON.parse(stored) as StoredNotification[]).map((n) => ({
           ...n,
           timestamp: new Date(n.timestamp)
         }));

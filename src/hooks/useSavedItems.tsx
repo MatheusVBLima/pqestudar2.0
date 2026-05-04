@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import type { Json, TablesInsert } from '@/integrations/supabase/types';
 import { useAuth } from './useAuth';
 import { toast } from '@/hooks/use-toast';
 
@@ -153,23 +154,22 @@ export const useSavedItems = () => {
 
         if (error) throw error;
       } else {
-        // Add to saved - cast to any to work around strict typing
-        const insertData = {
+        const insertData: TablesInsert<'saved_items'> = {
           user_id: user.id,
           item_type: itemType,
           item_id: itemId,
-          metadata: metadata || null
+          metadata: (metadata || null) as Json | null
         };
         
         const { error } = await supabase
           .from('saved_items')
-          .insert(insertData as any);
+          .insert(insertData);
 
         if (error) throw error;
       }
 
       return true;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error toggling save:', error);
       
       // Rollback optimistic update

@@ -4,7 +4,12 @@ import { Badge } from '@/components/ui/badge';
 import { Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-function SeoNodeComponent({ data }: { data: any }) {
+interface SeoNodeData {
+  seo_title?: string;
+  seo_description?: string;
+}
+
+function SeoNodeComponent({ data }: { data: SeoNodeData }) {
   const { seo_title, seo_description } = data;
   const titleLen = seo_title?.length ?? 0;
   const descLen = seo_description?.length ?? 0;

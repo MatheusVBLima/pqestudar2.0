@@ -1,6 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import type { TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
 import { useToast } from "@/hooks/use-toast";
+import { getErrorMessage } from "@/lib/error-message";
 
 export interface BonusTool {
   logoUrl: string;
@@ -28,7 +30,7 @@ export const useBonusPages = () => {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
-  const fetchPages = async () => {
+  const fetchPages = useCallback(async () => {
     try {
       setLoading(true);
       const { data, error } = await supabase
@@ -38,23 +40,24 @@ export const useBonusPages = () => {
 
       if (error) throw error;
       setPages((data || []) as unknown as BonusPage[]);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error fetching bonus pages:', error);
       toast({
         title: "Erro ao carregar páginas",
-        description: error.message,
+        description: getErrorMessage(error),
         variant: "destructive",
       });
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast]);
 
   const addPage = async (page: Omit<BonusPage, 'id' | 'created_at' | 'updated_at'>) => {
     try {
+      const payload = page as unknown as TablesInsert<'newsletter_bonus_pages'>;
       const { data, error } = await supabase
         .from('newsletter_bonus_pages')
-        .insert([page as any])
+        .insert([payload])
         .select()
         .single();
 
@@ -67,11 +70,11 @@ export const useBonusPages = () => {
 
       await fetchPages();
       return data;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error adding bonus page:', error);
       toast({
         title: "Erro ao criar página",
-        description: error.message,
+        description: getErrorMessage(error),
         variant: "destructive",
       });
       throw error;
@@ -80,9 +83,10 @@ export const useBonusPages = () => {
 
   const updatePage = async (id: string, updates: Partial<BonusPage>) => {
     try {
+      const payload = updates as unknown as TablesUpdate<'newsletter_bonus_pages'>;
       const { error } = await supabase
         .from('newsletter_bonus_pages')
-        .update(updates as any)
+        .update(payload)
         .eq('id', id);
 
       if (error) throw error;
@@ -93,11 +97,11 @@ export const useBonusPages = () => {
       });
 
       await fetchPages();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error updating bonus page:', error);
       toast({
         title: "Erro ao atualizar página",
-        description: error.message,
+        description: getErrorMessage(error),
         variant: "destructive",
       });
       throw error;
@@ -119,11 +123,11 @@ export const useBonusPages = () => {
       });
 
       await fetchPages();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error deleting bonus page:', error);
       toast({
         title: "Erro ao excluir página",
-        description: error.message,
+        description: getErrorMessage(error),
         variant: "destructive",
       });
       throw error;
@@ -137,7 +141,7 @@ export const useBonusPages = () => {
 
   useEffect(() => {
     fetchPages();
-  }, []);
+  }, [fetchPages]);
 
   return {
     pages,

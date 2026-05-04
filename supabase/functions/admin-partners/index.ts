@@ -135,14 +135,14 @@ Deno.serve(async (req) => {
 
       case 'reorder': {
         // Batch update sort_order for all partners
-        const updates = data.partners.map((p: any, index: number) => ({
+        const updates = (data.partners as { id: string }[]).map((p, index) => ({
           id: p.id,
           sort_order: index,
           updated_by: user.id
         }));
 
         const results = await Promise.all(
-          updates.map((u: any) =>
+          updates.map((u) =>
             supabaseClient
               .from('partners')
               .update({ sort_order: u.sort_order, updated_by: u.updated_by })

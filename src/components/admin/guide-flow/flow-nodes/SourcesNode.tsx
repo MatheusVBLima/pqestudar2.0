@@ -42,14 +42,14 @@ function SelectionModeBadge({ mode }: { mode: 'auto' | 'manual' | 'combined' }) 
   );
 }
 
-function SourcesNodeComponent({ data }: { data: any }) {
+function SourcesNodeComponent({ data }: { data: SourcesNodeData }) {
   const {
     structureEntries, libraryEntries,
     selectedStructureIds, selectedLibraryIds, suggestedLibraryIds,
     selectionMode, isLoading, error,
     onToggleStructure, onSelectAllStructure, onDeselectAllStructure,
     onToggleLibrary, onClearManualOverride, onRefresh,
-  } = data as SourcesNodeData;
+  } = data;
 
   const hasStructure = structureEntries.length > 0;
   const hasLibrary = libraryEntries.length > 0;

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -43,13 +43,9 @@ const PremiumUpdateDetail = () => {
   const [loading, setLoading] = useState(true);
   const { isSaved, toggleSave, isToggling } = usePremiumSavedItems();
 
-  useEffect(() => {
-    if (slug) {
-      fetchUpdate();
-    }
-  }, [slug]);
+  const fetchUpdate = useCallback(async () => {
+    if (!slug) return;
 
-  const fetchUpdate = async () => {
     try {
       // Fetch the update
       const { data: updateData, error: updateError } = await supabase
@@ -85,13 +81,17 @@ const PremiumUpdateDetail = () => {
         .order('sort_order', { ascending: true });
 
       if (itemsError) throw itemsError;
-      setItems((itemsData as any) || []);
+      setItems((itemsData || []) as UpdateItem[]);
     } catch (err) {
       console.error('Error fetching update:', err);
     } finally {
       setLoading(false);
     }
-  };
+  }, [slug]);
+
+  useEffect(() => {
+    fetchUpdate();
+  }, [fetchUpdate]);
 
   const courses = items.filter(item => item.section === 'courses');
   const jobs = items.filter(item => item.section === 'jobs');

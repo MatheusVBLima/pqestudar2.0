@@ -27,7 +27,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Course } from '@/hooks/useCourses';
+import { Course, type CreateCourseData } from '@/hooks/useCourses';
 
 // IMPORTANTE: O banco aceita valores PT-BR diretamente!
 // A constraint é: level IN ('Iniciante', 'Intermediário', 'Avançado')
@@ -53,7 +53,7 @@ type CourseFormData = z.infer<typeof courseSchema>;
 interface CourseFormProps {
   course?: Course | null;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (data: any) => void;
+  onSubmit: (data: CreateCourseData) => void;
 }
 
 export const CourseForm = ({ course, onOpenChange, onSubmit }: CourseFormProps) => {
@@ -103,7 +103,7 @@ export const CourseForm = ({ course, onOpenChange, onSubmit }: CourseFormProps) 
         badges: [],
       });
     }
-  }, [course]);
+  }, [course, form]);
 
   const handleSubmit = (data: CourseFormData) => {
     try {

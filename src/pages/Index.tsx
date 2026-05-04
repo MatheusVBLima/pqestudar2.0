@@ -12,7 +12,11 @@ const SocialProofSection = lazy(() => import("@/components/sections/social-proof
 const FinalCtaSection = lazy(() => import("@/components/sections/final-cta-section").then(m => ({ default: m.FinalCtaSection })));
 
 const Index = () => {
-  const { titleTag, metaDescription, headerTitle, headerDescription, isReady, isLoading } = usePageSettings("/");
+  const {
+    titleTag,
+    metaDescription,
+    raw,
+  } = usePageSettings("/");
 
   return (
     <>
@@ -29,9 +33,8 @@ const Index = () => {
 
       <main className="flex-1">
         <HeroSection
-          headerTitle={headerTitle}
-          headerDescription={headerDescription}
-          isLoading={isLoading}
+          headerTitle={raw?.header_title}
+          headerDescription={raw?.header_description}
         />
         <Suspense fallback={<div className="min-h-[200px]" />}>
           <DualTrackSection />

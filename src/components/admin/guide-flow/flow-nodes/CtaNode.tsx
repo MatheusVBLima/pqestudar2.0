@@ -3,7 +3,14 @@ import { Handle, Position } from '@xyflow/react';
 import { Badge } from '@/components/ui/badge';
 import { Megaphone, ExternalLink } from 'lucide-react';
 
-function CtaNodeComponent({ data }: { data: any }) {
+interface CtaNodeData {
+  label?: string | null;
+  url?: string | null;
+  text?: string | null;
+  ctaType?: string;
+}
+
+function CtaNodeComponent({ data }: { data: CtaNodeData }) {
   const { label, url, text, ctaType } = data;
 
   return (

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { Badge, type BadgeProps } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/integrations/supabase/client';
@@ -51,7 +51,7 @@ const AdminPremiumUsers = () => {
     }
   };
 
-  const getStatusColor = (status: string, endsAt: string) => {
+  const getStatusColor = (status: string, endsAt: string): BadgeProps['variant'] => {
     if (status !== 'active') return 'destructive';
     const isExpired = new Date(endsAt) < new Date();
     return isExpired ? 'destructive' : 'default';
@@ -169,7 +169,7 @@ const AdminPremiumUsers = () => {
                       </div>
                     </div>
 
-                    <Badge variant={getStatusColor(sub.status, sub.ends_at) as any}>
+                    <Badge variant={getStatusColor(sub.status, sub.ends_at)}>
                       {getStatusLabel(sub.status, sub.ends_at)}
                     </Badge>
                   </div>

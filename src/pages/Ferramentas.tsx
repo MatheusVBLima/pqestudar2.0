@@ -1,10 +1,10 @@
-import { useState, useEffect, useMemo } from "react";
+import { Suspense, lazy, useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { PageHero } from "@/components/layout/PageHero";
 import { Helmet } from "react-helmet-async";
 import { useSearchParams, useNavigate, Link } from "react-router-dom";
 import { GlobalSeo } from "@/components/seo/GlobalSeo";
-import { X, Sparkles, Brain, Shield, GraduationCap, Wrench, Zap, Plus, Edit, Eye, EyeOff, Trash2, GripVertical, ChevronLeft, ChevronRight, Star } from "lucide-react";
+import { X, Sparkles, Brain, Shield, GraduationCap, Wrench, Zap, Plus, ChevronLeft, ChevronRight, Star } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -41,28 +41,11 @@ import {
   PaginationNext,
   PaginationPrevious } from
 "@/components/ui/pagination";
-import {
-  DndContext,
-  closestCenter,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  DragEndEvent,
-  DragStartEvent,
-  DragOverlay } from
-'@dnd-kit/core';
-import {
-  arrayMove,
-  SortableContext,
-  sortableKeyboardCoordinates,
-  rectSortingStrategy,
-  useSortable } from
-'@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
 import { toast } from "@/hooks/use-toast";
 import { useAnalyticsTracker } from "@/hooks/useAnalyticsTracker";
 import { usePageSettings } from "@/hooks/usePageSettings";
+
+const FerramentasManagementGrid = lazy(() => import("@/pages/ferramentas/FerramentasManagementGrid"));
 
 // Helper: verifica se uma ferramenta tem destaque ativo
 function isFeaturedActive(tool: Tool): boolean {
@@ -190,175 +173,78 @@ function PaginationControls({
 }
 
 
-// Componente de card sortable
-function SortableToolCard({
-  tool,
-  isManagementMode,
-  handleEdit,
-  toggleVisible,
-  setDeleteTool
-
-
-
-
-
-
-}: {tool: Tool;isManagementMode: boolean;handleEdit: (t: Tool) => void;toggleVisible: (id: string, state: boolean) => void;setDeleteTool: (t: Tool) => void;}) {
+function PublicToolCard({ tool }: {tool: Tool;}) {
   const { track } = useAnalyticsTracker();
   const navigate = useNavigate();
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging
-  } = useSortable({ id: tool.id, disabled: !isManagementMode });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1
-  };
-
   const Icon = tool.tags[0] ? CATEGORY_ICONS[tool.tags[0]] || Sparkles : Sparkles;
   const featured = isFeaturedActive(tool);
   const detailHref = tool.slug ? `/ferramentas/${tool.slug}` : null;
 
   const handleCardClick = () => {
-    if (isManagementMode || !detailHref) return;
+    if (!detailHref) return;
     track({
-      event_name: 'tool_card_click',
-      entity_type: 'tool',
+      event_name: "tool_card_click",
+      entity_type: "tool",
       entity_id: tool.id,
-      path: '/ferramentas',
-      meta: { tool_slug: tool.slug, tool_name: tool.name, tool_tags: tool.tags }
+      path: "/ferramentas",
+      meta: { tool_slug: tool.slug, tool_name: tool.name, tool_tags: tool.tags },
     });
     navigate(detailHref);
   };
 
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className="relative group h-full">
-
+    <div className="relative group h-full">
       <Card
         onClick={handleCardClick}
         className={`h-full transition-all duration-300 flex flex-col ${
-          !isManagementMode && detailHref ? 'cursor-pointer' : ''
-        } ${featured ? 'ring-2 ring-violet-500/60 shadow-md' : 'transition-shadow hover:shadow-lg'}`}>
+          detailHref ? "cursor-pointer" : ""
+        } ${featured ? "ring-2 ring-violet-500/60 shadow-md" : "transition-shadow hover:shadow-lg"}`}
+      >
         <CardHeader>
-          {isManagementMode &&
-          <div
-            className="absolute top-2 right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
-            data-testid="admin-actions">
-
-              <div
-              {...attributes}
-              {...listeners}
-              className="cursor-grab active:cursor-grabbing p-1 hover:bg-accent rounded"
-              aria-label="Arrastar para reordenar">
-
-                <GripVertical className="w-4 h-4 text-muted-foreground" />
-              </div>
-              <Button
-              variant="ghost"
-              size="sm"
-              className="h-8 w-8 p-0"
-              onClick={() => handleEdit(tool)}
-              aria-label="Editar ferramenta"
-              data-evt="admin_edit">
-
-                <Edit className="w-4 h-4" />
-              </Button>
-              <Button
-              variant="ghost"
-              size="sm"
-              className="h-8 w-8 p-0"
-              onClick={() => toggleVisible(tool.id, tool.is_visible)}
-              aria-label={tool.is_visible ? "Ocultar ferramenta" : "Exibir ferramenta"}
-              data-evt={tool.is_visible ? "admin_hide" : "admin_show"}>
-
-                {tool.is_visible ?
-              <Eye className="w-4 h-4" /> :
-
-              <EyeOff className="w-4 h-4" />
-              }
-              </Button>
-              <Button
-              variant="ghost"
-              size="sm"
-              className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-              onClick={() => setDeleteTool(tool)}
-              aria-label="Excluir ferramenta"
-              data-evt="admin_delete">
-
-                <Trash2 className="w-4 h-4" />
-              </Button>
-            </div>
-          }
-
           <div className="grid grid-cols-[auto,1fr] gap-4 items-center mb-2">
             <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center overflow-hidden border shadow-sm shrink-0">
-              {tool.icon_url ?
-              <img
-                src={tool.icon_url}
-                alt={`Logo de ${tool.name}`}
-                className="w-full h-full object-contain"
-                referrerPolicy="no-referrer"
-                onError={(e) => {
-                  e.currentTarget.style.display = 'none';
-                  const fallback = e.currentTarget.nextElementSibling as HTMLElement;
-                  if (fallback) fallback.style.display = 'block';
-                }} /> :
-
-              null}
+              {tool.icon_url ? (
+                <img
+                  src={tool.icon_url}
+                  alt={`Logo de ${tool.name}`}
+                  className="w-full h-full object-contain"
+                  referrerPolicy="no-referrer"
+                  onError={(e) => {
+                    e.currentTarget.style.display = "none";
+                    const fallback = e.currentTarget.nextElementSibling as HTMLElement;
+                    if (fallback) fallback.style.display = "block";
+                  }}
+                />
+              ) : null}
               <Icon
                 className="w-8 h-8 text-primary"
                 aria-hidden="true"
-                style={{ display: tool.icon_url ? 'none' : 'block' }} />
-
+                style={{ display: tool.icon_url ? "none" : "block" }}
+              />
             </div>
             <CardTitle className="text-xl leading-tight flex flex-wrap items-center gap-2 mt-0">
               {tool.name}
-              {featured &&
+              {featured && (
                 <Badge className="text-xs bg-amber-400 text-amber-950 border-amber-500 hover:bg-amber-400 gap-1 shrink-0">
                   <Star className="w-3 h-3 fill-amber-950" aria-hidden="true" />
                   Destaque
                 </Badge>
-              }
-              {isManagementMode && !tool.is_visible &&
-              <Badge variant="secondary" className="text-xs">
-                  Oculta
-                </Badge>
-              }
-              {isManagementMode && tool.is_featured && !featured &&
-                <Badge variant="outline" className="text-xs text-muted-foreground shrink-0">
-                  Destaque inativo
-                </Badge>
-              }
+              )}
             </CardTitle>
           </div>
-          <CardDescription className="text-sm leading-relaxed flex-1">
-            {tool.description}
-          </CardDescription>
+          <CardDescription className="text-sm leading-relaxed flex-1">{tool.description}</CardDescription>
         </CardHeader>
         <CardContent className="mt-auto">
           <div className="space-y-3">
             <div className="flex flex-wrap gap-2">
-              {tool.tags.map((tag) =>
-              <Badge
-                key={tag}
-                variant="outline"
-                className="text-xs">
-
+              {tool.tags.map((tag) => (
+                <Badge key={tag} variant="outline" className="text-xs">
                   {tag}
                 </Badge>
-              )}
+              ))}
             </div>
             <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
-              {detailHref && !isManagementMode && (
+              {detailHref && (
                 <Button
                   asChild
                   variant="default"
@@ -370,11 +256,16 @@ function SortableToolCard({
                     to={detailHref}
                     onClick={() => {
                       track({
-                        event_name: 'tool_card_click',
-                        entity_type: 'tool',
+                        event_name: "tool_card_click",
+                        entity_type: "tool",
                         entity_id: tool.id,
-                        path: '/ferramentas',
-                        meta: { tool_slug: tool.slug, tool_name: tool.name, tool_tags: tool.tags, source: 'cta_button' }
+                        path: "/ferramentas",
+                        meta: {
+                          tool_slug: tool.slug,
+                          tool_name: tool.name,
+                          tool_tags: tool.tags,
+                          source: "cta_button",
+                        },
                       });
                     }}
                     aria-label={`Ver detalhes de ${tool.name}`}
@@ -383,26 +274,13 @@ function SortableToolCard({
                   </Link>
                 </Button>
               )}
-              {isManagementMode && tool.url && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex-1 rounded-[1.2rem]"
-                  onClick={() => window.open(tool.url, '_blank', 'noopener,noreferrer')}
-                  aria-label={`Abrir link externo de ${tool.name}`}
-                >
-                  Link externo
-                </Button>
-              )}
-              {!isManagementMode &&
-                <SaveToolButton toolId={tool.id} toolName={tool.name} />
-              }
+              <SaveToolButton toolId={tool.id} toolName={tool.name} />
             </div>
           </div>
         </CardContent>
       </Card>
-    </div>);
-
+    </div>
+  );
 }
 
 export default function Ferramentas() {
@@ -433,7 +311,6 @@ export default function Ferramentas() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingTool, setEditingTool] = useState<Tool | null>(null);
   const [deleteTool, setDeleteTool] = useState<Tool | null>(null);
-  const [activeId, setActiveId] = useState<string | null>(null);
   const [hasUnsavedOrder, setHasUnsavedOrder] = useState(false);
   const [localTools, setLocalTools] = useState<Tool[]>([]);
 
@@ -454,8 +331,7 @@ export default function Ferramentas() {
     updateTool,
     deleteTool: removeTool,
     toggleVisible,
-    reorderTools,
-    refetch
+    reorderTools
   } = useTools(toolsOptions);
 
   // Sync local tools with fetched tools
@@ -479,23 +355,7 @@ export default function Ferramentas() {
         behavior: prefersReducedMotion ? 'auto' : 'smooth'
       });
     }
-  }, [currentPage]);
-
-  const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates
-    })
-  );
-
-  // Extract unique tags from all tools
-  const allTags = useMemo(() => {
-    const tagSet = new Set<string>();
-    localTools.forEach((tool) => {
-      tool.tags.forEach((tag) => tagSet.add(tag));
-    });
-    return Array.from(tagSet).sort();
-  }, [localTools]);
+  }, [currentPage, isManagementMode]);
 
   // Filtragem + ordenação de destaques — tudo num único memo para garantir reatividade
   const sortedDisplayedTools = useMemo(() => {
@@ -615,32 +475,14 @@ export default function Ferramentas() {
       setModalOpen(false);
       setEditingTool(null);
     } catch (error) {
-
-
-
       // Error toast already shown by useTools hook
-    }};const handleDeleteConfirm = async () => {
-    if (deleteTool) {
-      await removeTool(deleteTool.id);
-      setDeleteTool(null);
     }
   };
 
-  const handleDragStart = (event: DragStartEvent) => {
-    setActiveId(event.active.id as string);
-  };
-
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-    setActiveId(null);
-
-    if (over && active.id !== over.id) {
-      const oldIndex = localTools.findIndex((t) => t.id === active.id);
-      const newIndex = localTools.findIndex((t) => t.id === over.id);
-
-      const reordered = arrayMove(localTools, oldIndex, newIndex);
-      setLocalTools(reordered);
-      setHasUnsavedOrder(true);
+  const handleDeleteConfirm = async () => {
+    if (deleteTool) {
+      await removeTool(deleteTool.id);
+      setDeleteTool(null);
     }
   };
 
@@ -648,12 +490,6 @@ export default function Ferramentas() {
     await reorderTools(localTools);
     setHasUnsavedOrder(false);
   };
-
-  const handleRetry = () => {
-    refetch();
-  };
-
-  const activeTool = activeId ? localTools.find((t) => t.id === activeId) : null;
 
   // Pagination range display
   const pageStart = (currentPage - 1) * 12 + 1;
@@ -986,44 +822,37 @@ export default function Ferramentas() {
               }
 
               {/* Tools Grid */}
-              {!loading && sortedDisplayedTools.length > 0 &&
-              <DndContext
-                sensors={sensors}
-                collisionDetection={closestCenter}
-                onDragStart={handleDragStart}
-                onDragEnd={handleDragEnd}>
+              {!loading && sortedDisplayedTools.length > 0 && isManagementMode && (
+                <Suspense
+                  fallback={
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
+                      {[1, 2, 3].map((key) => (
+                        <Skeleton key={key} className="h-64" />
+                      ))}
+                    </div>
+                  }
+                >
+                  <FerramentasManagementGrid
+                    tools={sortedDisplayedTools}
+                    onReorder={(nextTools) => {
+                      setLocalTools(nextTools);
+                      setHasUnsavedOrder(true);
+                    }}
+                    onEdit={handleEdit}
+                    onToggleVisible={toggleVisible}
+                    onDelete={setDeleteTool}
+                  />
+                </Suspense>
+              )}
 
-                  <SortableContext
-                  items={sortedDisplayedTools.map((t) => t.id)}
-                  strategy={rectSortingStrategy}>
-
-                    <motion.div
-                    layout
-                    className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
-
-                      {sortedDisplayedTools.map((tool) =>
-                    <SortableToolCard
-                      key={tool.id}
-                      tool={tool}
-                      isManagementMode={isManagementMode && effectiveAdmin}
-                      handleEdit={handleEdit}
-                      toggleVisible={toggleVisible}
-                      setDeleteTool={setDeleteTool} />
-
-                    )}
-                    </motion.div>
-                  </SortableContext>
-
-                  <DragOverlay>
-                    {activeTool ?
-                  <Card className="opacity-80">
-                        <CardHeader>
-                          <CardTitle>{activeTool.name}</CardTitle>
-                        </CardHeader>
-                      </Card> :
-                  null}
-                  </DragOverlay>
-                </DndContext>
+              {!loading && sortedDisplayedTools.length > 0 && !isManagementMode &&
+              <motion.div
+                layout
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
+                  {sortedDisplayedTools.map((tool) =>
+                <PublicToolCard key={tool.id} tool={tool} />
+                )}
+              </motion.div>
               }
             </div>
           </section>
@@ -1073,3 +902,7 @@ export default function Ferramentas() {
     </>);
 
 }
+
+
+
+

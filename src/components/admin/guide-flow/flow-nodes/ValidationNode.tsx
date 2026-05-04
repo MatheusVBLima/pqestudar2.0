@@ -43,8 +43,8 @@ function computeQuickScore(data: GeneratedGuideData): { score: number; errors: n
   return { score, errors, warnings, ok };
 }
 
-function ValidationNodeComponent({ data }: { data: any }) {
-  const { guideData } = data as { guideData: GeneratedGuideData };
+function ValidationNodeComponent({ data }: { data: { guideData: GeneratedGuideData } }) {
+  const { guideData } = data;
   const { score, errors, warnings, ok } = useMemo(() => computeQuickScore(guideData), [guideData]);
 
   const color = score >= 80 ? 'emerald' : score >= 60 ? 'amber' : 'red';

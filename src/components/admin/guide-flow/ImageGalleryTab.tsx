@@ -7,6 +7,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { Copy, Check, ExternalLink, Loader2, Image as ImageIcon, RefreshCw, Calendar, HardDrive } from 'lucide-react';
+import { getErrorMessage } from '@/lib/error-message';
 
 interface StorageImage {
   name: string;
@@ -15,6 +16,10 @@ interface StorageImage {
   createdAt: string;
   size: number;
   linkedGuideSlug?: string;
+}
+
+interface StorageMetadata {
+  size?: number;
 }
 
 export function ImageGalleryTab() {
@@ -44,7 +49,7 @@ export function ImageGalleryTab() {
             bucket: 'guide-covers',
             publicUrl: urlData.publicUrl,
             createdAt: f.created_at ?? '',
-            size: (f.metadata as any)?.size ?? 0,
+            size: (f.metadata as StorageMetadata | null)?.size ?? 0,
           };
         });
 
@@ -68,8 +73,8 @@ export function ImageGalleryTab() {
         }
         setGuideCovers(map);
       }
-    } catch (err: any) {
-      toast({ title: 'Erro ao carregar imagens', description: err.message, variant: 'destructive' });
+    } catch (err: unknown) {
+      toast({ title: 'Erro ao carregar imagens', description: getErrorMessage(err), variant: 'destructive' });
     } finally {
       setIsLoading(false);
     }

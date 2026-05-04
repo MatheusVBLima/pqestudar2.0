@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,6 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
 import { ArrowLeft, Save, Loader2 } from 'lucide-react';
+import { getErrorMessage } from '@/lib/error-message';
 
 interface PremiumItemForm {
   item_type: 'course' | 'job';
@@ -46,13 +47,7 @@ const AdminPremiumItemForm = () => {
     sort_order: 0,
   });
 
-  useEffect(() => {
-    if (isEditing) {
-      fetchItem();
-    }
-  }, [id]);
-
-  const fetchItem = async () => {
+  const fetchItem = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('premium_items')
@@ -85,7 +80,13 @@ const AdminPremiumItemForm = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id, navigate]);
+
+  useEffect(() => {
+    if (isEditing) {
+      fetchItem();
+    }
+  }, [fetchItem, isEditing]);
 
   const generateSlug = (title: string) => {
     return title
@@ -148,9 +149,9 @@ const AdminPremiumItemForm = () => {
       }
 
       navigate('/admin/premium/itens');
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error saving item:', err);
-      toast({ title: 'Erro', description: err.message || 'Não foi possível salvar o item.', variant: 'destructive' });
+      toast({ title: 'Erro', description: getErrorMessage(err, 'Não foi possível salvar o item.'), variant: 'destructive' });
     } finally {
       setSaving(false);
     }

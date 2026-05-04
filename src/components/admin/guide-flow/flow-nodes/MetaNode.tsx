@@ -3,7 +3,16 @@ import { Handle, Position } from '@xyflow/react';
 import { Badge } from '@/components/ui/badge';
 import { Type, Tag, User, FileText, Pencil, Eye } from 'lucide-react';
 
-function MetaNodeComponent({ data }: { data: any }) {
+interface MetaNodeData {
+  title?: string;
+  slug?: string;
+  category?: string;
+  public_category?: string;
+  author_name?: string;
+  short_description?: string;
+}
+
+function MetaNodeComponent({ data }: { data: MetaNodeData }) {
   const { title, slug, category, public_category, author_name, short_description } = data;
 
   return (

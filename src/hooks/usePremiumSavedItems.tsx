@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import type { Json, TablesInsert } from '@/integrations/supabase/types';
 import { useAuth } from './useAuth';
 import { toast } from '@/hooks/use-toast';
 
@@ -87,16 +88,16 @@ export const usePremiumSavedItems = () => {
         });
       } else {
         // Add to saved
-        const insertData = {
+        const insertData: TablesInsert<'saved_items'> = {
           user_id: user.id,
           item_type: 'premium_item',
           item_id: itemId,
-          metadata: metadata || null
+          metadata: (metadata || null) as Json | null
         };
         
         const { error } = await supabase
           .from('saved_items')
-          .insert(insertData as any);
+          .insert(insertData);
 
         if (error) throw error;
         
@@ -107,7 +108,7 @@ export const usePremiumSavedItems = () => {
       }
 
       return true;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error toggling save:', error);
       
       // Rollback optimistic update
@@ -137,7 +138,7 @@ export const usePremiumSavedItems = () => {
         return newSet;
       });
     }
-  }, [user, savedIds]);
+  }, [location, navigate, savedIds, user]);
 
   // Check if a specific item is being toggled
   const isToggling = useCallback((itemId: string) => {

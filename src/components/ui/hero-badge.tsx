@@ -1,7 +1,4 @@
-import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
-
-const ease = [0.16, 1, 0.3, 1] as const;
 
 interface HeroBadgeProps {
   href?: string;
@@ -34,12 +31,7 @@ const HeroBadge = ({
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: -20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, ease }}
-      className="inline-flex"
-    >
+    <div className="inline-flex">
       <div
         className={cn(
           "inline-flex items-center gap-2 rounded-full font-medium transition-colors",
@@ -52,7 +44,7 @@ const HeroBadge = ({
         <span>{text}</span>
         {endIcon}
       </div>
-    </motion.div>
+    </div>
   );
 };
 

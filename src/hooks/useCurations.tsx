@@ -1,7 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import type { TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
 import { toast } from '@/hooks/use-toast';
 import { Tool } from './useTools';
+import { getErrorMessage } from '@/lib/error-message';
 
 export interface CurationPage {
   id: string;
@@ -25,6 +27,11 @@ export interface CurationPageItem {
 
 export interface CurationPageWithItems extends CurationPage {
   items: (CurationPageItem & { tool: Tool })[];
+}
+
+function getDuplicateAwareMessage(error: unknown, fallback: string) {
+  const message = getErrorMessage(error, fallback);
+  return message.includes('duplicate') ? 'Já existe uma curadoria com este slug.' : message;
 }
 
 // Query keys
@@ -194,7 +201,7 @@ export const useCurationMutations = () => {
       if (!session?.session?.user) throw new Error('Não autenticado');
 
       // Criar página
-      const pageData: any = {
+      const pageData: TablesInsert<'curation_pages'> = {
         title: data.title,
         slug: data.slug,
         description: data.description || null,
@@ -232,10 +239,8 @@ export const useCurationMutations = () => {
       queryClient.invalidateQueries({ queryKey: curationKeys.all });
       toast({ title: 'Sucesso', description: 'Curadoria criada com sucesso!' });
     },
-    onError: (error: any) => {
-      const message = error?.message?.includes('duplicate')
-        ? 'Já existe uma curadoria com este slug.'
-        : error?.message || 'Erro ao criar curadoria.';
+    onError: (error: unknown) => {
+      const message = getDuplicateAwareMessage(error, 'Erro ao criar curadoria.');
       toast({ title: 'Erro', description: message, variant: 'destructive' });
     },
   });
@@ -250,7 +255,7 @@ export const useCurationMutations = () => {
       toolIds: string[];
     }) => {
       // Atualizar página
-      const updateData: any = {
+      const updateData: TablesUpdate<'curation_pages'> = {
         title: data.title,
         slug: data.slug,
         description: data.description || null,
@@ -303,10 +308,8 @@ export const useCurationMutations = () => {
       queryClient.invalidateQueries({ queryKey: curationKeys.all });
       toast({ title: 'Sucesso', description: 'Curadoria atualizada com sucesso!' });
     },
-    onError: (error: any) => {
-      const message = error?.message?.includes('duplicate')
-        ? 'Já existe uma curadoria com este slug.'
-        : error?.message || 'Erro ao atualizar curadoria.';
+    onError: (error: unknown) => {
+      const message = getDuplicateAwareMessage(error, 'Erro ao atualizar curadoria.');
       toast({ title: 'Erro', description: message, variant: 'destructive' });
     },
   });
@@ -325,8 +328,8 @@ export const useCurationMutations = () => {
       queryClient.invalidateQueries({ queryKey: curationKeys.all });
       toast({ title: 'Sucesso', description: 'Curadoria excluída com sucesso!' });
     },
-    onError: (error: any) => {
-      toast({ title: 'Erro', description: error?.message || 'Erro ao excluir curadoria.', variant: 'destructive' });
+    onError: (error: unknown) => {
+      toast({ title: 'Erro', description: getErrorMessage(error, 'Erro ao excluir curadoria.'), variant: 'destructive' });
     },
   });
 
@@ -399,8 +402,8 @@ export const useCurationMutations = () => {
       queryClient.invalidateQueries({ queryKey: curationKeys.all });
       toast({ title: 'Sucesso', description: 'Curadoria duplicada com sucesso!' });
     },
-    onError: (error: any) => {
-      toast({ title: 'Erro', description: error?.message || 'Erro ao duplicar curadoria.', variant: 'destructive' });
+    onError: (error: unknown) => {
+      toast({ title: 'Erro', description: getErrorMessage(error, 'Erro ao duplicar curadoria.'), variant: 'destructive' });
     },
   });
 

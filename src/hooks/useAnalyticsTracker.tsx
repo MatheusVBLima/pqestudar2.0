@@ -1,5 +1,6 @@
 import { useCallback, useRef, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import type { Json, TablesInsert } from '@/integrations/supabase/types';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRoles } from '@/hooks/useUserRoles';
 
@@ -36,16 +37,17 @@ export function useAnalyticsTracker() {
             ? 'admin'
             : 'public';
 
-        await supabase.from('analytics_events').insert({
+        const payload: TablesInsert<'analytics_events'> = {
           event_name: params.event_name,
           entity_type: params.entity_type ?? null,
           entity_id: params.entity_id ?? null,
           path: params.path ?? window.location.pathname,
           session_id: getSessionId(),
           user_id: user?.id ?? null,
-          meta: (params.meta as any) ?? {},
+          meta: (params.meta ?? {}) as Json,
           actor_type,
-        } as any);
+        };
+        await supabase.from('analytics_events').insert(payload);
       } catch {
         // fire-and-forget
       }

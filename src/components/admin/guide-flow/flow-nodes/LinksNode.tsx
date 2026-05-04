@@ -3,7 +3,16 @@ import { Handle, Position } from '@xyflow/react';
 import { Badge } from '@/components/ui/badge';
 import { Link2, ExternalLink } from 'lucide-react';
 
-function LinksNodeComponent({ data }: { data: any }) {
+interface LinkNodeItem {
+  label: string;
+  url?: string;
+}
+
+interface LinksNodeData {
+  links?: LinkNodeItem[];
+}
+
+function LinksNodeComponent({ data }: { data: LinksNodeData }) {
   const { links } = data;
 
   return (
@@ -19,7 +28,7 @@ function LinksNodeComponent({ data }: { data: any }) {
       </div>
 
       <div className="p-3 space-y-1 text-xs max-h-[180px] overflow-y-auto">
-        {links?.map((link: any, i: number) => (
+        {links?.map((link, i) => (
           <div key={i} className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors">
             <ExternalLink className="h-3 w-3 shrink-0" />
             <span className="truncate">{link.label}</span>

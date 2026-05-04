@@ -17,6 +17,7 @@ import { CATEGORIAS, mapInternaToPublica } from "@/lib/guide-editorial-options";
 import { useGuidePublicCategories } from "@/hooks/useGuidePublicCategories";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { getErrorMessage } from "@/lib/error-message";
 
 interface GuideModalProps {
   open: boolean;
@@ -99,8 +100,8 @@ function LinkImageField({
       onUpdate('imageUrl', publicData.publicUrl);
       onUpdate('imageSource', 'upload');
       onUpdate('imagePath', path);
-    } catch (err: any) {
-      toast({ title: "Erro no upload", description: err.message, variant: "destructive" });
+    } catch (err: unknown) {
+      toast({ title: "Erro no upload", description: getErrorMessage(err), variant: "destructive" });
     } finally {
       setUploading(false);
       if (fileRef.current) fileRef.current.value = '';
@@ -279,7 +280,7 @@ export function GuideModal({ open, onClose, onSave, guide }: GuideModalProps) {
       setSlug(guide.slug);
       setSlugManual(true);
       setCategory(guide.category);
-      setPublicCategory((guide as any).public_category || mapInternaToPublica(guide.category));
+      setPublicCategory(guide.public_category || mapInternaToPublica(guide.category));
       setShortDescription(guide.short_description);
       const content = guide.content_markdown || "";
       const hasHtml = /<\s*(?:p|ol|ul|li|h[1-6]|div|br|strong|em)\b[^>]*>/i.test(content);
@@ -288,23 +289,23 @@ export function GuideModal({ open, onClose, onSave, guide }: GuideModalProps) {
       setSeoDescription(guide.seo_description);
       setCtaTopLabel(guide.cta_top_label || "");
       setCtaTopUrl(guide.cta_top_url || "");
-      setCtaTopText((guide as any).cta_top_text || "");
+      setCtaTopText(guide.cta_top_text || "");
       setCtaMiddleLabel(guide.cta_middle_label || "");
       setCtaMiddleUrl(guide.cta_middle_url || "");
-      setCtaMiddleText((guide as any).cta_middle_text || "");
+      setCtaMiddleText(guide.cta_middle_text || "");
       setCtaFinalLabel(guide.cta_final_label || "");
       setCtaFinalUrl(guide.cta_final_url || "");
-      setCtaFinalText((guide as any).cta_final_text || "");
+      setCtaFinalText(guide.cta_final_text || "");
       setIsPublished(guide.is_published);
       setIsFeatured(guide.is_featured);
       setSortOrder(guide.sort_order);
-      setAuthorName((guide as any).author_name || "");
-      setCoverImageUrl((guide as any).cover_image_url || null);
-      setCoverUrlInput((guide as any).cover_image_url || "");
+      setAuthorName(guide.author_name || "");
+      setCoverImageUrl(guide.cover_image_url || null);
+      setCoverUrlInput(guide.cover_image_url || "");
       setCoverMode('upload');
       // Load links with image fields
-      const rawLinks = Array.isArray((guide as any).internal_links) ? (guide as any).internal_links : [];
-      setInternalLinks(rawLinks.map((l: any) => ({
+      const rawLinks = Array.isArray(guide.internal_links) ? guide.internal_links : [];
+      setInternalLinks(rawLinks.map((l) => ({
         label: l.label || '',
         url: l.url || '',
         imageUrl: l.imageUrl || null,
@@ -388,12 +389,12 @@ export function GuideModal({ open, onClose, onSave, guide }: GuideModalProps) {
         is_featured: isFeatured,
         sort_order: sortOrder,
       };
-      (payload as any).cta_top_text = ctaTopText.trim() || null;
-      (payload as any).cta_middle_text = ctaMiddleText.trim() || null;
-      (payload as any).cta_final_text = ctaFinalText.trim() || null;
-      (payload as any).internal_links = validLinks;
-      (payload as any).author_name = authorName.trim() || "Equipe PqEstudar";
-      (payload as any).cover_image_url = coverImageUrl || null;
+      payload.cta_top_text = ctaTopText.trim() || null;
+      payload.cta_middle_text = ctaMiddleText.trim() || null;
+      payload.cta_final_text = ctaFinalText.trim() || null;
+      payload.internal_links = validLinks;
+      payload.author_name = authorName.trim() || "Equipe PqEstudar";
+      payload.cover_image_url = coverImageUrl || null;
       if (guide) payload.id = guide.id;
       await onSave(payload);
       onClose();
@@ -429,7 +430,7 @@ export function GuideModal({ open, onClose, onSave, guide }: GuideModalProps) {
           <TabsContent value="basic" className="space-y-4 mt-4">
             {/* Internal Code (read-only) */}
             {guide && (
-              <InternalCodeField code={(guide as any).internal_code} />
+              <InternalCodeField code={guide.internal_code} />
             )}
             <Separator />
             {/* Cover Image */}
@@ -512,8 +513,8 @@ export function GuideModal({ open, onClose, onSave, guide }: GuideModalProps) {
                               .from('guide-covers')
                               .getPublicUrl(path);
                             setCoverImageUrl(publicData.publicUrl);
-                          } catch (err: any) {
-                            toast({ title: "Erro no upload", description: err.message, variant: "destructive" });
+                          } catch (err: unknown) {
+                            toast({ title: "Erro no upload", description: getErrorMessage(err), variant: "destructive" });
                           } finally {
                             setCoverUploading(false);
                             if (coverFileRef.current) coverFileRef.current.value = '';
@@ -779,7 +780,7 @@ export function GuideModal({ open, onClose, onSave, guide }: GuideModalProps) {
                 }}
               >
                 <Workflow className="h-4 w-4" />
-                {(guide as any).flow_data ? 'Abrir no Fluxo' : 'Editar no Fluxo'}
+                {guide.flow_data ? 'Abrir no Fluxo' : 'Editar no Fluxo'}
               </Button>
             )}
           </div>

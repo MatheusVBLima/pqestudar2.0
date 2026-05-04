@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { toast } from '@/hooks/use-toast';
+import { getErrorMessage } from '@/lib/error-message';
 
 export interface FeatureRequest {
   id: string;
@@ -45,7 +46,7 @@ export const useFeatureRequests = (includeHidden = false) => {
       if (error) throw error;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: QUERY_KEY }),
-    onError: (err: any) => toast({ title: 'Erro ao votar', description: err.message, variant: 'destructive' }),
+    onError: (err: unknown) => toast({ title: 'Erro ao votar', description: getErrorMessage(err), variant: 'destructive' }),
   });
 
   const unvoteMutation = useMutation({
@@ -59,7 +60,7 @@ export const useFeatureRequests = (includeHidden = false) => {
       if (error) throw error;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: QUERY_KEY }),
-    onError: (err: any) => toast({ title: 'Erro ao remover voto', description: err.message, variant: 'destructive' }),
+    onError: (err: unknown) => toast({ title: 'Erro ao remover voto', description: getErrorMessage(err), variant: 'destructive' }),
   });
 
   const createMutation = useMutation({
@@ -76,7 +77,7 @@ export const useFeatureRequests = (includeHidden = false) => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEY });
       toast({ title: 'Lançamento adicionado' });
     },
-    onError: (err: any) => toast({ title: 'Erro', description: err.message, variant: 'destructive' }),
+    onError: (err: unknown) => toast({ title: 'Erro', description: getErrorMessage(err), variant: 'destructive' }),
   });
 
   const updateMutation = useMutation({
@@ -96,7 +97,7 @@ export const useFeatureRequests = (includeHidden = false) => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEY });
       toast({ title: 'Atualizado' });
     },
-    onError: (err: any) => toast({ title: 'Erro', description: err.message, variant: 'destructive' }),
+    onError: (err: unknown) => toast({ title: 'Erro', description: getErrorMessage(err), variant: 'destructive' }),
   });
 
   const toggleVisibleMutation = useMutation({
@@ -119,7 +120,7 @@ export const useFeatureRequests = (includeHidden = false) => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEY });
       toast({ title: 'Excluído' });
     },
-    onError: (err: any) => toast({ title: 'Erro', description: err.message, variant: 'destructive' }),
+    onError: (err: unknown) => toast({ title: 'Erro', description: getErrorMessage(err), variant: 'destructive' }),
   });
 
   const completeMutation = useMutation({
@@ -131,7 +132,7 @@ export const useFeatureRequests = (includeHidden = false) => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEY });
       toast({ title: 'Marcado como concluído! Notificação enviada a todos.' });
     },
-    onError: (err: any) => toast({ title: 'Erro', description: err.message, variant: 'destructive' }),
+    onError: (err: unknown) => toast({ title: 'Erro', description: getErrorMessage(err), variant: 'destructive' }),
   });
 
   const reorderMutation = useMutation({

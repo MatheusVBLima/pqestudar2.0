@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import type { Json, TablesInsert } from '@/integrations/supabase/types';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRoles } from '@/hooks/useUserRoles';
 
@@ -23,7 +24,7 @@ export function useAdminTracker() {
     async (params: AdminActivityParams) => {
       if (loading || !isAdmin || !user?.id) return;
       try {
-        await supabase.from('admin_activity_events').insert({
+        const payload: TablesInsert<'admin_activity_events'> = {
           admin_user_id: user.id,
           admin_email: user.email ?? null,
           area: params.area,
@@ -31,8 +32,9 @@ export function useAdminTracker() {
           entity_type: params.entity_type ?? null,
           entity_id: params.entity_id ?? null,
           path: window.location.pathname,
-          meta: (params.meta as any) ?? {},
-        } as any);
+          meta: (params.meta ?? {}) as Json,
+        };
+        await supabase.from('admin_activity_events').insert(payload);
       } catch {
         // fire-and-forget
       }

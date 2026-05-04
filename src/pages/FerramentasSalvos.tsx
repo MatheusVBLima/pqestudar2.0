@@ -10,6 +10,7 @@ import { SavedAccordion } from "@/components/saved/SavedAccordion";
 import { SavedToolsPanel } from "@/components/saved/SavedToolsPanel";
 import { SavedContestsPanel } from "@/components/saved/SavedContestsPanel";
 import { usePageSettings } from "@/hooks/usePageSettings";
+import { RouteFallbackPublic } from "@/components/layout/route-fallbacks";
 export default function FerramentasSalvos() {
   const ps = usePageSettings("/ferramentas/salvos");
   const navigate = useNavigate();
@@ -47,13 +48,7 @@ export default function FerramentasSalvos() {
 
   // Show loading while checking auth
   if (authLoading) {
-    return (
-      <div className="min-h-screen flex flex-col bg-background">
-        <main className="flex-1 flex items-center justify-center">
-          <div className="animate-pulse text-muted-foreground">Carregando...</div>
-        </main>
-      </div>
-    );
+    return <RouteFallbackPublic />;
   }
 
   // User not authenticated - will redirect

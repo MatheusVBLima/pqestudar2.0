@@ -10,8 +10,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useSavedItems, SavedItem } from "@/hooks/useSavedItems";
 import { Tool } from "@/hooks/useTools";
 import { Sparkles, Brain, Shield, GraduationCap, Zap } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
-const CATEGORY_ICONS: Record<string, any> = {
+const CATEGORY_ICONS: Record<string, LucideIcon> = {
   "Inteligência Artificial": Brain,
   "Produtividade": Zap,
   "Segurança e Privacidade": Shield,
@@ -196,7 +197,7 @@ export function SavedToolsPanel({ savedItems, onRefresh, shouldLoad }: SavedTool
                   </div>
                   <div className="flex gap-2">
                     {(() => {
-                      const attachmentUrl = (tool as any).attachment_url;
+                      const attachmentUrl = tool.attachment_url;
                       const hasAttachment = attachmentUrl && attachmentUrl.trim();
                       const linkUrl = hasAttachment ? attachmentUrl : tool.url;
                       const buttonText = hasAttachment ? "Download" : "Acessar";

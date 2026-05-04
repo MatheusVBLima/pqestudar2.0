@@ -5,6 +5,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { useAuth } from '@/hooks/useAuth'
 import { toast } from 'sonner'
+import { getErrorMessage } from '@/lib/error-message'
 
 interface SignUpFormProps {
   onSwitchToLogin: () => void
@@ -49,9 +50,9 @@ export function SignUpForm({ onSwitchToLogin }: SignUpFormProps) {
       }
 
       toast.success('E-mail enviado. Verifique sua caixa de entrada e spam.')
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('[Auth] Resend confirmation error', error)
-      toast.error('Erro ao reenviar. Tente novamente.')
+      toast.error(getErrorMessage(error, 'Erro ao reenviar. Tente novamente.'))
     } finally {
       setResendLoading(false)
     }

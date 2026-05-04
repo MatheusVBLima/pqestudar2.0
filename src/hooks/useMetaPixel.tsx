@@ -12,14 +12,15 @@ import {
 // Extend window for Meta Pixel
 declare global {
   interface Window {
-    fbq: (...args: any[]) => void;
-    _fbq: any;
+    fbq: (...args: unknown[]) => void;
+    _fbq: unknown;
     __PIXEL_DEBUG__?: boolean;
+    __META_PIXEL_LOADED__?: boolean;
   }
 }
 
 // Debug logger
-const pixelLog = (event: string, data?: any) => {
+const pixelLog = (event: string, data?: unknown) => {
   if (PIXEL_DEBUG || window.__PIXEL_DEBUG__) {
     console.log(`[PIXEL] ${event}`, data || '');
   }
@@ -43,6 +44,25 @@ const debounce = (key: string, delay: number = 1000): boolean => {
   return true;
 };
 
+const ensureMetaPixelLoaded = () => {
+  if (typeof window === 'undefined' || window.__META_PIXEL_LOADED__ || PIXEL_DISABLED) return;
+
+  window.fbq = window.fbq || function fbqStub(...args: unknown[]) {
+    const fbq = window.fbq as typeof window.fbq & { q?: unknown[][] };
+    fbq.q = fbq.q || [];
+    fbq.q.push(args);
+  };
+  window._fbq = window.fbq;
+  window.__META_PIXEL_LOADED__ = true;
+
+  const script = document.createElement('script');
+  script.async = true;
+  script.src = 'https://connect.facebook.net/en_US/fbevents.js';
+  document.head.appendChild(script);
+
+  window.fbq('init', META_PIXEL_ID);
+};
+
 export const useMetaPixel = () => {
   const location = useLocation();
   const { consentData } = useCookieConsent();
@@ -54,19 +74,24 @@ export const useMetaPixel = () => {
   // Check if pixel is ready (loaded from index.html)
   const isPixelReady = typeof window !== 'undefined' && typeof window.fbq === 'function';
 
-  // Mark as initialized on first render (pixel is loaded globally in index.html)
+  // Mark as initialized on first render after marketing consent.
   useEffect(() => {
     if (PIXEL_DISABLED) {
       pixelLog('Pixel disabled via environment variable');
       return;
     }
-    
-    if (!initializedRef.current && isPixelReady) {
+
+    if (!hasMarketingConsent) return;
+
+    ensureMetaPixelLoaded();
+
+    if (!initializedRef.current && typeof window.fbq === 'function') {
       initializedRef.current = true;
       sessionFlags.lastPageView = location.pathname;
-      pixelLog('Pixel ready (loaded from index.html)', META_PIXEL_ID);
+      window.fbq('track', 'PageView');
+      pixelLog('Pixel ready', META_PIXEL_ID);
     }
-  }, [isPixelReady, location.pathname]);
+  }, [hasMarketingConsent, location.pathname]);
 
   // Track PageView on route changes (SPA navigation)
   useEffect(() => {
@@ -96,7 +121,7 @@ export const useMetaPixel = () => {
     });
     sessionFlags.viewContentFired = true;
     pixelLog('ViewContent', { contentName, contentCategory });
-  }, [hasMarketingConsent]);
+  }, [hasMarketingConsent, isPixelReady]);
 
   // Track Lead (for CTA clicks)
   const trackLead = useCallback((contentName: string = 'CTA Hero') => {
@@ -109,7 +134,7 @@ export const useMetaPixel = () => {
       currency: CURRENCY,
     });
     pixelLog('Lead', { contentName });
-  }, [hasMarketingConsent]);
+  }, [hasMarketingConsent, isPixelReady]);
 
   // Track InitiateCheckout (for plan buttons)
   const trackInitiateCheckout = useCallback((plan: 'Basico' | 'Premium') => {
@@ -118,7 +143,7 @@ export const useMetaPixel = () => {
     
     window.fbq('track', 'InitiateCheckout', { plan });
     pixelLog('InitiateCheckout', { plan });
-  }, [hasMarketingConsent]);
+  }, [hasMarketingConsent, isPixelReady]);
 
   // Track Purchase (for thank you page)
   const trackPurchase = useCallback((value?: number) => {
@@ -137,10 +162,10 @@ export const useMetaPixel = () => {
     });
     sessionFlags.purchaseFired = true;
     pixelLog('Purchase', { value: orderValue, currency: CURRENCY });
-  }, [hasMarketingConsent]);
+  }, [hasMarketingConsent, isPixelReady]);
 
   // Custom event tracking
-  const trackCustomEvent = useCallback((eventName: string, params?: Record<string, any>) => {
+  const trackCustomEvent = useCallback((eventName: string, params?: Record<string, unknown>) => {
     if (PIXEL_DISABLED || !isPixelReady || !hasMarketingConsent) return;
     
     window.fbq('trackCustom', eventName, params);
@@ -182,5 +207,5 @@ export const useViewContentTracking = (elementRef: React.RefObject<HTMLElement>)
     observer.observe(elementRef.current);
 
     return () => observer.disconnect();
-  }, [trackViewContent]);
+  }, [elementRef, trackViewContent]);
 };

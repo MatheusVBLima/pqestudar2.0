@@ -45,6 +45,13 @@ interface OportunidadeInput {
   atualizacoes?: AtualizacaoInput[];
 }
 
+type SupabaseAdminClient = ReturnType<typeof createClient>;
+type OportunidadeUpdatePayload = Record<string, string | number | boolean | string[] | null | undefined>;
+
+interface FonteOportunidadeRow {
+  source_tipo?: string | null;
+}
+
 // Count words in markdown text (stripping syntax)
 function countMarkdownWords(markdown: string): number {
   if (!markdown) return 0;
@@ -77,12 +84,12 @@ function countMarkdownWords(markdown: string): number {
 
 // Helper to log audit events
 async function logAudit(
-  adminClient: any,
+  adminClient: SupabaseAdminClient,
   oportunidadeId: string,
   action: "trash" | "restore" | "purge",
   actor: string,
   actorEmail: string | null,
-  payload: Record<string, any> = {}
+  payload: Record<string, unknown> = {}
 ) {
   try {
     await adminClient.from("oportunidades_audit").insert({
@@ -767,7 +774,7 @@ Deno.serve(async (req) => {
       const { publicado, conteudo_html: _html, ...safeUpdateData } = updateData;
       
       // Build update object with escolaridades if provided
-      const updateObj: any = {
+      const updateObj: OportunidadeUpdatePayload = {
         ...safeUpdateData,
         meta_title: metaTitle,
         meta_description: metaDescription,
@@ -863,7 +870,7 @@ Deno.serve(async (req) => {
 
       // Now update publicado status
       if (body.publicado !== undefined) {
-        const updateFields: any = { 
+        const updateFields: OportunidadeUpdatePayload = {
           publicado: body.publicado,
           updated_by: user.id,
         };
@@ -1004,7 +1011,7 @@ Deno.serve(async (req) => {
         }
 
         const fontes = oportunidade.fontes_oportunidade || [];
-        const hasOfficialSource = fontes.some((f: any) => 
+        const hasOfficialSource = (fontes as FonteOportunidadeRow[]).some((f) =>
           ["oficial", "diario", "banca", "outro-oficial"].includes(f.source_tipo)
         );
 
@@ -1034,7 +1041,7 @@ Deno.serve(async (req) => {
         }
       }
 
-      const updateFields: any = { 
+      const updateFields: OportunidadeUpdatePayload = {
         publicado, 
         updated_by: user.id 
       };

@@ -13,6 +13,14 @@ import { ptBR } from 'date-fns/locale';
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
+interface AdminActionRow {
+  created_at: string;
+  admin_email: string | null;
+  area: string;
+  action: string;
+  entity_id: string | null;
+}
+
 export default function AdminActivity() {
   const [period, setPeriod] = useState<Period>('month');
   const [areaFilter, setAreaFilter] = useState<string>('all');
@@ -105,7 +113,7 @@ export default function AdminActivity() {
         p_limit: 100,
       });
       if (error) throw error;
-      return (data as any[]).map((row) => ({
+      return (data as AdminActionRow[]).map((row) => ({
         when: format(new Date(row.created_at), 'dd/MM HH:mm', { locale: ptBR }),
         admin: row.admin_email || '(sem email)',
         area: row.area,

@@ -63,6 +63,17 @@ export interface ToolsResult {
   totalPages: number;
 }
 
+const EMPTY_TOOLS: Tool[] = [];
+
+const getErrorMessage = (error: unknown, fallback: string) => {
+  if (error && typeof error === 'object') {
+    const record = error as { message?: unknown; context?: { message?: unknown } };
+    if (typeof record.context?.message === 'string') return record.context.message;
+    if (typeof record.message === 'string') return record.message;
+  }
+  return fallback;
+};
+
 // --- Fetch functions ---
 
 async function fetchPublicTools(page: number, pageSize: number, tags: string[]) {
@@ -126,7 +137,7 @@ export const useTools = (options: UseToolsOptions = {}) => {
 
   // Derive values based on mode
   const isAdmin = includeInvisible;
-  const tools = isAdmin ? (adminQuery.data || []) : (publicQuery.data?.tools || []);
+  const tools = isAdmin ? (adminQuery.data ?? EMPTY_TOOLS) : (publicQuery.data?.tools ?? EMPTY_TOOLS);
   const total = isAdmin ? (adminQuery.data?.length || 0) : (publicQuery.data?.total || 0);
   const loading = isAdmin ? adminQuery.isLoading : publicQuery.isLoading;
   const totalPages = Math.ceil(total / pageSize);
@@ -158,10 +169,10 @@ export const useTools = (options: UseToolsOptions = {}) => {
       invalidateAll();
       toast({ title: "Sucesso", description: "Ferramenta adicionada com sucesso!" });
       return { data, error: null };
-    } catch (err: any) {
-      const message = err?.context?.message || err?.message || "Não foi possível adicionar a ferramenta.";
+    } catch (err: unknown) {
+      const message = getErrorMessage(err, "Não foi possível adicionar a ferramenta.");
       toast({ title: "Erro", description: message, variant: "destructive" });
-      return { data: null, error: err.message };
+      return { data: null, error: message };
     }
   };
 
@@ -184,10 +195,10 @@ export const useTools = (options: UseToolsOptions = {}) => {
       invalidateAll();
       toast({ title: "Sucesso", description: "Ferramenta atualizada com sucesso!" });
       return { data, error: null };
-    } catch (err: any) {
-      const message = err?.context?.message || err?.message || "Não foi possível atualizar a ferramenta.";
+    } catch (err: unknown) {
+      const message = getErrorMessage(err, "Não foi possível atualizar a ferramenta.");
       toast({ title: "Erro", description: message, variant: "destructive" });
-      return { data: null, error: err.message };
+      return { data: null, error: message };
     }
   };
 
@@ -210,10 +221,10 @@ export const useTools = (options: UseToolsOptions = {}) => {
       invalidateAll();
       toast({ title: "Sucesso", description: "Ferramenta removida com sucesso!" });
       return { error: null };
-    } catch (err: any) {
-      const message = err?.context?.message || err?.message || "Não foi possível remover a ferramenta.";
+    } catch (err: unknown) {
+      const message = getErrorMessage(err, "Não foi possível remover a ferramenta.");
       toast({ title: "Erro", description: message, variant: "destructive" });
-      return { error: err.message };
+      return { error: message };
     }
   };
 
@@ -256,17 +267,17 @@ export const useTools = (options: UseToolsOptions = {}) => {
       invalidateAll();
       toast({ title: "Ordem atualizada", description: "A ordem das ferramentas foi salva com sucesso." });
       return { error: null };
-    } catch (err: any) {
-      console.error('[Tools Reorder] Error', { error: err.message, duration: `${Date.now() - startTime}ms` });
+    } catch (err: unknown) {
+      const message = getErrorMessage(err, "Não foi possível salvar a nova ordem. Tente novamente.");
+      console.error('[Tools Reorder] Error', { error: message, duration: `${Date.now() - startTime}ms` });
 
       // Rollback
       if (previousAdmin) {
         queryClient.setQueryData(['tools_admin'], previousAdmin);
       }
 
-      const message = err?.context?.message || err?.message || "Não foi possível salvar a nova ordem. Tente novamente.";
       toast({ title: "Erro ao salvar ordem", description: message, variant: "destructive" });
-      return { error: err.message };
+      return { error: message };
     }
   };
 

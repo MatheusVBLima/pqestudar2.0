@@ -42,6 +42,7 @@ import {
 import { toast } from "@/hooks/use-toast";
 import { useLegalAdmin, type LegalSection } from "@/hooks/useLegalSections";
 import { cn } from "@/lib/utils";
+import { getErrorMessage } from "@/lib/error-message";
 
 const ROUTES = [
   { value: "/privacidade", label: "Privacidade" },
@@ -88,8 +89,8 @@ export default function AdminLegal() {
       await updatePdfUrl.mutateAsync(pdfUrlInput);
       setPdfUrlDirty(false);
       toast({ title: "PDF URL salvo com sucesso" });
-    } catch (err: any) {
-      toast({ title: "Erro ao salvar PDF URL", description: err?.message, variant: "destructive" });
+    } catch (err: unknown) {
+      toast({ title: "Erro ao salvar PDF URL", description: getErrorMessage(err), variant: "destructive" });
     }
   };
 
@@ -129,8 +130,8 @@ export default function AdminLegal() {
       }
       setIsCreating(false);
       setEditingSection(null);
-    } catch (err: any) {
-      toast({ title: "Erro ao salvar", description: err?.message, variant: "destructive" });
+    } catch (err: unknown) {
+      toast({ title: "Erro ao salvar", description: getErrorMessage(err), variant: "destructive" });
     }
   };
 
@@ -139,8 +140,8 @@ export default function AdminLegal() {
     try {
       await deleteSection.mutateAsync(deletingId);
       toast({ title: "Seção excluída" });
-    } catch (err: any) {
-      toast({ title: "Erro ao excluir", description: err?.message, variant: "destructive" });
+    } catch (err: unknown) {
+      toast({ title: "Erro ao excluir", description: getErrorMessage(err), variant: "destructive" });
     }
     setDeletingId(null);
   };
@@ -149,8 +150,8 @@ export default function AdminLegal() {
     try {
       await toggleActive.mutateAsync({ id, is_active: !currentActive });
       toast({ title: !currentActive ? "Seção ativada" : "Seção ocultada" });
-    } catch (err: any) {
-      toast({ title: "Erro", description: err?.message, variant: "destructive" });
+    } catch (err: unknown) {
+      toast({ title: "Erro", description: getErrorMessage(err), variant: "destructive" });
     }
   };
 
@@ -161,8 +162,8 @@ export default function AdminLegal() {
     [newSections[index], newSections[targetIdx]] = [newSections[targetIdx], newSections[index]];
     try {
       await reorder.mutateAsync(newSections.map((s) => s.id));
-    } catch (err: any) {
-      toast({ title: "Erro ao reordenar", description: err?.message, variant: "destructive" });
+    } catch (err: unknown) {
+      toast({ title: "Erro ao reordenar", description: getErrorMessage(err), variant: "destructive" });
     }
   };
 

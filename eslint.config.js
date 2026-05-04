@@ -23,7 +23,23 @@ export default tseslint.config(
         "warn",
         { allowConstantExport: true },
       ],
+      "@typescript-eslint/no-explicit-any": "warn",
       "@typescript-eslint/no-unused-vars": "off",
+    },
+  }
+  ,
+  {
+    files: [
+      "src/components/ui/**/*.tsx",
+      "src/components/admin/MarkdownEditor.tsx",
+      "src/components/admin/guide-flow/FlowCanvas.tsx",
+      "src/components/admin/guide-flow/GuideFlowNodes.tsx",
+      "src/components/admin/guide-flow/GuideFlowValidation.tsx",
+      "src/components/seo/GlobalSeo.tsx",
+      "src/hooks/useAuth.tsx",
+    ],
+    rules: {
+      "react-refresh/only-export-components": "off",
     },
   }
 );

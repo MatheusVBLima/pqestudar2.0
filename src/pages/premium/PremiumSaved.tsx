@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,11 +8,12 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Bookmark, BookOpen, Briefcase, ExternalLink, Trash2 } from 'lucide-react';
 import { usePremiumSavedItems } from '@/hooks/usePremiumSavedItems';
+import type { Json } from '@/integrations/supabase/types';
 
 interface SavedItem {
   id: string;
   item_id: string;
-  metadata: Record<string, any> | null;
+  metadata: Json | null;
   created_at: string;
 }
 
@@ -34,13 +35,7 @@ const PremiumSaved = () => {
   const [loading, setLoading] = useState(true);
   const { toggleSave, isToggling } = usePremiumSavedItems();
 
-  useEffect(() => {
-    if (user) {
-      fetchSavedItems();
-    }
-  }, [user]);
-
-  const fetchSavedItems = async () => {
+  const fetchSavedItems = useCallback(async () => {
     if (!user) return;
 
     try {
@@ -76,7 +71,11 @@ const PremiumSaved = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    fetchSavedItems();
+  }, [fetchSavedItems]);
 
   const handleRemove = async (itemId: string) => {
     const success = await toggleSave(itemId);

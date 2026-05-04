@@ -13,6 +13,9 @@ interface CourseVote {
   created_at: string;
 }
 
+const getErrorMessage = (error: unknown) =>
+  error instanceof Error ? error.message : 'Erro inesperado';
+
 export const useVoting = (courseId: string) => {
   const { user } = useAuth();
   const [userVote, setUserVote] = useState<VoteType | null>(null);
@@ -113,10 +116,10 @@ export const useVoting = (courseId: string) => {
         setUpvotes(courseData.upvotes || 0);
         setDownvotes(courseData.downvotes || 0);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Erro ao votar",
-        description: error.message,
+        description: getErrorMessage(error),
         variant: "destructive"
       });
     } finally {

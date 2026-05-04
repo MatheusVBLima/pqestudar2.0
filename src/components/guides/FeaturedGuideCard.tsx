@@ -41,7 +41,7 @@ export function FeaturedGuideCard({
     : null;
 
   // Usar categoria pública para exibição, fallback para interna
-  const displayCategory = (guide as any).public_category || guide.category;
+  const displayCategory = guide.public_category || guide.category;
 
   return (
     <section className="mb-10">
@@ -59,9 +59,9 @@ export function FeaturedGuideCard({
             to={`/guias/${guide.slug}`}
             className="md:w-2/5 bg-accent flex items-center justify-center min-h-[200px] md:min-h-[260px] overflow-hidden hover:opacity-90 transition-opacity"
           >
-            {(guide as any).cover_image_url ? (
+            {guide.cover_image_url ? (
               <img
-                src={(guide as any).cover_image_url}
+                src={guide.cover_image_url}
                 alt={guide.title}
                 className="w-full h-full object-cover"
                 referrerPolicy="no-referrer"
@@ -100,8 +100,8 @@ export function FeaturedGuideCard({
             </p>
 
             <div className="flex items-center gap-3 text-sm text-muted-foreground mb-5 flex-wrap">
-              {showAdmin && (guide as any).internal_code && (
-                <span className="font-mono text-xs bg-muted px-1.5 py-0.5 rounded">{(guide as any).internal_code}</span>
+              {showAdmin && guide.internal_code && (
+                <span className="font-mono text-xs bg-muted px-1.5 py-0.5 rounded">{guide.internal_code}</span>
               )}
               {guide.author_name && (
                 <span className="font-medium">{guide.author_name}</span>

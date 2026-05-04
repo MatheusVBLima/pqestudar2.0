@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { getErrorMessage } from '@/lib/error-message';
 
 export interface StorageFile {
   name: string;
@@ -59,9 +60,10 @@ export function useGuideStorageSources(): StorageSources {
         updated_at: f.updated_at ?? undefined,
       })));
       setStructureStatus('success');
-    } catch (err: any) {
-      console.error('[guide-structure] Error:', err.message);
-      setStructureError(err.message);
+    } catch (err: unknown) {
+      const message = getErrorMessage(err);
+      console.error('[guide-structure] Error:', message);
+      setStructureError(message);
       setStructureFiles([]);
       setStructureStatus('error');
     } finally {
@@ -113,9 +115,10 @@ export function useGuideStorageSources(): StorageSources {
       }
 
       setLibraryStatus('success');
-    } catch (err: any) {
-      console.error('[guide-library] Error:', err.message);
-      setLibraryError(err.message);
+    } catch (err: unknown) {
+      const message = getErrorMessage(err);
+      console.error('[guide-library] Error:', message);
+      setLibraryError(message);
       setLibraryFolders([]);
       setLibraryFiles([]);
       setLibraryStatus('error');
@@ -142,8 +145,8 @@ export function useGuideStorageSources(): StorageSources {
           created_at: f.created_at ?? undefined,
           updated_at: f.updated_at ?? undefined,
         })));
-      } catch (err: any) {
-        setLibraryError(err.message);
+      } catch (err: unknown) {
+        setLibraryError(getErrorMessage(err));
         setLibraryFiles([]);
       } finally {
         setIsLoadingLibrary(false);

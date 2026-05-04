@@ -21,6 +21,9 @@ const ADMIN_CACHE = {
   retry: 0,
 };
 
+const getErrorMessage = (error: unknown) =>
+  error instanceof Error ? error.message : 'Erro inesperado';
+
 export const useUserRoles = () => {
   const { user } = useAuth();
 
@@ -54,8 +57,8 @@ export const useUserRoles = () => {
       if (error) throw error;
       if (userId === user?.id) adminQuery.refetch();
       return { data, error: null };
-    } catch (err: any) {
-      return { data: null, error: err.message };
+    } catch (err: unknown) {
+      return { data: null, error: getErrorMessage(err) };
     }
   };
 
@@ -69,8 +72,8 @@ export const useUserRoles = () => {
       if (error) throw error;
       if (userId === user?.id) adminQuery.refetch();
       return { error: null };
-    } catch (err: any) {
-      return { error: err.message };
+    } catch (err: unknown) {
+      return { error: getErrorMessage(err) };
     }
   };
 

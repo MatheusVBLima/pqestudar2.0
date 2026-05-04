@@ -3,7 +3,13 @@ import { Handle, Position } from '@xyflow/react';
 import { Badge } from '@/components/ui/badge';
 import { FileText, ListChecks, CheckCircle } from 'lucide-react';
 
-function ContentNodeComponent({ data }: { data: any }) {
+interface ContentNodeData {
+  label: string;
+  content: string;
+  sectionIndex: number;
+}
+
+function ContentNodeComponent({ data }: { data: ContentNodeData }) {
   const { label, content, sectionIndex } = data;
 
   const isFaq = /faq|perguntas?\s+frequentes/i.test(label);

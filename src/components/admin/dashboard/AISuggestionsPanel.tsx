@@ -13,6 +13,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { type EditorField } from '@/lib/audit-editor-profiles';
 import { type ClassifiedIssue } from '@/lib/issue-applicability';
 import { cn } from '@/lib/utils';
+import { getErrorMessage } from '@/lib/error-message';
 
 type AIProvider = 'lovable' | 'openai';
 
@@ -138,9 +139,9 @@ export function AISuggestionsPanel({
         reasoning: data.reasoning,
         skippedIssues: manualIssues,
       });
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('[AI Panel] Error:', err);
-      const msg = err.message || 'Erro ao gerar sugestões';
+      const msg = getErrorMessage(err, 'Erro ao gerar sugestões');
       setError(provider === 'openai' ? `${msg}\n\nTente novamente com Lovable AI.` : msg);
     } finally {
       setIsGenerating(false);

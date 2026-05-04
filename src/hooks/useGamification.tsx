@@ -203,7 +203,7 @@ export const useGamification = (isAdmin: boolean = false) => {
   const updateCommunityRanking = () => {
     if (!userProfile) return;
     
-    let ranking = [...communityRanking];
+    const ranking = [...communityRanking];
     const existingIndex = ranking.findIndex(r => r.userId === userProfile.id);
     
     const userRankData: CommunityRanking = {

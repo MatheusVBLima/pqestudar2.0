@@ -30,11 +30,11 @@ const CATEGORY_COLORS: Record<string, string> = {
 };
 
 function GuideSearchItem({ guide, onSelect }: { guide: Guide; onSelect: () => void }) {
-  const displayCategory = (guide as any).public_category || guide.category;
+  const displayCategory = guide.public_category || guide.category;
   const updatedDate = guide.updated_at
     ? format(new Date(guide.updated_at), "d MMM, yyyy", { locale: ptBR })
     : null;
-  const views = (guide as any).views_count as number | undefined;
+  const views = guide.views_count;
 
   return (
     <Link
@@ -43,9 +43,9 @@ function GuideSearchItem({ guide, onSelect }: { guide: Guide; onSelect: () => vo
       className="group flex gap-3 p-2.5 rounded-lg hover:bg-accent/60 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
     >
       <div className="w-16 h-16 sm:w-20 sm:h-20 shrink-0 rounded-md bg-accent flex items-center justify-center overflow-hidden">
-        {(guide as any).cover_image_url ? (
+        {guide.cover_image_url ? (
           <img
-            src={(guide as any).cover_image_url}
+            src={guide.cover_image_url}
             alt={guide.title}
             className="w-full h-full object-cover"
             referrerPolicy="no-referrer"
@@ -106,15 +106,15 @@ export function GuideSearchOverlay({
     const featured = guides
       .filter((g) => g.is_featured)
       .sort((a, b) => {
-        const va = (a as any).views_count ?? 0;
-        const vb = (b as any).views_count ?? 0;
+        const va = a.views_count ?? 0;
+        const vb = b.views_count ?? 0;
         if (vb !== va) return vb - va;
         return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
       });
 
     const byViews = [...guides].sort((a, b) => {
-      const va = (a as any).views_count ?? 0;
-      const vb = (b as any).views_count ?? 0;
+      const va = a.views_count ?? 0;
+      const vb = b.views_count ?? 0;
       if (vb !== va) return vb - va;
       return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
     });
@@ -137,7 +137,7 @@ export function GuideSearchOverlay({
       .filter((g) => {
         const inTitle = g.title.toLowerCase().includes(term);
         const inDesc = (g.short_description || "").toLowerCase().includes(term);
-        const cat = ((g as any).public_category || g.category || "").toLowerCase();
+        const cat = (g.public_category || g.category || "").toLowerCase();
         return inTitle || inDesc || cat.includes(term);
       })
       .slice(0, 12);

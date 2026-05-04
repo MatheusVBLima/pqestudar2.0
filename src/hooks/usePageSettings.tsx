@@ -2,6 +2,12 @@ import { useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
+declare global {
+  interface Window {
+    __PAGE_SETTINGS_READY__?: boolean;
+  }
+}
+
 export interface PageSettings {
   id: string;
   route: string;
@@ -48,7 +54,7 @@ export function usePageSettings(route: string) {
     queryKey: ["page_settings", route],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("page_settings" as any)
+        .from("page_settings")
         .select("*")
         .eq("route", route)
         .maybeSingle();
@@ -71,11 +77,11 @@ export function usePageSettings(route: string) {
   // Signal for iframe-based audit engine to know page settings are loaded
   useEffect(() => {
     if (isReady) {
-      (window as any).__PAGE_SETTINGS_READY__ = true;
+      window.__PAGE_SETTINGS_READY__ = true;
       window.dispatchEvent(new Event("page-settings-ready"));
     }
     return () => {
-      (window as any).__PAGE_SETTINGS_READY__ = false;
+      window.__PAGE_SETTINGS_READY__ = false;
     };
   }, [isReady]);
 
@@ -98,7 +104,7 @@ export function useAllPageSettings() {
     queryKey: ["page_settings", "all"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("page_settings" as any)
+        .from("page_settings")
         .select("*")
         .order("route");
 
@@ -114,7 +120,7 @@ export function useAllPageSettings() {
   const updateMutation = useMutation({
     mutationFn: async (updates: Pick<PageSettings, "route" | "title_tag" | "meta_description" | "header_title" | "header_description">) => {
       const { error } = await supabase
-        .from("page_settings" as any)
+        .from("page_settings")
         .update({
           title_tag: updates.title_tag,
           meta_description: updates.meta_description,

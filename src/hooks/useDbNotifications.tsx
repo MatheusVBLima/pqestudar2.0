@@ -13,6 +13,17 @@ export interface DbNotification {
 
 const QUERY_KEY = ['db_notifications'];
 
+interface UserNotificationRow {
+  id: string;
+  notification_id: string;
+  is_read: boolean;
+  created_at: string;
+  notifications: {
+    title?: string | null;
+    body?: string | null;
+  } | null;
+}
+
 export const useDbNotifications = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -27,7 +38,7 @@ export const useDbNotifications = () => {
         .order('created_at', { ascending: false })
         .limit(50);
       if (error) throw error;
-      return (data ?? []).map((row: any) => ({
+      return ((data ?? []) as UserNotificationRow[]).map((row) => ({
         id: row.id,
         notification_id: row.notification_id,
         is_read: row.is_read,

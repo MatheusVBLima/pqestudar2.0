@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import type { TablesInsert } from '@/integrations/supabase/types';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRoles } from '@/hooks/useUserRoles';
 
@@ -42,14 +43,13 @@ export function usePageViewTracker() {
 
     const actor_type = isAdmin ? 'admin' : 'public';
 
-    supabase
-      .from('page_views')
-      .insert({
-        path: pathname,
-        session_id: getSessionId(),
-        user_id: user?.id ?? null,
-        actor_type,
-      } as any)
-      .then(() => {});
+    const payload: TablesInsert<'page_views'> = {
+      path: pathname,
+      session_id: getSessionId(),
+      user_id: user?.id ?? null,
+      actor_type,
+    };
+
+    supabase.from('page_views').insert(payload).then(() => {});
   }, [pathname, user?.id, isAdmin, rolesLoading]);
 }

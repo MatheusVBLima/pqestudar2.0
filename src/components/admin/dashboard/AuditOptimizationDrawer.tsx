@@ -28,6 +28,7 @@ import { analyzeCopy } from '@/lib/copy-audit-analyzer';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { supabase } from '@/integrations/supabase/client';
+import { getErrorMessage } from '@/lib/error-message';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface AuditIssue {
@@ -105,7 +106,7 @@ export function AuditOptimizationDrawer({ open, onOpenChange, finding, onReaudit
     }
   }, [open, loadResult]);
 
-  const currentFields = loadResult?.fields ?? {};
+  const currentFields = useMemo(() => loadResult?.fields ?? {}, [loadResult?.fields]);
   const isSupported = !!resolved && loadResult?.supported !== false;
 
   const hasChanges = useMemo(() => {
@@ -182,8 +183,8 @@ export function AuditOptimizationDrawer({ open, onOpenChange, finding, onReaudit
 
       // Re-audit automatically
       await handleReaudit(result.version_id);
-    } catch (err: any) {
-      toast.error(err.message || 'Erro ao salvar');
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err, 'Erro ao salvar'));
     }
   };
 
@@ -208,8 +209,8 @@ export function AuditOptimizationDrawer({ open, onOpenChange, finding, onReaudit
 
       toast.success(`Reauditoria concluída! Novo score: ${result.score}`);
       onReauditComplete?.();
-    } catch (err: any) {
-      toast.error('Erro na reauditoria: ' + (err.message || 'Erro desconhecido'));
+    } catch (err: unknown) {
+      toast.error('Erro na reauditoria: ' + getErrorMessage(err, 'Erro desconhecido'));
     } finally {
       setIsReauditing(false);
     }
@@ -221,7 +222,7 @@ export function AuditOptimizationDrawer({ open, onOpenChange, finding, onReaudit
     try {
       await rollbackMutation.mutateAsync({ versionId: version.id, path });
       setEditedFields({});
-    } catch (err: any) {
+    } catch (err: unknown) {
       // error handled by mutation
     }
   };

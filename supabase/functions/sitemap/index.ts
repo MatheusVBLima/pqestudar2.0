@@ -99,9 +99,9 @@ Deno.serve(async (req) => {
     for (const c of concursos ?? []) {
       if (!c.slug) continue;
       const lastmod =
-        toIsoDate((c as any).updated_at) ??
-        toIsoDate((c as any).published_at) ??
-        toIsoDate((c as any).data_publicacao);
+        toIsoDate(c.updated_at as string | null) ??
+        toIsoDate(c.published_at as string | null) ??
+        toIsoDate(c.data_publicacao as string | null);
       parts.push(urlEntry(`${BASE_URL}/concursos/${c.slug}`, lastmod, "weekly", "0.8"));
     }
 

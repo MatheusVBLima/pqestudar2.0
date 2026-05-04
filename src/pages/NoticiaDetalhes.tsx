@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -14,12 +14,31 @@ import { useToast } from "@/hooks/use-toast";
 // no topo
 import { sanitizeHtml, escapeHtml } from "@/lib/utils";
 
+type FonteNoticia = string | { nome: string; url: string };
+
+interface NoticiaView {
+  id: string | number;
+  titulo: string;
+  descricao: string;
+  categoria: string;
+  data: string;
+  tempo: string;
+  urgente?: boolean;
+  imagem?: string;
+  autor?: string;
+  visualizacoes?: number;
+  conteudoCompleto?: string;
+  conteudo?: string;
+  tags?: string[];
+  fontes?: FonteNoticia[];
+}
+
 const NoticiaDetalhes = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [noticia, setNoticia] = useState<any>(null);
-  const [noticiasRelacionadas, setNoticiasRelacionadas] = useState<any[]>([]);
+  const [noticia, setNoticia] = useState<NoticiaView | null>(null);
+  const [noticiasRelacionadas, setNoticiasRelacionadas] = useState<NoticiaView[]>([]);
   const [loading, setLoading] = useState(true);
   const { adicionarFavorito, removerFavorito, isFavorito } = useFavoritos();
   const { toast } = useToast();
@@ -56,14 +75,17 @@ const NoticiaDetalhes = () => {
 
       // Buscar notícias relacionadas
       const allNews = NewsStorageService.getAllNews();
-      const related = allNews.filter((n: any) => n.id !== id && n.categoria === storedNews.categoria).slice(0, 6); // Pegar até 6 relacionadas
+      const related = (allNews as NoticiaView[])
+        .filter((n) => String(n.id) !== id && n.categoria === storedNews.categoria)
+        .slice(0, 6); // Pegar até 6 relacionadas
       setNoticiasRelacionadas(related);
     }
 
     setLoading(false);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
-  const generateFallbackContent = (news: any) => {
+  const generateFallbackContent = (news: NoticiaView) => {
     return `
       <p class="mb-4">${news.descricao}</p>
       <h3 class="text-xl font-semibold mb-3 text-foreground">Informações Detalhadas</h3>
@@ -81,7 +103,7 @@ const NoticiaDetalhes = () => {
   };
 
   // Static data for fallback (existing news)
-  const staticNoticias = {
+  const staticNoticias = useMemo(() => ({
     "1": {
       id: 1,
       titulo: "Resultado do ENEM 2024 será divulgado em janeiro",
@@ -193,7 +215,7 @@ const NoticiaDetalhes = () => {
         { nome: "Edital Oficial", url: "#" },
       ],
     },
-  };
+  }), []);
 
   if (loading) {
     return (
@@ -233,7 +255,7 @@ const NoticiaDetalhes = () => {
     return cores[categoria as keyof typeof cores] || "bg-gray-500";
   };
 
-  const handleSalvarNoticia = (noticia: any) => {
+  const handleSalvarNoticia = (noticia: NoticiaView) => {
     // Check if user is logged in
     if (!user) {
       toast({
@@ -387,7 +409,7 @@ const NoticiaDetalhes = () => {
                   <div>
                     <h3 className="font-semibold mb-2">Fontes:</h3>
                     <div className="space-y-2">
-                      {noticia.fontes.map((fonte: any, index: number) => {
+                      {noticia.fontes.map((fonte, index) => {
                         const fonteName = typeof fonte === "string" ? fonte : fonte.nome;
                         const fonteUrl = typeof fonte === "string" ? "#" : fonte.url;
 
@@ -419,7 +441,7 @@ const NoticiaDetalhes = () => {
             <CardContent className="p-6">
               <h3 className="text-xl font-semibold mb-4">Notícias Relacionadas</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {noticiasRelacionadas.slice(0, 6).map((relatedNews: any) => (
+                {noticiasRelacionadas.slice(0, 6).map((relatedNews) => (
                   <div
                     key={relatedNews.id}
                     onClick={() => navigate(`/noticia/${relatedNews.id}`)}

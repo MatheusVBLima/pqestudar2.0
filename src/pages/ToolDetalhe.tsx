@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { motion } from "framer-motion";
@@ -21,6 +21,8 @@ import { renderMarkdownContent } from "@/lib/concursos-content-renderer";
 import { SaveToolButton } from "@/components/ui/save-tool-button";
 import { useAnalyticsTracker } from "@/hooks/useAnalyticsTracker";
 import { Tool } from "@/hooks/useTools";
+
+type ToolInternalLink = NonNullable<Tool["internal_links"]>[number];
 
 // ---------- CTA Block (mesmo padrão dos guias) ----------
 function CtaBlock({
@@ -146,49 +148,58 @@ export default function ToolDetalhe() {
   const [related, setRelated] = useState<Tool[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
-  const fetchedSlug = useRef<string | null>(null);
 
   useEffect(() => {
-    if (!slug) return;
-    if (fetchedSlug.current === slug) return;
-    fetchedSlug.current = slug;
     let cancelled = false;
+
     async function load() {
-      setLoading(true);
-      setNotFound(false);
-      const { data, error } = await supabase
-        .from("tools_public")
-        .select("*")
-        .eq("slug", slug)
-        .maybeSingle();
-
-      if (cancelled) return;
-
-      if (error || !data) {
+      if (!slug) {
         setTool(null);
+        setRelated([]);
         setNotFound(true);
         setLoading(false);
         return;
       }
 
-      setTool(data as Tool);
-
-      // Related tools: shared tags
-      if (Array.isArray((data as any).tags) && (data as any).tags.length > 0) {
-        const { data: rel } = await supabase
+      setLoading(true);
+      setNotFound(false);
+      try {
+        const { data, error } = await supabase
           .from("tools_public")
           .select("*")
-          .neq("id", (data as any).id)
-          .overlaps("tags", (data as any).tags)
-          .order("sort_order", { ascending: true })
-          .limit(4);
-        if (!cancelled) setRelated((rel || []) as Tool[]);
-      } else {
-        setRelated([]);
-      }
+          .eq("slug", slug)
+          .maybeSingle();
 
-      setLoading(false);
+        if (cancelled) return;
+
+        if (error || !data) {
+          setTool(null);
+          setRelated([]);
+          setNotFound(true);
+          return;
+        }
+
+        const loadedTool = data as Tool;
+        setTool(loadedTool);
+
+        // Related tools: shared tags
+        if (Array.isArray(loadedTool.tags) && loadedTool.tags.length > 0) {
+          const { data: rel } = await supabase
+            .from("tools_public")
+            .select("*")
+            .neq("id", loadedTool.id)
+            .overlaps("tags", loadedTool.tags)
+            .order("sort_order", { ascending: true })
+            .limit(4);
+          if (!cancelled) setRelated((rel || []) as Tool[]);
+        } else {
+          setRelated([]);
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
     }
+
     load();
     return () => {
       cancelled = true;
@@ -239,7 +250,7 @@ export default function ToolDetalhe() {
 
   // Split internal links between internal (/...) and external
   const allLinks = Array.isArray(tool.internal_links) ? tool.internal_links : [];
-  const usefulLinks = allLinks.filter((l: any) => l?.label && l?.url);
+  const usefulLinks = allLinks.filter((link): link is ToolInternalLink => Boolean(link?.label && link?.url));
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -490,9 +501,9 @@ export default function ToolDetalhe() {
                   Links úteis
                 </p>
                 <div className="space-y-5">
-                  {usefulLinks.map((link: any, i: number) => {
+                  {usefulLinks.map((link, i) => {
                     const isExternal = /^https?:\/\//.test(link.url);
-                    const Wrapper: any = isExternal ? "a" : Link;
+                    const Wrapper = isExternal ? "a" : Link;
                     const wrapperProps = isExternal
                       ? {
                           href: link.url,

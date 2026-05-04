@@ -1,5 +1,9 @@
 import { supabase } from '@/integrations/supabase/client';
 
+interface PageSettingsWindow extends Window {
+  __PAGE_SETTINGS_READY__?: boolean;
+}
+
 export interface DomSnapshot {
   url: string;
   path: string;
@@ -36,13 +40,13 @@ export async function buildAuditUrls(): Promise<{ url: string; path: string }[]>
 
   try {
     const { data } = await supabase
-      .from('oportunidades_public' as any)
+      .from('oportunidades_public')
       .select('slug')
       .order('data_publicacao', { ascending: false })
       .limit(MAX_SLUG_SAMPLE);
 
     if (data) {
-      for (const row of data as any[]) {
+      for (const row of data) {
         if (row.slug) {
           urls.push({ url: `${origin}/concursos/${row.slug}`, path: `/concursos/${row.slug}` });
         }
@@ -66,7 +70,9 @@ export function extractDomFromIframe(url: string, path: string): Promise<DomSnap
     const cleanup = () => {
       try {
         document.body.removeChild(iframe);
-      } catch {}
+      } catch {
+        // Iframe may already be detached during timeout/error cleanup.
+      }
     };
 
     const timeout = setTimeout(() => {
@@ -79,7 +85,7 @@ export function extractDomFromIframe(url: string, path: string): Promise<DomSnap
 
     iframe.onload = () => {
       // Wait for page settings to be ready before extracting DOM
-      const iframeWin = iframe.contentWindow as any;
+      const iframeWin = iframe.contentWindow as PageSettingsWindow | null;
       
       const waitAndExtract = () => {
         if (resolved) return;
@@ -204,7 +210,9 @@ function extractFromDocument(doc: Document, url: string, path: string): DomSnaps
           schemaTypes.push(...t);
         }
       }
-    } catch {}
+    } catch {
+      // Ignore malformed JSON-LD scripts while auditing the rest of the page.
+    }
   });
 
   const body = doc.body;

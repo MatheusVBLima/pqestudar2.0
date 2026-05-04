@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { CourseForm } from './CourseForm';
-import { useCourses, Course } from '@/hooks/useCourses';
+import { useCourses, Course, type CreateCourseData } from '@/hooks/useCourses';
 import { useToast } from '@/hooks/use-toast';
 import {
   AlertDialog,
@@ -24,7 +24,7 @@ export const CourseManagement = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingCourse, setEditingCourse] = useState<Course | null>(null);
 
-  const handleCreateCourse = async (courseData: any) => {
+  const handleCreateCourse = async (courseData: CreateCourseData) => {
     const { error } = await createCourse(courseData);
     if (error) {
       toast({
@@ -41,7 +41,7 @@ export const CourseManagement = () => {
     }
   };
 
-  const handleUpdateCourse = async (courseData: any) => {
+  const handleUpdateCourse = async (courseData: CreateCourseData) => {
     if (!editingCourse) return;
     
     const { error } = await updateCourse({ ...courseData, id: editingCourse.id });

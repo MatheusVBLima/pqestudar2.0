@@ -40,7 +40,7 @@ export function GuideListItem({
     : null;
 
   // Usar categoria pública para exibição, fallback para interna
-  const displayCategory = (guide as any).public_category || guide.category;
+  const displayCategory = guide.public_category || guide.category;
 
   return (
     <article
@@ -51,9 +51,9 @@ export function GuideListItem({
         to={`/guias/${guide.slug}`}
         className="w-20 h-20 sm:w-28 sm:h-24 shrink-0 rounded-lg bg-accent flex items-center justify-center overflow-hidden hover:opacity-90 transition-opacity"
       >
-        {(guide as any).cover_image_url ? (
+        {guide.cover_image_url ? (
           <img
-            src={(guide as any).cover_image_url}
+            src={guide.cover_image_url}
             alt={guide.title}
             className="w-full h-full object-cover"
             referrerPolicy="no-referrer"
@@ -97,8 +97,8 @@ export function GuideListItem({
         </p>
 
         <div className="flex items-center gap-2 text-xs text-muted-foreground mt-auto flex-wrap">
-          {showAdmin && (guide as any).internal_code && (
-            <span className="font-mono text-[11px] bg-muted px-1.5 py-0.5 rounded">{(guide as any).internal_code}</span>
+          {showAdmin && guide.internal_code && (
+            <span className="font-mono text-[11px] bg-muted px-1.5 py-0.5 rounded">{guide.internal_code}</span>
           )}
           {guide.author_name && <span>{guide.author_name}</span>}
           {updatedDate && (

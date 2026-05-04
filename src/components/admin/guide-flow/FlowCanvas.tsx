@@ -48,6 +48,15 @@ const GAP_Y = 60;
 const START_X = 60;
 const START_Y = 60;
 
+type FlowNodeData = Record<string, unknown>;
+
+interface EditorNodeData {
+  nodeType: 'meta' | 'seo' | 'content' | 'cta' | 'links';
+  nodeId: string;
+  label: string;
+  sectionIndex?: number;
+}
+
 function buildInitialNodes(): Node[] {
   return [
     {
@@ -80,9 +89,9 @@ function buildInitialEdges(): Edge[] {
 export function buildGeneratedLayout(data: GeneratedGuideData, structureNames: string[], libraryName: string | null, onRegenerateImage?: (prompt: string, position: string) => void, onEditPrompt?: (position: string) => void): { nodes: Node[]; edges: Edge[] } {
   const nodes: Node[] = [];
   const edges: Edge[] = [];
-  let col = 0;
+  const col = 0;
 
-  const addNode = (id: string, type: string, nodeData: any, c?: number, r?: number) => {
+  const addNode = (id: string, type: string, nodeData: FlowNodeData, c?: number, r?: number) => {
     const x = START_X + (c ?? col) * (NODE_W + GAP_X);
     const y = START_Y + (r ?? 0) * (280 + GAP_Y);
     nodes.push({ id, type, position: { x, y }, data: nodeData });
@@ -218,12 +227,7 @@ export function buildGeneratedLayout(data: GeneratedGuideData, structureNames: s
 }
 
 // Map a clicked node to the editor data shape
-function nodeToEditorData(nodeId: string, nodeType: string, nodeData: any): {
-  nodeType: 'meta' | 'seo' | 'content' | 'cta' | 'links';
-  nodeId: string;
-  label: string;
-  sectionIndex?: number;
-} | null {
+function nodeToEditorData(nodeId: string, nodeType: string, nodeData: Record<string, unknown>): EditorNodeData | null {
   switch (nodeType) {
     case 'metaNode':
       return { nodeType: 'meta', nodeId, label: 'Metadados' };
@@ -233,11 +237,11 @@ function nodeToEditorData(nodeId: string, nodeType: string, nodeData: any): {
       return {
         nodeType: 'content',
         nodeId,
-        label: nodeData.label ?? 'Seção',
-        sectionIndex: nodeData.sectionIndex ?? 0,
+        label: typeof nodeData.label === 'string' ? nodeData.label : 'Seção',
+        sectionIndex: typeof nodeData.sectionIndex === 'number' ? nodeData.sectionIndex : 0,
       };
     case 'ctaNode':
-      return { nodeType: 'cta', nodeId, label: `CTA ${nodeData.ctaType ?? ''}` };
+      return { nodeType: 'cta', nodeId, label: `CTA ${typeof nodeData.ctaType === 'string' ? nodeData.ctaType : ''}` };
     case 'linksNode':
       return { nodeType: 'links', nodeId, label: 'Links Internos' };
     default:
@@ -258,7 +262,7 @@ interface FlowCanvasProps {
 
 export function FlowCanvas({ guideData, isGenerating, onGenerate, onGuideDataChange, sources, onInputsChange, onRegenerateImage, onUpdateImagePrompt }: FlowCanvasProps) {
   const [editorOpen, setEditorOpen] = useState(false);
-  const [editorData, setEditorData] = useState<any>(null);
+  const [editorData, setEditorData] = useState<EditorNodeData | null>(null);
   const [imageEditorPosition, setImageEditorPosition] = useState<string | null>(null);
 
   const structureNames = useMemo(
@@ -282,7 +286,7 @@ export function FlowCanvas({ guideData, isGenerating, onGenerate, onGuideDataCha
       return { nodes: buildInitialNodes(), edges: buildInitialEdges() };
     }
     return buildGeneratedLayout(guideData, structureNames, libraryName, onRegenerateImage, handleEditImagePrompt);
-  }, []);
+  }, [guideData, handleEditImagePrompt, libraryName, onRegenerateImage, structureNames]);
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initial.nodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initial.edges);
@@ -293,7 +297,7 @@ export function FlowCanvas({ guideData, isGenerating, onGenerate, onGuideDataCha
       setNodes(layout.nodes);
       setEdges(layout.edges);
     }
-  }, [guideData?.title, guideData?.slug, guideData?.content_markdown, guideData?.generated_images, structureNames, libraryName, onRegenerateImage, handleEditImagePrompt]);
+  }, [guideData, handleEditImagePrompt, libraryName, onRegenerateImage, setEdges, setNodes, structureNames]);
 
   const onConnect = useCallback((params: Connection) => {
     setEdges((eds) => addEdge(params, eds));
@@ -353,7 +357,7 @@ export function FlowCanvas({ guideData, isGenerating, onGenerate, onGuideDataCha
       }
       return node;
     });
-  }, [nodes, onGenerate, isGenerating, sources, libraryName]);
+  }, [nodes, onGenerate, isGenerating, sources, libraryName, onInputsChange]);
 
   return (
     <div className="w-full h-[calc(100vh-140px)] rounded-[var(--admin-radius)] overflow-hidden border border-border/50 bg-background/50">

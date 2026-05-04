@@ -21,12 +21,14 @@ import { supabase } from "@/integrations/supabase/client";
 
 import { sanitizeHtml } from "@/lib/utils";
 
+type NewsItem = NewsArticle | ValidatedNews;
+
 const Noticias = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { isAdmin } = useUserRoles();
   const [filtroAtivo, setFiltroAtivo] = useState<string>("Todas");
-  const [noticias, setNoticias] = useState<(NewsArticle | ValidatedNews)[]>([]);
+  const [noticias, setNoticias] = useState<NewsItem[]>([]);
   const [expandedNews, setExpandedNews] = useState<Set<number>>(new Set());
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSearchingReal, setIsSearchingReal] = useState(false);
@@ -64,7 +66,7 @@ const Noticias = () => {
     }
   }, []);
 
-  const checkForDuplicates = (newNews: any[], existingNews: any[]): any[] => {
+  const checkForDuplicates = (newNews: NewsItem[], existingNews: NewsItem[]): NewsItem[] => {
     return newNews.filter((newsItem) => {
       // Verificar se já existe notícia com título muito similar
       const isDuplicate = existingNews.some((existing) => {
@@ -371,7 +373,7 @@ const Noticias = () => {
   const noticiasFiltradas =
     filtroAtivo === "Todas" ? noticias : noticias.filter((noticia) => noticia.categoria === filtroAtivo);
 
-  const handleSalvarNoticia = (noticia: any) => {
+  const handleSalvarNoticia = (noticia: NewsItem) => {
     // Check if user is logged in
     if (!user) {
       toast({

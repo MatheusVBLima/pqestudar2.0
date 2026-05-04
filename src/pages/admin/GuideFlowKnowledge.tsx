@@ -15,6 +15,7 @@ import { ImageGalleryTab } from '@/components/admin/guide-flow/ImageGalleryTab';
 import { useGuideFlowKnowledge, type KnowledgeEntry, type ExtractionStatus } from '@/hooks/useGuideFlowKnowledge';
 import { toast } from '@/hooks/use-toast';
 import { Plus, Pencil, Trash2, BookOpen, Loader2, Eye, EyeOff, RefreshCw, Package, PenTool, CheckCircle2, AlertCircle, FileQuestion, Clock, Image as ImageIcon } from 'lucide-react';
+import { getErrorMessage } from '@/lib/error-message';
 
 const CATEGORIES = [
   { value: 'editorial', label: '✍️ Editorial' },
@@ -91,8 +92,8 @@ export default function GuideFlowKnowledge() {
         toast({ title: 'Entrada criada' });
       }
       setModalOpen(false);
-    } catch (err: any) {
-      toast({ title: 'Erro', description: err.message, variant: 'destructive' });
+    } catch (err: unknown) {
+      toast({ title: 'Erro', description: getErrorMessage(err), variant: 'destructive' });
     } finally {
       setIsSaving(false);
     }
@@ -102,8 +103,8 @@ export default function GuideFlowKnowledge() {
     try {
       await deleteEntry(id);
       toast({ title: 'Entrada removida' });
-    } catch (err: any) {
-      toast({ title: 'Erro', description: err.message, variant: 'destructive' });
+    } catch (err: unknown) {
+      toast({ title: 'Erro', description: getErrorMessage(err), variant: 'destructive' });
     }
   };
 
@@ -111,8 +112,8 @@ export default function GuideFlowKnowledge() {
     try {
       await updateEntry(entry.id, { is_active: !entry.is_active });
       toast({ title: entry.is_active ? 'Entrada desativada' : 'Entrada ativada' });
-    } catch (err: any) {
-      toast({ title: 'Erro', description: err.message, variant: 'destructive' });
+    } catch (err: unknown) {
+      toast({ title: 'Erro', description: getErrorMessage(err), variant: 'destructive' });
     }
   };
 
