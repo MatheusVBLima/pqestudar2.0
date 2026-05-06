@@ -10,15 +10,13 @@
  * 5. Return safe HTML for dangerouslySetInnerHTML
  */
 
-import MarkdownIt from "markdown-it";
+import { marked } from "marked";
 import sanitizeHtmlLib from "sanitize-html";
 
-// Configure markdown-it with GFM tables enabled (built-in)
-const md = new MarkdownIt({
-  html: true,         // Allow inline/block HTML, sanitize afterwards
-  linkify: true,      // Auto-convert URLs to links
-  breaks: true,       // Convert \n to <br>
-  typographer: false, // Disable smart quotes/dashes
+// Configure marked with GFM tables enabled.
+marked.setOptions({
+  gfm: true,
+  breaks: true,
 });
 
 // sanitize-html configuration - strict whitelist with GFM tables
@@ -184,7 +182,7 @@ function isLegacyHtmlOnly(content: string): boolean {
  */
 function markdownToHtml(markdown: string): string {
   if (!markdown) return "";
-  return md.render(markdown);
+  return marked.parse(markdown, { async: false }) as string;
 }
 
 /**
@@ -237,7 +235,7 @@ export function renderRichContentConcursos(content: string | null | undefined): 
 
 /**
  * Render content that is known to be Markdown (e.g. guides content_markdown).
- * Always runs through markdown-it regardless of HTML detection heuristics.
+ * Always runs through marked regardless of HTML detection heuristics.
  * This prevents the legacy-HTML detector from skipping Markdown parsing.
  */
 export function renderMarkdownContent(content: string | null | undefined): string {
