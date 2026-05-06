@@ -5,7 +5,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
-import { CookieBanner } from "@/components/ui/cookie-banner";
 import { AuthProvider } from "@/hooks/useAuth";
 import { useGoogleAnalytics } from "@/hooks/useGoogleAnalytics";
 import { useMetaPixel } from "@/hooks/useMetaPixel";
@@ -13,24 +12,27 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { GlobalSeo } from "@/components/seo/GlobalSeo";
 import { RouteSuspense } from "@/components/layout/route-fallbacks";
 import Index from "./pages/Index";
-import Concursos from "./pages/Concursos";
-import ConcursoDetalhe from "./pages/ConcursoDetalhe";
-import CuradoriaPublic from "./pages/CuradoriaPublic";
-import Ferramentas from "./pages/Ferramentas";
-import Guias from "./pages/Guias";
-import GuiaDetalhe from "./pages/GuiaDetalhe";
-import Produtos from "./pages/Produtos";
-import ToolDetalhe from "./pages/ToolDetalhe";
-import Votacoes from "./pages/Votacoes";
 
 import { usePageViewTracker } from "@/hooks/usePageViewTracker";
 import { ScrollToTop } from "@/components/ScrollToTop";
 
 // Lazy-loaded routes keeps initial bundle smaller for Home performance
+const CookieBanner = React.lazy(() =>
+  import("@/components/ui/cookie-banner").then((m) => ({ default: m.CookieBanner })),
+);
 const ExploreCourses = React.lazy(() => import("./pages/ExploreCourses"));
 const CourseDetail = React.lazy(() => import("./pages/CourseDetail"));
 const Noticias = React.lazy(() => import("./pages/Noticias"));
 const NoticiaDetalhes = React.lazy(() => import("./pages/NoticiaDetalhes"));
+const Concursos = React.lazy(() => import("./pages/Concursos"));
+const ConcursoDetalhe = React.lazy(() => import("./pages/ConcursoDetalhe"));
+const CuradoriaPublic = React.lazy(() => import("./pages/CuradoriaPublic"));
+const Ferramentas = React.lazy(() => import("./pages/Ferramentas"));
+const Guias = React.lazy(() => import("./pages/Guias"));
+const GuiaDetalhe = React.lazy(() => import("./pages/GuiaDetalhe"));
+const Produtos = React.lazy(() => import("./pages/Produtos"));
+const ToolDetalhe = React.lazy(() => import("./pages/ToolDetalhe"));
+const Votacoes = React.lazy(() => import("./pages/Votacoes"));
 const MeuPerfil = React.lazy(() => import("./pages/MeuPerfil"));
 const MeusMateriais = React.lazy(() => import("./pages/MeusMateriais"));
 const RankingComunidade = React.lazy(() => import("./pages/RankingComunidade"));
@@ -352,7 +354,9 @@ const AppContent = () => {
 
   return (
     <>
-      <CookieBanner />
+      <React.Suspense fallback={null}>
+        <CookieBanner />
+      </React.Suspense>
       <BrowserRouter>
         <ScrollToTop />
         <AppWithPixel />

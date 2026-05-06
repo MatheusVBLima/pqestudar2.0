@@ -11,6 +11,12 @@ export function AppLayout() {
   const queryClient = useQueryClient();
 
   useEffect(() => {
+    const connection = typeof navigator !== "undefined"
+      ? (navigator as Navigator & { connection?: { saveData?: boolean } }).connection
+      : undefined;
+
+    if (connection?.saveData) return;
+
     const warmup = () => {
       // Warm up page settings cache to avoid first-visit hero skeleton/flicker.
       for (const route of MANAGED_ROUTES) {
@@ -26,13 +32,15 @@ export function AppLayout() {
     let timeoutId: number | null = null;
     let idleId: number | null = null;
 
-    if (typeof window !== "undefined" && "requestIdleCallback" in window) {
-      idleId = (window as Window & {
-        requestIdleCallback: (callback: IdleRequestCallback) => number;
-      }).requestIdleCallback(() => warmup());
-    } else {
-      timeoutId = window.setTimeout(warmup, 500);
-    }
+    timeoutId = window.setTimeout(() => {
+      if (typeof window !== "undefined" && "requestIdleCallback" in window) {
+        idleId = (window as Window & {
+          requestIdleCallback: (callback: IdleRequestCallback, options?: IdleRequestOptions) => number;
+        }).requestIdleCallback(() => warmup(), { timeout: 5000 });
+      } else {
+        warmup();
+      }
+    }, 8000);
 
     return () => {
       if (idleId !== null && typeof window !== "undefined" && "cancelIdleCallback" in window) {

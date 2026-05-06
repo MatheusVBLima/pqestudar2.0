@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { loadAdSenseAfterIdle } from '@/lib/adsense';
 
 export interface CookiePreferences {
   necessary: boolean;
@@ -44,19 +45,24 @@ export const useCookieConsent = () => {
           
           if (new Date() < expiryDate) {
             setConsentData(parsed);
+            applyCookiePreferences(parsed.preferences);
           } else {
             // Consent expired, show banner again
             setShowBanner(true);
+            applyCookiePreferences(defaultPreferences);
           }
         } else {
           setConsentData(parsed);
+          applyCookiePreferences(parsed.preferences);
         }
       } catch (error) {
         console.error('Error parsing cookie consent data:', error);
         setShowBanner(true);
+        applyCookiePreferences(defaultPreferences);
       }
     } else {
       setShowBanner(true);
+      applyCookiePreferences(defaultPreferences);
     }
   }, []);
 
@@ -120,13 +126,17 @@ export const useCookieConsent = () => {
       console.log('Analytics cookies disabled');
     }
 
+    loadAdSenseAfterIdle({
+      personalizedAds: preferences.marketing,
+    });
+
     // Marketing cookies
     if (preferences.marketing) {
       // Enable marketing cookies (Facebook Pixel, etc.)
       console.log('Marketing cookies enabled');
     } else {
-      // Disable marketing cookies
-      console.log('Marketing cookies disabled');
+      // Disable marketing personalization while keeping delayed non-personalized ads.
+      console.log('Marketing cookies disabled; requesting non-personalized ads');
     }
 
     // Functional cookies

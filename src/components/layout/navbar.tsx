@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   BarChart3,
@@ -27,7 +27,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useNavConfig, type NavItem } from "@/hooks/useNavConfig";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { useSubscription } from "@/hooks/useSubscription";
-import { NotificationDropdown } from "@/components/ui/notification-dropdown";
 import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/hooks/useTheme";
 import {
@@ -38,6 +37,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+
+const NotificationDropdown = lazy(() =>
+  import("@/components/ui/notification-dropdown").then((m) => ({
+    default: m.NotificationDropdown,
+  })),
+);
 
 const ICON_MAP: Record<string, LucideIcon> = {
   home: Home,
@@ -224,7 +229,11 @@ export function Navbar() {
           </div>
 
           <div className="hidden md:flex items-center gap-2">
-            {user && <NotificationDropdown />}
+            {user && (
+              <Suspense fallback={null}>
+                <NotificationDropdown />
+              </Suspense>
+            )}
 
             <Button
               variant="ghost"
@@ -327,7 +336,11 @@ export function Navbar() {
             >
               {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </Button>
-            {user && <NotificationDropdown />}
+            {user && (
+              <Suspense fallback={null}>
+                <NotificationDropdown />
+              </Suspense>
+            )}
 
             <DropdownMenu modal={false}>
               <DropdownMenuTrigger asChild>
@@ -438,4 +451,3 @@ export function Navbar() {
     </div>
   );
 }
-
