@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git -C \"c:\\\\Web Workspace\\\\pqestudar-prototipo\" diff src/components/sections/hero-section.tsx)",
+      "Bash(git -C \"c:\\\\Web Workspace\\\\pqestudar-prototipo\" diff HEAD -- src/components/sections/hero-section.tsx)",
+      "Bash(git -C \"c:\\\\Web Workspace\\\\pqestudar-prototipo\" diff HEAD -- src/pages/Index.tsx)",
+      "Bash(git -C \"c:\\\\Web Workspace\\\\pqestudar-prototipo\" show HEAD:src/components/sections/hero-section.tsx)",
+      "Bash(git -C \"c:\\\\Web Workspace\\\\pqestudar-prototipo\" show HEAD:src/pages/Index.tsx)"
+    ]
+  }
+}

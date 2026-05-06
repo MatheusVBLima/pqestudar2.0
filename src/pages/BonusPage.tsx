@@ -5,7 +5,7 @@ import { BonusPage as BonusPageType } from "@/hooks/useBonusPages";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { Helmet } from "react-helmet-async";
 import { BonusToolCard } from "@/components/ui/bonus-tool-card";
-import { RouteFallbackPublic } from "@/components/layout/route-fallbacks";
+import { Skeleton } from "@/components/ui/skeleton";
 const BonusPage = () => {
   const {
     slug: paramSlug
@@ -51,7 +51,23 @@ const BonusPage = () => {
     fetchPage();
   }, [paramSlug, location.pathname, isAdmin]);
   if (loading) {
-    return <RouteFallbackPublic />;
+    return (
+      <div className="min-h-screen flex flex-col">
+        <main className="flex-1 container mx-auto px-4 py-12">
+          <div className="max-w-5xl mx-auto space-y-12">
+            <div className="text-center space-y-4">
+              <Skeleton className="h-12 w-2/3 mx-auto" />
+              <Skeleton className="h-6 w-3/4 mx-auto" />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {Array.from({ length: 6 }).map((_, index) => (
+                <Skeleton key={index} className="h-72 rounded-xl" />
+              ))}
+            </div>
+          </div>
+        </main>
+      </div>
+    );
   }
   if (notFound || !page) {
     return <Navigate to="/404" replace />;

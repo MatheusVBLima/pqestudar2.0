@@ -1,6 +1,7 @@
-import { useEffect, useState, useCallback } from "react";
+import { useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { Plus, Pencil, Trash2, ExternalLink, Copy } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -35,6 +36,8 @@ interface AffiliatePage {
   updated_at: string;
 }
 
+const ADMIN_AFFILIATES_KEY = ["admin_affiliate_pages"] as const;
+
 const emptyForm = {
   id: "" as string | null,
   affiliate_name: "",
@@ -45,8 +48,8 @@ const emptyForm = {
   notes: "",
 };
 
-const slugify = (s: string) =>
-  s
+const slugify = (value: string) =>
+  value
     .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
@@ -56,11 +59,11 @@ const slugify = (s: string) =>
     .replace(/-+/g, "-")
     .slice(0, 80);
 
-const validSlug = (s: string) => /^[a-z0-9]+(-[a-z0-9]+)*$/.test(s) && s.length >= 2 && s.length <= 80;
-const validUrl = (s: string) => {
+const validSlug = (value: string) => /^[a-z0-9]+(-[a-z0-9]+)*$/.test(value) && value.length >= 2 && value.length <= 80;
+const validUrl = (value: string) => {
   try {
-    const u = new URL(s);
-    return u.protocol === "https:" || u.protocol === "http:";
+    const parsed = new URL(value);
+    return parsed.protocol === "https:" || parsed.protocol === "http:";
   } catch {
     return false;
   }
@@ -68,31 +71,83 @@ const validUrl = (s: string) => {
 
 export default function AdminAffiliates() {
   const { toast } = useToast();
-  const [items, setItems] = useState<AffiliatePage[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ ...emptyForm });
-  const [saving, setSaving] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [slugTouched, setSlugTouched] = useState(false);
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    const { data, error } = await supabase
-      .from("affiliate_pages")
-      .select("*")
-      .order("created_at", { ascending: false });
-    if (error) {
-      toast({ title: "Erro ao carregar", description: error.message, variant: "destructive" });
-    } else {
-      setItems((data || []) as AffiliatePage[]);
-    }
-    setLoading(false);
-  }, [toast]);
+  const affiliatesQuery = useQuery({
+    queryKey: ADMIN_AFFILIATES_KEY,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("affiliate_pages")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return (data ?? []) as AffiliatePage[];
+    },
+    staleTime: 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+  });
 
-  useEffect(() => {
-    load();
-  }, [load]);
+  const saveMutation = useMutation({
+    mutationFn: async (payload: typeof emptyForm) => {
+      const dataPayload = {
+        affiliate_name: payload.affiliate_name.trim(),
+        slug: payload.slug.trim(),
+        basic_url: payload.basic_url.trim(),
+        premium_url: payload.premium_url.trim(),
+        is_active: payload.is_active,
+        notes: payload.notes.trim() || null,
+      };
+      const { error } = payload.id
+        ? await supabase.from("affiliate_pages").update(dataPayload).eq("id", payload.id)
+        : await supabase.from("affiliate_pages").insert(dataPayload);
+      if (error) throw error;
+    },
+    onSuccess: async (_, payload) => {
+      toast({ title: payload.id ? "Afiliado atualizado" : "Afiliado criado" });
+      setOpen(false);
+      await queryClient.invalidateQueries({ queryKey: ADMIN_AFFILIATES_KEY });
+    },
+    onError: (error: Error) => {
+      toast({ title: "Erro ao salvar", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const toggleMutation = useMutation({
+    mutationFn: async ({ id, is_active }: { id: string; is_active: boolean }) => {
+      const { error } = await supabase.from("affiliate_pages").update({ is_active }).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ADMIN_AFFILIATES_KEY });
+    },
+    onError: (error: Error) => {
+      toast({ title: "Erro", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("affiliate_pages").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: async () => {
+      toast({ title: "Afiliado excluído" });
+      setDeleteId(null);
+      await queryClient.invalidateQueries({ queryKey: ADMIN_AFFILIATES_KEY });
+    },
+    onError: (error: Error) => {
+      toast({ title: "Erro ao excluir", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const items = affiliatesQuery.data ?? [];
+  const loading = affiliatesQuery.isLoading;
 
   const openNew = () => {
     setForm({ ...emptyForm });
@@ -100,25 +155,25 @@ export default function AdminAffiliates() {
     setOpen(true);
   };
 
-  const openEdit = (it: AffiliatePage) => {
+  const openEdit = (item: AffiliatePage) => {
     setForm({
-      id: it.id,
-      affiliate_name: it.affiliate_name,
-      slug: it.slug,
-      basic_url: it.basic_url,
-      premium_url: it.premium_url,
-      is_active: it.is_active,
-      notes: it.notes || "",
+      id: item.id,
+      affiliate_name: item.affiliate_name,
+      slug: item.slug,
+      basic_url: item.basic_url,
+      premium_url: item.premium_url,
+      is_active: item.is_active,
+      notes: item.notes || "",
     });
     setSlugTouched(true);
     setOpen(true);
   };
 
-  const onNameChange = (v: string) => {
-    setForm((f) => ({
-      ...f,
-      affiliate_name: v,
-      slug: slugTouched ? f.slug : slugify(v),
+  const onNameChange = (value: string) => {
+    setForm((prev) => ({
+      ...prev,
+      affiliate_name: value,
+      slug: slugTouched ? prev.slug : slugify(value),
     }));
   };
 
@@ -128,57 +183,27 @@ export default function AdminAffiliates() {
       return;
     }
     if (!validSlug(form.slug)) {
-      toast({ title: "Slug inválido", description: "Use apenas letras minúsculas, números e hífens.", variant: "destructive" });
+      toast({
+        title: "Slug inválido",
+        description: "Use apenas letras minúsculas, números e hífens.",
+        variant: "destructive",
+      });
       return;
     }
     if (!validUrl(form.basic_url) || !validUrl(form.premium_url)) {
-      toast({ title: "Links inválidos", description: "Os links de checkout devem ser URLs válidas (https).", variant: "destructive" });
+      toast({
+        title: "Links inválidos",
+        description: "Os links de checkout devem ser URLs válidas (https).",
+        variant: "destructive",
+      });
       return;
     }
-    setSaving(true);
-    const payload = {
-      affiliate_name: form.affiliate_name.trim(),
-      slug: form.slug.trim(),
-      basic_url: form.basic_url.trim(),
-      premium_url: form.premium_url.trim(),
-      is_active: form.is_active,
-      notes: form.notes.trim() || null,
-    };
-    const { error } = form.id
-      ? await supabase.from("affiliate_pages").update(payload).eq("id", form.id)
-      : await supabase.from("affiliate_pages").insert(payload);
-    setSaving(false);
-    if (error) {
-      toast({ title: "Erro ao salvar", description: error.message, variant: "destructive" });
-      return;
-    }
-    toast({ title: form.id ? "Afiliado atualizado" : "Afiliado criado" });
-    setOpen(false);
-    load();
+
+    await saveMutation.mutateAsync(form);
   };
 
-  const toggleActive = async (it: AffiliatePage) => {
-    const { error } = await supabase
-      .from("affiliate_pages")
-      .update({ is_active: !it.is_active })
-      .eq("id", it.id);
-    if (error) {
-      toast({ title: "Erro", description: error.message, variant: "destructive" });
-      return;
-    }
-    load();
-  };
-
-  const onDelete = async () => {
-    if (!deleteId) return;
-    const { error } = await supabase.from("affiliate_pages").delete().eq("id", deleteId);
-    setDeleteId(null);
-    if (error) {
-      toast({ title: "Erro ao excluir", description: error.message, variant: "destructive" });
-      return;
-    }
-    toast({ title: "Afiliado excluído" });
-    load();
+  const toggleActive = async (item: AffiliatePage) => {
+    await toggleMutation.mutateAsync({ id: item.id, is_active: !item.is_active });
   };
 
   const publicUrl = (slug: string) => `${window.location.origin}/mapa-dos-beneficios/${slug}`;
@@ -225,7 +250,7 @@ export default function AdminAffiliates() {
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center text-muted-foreground py-8">Carregando…</TableCell>
+                  <TableCell colSpan={6} className="text-center text-muted-foreground py-8">Carregando...</TableCell>
                 </TableRow>
               ) : items.length === 0 ? (
                 <TableRow>
@@ -234,47 +259,47 @@ export default function AdminAffiliates() {
                   </TableCell>
                 </TableRow>
               ) : (
-                items.map((it) => (
-                  <TableRow key={it.id}>
-                    <TableCell className="font-medium">{it.affiliate_name}</TableCell>
+                items.map((item) => (
+                  <TableRow key={item.id}>
+                    <TableCell className="font-medium">{item.affiliate_name}</TableCell>
                     <TableCell>
-                      <code className="text-xs">{it.slug}</code>
+                      <code className="text-xs">{item.slug}</code>
                     </TableCell>
                     <TableCell>
-                      <a href={it.basic_url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline truncate inline-block max-w-[180px]">
-                        {it.basic_url}
+                      <a href={item.basic_url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline truncate inline-block max-w-[180px]">
+                        {item.basic_url}
                       </a>
                     </TableCell>
                     <TableCell>
-                      <a href={it.premium_url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline truncate inline-block max-w-[180px]">
-                        {it.premium_url}
+                      <a href={item.premium_url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline truncate inline-block max-w-[180px]">
+                        {item.premium_url}
                       </a>
                     </TableCell>
                     <TableCell>
                       <button
-                        onClick={() => toggleActive(it)}
+                        onClick={() => toggleActive(item)}
                         className="inline-flex items-center"
                         title="Clique para alterar status"
                       >
-                        <Badge variant={it.is_active ? "default" : "secondary"}>
-                          {it.is_active ? "Ativo" : "Inativo"}
+                        <Badge variant={item.is_active ? "default" : "secondary"}>
+                          {item.is_active ? "Ativo" : "Inativo"}
                         </Badge>
                       </button>
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="inline-flex items-center gap-1">
-                        <Button size="icon" variant="ghost" onClick={() => copyUrl(it.slug)} title="Copiar URL pública">
+                        <Button size="icon" variant="ghost" onClick={() => copyUrl(item.slug)} title="Copiar URL pública">
                           <Copy className="h-4 w-4" />
                         </Button>
                         <Button size="icon" variant="ghost" asChild title="Abrir página pública">
-                          <a href={publicUrl(it.slug)} target="_blank" rel="noopener noreferrer">
+                          <a href={publicUrl(item.slug)} target="_blank" rel="noopener noreferrer">
                             <ExternalLink className="h-4 w-4" />
                           </a>
                         </Button>
-                        <Button size="icon" variant="ghost" onClick={() => openEdit(it)} title="Editar">
+                        <Button size="icon" variant="ghost" onClick={() => openEdit(item)} title="Editar">
                           <Pencil className="h-4 w-4" />
                         </Button>
-                        <Button size="icon" variant="ghost" onClick={() => setDeleteId(it.id)} title="Excluir">
+                        <Button size="icon" variant="ghost" onClick={() => setDeleteId(item.id)} title="Excluir">
                           <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>
                       </div>
@@ -287,7 +312,6 @@ export default function AdminAffiliates() {
         </CardContent>
       </Card>
 
-      {/* Form Modal */}
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
@@ -315,7 +339,7 @@ export default function AdminAffiliates() {
                 value={form.slug}
                 onChange={(e) => {
                   setSlugTouched(true);
-                  setForm((f) => ({ ...f, slug: slugify(e.target.value) }));
+                  setForm((prev) => ({ ...prev, slug: slugify(e.target.value) }));
                 }}
                 placeholder="joao-silva"
               />
@@ -329,7 +353,7 @@ export default function AdminAffiliates() {
               <Input
                 id="basic_url"
                 value={form.basic_url}
-                onChange={(e) => setForm((f) => ({ ...f, basic_url: e.target.value }))}
+                onChange={(e) => setForm((prev) => ({ ...prev, basic_url: e.target.value }))}
                 placeholder="https://pay.cakto.com.br/..."
               />
             </div>
@@ -339,7 +363,7 @@ export default function AdminAffiliates() {
               <Input
                 id="premium_url"
                 value={form.premium_url}
-                onChange={(e) => setForm((f) => ({ ...f, premium_url: e.target.value }))}
+                onChange={(e) => setForm((prev) => ({ ...prev, premium_url: e.target.value }))}
                 placeholder="https://pay.cakto.com.br/..."
               />
               <p className="text-xs text-muted-foreground mt-1">
@@ -352,7 +376,7 @@ export default function AdminAffiliates() {
               <Textarea
                 id="notes"
                 value={form.notes}
-                onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
+                onChange={(e) => setForm((prev) => ({ ...prev, notes: e.target.value }))}
                 rows={2}
               />
             </div>
@@ -361,7 +385,7 @@ export default function AdminAffiliates() {
               <Switch
                 id="active"
                 checked={form.is_active}
-                onCheckedChange={(v) => setForm((f) => ({ ...f, is_active: v }))}
+                onCheckedChange={(value) => setForm((prev) => ({ ...prev, is_active: value }))}
               />
               <Label htmlFor="active" className="cursor-pointer">
                 Página ativa (acessível publicamente)
@@ -370,18 +394,17 @@ export default function AdminAffiliates() {
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setOpen(false)} disabled={saving}>
+            <Button variant="outline" onClick={() => setOpen(false)} disabled={saveMutation.isPending}>
               Cancelar
             </Button>
-            <Button onClick={onSubmit} disabled={saving}>
-              {saving ? "Salvando…" : "Salvar"}
+            <Button onClick={onSubmit} disabled={saveMutation.isPending}>
+              {saveMutation.isPending ? "Salvando..." : "Salvar"}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* Delete confirmation */}
-      <AlertDialog open={!!deleteId} onOpenChange={(o) => !o && setDeleteId(null)}>
+      <AlertDialog open={!!deleteId} onOpenChange={(state) => !state && setDeleteId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Excluir afiliado?</AlertDialogTitle>
@@ -391,7 +414,10 @@ export default function AdminAffiliates() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={onDelete} className="bg-destructive hover:bg-destructive/90">
+            <AlertDialogAction
+              onClick={() => deleteId && deleteMutation.mutate(deleteId)}
+              className="bg-destructive hover:bg-destructive/90"
+            >
               Excluir
             </AlertDialogAction>
           </AlertDialogFooter>

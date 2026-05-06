@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Navigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import {
   ArrowLeft,
@@ -165,13 +165,6 @@ export default function AdminCuradoriasForm() {
     }
   }, [existingCuration]);
 
-  // Auto-generate slug from title
-  useEffect(() => {
-    if (!slugManuallyEdited && title) {
-      setSlug(slugify(title));
-    }
-  }, [title, slugManuallyEdited]);
-
   // Validate slug uniqueness
   const validateSlug = async (value: string) => {
     if (!value) {
@@ -222,6 +215,13 @@ export default function AdminCuradoriasForm() {
     setToolSearch("");
   };
 
+  const handleTitleChange = (value: string) => {
+    setTitle(value);
+    if (!slugManuallyEdited) {
+      setSlug(slugify(value));
+    }
+  };
+
   // Remove tool
   const removeTool = (toolId: string) => {
     setSelectedTools((prev) => prev.filter((t) => t.id !== toolId));
@@ -257,8 +257,7 @@ export default function AdminCuradoriasForm() {
 
   // Redirect if not admin
   if (!loadingRoles && !isAdmin) {
-    navigate("/login");
-    return null;
+    return <Navigate to="/login" replace />;
   }
 
   if (loadingRoles || (isEditing && loadingCuration)) {
@@ -307,7 +306,7 @@ export default function AdminCuradoriasForm() {
               <Input
                 id="title"
                 value={title}
-                onChange={(e) => setTitle(e.target.value)}
+                onChange={(e) => handleTitleChange(e.target.value)}
                 placeholder="Ex: Ferramentas de IA para Estudos"
                 maxLength={100}
               />

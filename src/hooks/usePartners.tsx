@@ -1,8 +1,8 @@
-import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from './useAuth';
-import { toast } from '@/hooks/use-toast';
-import { getErrorMessage } from '@/lib/error-message';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "./useAuth";
+import { toast } from "@/hooks/use-toast";
+import { getErrorMessage } from "@/lib/error-message";
 
 export interface Partner {
   id: string;
@@ -21,178 +21,222 @@ interface AdminPartnerRow extends Partner {
   display_order?: number;
 }
 
+const toAdminMapped = (data: AdminPartnerRow[]) =>
+  data.map((partner) => ({
+    id: partner.id,
+    title: partner.title,
+    logo_url: partner.logo_url,
+    url: partner.url,
+    sort_order: partner.sort_order,
+    display_order: partner.sort_order,
+    is_active: partner.is_active,
+    created_by: partner.created_by,
+    updated_by: partner.updated_by,
+    created_at: partner.created_at,
+    updated_at: partner.updated_at,
+  })) as Partner[];
+
+const toPublicMapped = (
+  data: Array<{
+    id: string;
+    title: string;
+    logo_url: string;
+    partner_url: string;
+    display_order: number;
+    is_active: boolean;
+    updated_at: string;
+  }>
+) =>
+  data.map((partner) => ({
+    id: partner.id,
+    title: partner.title,
+    logo_url: partner.logo_url,
+    url: partner.partner_url,
+    sort_order: partner.display_order,
+    is_active: partner.is_active,
+    updated_at: partner.updated_at,
+    created_at: partner.updated_at,
+    created_by: undefined,
+    updated_by: undefined,
+  })) as Partner[];
+
+async function ensureAuthForAdmin() {
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  if (!session) throw new Error("Admin access requires authentication");
+}
+
 export const usePartners = (includeInactive = false) => {
   const { user } = useAuth();
-  const [partners, setPartners] = useState<Partner[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+  const queryKey = ["partners", includeInactive ? "admin" : "public"] as const;
 
-  const fetchPartners = useCallback(async () => {
-    try {
-      setLoading(true);
-      
-      // Modo admin: busca via edge function com service role
-      // Modo público: busca da VIEW segura sem campos sensíveis (created_by, updated_by)
+  const partnersQuery = useQuery({
+    queryKey,
+    enabled: includeInactive ? !!user : true,
+    staleTime: 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    queryFn: async () => {
       if (includeInactive) {
-        // Admin mode: requer auth e busca todos os parceiros (incluindo inativos)
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) throw new Error('Admin access requires authentication');
-        
-        const { data, error } = await supabase.functions.invoke('admin-partners', {
-          body: { action: 'list' }
+        await ensureAuthForAdmin();
+        const { data, error } = await supabase.functions.invoke("admin-partners", {
+          body: { action: "list" },
         });
-        
         if (error) throw error;
-        
-        // Mapear campos da resposta para o formato esperado
-        const mappedData = ((data ?? []) as AdminPartnerRow[]).map((p) => ({
-          id: p.id,
-          title: p.title,
-          logo_url: p.logo_url,
-          url: p.url,
-          sort_order: p.sort_order,
-          display_order: p.sort_order,
-          is_active: p.is_active,
-          created_by: p.created_by,
-          updated_by: p.updated_by,
-          created_at: p.created_at,
-          updated_at: p.updated_at
-        })) || [];
-        
-        setPartners(mappedData);
-      } else {
-        // Public mode: usa VIEW 'active_partners' (alias de partners_public)
-        const { data, error } = await supabase
-          .from('active_partners')
-          .select('id, title, logo_url, partner_url, display_order, is_active, updated_at');
-
-        if (error) throw error;
-        
-        // Mapear campos da VIEW para o tipo Partner
-        setPartners((data || []).map(p => ({
-          id: p.id,
-          title: p.title,
-          logo_url: p.logo_url,
-          url: p.partner_url,
-          sort_order: p.display_order,
-          is_active: p.is_active,
-          updated_at: p.updated_at,
-          created_at: p.updated_at, // Usar updated_at como fallback
-          created_by: undefined,
-          updated_by: undefined
-        })));
+        return toAdminMapped((data ?? []) as AdminPartnerRow[]);
       }
-    } catch (error: unknown) {
-      // Log apenas em dev; evitar toast vermelho global na produção
-      if (process.env.NODE_ENV === 'development') {
-        console.error('Erro ao buscar parceiros:', error);
-      }
-      
-      // Não exibir toast de erro para modo público (evitar poluir UX)
-      if (includeInactive) {
-        toast({
-          title: "Erro",
-          description: "Não foi possível carregar os parceiros.",
-          variant: "destructive"
-        });
-      }
-    } finally {
-      setLoading(false);
-    }
-  }, [includeInactive]);
 
-  const addPartner = async (partner: Omit<Partner, 'id' | 'created_at' | 'updated_at' | 'created_by' | 'updated_by'>) => {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error('Usuário não autenticado');
-
-      const { data, error } = await supabase.functions.invoke('admin-partners', {
-        body: {
-          action: 'create',
-          data: partner
-        }
-      });
-
+      const { data, error } = await supabase
+        .from("active_partners")
+        .select("id, title, logo_url, partner_url, display_order, is_active, updated_at");
       if (error) throw error;
+      return toPublicMapped((data ?? []) as Array<{
+        id: string;
+        title: string;
+        logo_url: string;
+        partner_url: string;
+        display_order: number;
+        is_active: boolean;
+        updated_at: string;
+      }>);
+    },
+  });
 
-      await fetchPartners();
-      toast({
-        title: "Sucesso",
-        description: "Parceiro adicionado com sucesso!"
+  const invalidatePartners = async () => {
+    await queryClient.invalidateQueries({ queryKey: ["partners"] });
+  };
+
+  const createMutation = useMutation({
+    mutationFn: async (partner: Omit<Partner, "id" | "created_at" | "updated_at" | "created_by" | "updated_by">) => {
+      await ensureAuthForAdmin();
+      const { data, error } = await supabase.functions.invoke("admin-partners", {
+        body: { action: "create", data: partner },
       });
-      
-      return { data, error: null };
-    } catch (err: unknown) {
-      const message = getErrorMessage(err, "Não foi possível adicionar o parceiro.");
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: async () => {
+      await invalidatePartners();
+      toast({ title: "Sucesso", description: "Parceiro adicionado com sucesso!" });
+    },
+    onError: (error: unknown) => {
       toast({
         title: "Erro",
-        description: message,
-        variant: "destructive"
+        description: getErrorMessage(error, "Não foi possível adicionar o parceiro."),
+        variant: "destructive",
       });
-      return { data: null, error: message };
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: async ({ id, updates }: { id: string; updates: Partial<Partner> }) => {
+      await ensureAuthForAdmin();
+      const { data, error } = await supabase.functions.invoke("admin-partners", {
+        body: { action: "update", data: { id, ...updates } },
+      });
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: async () => {
+      await invalidatePartners();
+      toast({ title: "Sucesso", description: "Parceiro atualizado com sucesso!" });
+    },
+    onError: (error: unknown) => {
+      toast({
+        title: "Erro",
+        description: getErrorMessage(error, "Não foi possível atualizar o parceiro."),
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      await ensureAuthForAdmin();
+      const { error } = await supabase.functions.invoke("admin-partners", {
+        body: { action: "delete", data: { id } },
+      });
+      if (error) throw error;
+    },
+    onSuccess: async () => {
+      await invalidatePartners();
+      toast({ title: "Sucesso", description: "Parceiro removido com sucesso!" });
+    },
+    onError: (error: unknown) => {
+      toast({
+        title: "Erro",
+        description: getErrorMessage(error, "Não foi possível remover o parceiro."),
+        variant: "destructive",
+      });
+    },
+  });
+
+  const reorderMutation = useMutation({
+    mutationFn: async (reorderedPartners: Partner[]) => {
+      await ensureAuthForAdmin();
+      const { error } = await supabase.functions.invoke("admin-partners", {
+        body: {
+          action: "reorder",
+          data: {
+            partners: reorderedPartners.map((partner, index) => ({
+              id: partner.id,
+              sort_order: index,
+            })),
+          },
+        },
+      });
+      if (error) throw error;
+    },
+    onMutate: async (reorderedPartners) => {
+      await queryClient.cancelQueries({ queryKey });
+      const previous = queryClient.getQueryData<Partner[]>(queryKey) ?? [];
+      queryClient.setQueryData(queryKey, reorderedPartners);
+      return { previous };
+    },
+    onError: (error: unknown, _vars, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(queryKey, context.previous);
+      }
+      toast({
+        title: "Erro ao salvar ordem",
+        description: getErrorMessage(error, "Não foi possível salvar a nova ordem."),
+        variant: "destructive",
+      });
+    },
+    onSuccess: async () => {
+      await invalidatePartners();
+      toast({ title: "Ordem atualizada", description: "A ordem dos parceiros foi salva com sucesso." });
+    },
+  });
+
+  const addPartner = async (
+    partner: Omit<Partner, "id" | "created_at" | "updated_at" | "created_by" | "updated_by">
+  ) => {
+    try {
+      const data = await createMutation.mutateAsync(partner);
+      return { data, error: null };
+    } catch (error: unknown) {
+      return { data: null, error: getErrorMessage(error, "Não foi possível adicionar o parceiro.") };
     }
   };
 
   const updatePartner = async (id: string, updates: Partial<Partner>) => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error('Usuário não autenticado');
-
-      const { data, error } = await supabase.functions.invoke('admin-partners', {
-        body: {
-          action: 'update',
-          data: { id, ...updates }
-        }
-      });
-
-      if (error) throw error;
-
-      await fetchPartners();
-      toast({
-        title: "Sucesso",
-        description: "Parceiro atualizado com sucesso!"
-      });
-      
+      const data = await updateMutation.mutateAsync({ id, updates });
       return { data, error: null };
-    } catch (err: unknown) {
-      const message = getErrorMessage(err, "Não foi possível atualizar o parceiro.");
-      toast({
-        title: "Erro",
-        description: message,
-        variant: "destructive"
-      });
-      return { data: null, error: message };
+    } catch (error: unknown) {
+      return { data: null, error: getErrorMessage(error, "Não foi possível atualizar o parceiro.") };
     }
   };
 
   const deletePartner = async (id: string) => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error('Usuário não autenticado');
-
-      const { error } = await supabase.functions.invoke('admin-partners', {
-        body: {
-          action: 'delete',
-          data: { id }
-        }
-      });
-
-      if (error) throw error;
-
-      await fetchPartners();
-      toast({
-        title: "Sucesso",
-        description: "Parceiro removido com sucesso!"
-      });
-      
+      await deleteMutation.mutateAsync(id);
       return { error: null };
-    } catch (err: unknown) {
-      const message = getErrorMessage(err, "Não foi possível remover o parceiro.");
-      toast({
-        title: "Erro",
-        description: message,
-        variant: "destructive"
-      });
-      return { error: message };
+    } catch (error: unknown) {
+      return { error: getErrorMessage(error, "Não foi possível remover o parceiro.") };
     }
   };
 
@@ -201,73 +245,22 @@ export const usePartners = (includeInactive = false) => {
   };
 
   const reorderPartners = async (reorderedPartners: Partner[]) => {
-    const startTime = Date.now();
-    console.log('[Partners Reorder] Starting reorder operation', {
-      count: reorderedPartners.length,
-      items: reorderedPartners.map((p, idx) => ({ id: p.id, title: p.title, newOrder: idx }))
-    });
-
-    // Atualizar UI otimisticamente
-    const previousPartners = [...partners];
-    setPartners(reorderedPartners);
-
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error('Usuário não autenticado');
-
-      const { error } = await supabase.functions.invoke('admin-partners', {
-        body: {
-          action: 'reorder',
-          data: { 
-            partners: reorderedPartners.map((p, index) => ({ id: p.id, sort_order: index }))
-          }
-        }
-      });
-
-      if (error) throw error;
-
-      const duration = Date.now() - startTime;
-      console.log('[Partners Reorder] Success', { duration: `${duration}ms` });
-
-      await fetchPartners();
-      toast({
-        title: "Ordem atualizada",
-        description: "A ordem dos parceiros foi salva com sucesso."
-      });
-
+      await reorderMutation.mutateAsync(reorderedPartners);
       return { error: null };
-    } catch (err: unknown) {
-      const message = getErrorMessage(err, "Não foi possível salvar a nova ordem.");
-      console.error('[Partners Reorder] Error', { 
-        error: message,
-        duration: `${Date.now() - startTime}ms` 
-      });
-
-      // Reverter para ordem anterior
-      setPartners(previousPartners);
-
-      toast({
-        title: "Erro ao salvar ordem",
-        description: "Não foi possível salvar a nova ordem. Tente novamente.",
-        variant: "destructive"
-      });
-
-      return { error: message };
+    } catch (error: unknown) {
+      return { error: getErrorMessage(error, "Não foi possível salvar a nova ordem.") };
     }
   };
 
-  useEffect(() => {
-    fetchPartners();
-  }, [fetchPartners]);
-
   return {
-    partners,
-    loading,
+    partners: partnersQuery.data ?? [],
+    loading: partnersQuery.isLoading,
     addPartner,
     updatePartner,
     deletePartner,
     toggleActive,
     reorderPartners,
-    refetch: fetchPartners
+    refetch: partnersQuery.refetch,
   };
 };

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Plus, Edit, Eye, EyeOff, Trash2, GripVertical } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { PartnerModal } from "@/components/admin/PartnerModal";
 import {
   DndContext,
@@ -339,9 +340,14 @@ export function PartnersSection() {
         )}
 
         {loading ? (
-          <div className="flex items-center justify-center gap-4 py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-            <span className="text-muted-foreground">Carregando parceiros...</span>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 py-2">
+            {Array.from({ length: 5 }).map((_, index) => (
+              <div key={index} className="rounded-xl border bg-card p-4 space-y-3">
+                <Skeleton className="mx-auto h-16 w-16 rounded-full" />
+                <Skeleton className="mx-auto h-4 w-24" />
+                <Skeleton className="mx-auto h-3 w-16" />
+              </div>
+            ))}
           </div>
         ) : displayPartners.length === 0 ? (
           <div className="text-center py-12 px-4">

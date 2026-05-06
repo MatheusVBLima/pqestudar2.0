@@ -214,9 +214,9 @@ export function usePendingItems(statusFilter?: string) {
     refetch,
   } = useQuery({
     queryKey: ["concursos-pending-items", statusFilter],
-    staleTime: 0,
-    refetchOnMount: true,
-    refetchOnWindowFocus: true,
+    staleTime: 90_000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
     queryFn: async () => {
       let query = supabase
         .from("concursos_pending_items")
@@ -335,9 +335,9 @@ export function useAnalyzedUrls() {
     refetch,
   } = useQuery({
     queryKey: ["concursos-analyzed-urls"],
-    staleTime: 0,
-    refetchOnMount: true,
-    refetchOnWindowFocus: true,
+    staleTime: 90_000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("concursos_analyzed_urls")

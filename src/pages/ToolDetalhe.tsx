@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { motion } from "framer-motion";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { GlobalSeo } from "@/components/seo/GlobalSeo";
 import { PageHero } from "@/components/layout/PageHero";
 import { renderHighlightedTitle } from "@/lib/highlight-title";
@@ -20,9 +21,35 @@ import { supabase } from "@/integrations/supabase/client";
 import { renderMarkdownContent } from "@/lib/concursos-content-renderer";
 import { SaveToolButton } from "@/components/ui/save-tool-button";
 import { useAnalyticsTracker } from "@/hooks/useAnalyticsTracker";
-import { Tool } from "@/hooks/useTools";
+import { Tool, ToolsResult } from "@/hooks/useTools";
 
 type ToolInternalLink = NonNullable<Tool["internal_links"]>[number];
+
+async function fetchToolBySlug(slug: string): Promise<Tool | null> {
+  const { data, error } = await supabase
+    .from("tools_public")
+    .select("*")
+    .eq("slug", slug)
+    .maybeSingle();
+
+  if (error) throw error;
+  return (data as Tool | null) ?? null;
+}
+
+async function fetchRelatedTools(tool: Tool): Promise<Tool[]> {
+  if (!Array.isArray(tool.tags) || tool.tags.length === 0) return [];
+
+  const { data, error } = await supabase
+    .from("tools_public")
+    .select("*")
+    .neq("id", tool.id)
+    .overlaps("tags", tool.tags)
+    .order("sort_order", { ascending: true })
+    .limit(4);
+
+  if (error) throw error;
+  return (data ?? []) as Tool[];
+}
 
 // ---------- CTA Block (mesmo padrão dos guias) ----------
 function CtaBlock({
@@ -144,67 +171,38 @@ function ToolHeroCta({ tool }: { tool: Tool }) {
 export default function ToolDetalhe() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
-  const [tool, setTool] = useState<Tool | null>(null);
-  const [related, setRelated] = useState<Tool[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [notFound, setNotFound] = useState(false);
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    let cancelled = false;
-
-    async function load() {
-      if (!slug) {
-        setTool(null);
-        setRelated([]);
-        setNotFound(true);
-        setLoading(false);
-        return;
-      }
-
-      setLoading(true);
-      setNotFound(false);
-      try {
-        const { data, error } = await supabase
-          .from("tools_public")
-          .select("*")
-          .eq("slug", slug)
-          .maybeSingle();
-
-        if (cancelled) return;
-
-        if (error || !data) {
-          setTool(null);
-          setRelated([]);
-          setNotFound(true);
-          return;
-        }
-
-        const loadedTool = data as Tool;
-        setTool(loadedTool);
-
-        // Related tools: shared tags
-        if (Array.isArray(loadedTool.tags) && loadedTool.tags.length > 0) {
-          const { data: rel } = await supabase
-            .from("tools_public")
-            .select("*")
-            .neq("id", loadedTool.id)
-            .overlaps("tags", loadedTool.tags)
-            .order("sort_order", { ascending: true })
-            .limit(4);
-          if (!cancelled) setRelated((rel || []) as Tool[]);
-        } else {
-          setRelated([]);
-        }
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
+  const placeholderTool = useMemo(() => {
+    if (!slug) return null;
+    const listQueries = queryClient.getQueriesData<ToolsResult>({ queryKey: ["tools_public"] });
+    for (const [, cached] of listQueries) {
+      const found = cached?.tools?.find((candidate) => candidate.slug === slug);
+      if (found) return found as Tool;
     }
+    return null;
+  }, [queryClient, slug]);
 
-    load();
-    return () => {
-      cancelled = true;
-    };
-  }, [slug]);
+  const toolQuery = useQuery({
+    queryKey: ["tool_detail", slug],
+    queryFn: async () => fetchToolBySlug(slug as string),
+    enabled: !!slug,
+    // Paint cached list data immediately, then fetch the full detail payload in the background.
+    placeholderData: placeholderTool,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const tool = toolQuery.data ?? null;
+  const relatedQuery = useQuery({
+    queryKey: ["tool_related", tool?.id, (tool?.tags ?? []).slice().sort().join(",")],
+    queryFn: async () => fetchRelatedTools(tool as Tool),
+    enabled: !!tool,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const related = relatedQuery.data ?? [];
+  const loading = !!slug && toolQuery.isLoading && !tool;
+  const notFound = !slug || (!loading && !tool);
 
   if (loading) {
     return (
@@ -220,7 +218,7 @@ export default function ToolDetalhe() {
     );
   }
 
-  if (notFound || !tool) {
+  if (notFound) {
     return (
       <div className="container mx-auto px-6 py-24 text-center">
         <Wrench className="mx-auto h-16 w-16 text-muted-foreground/50 mb-6" />

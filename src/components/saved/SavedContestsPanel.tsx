@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FileText, ChevronRight, Bookmark, Globe, MapPin } from "lucide-react";
@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { useSavedItems, SavedItem, SavedItemMetadata } from "@/hooks/useSavedItems";
+import { useQuery } from "@tanstack/react-query";
 
 const SITUACAO_COLORS: Record<string, string> = {
   "Previsto": "bg-amber-500/10 text-amber-600 border-amber-500/20",
@@ -35,92 +36,70 @@ interface SavedContestsPanelProps {
 export function SavedContestsPanel({ savedItems, onRefresh, shouldLoad }: SavedContestsPanelProps) {
   const navigate = useNavigate();
   const { toggleSave, isToggling } = useSavedItems();
-  const [contests, setContests] = useState<ContestData[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [hasLoaded, setHasLoaded] = useState(false);
+  const savedContestIds = useMemo(
+    () => savedItems.map((item) => item.item_id),
+    [savedItems]
+  );
+  const contestsQuery = useQuery({
+    queryKey: ["saved_contests_panel", savedContestIds],
+    enabled: shouldLoad,
+    staleTime: 60 * 1000,
+    queryFn: async () => {
+      if (savedItems.length === 0) return [] as ContestData[];
 
-  // Lazy load: fetch contests only when shouldLoad is true and hasn't loaded yet
-  useEffect(() => {
-    if (!shouldLoad || hasLoaded) return;
+      const contestsFromMetadata: ContestData[] = [];
+      const idsToFetch: string[] = [];
 
-    const fetchContests = async () => {
-      if (savedItems.length === 0) {
-        setContests([]);
-        setHasLoaded(true);
-        return;
-      }
-
-      setLoading(true);
-      try {
-        const contestsFromMetadata: ContestData[] = [];
-        const idsToFetch: string[] = [];
-
-        savedItems.forEach(item => {
-          const meta = item.metadata as SavedItemMetadata | null;
-          if (meta?.title && meta?.slug) {
-            contestsFromMetadata.push({
-              id: item.item_id,
-              titulo: meta.title,
-              slug: meta.slug,
-              orgao: meta.orgao,
-              banca: meta.banca,
-              situacao: meta.situacao || 'Previsto',
-              abrangencia: meta.abrangencia || 'Nacional',
-            });
-          } else {
-            idsToFetch.push(item.item_id);
-          }
-        });
-
-        if (idsToFetch.length > 0) {
-          const { data, error } = await supabase
-            .from('oportunidades_public')
-            .select('id, titulo, slug, orgao, banca, situacao, abrangencia')
-            .in('id', idsToFetch);
-
-          if (error) throw error;
-
-          const fetchedContests: ContestData[] = (data || []).map(c => ({
-            id: c.id!,
-            titulo: c.titulo!,
-            slug: c.slug!,
-            orgao: c.orgao || undefined,
-            banca: c.banca || undefined,
-            situacao: c.situacao || 'Previsto',
-            abrangencia: c.abrangencia || 'Nacional',
-          }));
-
-          setContests([...contestsFromMetadata, ...fetchedContests]);
-        } else {
-          setContests(contestsFromMetadata);
+      for (const item of savedItems) {
+        const meta = item.metadata as SavedItemMetadata | null;
+        if (meta?.title && meta?.slug) {
+          contestsFromMetadata.push({
+            id: item.item_id,
+            titulo: meta.title,
+            slug: meta.slug,
+            orgao: meta.orgao,
+            banca: meta.banca,
+            situacao: meta.situacao || "Previsto",
+            abrangencia: meta.abrangencia || "Nacional",
+          });
+          continue;
         }
-        setHasLoaded(true);
-      } catch (error) {
-        console.error('Error fetching contests:', error);
-      } finally {
-        setLoading(false);
+        idsToFetch.push(item.item_id);
       }
-    };
 
-    fetchContests();
-  }, [savedItems, shouldLoad, hasLoaded]);
+      if (idsToFetch.length === 0) {
+        return contestsFromMetadata;
+      }
 
-  // Revalidate when savedItems changes after initial load
-  useEffect(() => {
-    if (hasLoaded && shouldLoad && savedItems.length > 0) {
-      const contestIds = savedItems.map(item => item.item_id);
-      setContests(prev => prev.filter(c => contestIds.includes(c.id)));
-    } else if (hasLoaded && savedItems.length === 0) {
-      setContests([]);
-    }
-  }, [savedItems, hasLoaded, shouldLoad]);
+      const { data, error } = await supabase
+        .from("oportunidades_public")
+        .select("id, titulo, slug, orgao, banca, situacao, abrangencia")
+        .in("id", idsToFetch);
+
+      if (error) throw error;
+
+      const fetchedContests: ContestData[] = (data || []).map((contest) => ({
+        id: contest.id!,
+        titulo: contest.titulo!,
+        slug: contest.slug!,
+        orgao: contest.orgao || undefined,
+        banca: contest.banca || undefined,
+        situacao: contest.situacao || "Previsto",
+        abrangencia: contest.abrangencia || "Nacional",
+      }));
+
+      return [...contestsFromMetadata, ...fetchedContests];
+    },
+  });
+  const contests = contestsQuery.data ?? [];
+  const loading = contestsQuery.isLoading;
 
   const handleRemove = async (contestId: string) => {
     await toggleSave('contest', contestId);
     onRefresh();
   };
 
-  if (!shouldLoad && !hasLoaded) {
+  if (!shouldLoad) {
     return null;
   }
 

@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { useState, useEffect, useMemo } from "react";
+import { useMemo } from "react";
 
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -37,53 +37,8 @@ const NoticiaDetalhes = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [noticia, setNoticia] = useState<NoticiaView | null>(null);
-  const [noticiasRelacionadas, setNoticiasRelacionadas] = useState<NoticiaView[]>([]);
-  const [loading, setLoading] = useState(true);
   const { adicionarFavorito, removerFavorito, isFavorito } = useFavoritos();
   const { toast } = useToast();
-
-  useEffect(() => {
-    if (!id) {
-      setLoading(false);
-      return;
-    }
-
-    // Try to get news from storage first
-    let storedNews = NewsStorageService.getNews(id);
-
-    if (!storedNews) {
-      // Fallback to static data for IDs "1" and "2"
-      storedNews = staticNoticias[id as keyof typeof staticNoticias];
-    }
-
-    if (storedNews) {
-      // If it's from AI service and doesn't have full content, generate it
-      if ("conteudoCompleto" in storedNews && !storedNews.conteudoCompleto) {
-        const enhancedNews = {
-          ...storedNews,
-          conteudoCompleto: generateFallbackContent(storedNews),
-          autor: storedNews.autor || "Portal de Educação",
-          visualizacoes: storedNews.visualizacoes || Math.floor(Math.random() * 50000) + 1000,
-          tags: storedNews.tags || [storedNews.categoria, "Educação"],
-          fontes: storedNews.fontes || [{ nome: "Portal de Educação", url: "#" }],
-        };
-        setNoticia(enhancedNews);
-      } else {
-        setNoticia(storedNews);
-      }
-
-      // Buscar notícias relacionadas
-      const allNews = NewsStorageService.getAllNews();
-      const related = (allNews as NoticiaView[])
-        .filter((n) => String(n.id) !== id && n.categoria === storedNews.categoria)
-        .slice(0, 6); // Pegar até 6 relacionadas
-      setNoticiasRelacionadas(related);
-    }
-
-    setLoading(false);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]);
 
   const generateFallbackContent = (news: NoticiaView) => {
     return `
@@ -119,11 +74,11 @@ const NoticiaDetalhes = () => {
       conteudoCompleto: `
         <p class="mb-4 text-lg leading-relaxed">O Instituto Nacional de Estudos e Pesquisas Educacionais Anísio Teixeira (Inep) confirmou que as notas individuais do Exame Nacional do Ensino Médio (ENEM) 2024 serão disponibilizadas na Página do Participante no final de janeiro de 2025.</p>
         
-        <h3 class="text-2xl font-bold mb-4 mt-8 text-foreground">📅 Cronograma de Divulgação</h3>
+        <h3 class="text-2xl font-bold mb-4 mt-8 text-foreground">Cronograma de Divulgação</h3>
         
         <p class="mb-4 leading-relaxed">Segundo o cronograma oficial, os resultados estarão disponíveis a partir do dia <strong>27 de janeiro de 2025, às 10h</strong> (horário de Brasília). Os participantes poderão acessar suas notas através do portal oficial do Inep, utilizando CPF e senha cadastrada.</p>
         
-        <h3 class="text-2xl font-bold mb-4 mt-8 text-foreground">🔐 Como Acessar o Resultado</h3>
+        <h3 class="text-2xl font-bold mb-4 mt-8 text-foreground">Como Acessar o Resultado</h3>
         
         <p class="mb-3 leading-relaxed">Para consultar o resultado, siga os seguintes passos:</p>
         <ul class="list-disc ml-6 mb-6 space-y-2">
@@ -133,7 +88,7 @@ const NoticiaDetalhes = () => {
           <li class="leading-relaxed">Clique em <strong>"Resultado do ENEM 2024"</strong></li>
         </ul>
         
-        <h3 class="text-2xl font-bold mb-4 mt-8 text-foreground">🎓 Próximos Passos: Use sua Nota</h3>
+        <h3 class="text-2xl font-bold mb-4 mt-8 text-foreground">Próximos Passos: Use sua Nota</h3>
         
         <p class="mb-3 leading-relaxed">Com o resultado em mãos, os estudantes poderão se inscrever em diversos programas de acesso ao ensino superior:</p>
         <ul class="list-disc ml-6 mb-6 space-y-2">
@@ -143,10 +98,10 @@ const NoticiaDetalhes = () => {
         </ul>
         
         <p class="mb-6 leading-relaxed bg-blue-50 dark:bg-blue-950 border-l-4 border-blue-500 p-4 rounded">
-          <strong>⚠️ Fique Atento:</strong> As inscrições para o SISU 2025 começam em fevereiro, logo após a divulgação das notas. É importante que os candidatos fiquem atentos aos prazos e documentos necessários.
+          <strong>Fique Atento:</strong> As inscrições para o SISU 2025 começam em fevereiro, logo após a divulgação das notas. É importante que os candidatos fiquem atentos aos prazos e documentos necessários.
         </p>
         
-        <h3 class="text-2xl font-bold mb-4 mt-8 text-foreground">💡 Dicas Importantes</h3>
+        <h3 class="text-2xl font-bold mb-4 mt-8 text-foreground">Dicas Importantes</h3>
         
         <p class="mb-3 leading-relaxed">O Inep recomenda que os participantes:</p>
         <ul class="list-disc ml-6 mb-6 space-y-2">
@@ -157,7 +112,7 @@ const NoticiaDetalhes = () => {
         </ul>
         
         <p class="mt-6 p-4 bg-muted rounded-lg leading-relaxed">
-          <strong>📞 Precisa de Ajuda?</strong> Para mais informações, os candidatos podem acessar o site oficial do Inep ou entrar em contato com a Central de Atendimento através do telefone <strong>0800 616 161</strong>.
+          <strong>Precisa de Ajuda?</strong> Para mais informações, os candidatos podem acessar o site oficial do Inep ou entrar em contato com a Central de Atendimento através do telefone <strong>0800 616 161</strong>.
         </p>
       `,
       tags: ["ENEM", "Resultado", "Educação", "Ensino Superior"],
@@ -217,18 +172,39 @@ const NoticiaDetalhes = () => {
     },
   }), []);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-background">
-        <div className="container mx-auto px-4 py-8 text-center">
-          <div className="animate-pulse">
-            <div className="h-8 bg-muted rounded w-1/4 mx-auto mb-4"></div>
-            <div className="h-4 bg-muted rounded w-1/2 mx-auto"></div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const { noticia, noticiasRelacionadas } = useMemo(() => {
+    if (!id) {
+      return { noticia: null as NoticiaView | null, noticiasRelacionadas: [] as NoticiaView[] };
+    }
+
+    let storedNews =
+      NewsStorageService.getNews(id) ??
+      staticNoticias[id as keyof typeof staticNoticias];
+
+    if (!storedNews) {
+      return { noticia: null as NoticiaView | null, noticiasRelacionadas: [] as NoticiaView[] };
+    }
+
+    if ("conteudoCompleto" in storedNews && !storedNews.conteudoCompleto) {
+      storedNews = {
+        ...storedNews,
+        conteudoCompleto: generateFallbackContent(storedNews),
+        autor: storedNews.autor || "Portal de Educação",
+        visualizacoes: storedNews.visualizacoes || Math.floor(Math.random() * 50000) + 1000,
+        tags: storedNews.tags || [storedNews.categoria, "Educação"],
+        fontes: storedNews.fontes || [{ nome: "Portal de Educação", url: "#" }],
+      };
+    }
+
+    const related = (NewsStorageService.getAllNews() as NoticiaView[])
+      .filter((n) => String(n.id) !== id && n.categoria === storedNews.categoria)
+      .slice(0, 6);
+
+    return {
+      noticia: storedNews as NoticiaView,
+      noticiasRelacionadas: related,
+    };
+  }, [id, staticNoticias]);
 
   if (!noticia) {
     return (
@@ -370,7 +346,7 @@ const NoticiaDetalhes = () => {
             {/* 
               SECURITY NOTE: Using dangerouslySetInnerHTML with trusted content only.
               Content is generated internally by AINewsService or validated static data.
-              ⚠️ WARNING: If external or user-generated content is added in the future,
+              WARNING: If external or user-generated content is added in the future,
               implement HTML sanitization using DOMPurify to prevent XSS attacks.
             */}
 
@@ -468,3 +444,5 @@ const NoticiaDetalhes = () => {
 };
 
 export default NoticiaDetalhes;
+
+

@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 export interface Course {
   id: string;
@@ -15,7 +15,7 @@ export interface Course {
   level: string;
   is_active: boolean;
   is_hidden: boolean;
-  badge?: 'trending' | 'popular' | 'community' | null;
+  badge?: "trending" | "popular" | "community" | null;
   upvotes: number;
   downvotes: number;
   vote_score: number;
@@ -37,7 +37,7 @@ export interface CreateCourseData {
   image_url?: string;
   institution?: string;
   level?: string;
-  badge?: 'trending' | 'popular' | 'community' | null;
+  badge?: "trending" | "popular" | "community" | null;
   affiliate_link?: string;
 }
 
@@ -46,144 +46,163 @@ export interface UpdateCourseData extends CreateCourseData {
   is_active?: boolean;
 }
 
+const ADMIN_COURSES_KEY = ["admin_courses"] as const;
+
 const getErrorMessage = (error: unknown) =>
-  error instanceof Error ? error.message : 'Erro inesperado';
+  error instanceof Error ? error.message : "Erro inesperado";
+
+async function fetchCourses() {
+  const { data, error } = await supabase
+    .from("active_courses")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error) throw error;
+  return ((data as Course[]) || []) as Course[];
+}
+
+async function requireSessionToken() {
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  if (!session) throw new Error("Usuário não autenticado");
+  return session.access_token;
+}
 
 export const useCourses = () => {
-  const [courses, setCourses] = useState<Course[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
+  const coursesQuery = useQuery({
+    queryKey: ADMIN_COURSES_KEY,
+    queryFn: fetchCourses,
+    staleTime: 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+  });
 
-  const fetchCourses = async () => {
-    try {
-      setLoading(true);
-      // Use secure public view that doesn't expose created_by/updated_by
-      const { data, error } = await supabase
-        .from('active_courses')
-        .select('*')
-        .order('created_at', { ascending: false });
+  const invalidateCourses = () => queryClient.invalidateQueries({ queryKey: ADMIN_COURSES_KEY });
 
-      if (error) throw error;
-      setCourses(data as Course[] || []);
-    } catch (err: unknown) {
-      setError(getErrorMessage(err));
-    } finally {
-      setLoading(false);
-    }
-  };
+  const createMutation = useMutation({
+    mutationFn: async (courseData: CreateCourseData) => {
+      await requireSessionToken();
 
-  const createCourse = async (courseData: CreateCourseData) => {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error('Usuário não autenticado');
-
-      const { data, error } = await supabase.functions.invoke('admin-courses', {
+      const { data, error } = await supabase.functions.invoke("admin-courses", {
         body: {
-          action: 'create',
+          action: "create",
           data: {
             title: courseData.title,
-            description: courseData.description || '',
+            description: courseData.description || "",
             category: courseData.category,
             duration: courseData.duration,
-            price: courseData.price || 'Consultar',
+            price: courseData.price || "Consultar",
             image_url: courseData.image_url,
-            institution: courseData.institution || 'Plataforma Parceira',
-            level: courseData.level || 'Iniciante',
+            institution: courseData.institution || "Plataforma Parceira",
+            level: courseData.level || "Iniciante",
             badge: courseData.badge,
-            affiliate_link: courseData.affiliate_link
-          }
-        }
+            affiliate_link: courseData.affiliate_link,
+          },
+        },
       });
 
       if (error) throw error;
-      
-      // Refetch to get updated data from public view
-      await fetchCourses();
+      return data;
+    },
+    onSuccess: invalidateCourses,
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: async (courseData: UpdateCourseData | { id: string; is_active: boolean }) => {
+      await requireSessionToken();
+      const { id, ...updateFields } = courseData;
+
+      const { data, error } = await supabase.functions.invoke("admin-courses", {
+        body: {
+          action: "update",
+          data: { id, ...updateFields },
+        },
+      });
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: invalidateCourses,
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (courseId: string) => {
+      await requireSessionToken();
+
+      const { error } = await supabase.functions.invoke("admin-courses", {
+        body: {
+          action: "delete",
+          data: { id: courseId },
+        },
+      });
+
+      if (error) throw error;
+    },
+    onSuccess: invalidateCourses,
+  });
+
+  const hideMutation = useMutation({
+    mutationFn: async (courseId: string) => {
+      await requireSessionToken();
+
+      const { error } = await supabase.functions.invoke("admin-courses", {
+        body: {
+          action: "hide",
+          data: { id: courseId },
+        },
+      });
+
+      if (error) throw error;
+    },
+    onSuccess: invalidateCourses,
+  });
+
+  const createCourse = async (courseData: CreateCourseData) => {
+    try {
+      const data = await createMutation.mutateAsync(courseData);
       return { data, error: null };
-    } catch (err: unknown) {
-      return { data: null, error: getErrorMessage(err) };
+    } catch (error: unknown) {
+      return { data: null, error: getErrorMessage(error) };
     }
   };
 
   const updateCourse = async (courseData: UpdateCourseData | { id: string; is_active: boolean }) => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error('Usuário não autenticado');
-
-      const { id, ...updateFields } = courseData;
-      const { data, error } = await supabase.functions.invoke('admin-courses', {
-        body: {
-          action: 'update',
-          data: { id, ...updateFields }
-        }
-      });
-
-      if (error) throw error;
-      
-      // Refetch to get updated data from public view
-      await fetchCourses();
+      const data = await updateMutation.mutateAsync(courseData);
       return { data, error: null };
-    } catch (err: unknown) {
-      return { data: null, error: getErrorMessage(err) };
+    } catch (error: unknown) {
+      return { data: null, error: getErrorMessage(error) };
     }
   };
 
   const deleteCourse = async (courseId: string) => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error('Usuário não autenticado');
-
-      const { error } = await supabase.functions.invoke('admin-courses', {
-        body: {
-          action: 'delete',
-          data: { id: courseId }
-        }
-      });
-
-      if (error) throw error;
-      
-      // Refetch to get updated data from public view
-      await fetchCourses();
+      await deleteMutation.mutateAsync(courseId);
       return { error: null };
-    } catch (err: unknown) {
-      return { error: getErrorMessage(err) };
+    } catch (error: unknown) {
+      return { error: getErrorMessage(error) };
     }
   };
 
   const hideCourse = async (courseId: string) => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error('Usuário não autenticado');
-
-      const { error } = await supabase.functions.invoke('admin-courses', {
-        body: {
-          action: 'hide',
-          data: { id: courseId }
-        }
-      });
-
-      if (error) throw error;
-      
-      // Refetch to get updated data from public view
-      await fetchCourses();
+      await hideMutation.mutateAsync(courseId);
       return { error: null };
-    } catch (err: unknown) {
-      return { error: getErrorMessage(err) };
+    } catch (error: unknown) {
+      return { error: getErrorMessage(error) };
     }
   };
 
-  useEffect(() => {
-    fetchCourses();
-  }, []);
-
   return {
-    courses,
-    loading,
-    error,
+    courses: coursesQuery.data ?? [],
+    loading: coursesQuery.isLoading,
+    error: coursesQuery.error ? getErrorMessage(coursesQuery.error) : null,
     createCourse,
     updateCourse,
     deleteCourse,
     hideCourse,
-    refetch: fetchCourses
+    refetch: coursesQuery.refetch,
   };
 };

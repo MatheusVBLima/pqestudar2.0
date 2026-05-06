@@ -312,7 +312,7 @@ export default function Ferramentas() {
   const [editingTool, setEditingTool] = useState<Tool | null>(null);
   const [deleteTool, setDeleteTool] = useState<Tool | null>(null);
   const [hasUnsavedOrder, setHasUnsavedOrder] = useState(false);
-  const [localTools, setLocalTools] = useState<Tool[]>([]);
+  const [draftTools, setDraftTools] = useState<Tool[] | null>(null);
 
   // Fetch tools from Supabase with pagination
   const toolsOptions: UseToolsOptions = {
@@ -334,10 +334,19 @@ export default function Ferramentas() {
     reorderTools
   } = useTools(toolsOptions);
 
-  // Sync local tools with fetched tools
+  // Keep a local draft only while in management mode.
+  // This avoids duplicating server state in public mode.
   useEffect(() => {
-    setLocalTools(tools);
-  }, [tools]);
+    if (!isManagementMode) {
+      setDraftTools(null);
+      setHasUnsavedOrder(false);
+      return;
+    }
+
+    if (!hasUnsavedOrder) {
+      setDraftTools(tools);
+    }
+  }, [isManagementMode, tools, hasUnsavedOrder]);
 
   // Reset page to 1 when filters change
   useEffect(() => {
@@ -359,8 +368,10 @@ export default function Ferramentas() {
 
   // Filtragem + ordenação de destaques — tudo num único memo para garantir reatividade
   const sortedDisplayedTools = useMemo(() => {
+    const sourceTools = isManagementMode ? draftTools ?? tools : tools;
+
     // 1. Filtro por categoria dropdown (modo admin)
-    let base = localTools;
+    let base = sourceTools;
     if (isManagementMode && categoryFilter !== "all") {
       base = base.filter((tool) => tool.tags.includes(categoryFilter));
     }
@@ -403,7 +414,7 @@ export default function Ferramentas() {
 
       return [...featuredFirst, ...normalRest, ...rest];
     }
-  }, [localTools, isManagementMode, categoryFilter, selectedTags]);
+  }, [tools, draftTools, isManagementMode, categoryFilter, selectedTags]);
 
   const availableTags = CATEGORIES.filter((tag) => !selectedTags.includes(tag));
 
@@ -487,7 +498,8 @@ export default function Ferramentas() {
   };
 
   const handleSaveOrder = async () => {
-    await reorderTools(localTools);
+    const sourceTools = draftTools ?? tools;
+    await reorderTools(sourceTools);
     setHasUnsavedOrder(false);
   };
 
@@ -756,7 +768,7 @@ export default function Ferramentas() {
               }
 
               {/* Empty State - Public (sem admin) */}
-              {!loading && localTools.length === 0 && !effectiveAdmin &&
+              {!loading && tools.length === 0 && !effectiveAdmin &&
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -775,7 +787,7 @@ export default function Ferramentas() {
               }
 
               {/* Empty State - Admin */}
-              {!loading && localTools.length === 0 && effectiveAdmin &&
+              {!loading && tools.length === 0 && effectiveAdmin &&
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -801,7 +813,7 @@ export default function Ferramentas() {
               }
 
               {/* Filtered Empty State */}
-              {!loading && localTools.length > 0 && sortedDisplayedTools.length === 0 &&
+              {!loading && tools.length > 0 && sortedDisplayedTools.length === 0 &&
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -835,7 +847,7 @@ export default function Ferramentas() {
                   <FerramentasManagementGrid
                     tools={sortedDisplayedTools}
                     onReorder={(nextTools) => {
-                      setLocalTools(nextTools);
+                      setDraftTools(nextTools);
                       setHasUnsavedOrder(true);
                     }}
                     onEdit={handleEdit}

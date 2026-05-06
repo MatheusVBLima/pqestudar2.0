@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Navigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { motion } from "framer-motion";
 import { PageHero } from "@/components/layout/PageHero";
@@ -10,7 +10,6 @@ import { SavedAccordion } from "@/components/saved/SavedAccordion";
 import { SavedToolsPanel } from "@/components/saved/SavedToolsPanel";
 import { SavedContestsPanel } from "@/components/saved/SavedContestsPanel";
 import { usePageSettings } from "@/hooks/usePageSettings";
-import { RouteFallbackPublic } from "@/components/layout/route-fallbacks";
 export default function FerramentasSalvos() {
   const ps = usePageSettings("/ferramentas/salvos");
   const navigate = useNavigate();
@@ -20,13 +19,6 @@ export default function FerramentasSalvos() {
   // Lazy load triggers
   const [toolsExpanded, setToolsExpanded] = useState(false);
   const [contestsExpanded, setContestsExpanded] = useState(false);
-
-  // Redirect to login if not authenticated
-  useEffect(() => {
-    if (!authLoading && !user) {
-      navigate("/login", { replace: true });
-    }
-  }, [authLoading, user, navigate]);
 
   // Fetch saved items when component mounts
   useEffect(() => {
@@ -48,12 +40,33 @@ export default function FerramentasSalvos() {
 
   // Show loading while checking auth
   if (authLoading) {
-    return <RouteFallbackPublic />;
+    return (
+      <div className="min-h-screen flex flex-col bg-background">
+        <main className="flex-1">
+          <PageHero title={ps.headerTitle} description={ps.headerDescription} />
+          <section className="pt-12 md:pt-16 pb-24 px-4 sm:px-6 lg:px-8">
+            <div className="container max-w-5xl mx-auto space-y-4">
+              {[1, 2].map((i) => (
+                <div key={i} className="rounded-lg border bg-card p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <Skeleton className="h-5 w-5 rounded" />
+                      <Skeleton className="h-5 w-40" />
+                    </div>
+                    <Skeleton className="h-5 w-5" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        </main>
+      </div>
+    );
   }
 
-  // User not authenticated - will redirect
+  // User not authenticated
   if (!user) {
-    return null;
+    return <Navigate to="/login" replace />;
   }
 
   return (

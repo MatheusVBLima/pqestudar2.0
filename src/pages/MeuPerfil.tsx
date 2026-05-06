@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { AchievementBadge } from "@/components/ui/achievement-badge";
 import { useGamification } from "@/hooks/useGamification";
 import { useNotifications } from "@/hooks/useNotifications";
@@ -38,7 +39,14 @@ const MeuPerfil = () => {
     return (
       <div className="min-h-screen bg-background">
         <main className="container mx-auto px-4 py-8">
-          <p>Carregando perfil...</p>
+          <div className="space-y-6">
+            <Skeleton className="h-10 w-64" />
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <Skeleton className="h-48 rounded-xl lg:col-span-2" />
+              <Skeleton className="h-48 rounded-xl" />
+            </div>
+            <Skeleton className="h-72 rounded-xl" />
+          </div>
         </main>
       </div>
     );

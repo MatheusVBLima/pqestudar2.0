@@ -3,11 +3,6 @@ type RouteImporter = () => Promise<unknown>;
 const routeImporters: Record<string, RouteImporter> = {
   "/login": () => import("@/pages/Login"),
   "/assine": () => import("@/pages/Assine"),
-  "/ferramentas": () => import("@/pages/Ferramentas"),
-  "/concursos": () => import("@/pages/Concursos"),
-  "/guias": () => import("@/pages/Guias"),
-  "/produtos": () => import("@/pages/Produtos"),
-  "/votacoes": () => import("@/pages/Votacoes"),
   "/sobre-pqestudar": () => import("@/pages/SobrePqEstudar"),
   "/premium": () => import("@/pages/premium/PremiumHome"),
   "/premium/upgrade": () => import("@/pages/premium/PremiumUpgrade"),
@@ -58,4 +53,3 @@ export function prefetchRouteChunk(path: string) {
 
   inFlightPrefetches.set(normalizedPath, prefetchPromise);
 }
-

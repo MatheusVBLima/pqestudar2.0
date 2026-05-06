@@ -62,10 +62,9 @@ export function RouteFallbackPremium() {
 function RouteFallbackByKind({ kind }: { kind: RouteFallbackKind }) {
   if (kind === "admin") return <RouteFallbackAdmin />;
   if (kind === "premium") return <RouteFallbackPremium />;
-  return <RouteFallbackPublic />;
+  return null;
 }
 
 export function RouteSuspense({ children, kind = "public" }: RouteSuspenseProps) {
   return <Suspense fallback={<RouteFallbackByKind kind={kind} />}>{children}</Suspense>;
 }
-

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+﻿import { useState, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
@@ -140,6 +140,9 @@ export default function AdminMenu() {
   // ── Fetch nav_settings ──
   const settingsQuery = useQuery({
     queryKey: ["admin-nav-settings"],
+    staleTime: 60_000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
     queryFn: async () => {
       const { data, error } = await supabase.from("nav_settings").select("*").limit(1).maybeSingle();
       if (error) throw error;
@@ -150,6 +153,9 @@ export default function AdminMenu() {
   // ── Fetch nav_items ──
   const itemsQuery = useQuery({
     queryKey: ["admin-nav-items"],
+    staleTime: 60_000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
     queryFn: async () => {
       const { data, error } = await supabase.from("nav_items").select("*").order("order_index", { ascending: true });
       if (error) throw error;
@@ -158,14 +164,9 @@ export default function AdminMenu() {
   });
 
   // ── Logo form state ──
-  const [logoLight, setLogoLight] = useState("");
-  const [logoDark, setLogoDark] = useState("");
-  useEffect(() => {
-    if (settingsQuery.data) {
-      setLogoLight(settingsQuery.data.logo_light_url ?? "");
-      setLogoDark(settingsQuery.data.logo_dark_url ?? "");
-    }
-  }, [settingsQuery.data]);
+  const [logoDraft, setLogoDraft] = useState<{ light?: string; dark?: string }>({});
+  const logoLight = logoDraft.light ?? settingsQuery.data?.logo_light_url ?? "";
+  const logoDark = logoDraft.dark ?? settingsQuery.data?.logo_dark_url ?? "";
 
   const saveLogo = useMutation({
     mutationFn: async () => {
@@ -181,6 +182,7 @@ export default function AdminMenu() {
     },
     onSuccess: () => {
       toast.success("Logos atualizadas!");
+      setLogoDraft({});
       qc.invalidateQueries({ queryKey: ["admin-nav-settings"] });
       qc.invalidateQueries({ queryKey: ["nav-settings-public"] });
     },
@@ -188,10 +190,7 @@ export default function AdminMenu() {
   });
 
   // ── Items state ──
-  const [items, setItems] = useState<NavItem[]>([]);
-  useEffect(() => {
-    if (itemsQuery.data) setItems(itemsQuery.data);
-  }, [itemsQuery.data]);
+  const items = itemsQuery.data ?? [];
 
   // ── DnD ──
   const sensors = useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor));
@@ -201,8 +200,9 @@ export default function AdminMenu() {
       if (!over || active.id === over.id) return;
       const oldIdx = items.findIndex((i) => i.id === active.id);
       const newIdx = items.findIndex((i) => i.id === over.id);
+      const previousItems = items;
       const reordered = arrayMove(items, oldIdx, newIdx).map((it, idx) => ({ ...it, order_index: idx }));
-      setItems(reordered);
+      qc.setQueryData(["admin-nav-items"], reordered);
       // Batch update order
       const updates = reordered.map((it) =>
         supabase.from("nav_items").update({ order_index: it.order_index } satisfies NavItemUpdate).eq("id", it.id)
@@ -210,6 +210,7 @@ export default function AdminMenu() {
       const results = await Promise.all(updates);
       const failed = results.find((r) => r.error);
       if (failed?.error) {
+        qc.setQueryData(["admin-nav-items"], previousItems);
         toast.error("Erro ao reordenar");
       } else {
         qc.invalidateQueries({ queryKey: ["admin-nav-items"] });
@@ -223,32 +224,42 @@ export default function AdminMenu() {
   const toggleItem = useCallback(
     async (item: NavItem) => {
       const newActive = !item.is_active;
-      setItems((prev) => prev.map((i) => (i.id === item.id ? { ...i, is_active: newActive } : i)));
+      const previousItems = items;
+      qc.setQueryData<NavItem[]>(["admin-nav-items"], (prev = []) =>
+        prev.map((entry) => (entry.id === item.id ? { ...entry, is_active: newActive } : entry))
+      );
       const payload: NavItemUpdate = { is_active: newActive };
       const { error } = await supabase.from("nav_items").update(payload).eq("id", item.id);
-      if (error) toast.error("Erro ao alternar item");
-      else {
+      if (error) {
+        qc.setQueryData(["admin-nav-items"], previousItems);
+        toast.error("Erro ao alternar item");
+      } else {
         qc.invalidateQueries({ queryKey: ["admin-nav-items"] });
         qc.invalidateQueries({ queryKey: ["nav-items-public"] });
       }
     },
-    [qc]
+    [items, qc]
   );
 
   // ── Icon breakpoint toggle ──
   const toggleIconBreakpoint = useCallback(
     async (item: NavItem, field: 'show_icon_desktop' | 'show_icon_tablet' | 'show_icon_mobile') => {
       const newValue = !item[field];
-      setItems((prev) => prev.map((i) => (i.id === item.id ? { ...i, [field]: newValue } : i)));
+      const previousItems = items;
+      qc.setQueryData<NavItem[]>(["admin-nav-items"], (prev = []) =>
+        prev.map((entry) => (entry.id === item.id ? { ...entry, [field]: newValue } : entry))
+      );
       const payload: NavItemUpdate = { [field]: newValue };
       const { error } = await supabase.from("nav_items").update(payload).eq("id", item.id);
-      if (error) toast.error("Erro ao alterar visibilidade do ícone");
-      else {
+      if (error) {
+        qc.setQueryData(["admin-nav-items"], previousItems);
+        toast.error("Erro ao alterar visibilidade do ícone");
+      } else {
         qc.invalidateQueries({ queryKey: ["admin-nav-items"] });
         qc.invalidateQueries({ queryKey: ["nav-items-public"] });
       }
     },
-    [qc]
+    [items, qc]
   );
 
   // ── CRUD modal ──
@@ -347,7 +358,7 @@ export default function AdminMenu() {
                 <div className="grid sm:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <Label>Logo Light (URL)</Label>
-                    <Input value={logoLight} onChange={(e) => setLogoLight(e.target.value)} placeholder="https://..." />
+                    <Input value={logoLight} onChange={(e) => setLogoDraft((prev) => ({ ...prev, light: e.target.value }))} placeholder="https://..." />
                     {logoLight && (
                       <div className="border rounded-lg p-3 bg-white flex items-center justify-center h-20">
                         <img src={logoLight} alt="Preview light" className="max-h-14 w-auto object-contain" />
@@ -356,7 +367,7 @@ export default function AdminMenu() {
                   </div>
                   <div className="space-y-2">
                     <Label>Logo Dark (URL)</Label>
-                    <Input value={logoDark} onChange={(e) => setLogoDark(e.target.value)} placeholder="https://..." />
+                    <Input value={logoDark} onChange={(e) => setLogoDraft((prev) => ({ ...prev, dark: e.target.value }))} placeholder="https://..." />
                     {logoDark && (
                       <div className="border rounded-lg p-3 bg-neutral-900 flex items-center justify-center h-20">
                         <img src={logoDark} alt="Preview dark" className="max-h-14 w-auto object-contain" />
@@ -457,3 +468,5 @@ export default function AdminMenu() {
     </div>
   );
 }
+
+

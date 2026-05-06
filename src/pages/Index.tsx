@@ -15,7 +15,8 @@ const Index = () => {
   const {
     titleTag,
     metaDescription,
-    raw,
+    headerTitle,
+    headerDescription,
   } = usePageSettings("/");
 
   return (
@@ -33,8 +34,8 @@ const Index = () => {
 
       <main className="flex-1">
         <HeroSection
-          headerTitle={raw?.header_title}
-          headerDescription={raw?.header_description}
+          headerTitle={headerTitle}
+          headerDescription={headerDescription}
         />
         <Suspense fallback={<div className="min-h-[200px]" />}>
           <DualTrackSection />

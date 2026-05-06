@@ -13,6 +13,15 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { GlobalSeo } from "@/components/seo/GlobalSeo";
 import { RouteSuspense } from "@/components/layout/route-fallbacks";
 import Index from "./pages/Index";
+import Concursos from "./pages/Concursos";
+import ConcursoDetalhe from "./pages/ConcursoDetalhe";
+import CuradoriaPublic from "./pages/CuradoriaPublic";
+import Ferramentas from "./pages/Ferramentas";
+import Guias from "./pages/Guias";
+import GuiaDetalhe from "./pages/GuiaDetalhe";
+import Produtos from "./pages/Produtos";
+import ToolDetalhe from "./pages/ToolDetalhe";
+import Votacoes from "./pages/Votacoes";
 
 import { usePageViewTracker } from "@/hooks/usePageViewTracker";
 import { ScrollToTop } from "@/components/ScrollToTop";
@@ -38,18 +47,9 @@ const NotFound = React.lazy(() => import("./pages/NotFound"));
 const EmBreve = React.lazy(() => import("./pages/EmBreve"));
 const KitAceleracao = React.lazy(() => import("./pages/KitAceleracao"));
 const Assine = React.lazy(() => import("./pages/Assine"));
-const Ferramentas = React.lazy(() => import("./pages/Ferramentas"));
 const FerramentasSalvos = React.lazy(() => import("./pages/FerramentasSalvos"));
-const ToolDetalhe = React.lazy(() => import("./pages/ToolDetalhe"));
 const MapaDosBeneficios = React.lazy(() => import("./pages/MapaDosBeneficios"));
 const MapaDosBeneficiosAfiliado = React.lazy(() => import("./pages/MapaDosBeneficiosAfiliado"));
-const Concursos = React.lazy(() => import("./pages/Concursos"));
-const ConcursoDetalhe = React.lazy(() => import("./pages/ConcursoDetalhe"));
-const Votacoes = React.lazy(() => import("./pages/Votacoes"));
-const Produtos = React.lazy(() => import("./pages/Produtos"));
-const CuradoriaPublic = React.lazy(() => import("./pages/CuradoriaPublic"));
-const Guias = React.lazy(() => import("./pages/Guias"));
-const GuiaDetalhe = React.lazy(() => import("./pages/GuiaDetalhe"));
 const AdminCuradoriasLista = React.lazy(() => import("./pages/AdminCuradoriasLista"));
 const AdminCuradoriasForm = React.lazy(() => import("./pages/AdminCuradoriasForm"));
 
@@ -376,4 +376,3 @@ const App = () => (
 );
 
 export default App;
-

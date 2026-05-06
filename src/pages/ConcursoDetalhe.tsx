@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useMemo } from "react";
+import { useParams, useNavigate, Link, Navigate } from "react-router-dom";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { motion } from "framer-motion";
 import { Helmet } from "react-helmet-async";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,7 +28,7 @@ import {
   ChevronRight,
   Home,
 } from "lucide-react";
-import { useOportunidades, Oportunidade, FonteOportunidade } from "@/hooks/useOportunidades";
+import { Oportunidade, FonteOportunidade } from "@/hooks/useOportunidades";
 import { useOportunidadeViewTracker } from "@/hooks/useOportunidadeViews";
 import { useConcursoReadTracker } from "@/hooks/useAnalyticsTracker";
 import { supabase } from "@/integrations/supabase/client";
@@ -137,15 +138,130 @@ function generateJsonLd(oportunidade: ExtendedOportunidade, canonicalUrl: string
   return [baseData, breadcrumbData];
 }
 
+interface ConcursoDetailQueryResult {
+  oportunidade: ExtendedOportunidade | null;
+  atualizacoes: Atualizacao[];
+  redirectSlug: string | null;
+  notFound: boolean;
+}
+
+async function fetchConcursoDetail(slug: string): Promise<ConcursoDetailQueryResult> {
+  const { data: oportunidade, error: oportunidadeError } = await supabase
+    .from("oportunidades")
+    .select("*")
+    .eq("slug", slug)
+    .eq("publicado", true)
+    .maybeSingle();
+
+  if (oportunidadeError) throw oportunidadeError;
+
+  if (oportunidade) {
+    const [fontesResponse, atualizacoesResponse] = await Promise.all([
+      supabase
+        .from("fontes_oportunidade")
+        .select("*")
+        .eq("oportunidade_id", oportunidade.id),
+      supabase
+        .from("atualizacoes_oportunidade")
+        .select("*")
+        .eq("oportunidade_id", oportunidade.id)
+        .order("data_atualizacao", { ascending: false }),
+    ]);
+
+    if (fontesResponse.error) throw fontesResponse.error;
+    if (atualizacoesResponse.error) throw atualizacoesResponse.error;
+
+    return {
+      oportunidade: {
+        ...oportunidade,
+        fontes_oportunidade: (fontesResponse.data || []) as FonteOportunidade[],
+      } as ExtendedOportunidade,
+      atualizacoes: (atualizacoesResponse.data || []) as Atualizacao[],
+      redirectSlug: null,
+      notFound: false,
+    };
+  }
+
+  // Only check redirect table when the current slug does not exist.
+  const { data: redirect, error: redirectError } = await supabase
+    .from("oportunidades_slug_redirects")
+    .select("oportunidade_id")
+    .eq("old_slug", slug)
+    .maybeSingle();
+
+  if (redirectError) throw redirectError;
+
+  if (redirect?.oportunidade_id) {
+    const { data: currentOp, error: currentOpError } = await supabase
+      .from("oportunidades")
+      .select("slug")
+      .eq("id", redirect.oportunidade_id)
+      .eq("publicado", true)
+      .maybeSingle();
+
+    if (currentOpError) throw currentOpError;
+
+    if (currentOp?.slug) {
+      return {
+        oportunidade: null,
+        atualizacoes: [],
+        redirectSlug: currentOp.slug,
+        notFound: false,
+      };
+    }
+  }
+
+  return {
+    oportunidade: null,
+    atualizacoes: [],
+    redirectSlug: null,
+    notFound: true,
+  };
+}
+
 export default function ConcursoDetalhe() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
-  const { fetchBySlug } = useOportunidades();
-  
-  const [oportunidade, setOportunidade] = useState<ExtendedOportunidade | null>(null);
-  const [atualizacoes, setAtualizacoes] = useState<Atualizacao[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
+  const placeholderDetail = useMemo<ConcursoDetailQueryResult | undefined>(() => {
+    if (!slug) return undefined;
+    const cachedLists = queryClient.getQueriesData<Oportunidade[]>({
+      queryKey: ["oportunidades-public"],
+    });
+    for (const [, oportunidades] of cachedLists) {
+      const found = oportunidades?.find((item) => item.slug === slug);
+      if (found) {
+        return {
+          oportunidade: found as ExtendedOportunidade,
+          atualizacoes: [],
+          redirectSlug: null,
+          notFound: false,
+        };
+      }
+    }
+    return undefined;
+  }, [queryClient, slug]);
+
+  const detailQuery = useQuery({
+    queryKey: ["concurso_detail", slug],
+    queryFn: async () => fetchConcursoDetail(slug as string),
+    enabled: !!slug,
+    placeholderData: placeholderDetail,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const queryResult = detailQuery.data;
+  const oportunidade = queryResult?.oportunidade ?? null;
+  const atualizacoes = queryResult?.atualizacoes ?? [];
+  const isLoading = !!slug && detailQuery.isLoading;
+  const error =
+    !slug
+      ? "Slug não encontrado"
+      : detailQuery.isError
+        ? "Erro ao carregar oportunidade"
+        : queryResult?.notFound
+          ? "Oportunidade não encontrada"
+          : null;
 
   // View tracking hook - tracks after 6s on visible page
   const { viewsTotal } = useOportunidadeViewTracker(
@@ -156,63 +272,9 @@ export default function ConcursoDetalhe() {
   // Analytics tracking (heartbeat, scroll depth, events)
   const { trackEvent } = useConcursoReadTracker(oportunidade?.id, slug);
 
-  useEffect(() => {
-    async function loadOportunidade() {
-      if (!slug) {
-        setError("Slug não encontrado");
-        setIsLoading(false);
-        return;
-      }
-
-      try {
-        // Check for redirects first
-        const { data: redirect } = await supabase
-          .from("oportunidades_slug_redirects")
-          .select("oportunidade_id")
-          .eq("old_slug", slug)
-          .single();
-
-        if (redirect) {
-          // Get the current slug for the oportunidade
-          const { data: currentOp } = await supabase
-            .from("oportunidades")
-            .select("slug")
-            .eq("id", redirect.oportunidade_id)
-            .eq("publicado", true)
-            .single();
-
-          if (currentOp) {
-            // Redirect to new slug
-            navigate(`/concursos/${currentOp.slug}`, { replace: true });
-            return;
-          }
-        }
-
-        const data = await fetchBySlug(slug) as ExtendedOportunidade;
-        if (!data) {
-          setError("Oportunidade não encontrada");
-        } else {
-          setOportunidade(data);
-          // View tracking is now handled by useOportunidadeViewTracker hook
-
-          // Fetch atualizacoes
-          const { data: atualizacoesData } = await supabase
-            .from("atualizacoes_oportunidade")
-            .select("*")
-            .eq("oportunidade_id", data.id)
-            .order("data_atualizacao", { ascending: false });
-
-          setAtualizacoes(atualizacoesData || []);
-        }
-      } catch (e) {
-        setError("Erro ao carregar oportunidade");
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    loadOportunidade();
-  }, [slug, fetchBySlug, navigate]);
+  if (queryResult?.redirectSlug) {
+    return <Navigate to={`/concursos/${queryResult.redirectSlug}`} replace />;
+  }
 
   const handleShare = async () => {
     trackEvent('concurso_share_click');

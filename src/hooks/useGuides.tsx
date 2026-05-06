@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { Json, Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
@@ -71,6 +72,17 @@ export function useGuides(includeUnpublished = false) {
 }
 
 export function useGuideBySlug(slug: string | undefined) {
+  const queryClient = useQueryClient();
+  const placeholderGuide = useMemo(() => {
+    if (!slug) return undefined;
+    const cachedGuides = queryClient.getQueriesData<Guide[]>({ queryKey: GUIDES_KEY });
+    for (const [, guides] of cachedGuides) {
+      const found = guides?.find((guide) => guide.slug === slug);
+      if (found) return found;
+    }
+    return undefined;
+  }, [queryClient, slug]);
+
   return useQuery({
     queryKey: [...GUIDES_KEY, 'slug', slug],
     queryFn: async () => {
@@ -84,6 +96,7 @@ export function useGuideBySlug(slug: string | undefined) {
       return data as unknown as Guide | null;
     },
     enabled: !!slug,
+    placeholderData: placeholderGuide,
     staleTime: 2 * 60 * 1000,
   });
 }

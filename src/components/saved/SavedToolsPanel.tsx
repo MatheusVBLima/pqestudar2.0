@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Wrench, ExternalLink, Bookmark } from "lucide-react";
@@ -11,6 +11,7 @@ import { useSavedItems, SavedItem } from "@/hooks/useSavedItems";
 import { Tool } from "@/hooks/useTools";
 import { Sparkles, Brain, Shield, GraduationCap, Zap } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 
 const CATEGORY_ICONS: Record<string, LucideIcon> = {
   "Inteligência Artificial": Brain,
@@ -29,67 +30,39 @@ interface SavedToolsPanelProps {
 export function SavedToolsPanel({ savedItems, onRefresh, shouldLoad }: SavedToolsPanelProps) {
   const navigate = useNavigate();
   const { toggleSave, isToggling } = useSavedItems();
-  const [tools, setTools] = useState<Tool[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [hasLoaded, setHasLoaded] = useState(false);
+  const savedToolIds = useMemo(
+    () => savedItems.map((item) => item.item_id),
+    [savedItems]
+  );
+  const toolsQuery = useQuery({
+    queryKey: ["saved_tools_panel", savedToolIds],
+    enabled: shouldLoad,
+    staleTime: 60 * 1000,
+    queryFn: async () => {
+      if (savedToolIds.length === 0) return [] as Tool[];
 
-  // Lazy load: fetch tools only when shouldLoad is true and hasn't loaded yet
-  useEffect(() => {
-    if (!shouldLoad || hasLoaded) return;
+      const { data, error } = await supabase
+        .from("tools_public")
+        .select("*")
+        .in("id", savedToolIds);
 
-    const fetchTools = async () => {
-      if (savedItems.length === 0) {
-        setTools([]);
-        setHasLoaded(true);
-        return;
-      }
+      if (error) throw error;
 
-      setLoading(true);
-      try {
-        const toolIds = savedItems.map(item => item.item_id);
-        
-        const { data, error } = await supabase
-          .from('tools_public')
-          .select('*')
-          .in('id', toolIds);
-
-        if (error) throw error;
-
-        const toolsMap = new Map((data || []).map(t => [t.id, t]));
-        const orderedTools = toolIds
-          .map(id => toolsMap.get(id))
-          .filter((t): t is NonNullable<typeof t> => t !== undefined);
-
-        setTools(orderedTools as Tool[]);
-        setHasLoaded(true);
-      } catch (error) {
-        console.error('Error fetching tools:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchTools();
-  }, [savedItems, shouldLoad, hasLoaded]);
-
-  // Revalidate when savedItems changes after initial load
-  useEffect(() => {
-    if (hasLoaded && shouldLoad && savedItems.length > 0) {
-      const toolIds = savedItems.map(item => item.item_id);
-      // Filter out removed tools
-      setTools(prev => prev.filter(t => toolIds.includes(t.id)));
-    } else if (hasLoaded && savedItems.length === 0) {
-      setTools([]);
-    }
-  }, [savedItems, hasLoaded, shouldLoad]);
+      const toolsMap = new Map((data || []).map((tool) => [tool.id, tool]));
+      return savedToolIds
+        .map((id) => toolsMap.get(id))
+        .filter((tool): tool is NonNullable<typeof tool> => tool !== undefined) as Tool[];
+    },
+  });
+  const tools = toolsQuery.data ?? [];
+  const loading = toolsQuery.isLoading;
 
   const handleRemove = async (toolId: string) => {
     await toggleSave('tool', toolId);
     onRefresh();
   };
 
-  // Show nothing if not triggered to load yet
-  if (!shouldLoad && !hasLoaded) {
+  if (!shouldLoad) {
     return null;
   }
 

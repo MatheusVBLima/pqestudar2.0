@@ -129,10 +129,10 @@ export const useTools = (options: UseToolsOptions = {}) => {
   const adminQuery = useQuery({
     queryKey: ['tools_admin'],
     queryFn: fetchAdminTools,
-    enabled: includeInvisible,
-    staleTime: 0,
-    refetchOnMount: true,
-    refetchOnWindowFocus: true,
+    enabled: includeInvisible && !!user,
+    staleTime: 90_000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
   });
 
   // Derive values based on mode

@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+﻿import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
 import { toast } from '@/hooks/use-toast';
@@ -31,7 +31,7 @@ export interface CurationPageWithItems extends CurationPage {
 
 function getDuplicateAwareMessage(error: unknown, fallback: string) {
   const message = getErrorMessage(error, fallback);
-  return message.includes('duplicate') ? 'Já existe uma curadoria com este slug.' : message;
+  return message.includes('duplicate') ? 'JÃ¡ existe uma curadoria com este slug.' : message;
 }
 
 // Query keys
@@ -44,7 +44,7 @@ export const curationKeys = {
   bySlug: (slug: string) => [...curationKeys.all, 'slug', slug] as const,
 };
 
-// Hook para buscar curadoria pública por slug
+// Hook para buscar curadoria pÃºblica por slug
 export const useCurationBySlug = (slug: string) => {
   return useQuery({
     queryKey: curationKeys.bySlug(slug),
@@ -106,9 +106,9 @@ export const useCurationBySlug = (slug: string) => {
 export const useCurationsList = (filters?: { status?: string; search?: string }) => {
   return useQuery({
     queryKey: curationKeys.list(filters),
-    staleTime: 0,
-    refetchOnMount: true,
-    refetchOnWindowFocus: true,
+    staleTime: 90_000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
     queryFn: async () => {
       let query = supabase
         .from('curation_pages')
@@ -134,26 +134,25 @@ export const useCurationsList = (filters?: { status?: string; search?: string })
 export const useCurationById = (id: string) => {
   return useQuery({
     queryKey: curationKeys.detail(id),
-    staleTime: 0,
-    refetchOnMount: true,
-    refetchOnWindowFocus: true,
+    staleTime: 90_000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
     queryFn: async () => {
-      // Buscar página
-      const { data: page, error: pageError } = await supabase
-        .from('curation_pages')
-        .select('*')
-        .eq('id', id)
-        .single();
+      // Buscar página e itens em paralelo (sem waterfall)
+      const [{ data: page, error: pageError }, { data: items, error: itemsError }] = await Promise.all([
+        supabase
+          .from('curation_pages')
+          .select('*')
+          .eq('id', id)
+          .single(),
+        supabase
+          .from('curation_page_items')
+          .select('*')
+          .eq('page_id', id)
+          .order('order', { ascending: true }),
+      ]);
 
       if (pageError) throw pageError;
-
-      // Buscar items
-      const { data: items, error: itemsError } = await supabase
-        .from('curation_page_items')
-        .select('*')
-        .eq('page_id', id)
-        .order('order', { ascending: true });
-
       if (itemsError) throw itemsError;
 
       // Buscar ferramentas
@@ -198,9 +197,9 @@ export const useCurationMutations = () => {
       toolIds: string[];
     }) => {
       const { data: session } = await supabase.auth.getSession();
-      if (!session?.session?.user) throw new Error('Não autenticado');
+      if (!session?.session?.user) throw new Error('NÃ£o autenticado');
 
-      // Criar página
+      // Criar pÃ¡gina
       const pageData: TablesInsert<'curation_pages'> = {
         title: data.title,
         slug: data.slug,
@@ -254,7 +253,7 @@ export const useCurationMutations = () => {
       status: 'draft' | 'published';
       toolIds: string[];
     }) => {
-      // Atualizar página
+      // Atualizar pÃ¡gina
       const updateData: TablesUpdate<'curation_pages'> = {
         title: data.title,
         slug: data.slug,
@@ -326,7 +325,7 @@ export const useCurationMutations = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: curationKeys.all });
-      toast({ title: 'Sucesso', description: 'Curadoria excluída com sucesso!' });
+      toast({ title: 'Sucesso', description: 'Curadoria excluÃ­da com sucesso!' });
     },
     onError: (error: unknown) => {
       toast({ title: 'Erro', description: getErrorMessage(error, 'Erro ao excluir curadoria.'), variant: 'destructive' });
@@ -351,7 +350,7 @@ export const useCurationMutations = () => {
         .eq('page_id', id)
         .order('order', { ascending: true });
 
-      // Gerar novo slug único
+      // Gerar novo slug Ãºnico
       const baseSlug = `${original.slug}-copia`;
       let newSlug = baseSlug;
       let counter = 1;
@@ -368,13 +367,13 @@ export const useCurationMutations = () => {
         counter++;
       }
 
-      // Criar cópia
+      // Criar cÃ³pia
       const { data: session } = await supabase.auth.getSession();
       
       const { data: newPage, error: createError } = await supabase
         .from('curation_pages')
         .insert({
-          title: `${original.title} (cópia)`,
+          title: `${original.title} (cÃ³pia)`,
           slug: newSlug,
           description: original.description,
           status: 'draft' as const,
@@ -431,3 +430,4 @@ export const useCheckSlugUnique = () => {
     return !data;
   };
 };
+

@@ -137,13 +137,16 @@ export const useFeatureRequests = (includeHidden = false) => {
 
   const reorderMutation = useMutation({
     mutationFn: async (items: { id: string; sort_order: number }[]) => {
-      for (const item of items) {
-        const { error } = await supabase
-          .from('feature_requests')
-          .update({ sort_order: item.sort_order })
-          .eq('id', item.id);
-        if (error) throw error;
-      }
+      if (items.length === 0) return;
+      await Promise.all(
+        items.map(async (item) => {
+          const { error } = await supabase
+            .from('feature_requests')
+            .update({ sort_order: item.sort_order })
+            .eq('id', item.id);
+          if (error) throw error;
+        })
+      );
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: QUERY_KEY }),
   });
