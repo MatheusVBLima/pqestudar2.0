@@ -86,7 +86,9 @@ export default defineConfig(({ mode }) => ({
             id.includes("entities") ||
             id.includes("mdurl")
           ) {
-            return "vendor-markdown";
+            // Keep markdown-related libs in vendor-misc to avoid circular chunk imports
+            // between vendor-misc <-> vendor-markdown that can break runtime initialization.
+            return "vendor-misc";
           }
           if (id.includes("date-fns")) return "vendor-date";
           if (id.includes("zod")) return "vendor-zod";
